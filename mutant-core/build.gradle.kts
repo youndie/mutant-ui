@@ -53,6 +53,9 @@ kotlin {
             implementation(wip.compose.runtime)
             implementation(wip.compose.foundation)
             implementation(wip.compose.ui)
+            // The bundled fonts (B-02). Not in `wip`, and the plugin's accessor is the one place its
+            // version follows the Compose plugin's own (toon-ui and plakat-ui do the same).
+            implementation(compose.components.resources)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -66,6 +69,10 @@ kotlin {
     }
 }
 
+compose.resources {
+    packageOfResClass = "io.github.youndie.mutant.resources"
+}
+
 // A test that reads files outside the compiled classpath declares them, or Gradle leaves it
 // UP-TO-DATE over a change and reports the last run's verdict. The generator-boundary test reads the
 // generator's sources; later tests read the vendored design.
@@ -73,6 +80,11 @@ tasks.withType<Test>().configureEach {
     inputs
         .dir(layout.projectDirectory.dir("src/commonMain/kotlin/io/github/youndie/mutant/gen"))
         .withPropertyName("generatorSources")
+        .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+    // The font tests read the bundled files straight from the resources directory.
+    inputs
+        .dir(layout.projectDirectory.dir("src/commonMain/composeResources/font"))
+        .withPropertyName("fonts")
         .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
     inputs
         .dir(rootProject.layout.projectDirectory.dir("reference/design-system"))

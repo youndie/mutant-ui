@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (45)
+## Open (44)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-02](docs/backlog/B-02-fonts.md) `[~]` | Fonts: Handjet and Rubik as static OFL instances, coverage and metrics pinned | P0 | S | B-01 |
 | [B-03](docs/backlog/B-03-generator-port.md) `[ ]` | Generator: a 1:1 common-code port of the resting frame, held to Node goldens on every target | P0 | L | B-01 |
 | [B-04](docs/backlog/B-04-transition-geometry.md) `[ ]` | Transition geometry: venom, pour and error blocks ported and held to goldens | P0 | M | B-03 |
 | [B-05](docs/backlog/B-05-pixel-references-and-floor.md) `[ ]` | Pixel references rendered here from the pages at a fixed engine time, and the parity floor | P0 | M | B-01, B-02 |
@@ -108,11 +107,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (3)
+## Closed (4)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
 - [B-01](docs/backlog/B-01-repository-skeleton.md) `[x]` - Skeleton: mutant-core on desktop, Android, iOS and wasm, the sample kit, both gates
+- [B-02](docs/backlog/B-02-fonts.md) `[x]` - Fonts: Handjet and Rubik as static OFL instances, coverage and metrics pinned
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 

@@ -27,6 +27,10 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/` | the library's root package |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/` | the generator, Compose-free ([B-03](../backlog/B-03-generator-port.md)) |
 | `mutant-core/api/` | the committed public API dump |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/type/MutantFonts.kt` | the two bundled families, loaded through compose resources |
+| `mutant-core/src/commonMain/composeResources/font/` | Handjet 400/600 and Rubik 400/500, static instances |
+| `mutant-core/src/commonMain/composeResources/files/licences/` | the OFL text of each family |
+| `scripts/fonts.py`, `scripts/fonts.lock` | fetch at a pinned google/fonts commit, check by SHA-256, cut the instances (`make fonts`) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/GeneratorBoundaryTest.kt` | holds the generator package free of Compose imports |
 | `mutant-core/karma.config.d/mocha-timeout.js` | the browser tests' limits |
 | `sample/` | the sample kit: `./gradlew :sample:run`, `:sample:wasmJsBrowserDistribution` |
@@ -49,6 +53,9 @@ or any Material artefact; and its generator package does not depend on Compose.
   klibs with one `unique_name` on it. The per-target iOS compilations keep `-Werror`.
 - A test that reads files (the generator sources, later the vendored design) declares them as test
   inputs in `mutant-core/build.gradle.kts`, or Gradle reports the previous run's verdict.
+- The fonts are static instances on purpose: Rubik's variable default is 300, and a `wght`
+  setting needs Android API 26. `./gradlew :mutant-core:bundleAndroidMainAar` carries all four
+  files and both licences in its compose-resources assets.
 - The browser tests run under Mocha and Karma limits raised to 30 s and 60 s
   (`mutant-core/karma.config.d/mocha-timeout.js`): Mocha's 2 s turned plakat-ui's `main` red on a
   hosted runner.
