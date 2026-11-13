@@ -57,14 +57,10 @@ internal fun MutantGenerator.errorBlocks(g: Instance): List<ErrorBlock> {
             }
         val c = rnd.next()
         val color =
-            if (c <
-                .45
-            ) {
-                ErrorBlockColor.Danger
-            } else if (c < .75) {
-                ErrorBlockColor.Ink
-            } else {
-                ErrorBlockColor.Background
+            when {
+                c < .45 -> ErrorBlockColor.Danger
+                c < .75 -> ErrorBlockColor.Ink
+                else -> ErrorBlockColor.Background
             }
         out += ErrorBlock(el.ox + x, el.oy + y, bs, color)
     }
