@@ -1,7 +1,7 @@
 ---
 id: B-01
 title: "Skeleton: mutant-core on desktop, Android, iOS and wasm, the sample kit, both gates"
-status: open
+status: wip
 priority: P0
 size: M
 stage: stage-0-risks
