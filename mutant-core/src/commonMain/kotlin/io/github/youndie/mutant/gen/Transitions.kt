@@ -133,24 +133,24 @@ internal class VenomFrom(
 )
 
 /** One fat shape of the venom: the fat tentacle, its tail, or one of the two masses. */
-internal sealed interface VenomPart {
-    class Stroke(
+internal sealed class VenomPart {
+    internal class Stroke(
         val path: GenPath,
-    ) : VenomPart
+    ) : VenomPart()
 
-    class Circle(
+    internal class Circle(
         val cx: Double,
         val cy: Double,
         val r: Double,
-    ) : VenomPart
+    ) : VenomPart()
 
-    class Rect(
+    internal class Rect(
         val x: Double,
         val y: Double,
         val width: Double,
         val height: Double,
         val radius: Double,
-    ) : VenomPart
+    ) : VenomPart()
 }
 
 /**
