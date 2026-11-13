@@ -89,6 +89,8 @@ check: gate report
 gate: docs-gate
 	# research §1.3: the vendored generator still reproduces the vendored golden, but for the entries it lists.
 	node scripts/design-golden.mjs --check
+	# B-03: the generator's goldens are what the vendored mutant-generator.js emits today.
+	node scripts/gen-goldens.mjs --check
 
 report: docs-report
 

@@ -103,6 +103,9 @@ translation would draw a different shape.
 | `field` caches the static half of the field per instance and grid size in `this._N` under the key `E.e + '\|' + nx + '\|' + ny`, and `march` reuses one buffer `this._mb`; both are host state, not part of the function | `mutant-generator.js` (`field`, `march`) |
 | The grid step is 0.9 dp, or 1.5 dp when the slot is wider than 200 dp; the grid starts 7 dp left and 13 dp above the slot and reaches `over + 31` dp below its top edge plus height | `mutant-generator.js` (`field`) |
 
+| *Settled by [B-03](../backlog/B-03-generator-port.md):* the Kotlin port in `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/` reproduces all 243 golden paths of 27 instances (every profile, both grid steps, `calm` 0.3–1.7, heat 0.5 and 1) **byte for byte** on the JVM, the iOS simulator and wasm in the browser, and every instance number to 1e-9 | `GeneratorGoldenTest` on each target, `GeneratorExactnessTest`, 2026-11-14 |
+| Replacing the V8 `Math.hypot` by the JVM's, or shifting the field by 1e-6, changes no output string: those last-bit details fall below the 0.1 dp the paths are written in. Replacing JS rounding by `kotlin.math.round` changes 162 of the 243 paths | mutants against `GeneratorExactnessTest`, 2026-11-14 |
+
 **Consequence 4.** The port keeps `FloatArray` for the field, rounds half up by
 `floor(v · 10 + 0.5) / 10` where it must reproduce a string, and keeps every stream and the order of
 its calls. Exactness to four decimals is expected for hash, rng, noise and instances; paths are held
@@ -186,6 +189,11 @@ points at one function. Short names get full ones (`g` → instance, `el` → sl
 output is path nodes, not SVG strings; the test serialises them the way `pathBuf` does to compare.
 The field stays `FloatArray`; rounding where a string is reproduced is half up (§1.4). The
 per-instance caches and the march buffer belong to the instance's drawing state, not to a global.
+
+The goldens are Kotlin sources in `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/goldens/`,
+one per instance, written by `scripts/gen-goldens.mjs` from the vendored generator and checked by
+`make check` with `--check`; they carry `@file:Suppress("ktlint")`, because every byte of them is held
+to the generator instead, and a formatter that rewraps them would make that check fail on no change.
 
 ### D4. Where the golden and the engine disagree, the engine wins
 
@@ -286,7 +294,7 @@ wait for review of what is designed here.
 
 | # | Risk or hypothesis | Mitigation, and the item that settles it |
 |---|---|---|
-| H1 | **The port does not match on every target.** `sin` in the lattice hash, `exp`/`pow` in the drips, `Float32` storage (§1.4). | Goldens tested on JVM, Native and wasm; exact where the handoff asks for exact, ±0.1 dp on paths; a mutant in each of hash, rng, noise, smin and the march must be caught ([B-03](../backlog/B-03-generator-port.md)). |
+| H1 | **The port does not match on every target.** `sin` in the lattice hash, `exp`/`pow` in the drips, `Float32` storage (§1.4). | *Closed by B-03:* every golden path is byte-identical on the JVM, the iOS simulator and wasm (§1.4); the common test still allows the handoff's 0.1 dp, and a JVM-only test holds exactness. |
 | H2 | **The fonts lack a script or a weight** (§1.6). | *Closed by B-02:* both carry Cyrillic and Latin; four static instances are bundled. |
 | H3 | **The field is too slow on a phone** (D13). | Measured with a control that proves the harness can see a known cost; then the brief's retreat order and the handoff's two outs, a coarser grid or a shader field ([B-06](../backlog/B-06-frame-cost.md)). |
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | The handoff allows the geometric fallback on older Android; whether a common-code blur plus colour-matrix layer reproduces `a' = 18·a − 8.2` is checked against the venom references ([B-12](../backlog/B-12-transitions.md)). |
