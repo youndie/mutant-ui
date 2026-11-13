@@ -72,13 +72,14 @@ DOCS_BOOTSTRAP_SHIM := 2
 DOCS_BOOTSTRAP_GOALS := check gate report fix
 
 .DEFAULT_GOAL := help
-.PHONY: help check gate report fix
+.PHONY: help check gate report fix fonts
 
 help:
 	@echo "make check   - the gate and the reports: exactly what CI runs"
 	@echo "make gate    - the blocking half alone"
 	@echo "make report  - non-blocking: BDD coverage, code anchors"
 	@echo "make fix     - regenerate the backlog index, fill in missing coverage-map lines"
+	@echo "make fonts   - re-fetch Handjet and Rubik and cut their static instances (needs .venv with fonttools)"
 
 check: gate report
 
@@ -92,6 +93,13 @@ gate: docs-gate
 report: docs-report
 
 fix: docs-fix
+
+# B-02: fetch the two families from google/fonts at the pinned commit, check them against
+# scripts/fonts.lock and cut the static instances into mutant-core's resources. Not in the gate: it
+# needs the network and fontTools; the gate holds the files through the font tests in `./gradlew check`.
+FONTS_PY ?= .venv/bin/python
+fonts:
+	$(FONTS_PY) scripts/fonts.py
 
 # -- where the checks come from. Nothing below is meant to be edited. ------------------------------
 

@@ -129,11 +129,15 @@ accessibility item measures it on the rendered kit and puts the choice to the ow
 |---|---|
 | Two families: Handjet (OFL) for display and on-screen text, sizes 14–28, letter-spacing 1 for `osd`; Rubik (OFL) for text, 11–16 sp, weights 400 and 500 | `mutant-tokens.json` (`mutant.type`) |
 | The pages ask Google Fonts for Handjet 400 and 600 and Rubik 400, 500 and 700 | the `<helmet>` of each page |
-| *Hypothesis H2:* both are variable files on Google Fonts with Cyrillic. The handoff says "оба с кириллицей"; nobody here has read a cmap | handoff README, «Ресурсы»; settled by [B-02](../backlog/B-02-fonts.md) |
+| ~~*Hypothesis H2:* both are variable files on Google Fonts with Cyrillic~~ *Settled by [B-02](../backlog/B-02-fonts.md):* both carry the whole Russian and Latin alphabets. Handjet is variable on `wght` 100–900 (default 400), `ELGR` 1–2 (default 1) and `ELSH` 0–16 (default 2), 1339 code points; Rubik on `wght` 300–900 **with 300 as its default**, 885 code points | `google/fonts@2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc!/ofl/handjet/Handjet[ELGR,ELSH,wght].ttf`, `google/fonts@2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc!/ofl/rubik/Rubik[wght].ttf` (`fvar`, `cmap`), read by `scripts/fonts.py --report` |
+| Of the 167 code points the ten pages render, every instance lacks only ▶ ❚ (the pages' own pause button) and ◄ ► (the DatePicker's month arrows) | `MutantFontCoverageTest` |
+| Handjet's advances are whole multiples of a 480-unit module (8160 units per em = 17 modules) and identical at 400 and 600; Rubik widens with weight (`Н` 714 at 400, 729 at 500) | `MutantFontMetricsTest` |
+| The pages set Handjet at 500 in four places but load only 400 and 600 from Google, so Chrome draws those at 400 | the `<helmet>` of each page; a count of `font-weight` per family over the pages |
 
 **Consequence 6.** At `minSdk 24` a variable font's `wght` axis is ignored and its default instance
-draws, so the bundled files are static instances cut from the variable ones, as plakat-ui did with
-Golos Text (D9).
+draws — for Rubik that is 300, so every label would turn Light on old phones. The bundled files are
+static instances cut from the variable ones, as plakat-ui did with Golos Text (D9). A component that
+asks Handjet for 500 gets 400, in Chrome and in Compose alike, so the references stay comparable.
 
 ### 1.7 What the design draws, and what it does not
 
@@ -223,9 +227,13 @@ the frame goldens ([B-08](../backlog/B-08-token-generator.md)).
 
 ### D9. Fonts: Handjet and Rubik as static instances
 
-Cut from the variable files at the weights the tokens and pages use, each licence shipped beside
-them; a coverage test holds every family to every string the fixtures draw
-([B-02](../backlog/B-02-fonts.md)).
+Cut from the variable files at the weights the tokens and pages use — Handjet 400 and 600 with
+`ELGR` 1 and `ELSH` 2, Rubik 400 and 500 — by `scripts/fonts.py`, which pins the upstream files by
+SHA-256 in `scripts/fonts.lock`; each OFL text ships beside them. A coverage test holds every
+instance to every character the pages render ([B-02](../backlog/B-02-fonts.md)). Rubik 700, which the
+pages load, is used by no element and is not bundled. The four files are 870 KB together, Handjet's
+two being 222 KB each for 1339 code points; subsetting is allowed by the OFL but not done until a
+consumer asks.
 
 ### D10. The Tape is one layer over the screen, not a layer per component
 
@@ -279,7 +287,7 @@ wait for review of what is designed here.
 | # | Risk or hypothesis | Mitigation, and the item that settles it |
 |---|---|---|
 | H1 | **The port does not match on every target.** `sin` in the lattice hash, `exp`/`pow` in the drips, `Float32` storage (§1.4). | Goldens tested on JVM, Native and wasm; exact where the handoff asks for exact, ±0.1 dp on paths; a mutant in each of hash, rng, noise, smin and the march must be caught ([B-03](../backlog/B-03-generator-port.md)). |
-| H2 | **The fonts lack a script or a weight** (§1.6). | Read the cmap of the delivered files before choosing instances ([B-02](../backlog/B-02-fonts.md)). |
+| H2 | **The fonts lack a script or a weight** (§1.6). | *Closed by B-02:* both carry Cyrillic and Latin; four static instances are bundled. |
 | H3 | **The field is too slow on a phone** (D13). | Measured with a control that proves the harness can see a known cost; then the brief's retreat order and the handoff's two outs, a coarser grid or a shader field ([B-06](../backlog/B-06-frame-cost.md)). |
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | The handoff allows the geometric fallback on older Android; whether a common-code blur plus colour-matrix layer reproduces `a' = 18·a − 8.2` is checked against the venom references ([B-12](../backlog/B-12-transitions.md)). |
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | [B-05](../backlog/B-05-pixel-references-and-floor.md) renders each page twice and compares the two. |
