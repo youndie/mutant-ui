@@ -1,7 +1,7 @@
 ---
 id: B-04
 title: "Transition geometry: venom, pour and error blocks ported and held to goldens"
-status: open
+status: wip
 priority: P0
 size: M
 stage: stage-0-risks

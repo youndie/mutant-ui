@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-04](docs/backlog/B-04-transition-geometry.md) `[ ]` | Transition geometry: venom, pour and error blocks ported and held to goldens | P0 | M | B-03 |
+| [B-04](docs/backlog/B-04-transition-geometry.md) `[~]` | Transition geometry: venom, pour and error blocks ported and held to goldens | P0 | M | B-03 |
 | [B-05](docs/backlog/B-05-pixel-references-and-floor.md) `[ ]` | Pixel references rendered here from the pages at a fixed engine time, and the parity floor | P0 | M | B-01, B-02 |
 | [B-06](docs/backlog/B-06-frame-cost.md) `[ ]` | The cost of the field: genItem and one frame on the desktop JVM, then a body on a Pixel 6a | P0 | M | B-03 |
 | [B-10](docs/backlog/B-10-mutant-surface.md) `[ ]` | MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds | P0 | L | B-03, B-05, B-07, B-08 |
