@@ -518,7 +518,7 @@ internal class MutantGenerator(
                     c[i][1] + oy +
                         boil * .4 * valueNoise(i * .3 + m.noiseSeed + 40 + bk * 5.9, 1.7)
                 }
-            taper(builder, xs, ys, widths)
+            taperInto(builder, xs, ys, widths)
         }
         return builder.build()
     }
@@ -589,33 +589,6 @@ internal class MutantGenerator(
         }
         return FlowLineShape(c, n shr 1)
     }
-
-    /** `taper`: an ink stroke of varying width along the axis, as one closed smoothed loop. */
-    private fun taper(
-        builder: GenPathBuilder,
-        xs: DoubleArray,
-        ys: DoubleArray,
-        widths: DoubleArray,
-    ) {
-        val n = xs.size
-        val lx = DoubleArray(2 * n)
-        val ly = DoubleArray(2 * n)
-        for (i in 0 until n) {
-            val a = max(0, i - 1)
-            val b = min(n - 1, i + 1)
-            val dx = xs[b] - xs[a]
-            val dy = ys[b] - ys[a]
-            val l = jsHypot(dx, dy).let { if (it == 0.0 || it.isNaN()) 1.0 else it }
-            val nx = -dy / l
-            val ny = dx / l
-            val hw = widths[i] / 2
-            lx[i] = xs[i] + nx * hw
-            ly[i] = ys[i] + ny * hw
-            lx[2 * n - 1 - i] = xs[i] - nx * hw
-            ly[2 * n - 1 - i] = ys[i] - ny * hw
-        }
-        builder.addLoop(lx, ly, 2 * n, 0.0)
-    }
 }
 
 /** A drip at one moment (`dyn`'s `tip` and `drop`). */
@@ -632,3 +605,30 @@ internal class FlowLineShape(
     val points: List<DoubleArray>,
     val bend: Int,
 )
+
+/** `taper`: an ink stroke of varying width along the axis, as one closed smoothed loop. */
+internal fun taperInto(
+    builder: GenPathBuilder,
+    xs: DoubleArray,
+    ys: DoubleArray,
+    widths: DoubleArray,
+) {
+    val n = xs.size
+    val lx = DoubleArray(2 * n)
+    val ly = DoubleArray(2 * n)
+    for (i in 0 until n) {
+        val a = max(0, i - 1)
+        val b = min(n - 1, i + 1)
+        val dx = xs[b] - xs[a]
+        val dy = ys[b] - ys[a]
+        val l = jsHypot(dx, dy).let { if (it == 0.0 || it.isNaN()) 1.0 else it }
+        val nx = -dy / l
+        val ny = dx / l
+        val hw = widths[i] / 2
+        lx[i] = xs[i] + nx * hw
+        ly[i] = ys[i] + ny * hw
+        lx[2 * n - 1 - i] = xs[i] - nx * hw
+        ly[2 * n - 1 - i] = ys[i] - ny * hw
+    }
+    builder.addLoop(lx, ly, 2 * n, 0.0)
+}
