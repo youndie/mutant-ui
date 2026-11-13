@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-02](docs/backlog/B-02-fonts.md) `[ ]` | Fonts: Handjet and Rubik as static OFL instances, coverage and metrics pinned | P0 | S | B-01 |
+| [B-02](docs/backlog/B-02-fonts.md) `[~]` | Fonts: Handjet and Rubik as static OFL instances, coverage and metrics pinned | P0 | S | B-01 |
 | [B-03](docs/backlog/B-03-generator-port.md) `[ ]` | Generator: a 1:1 common-code port of the resting frame, held to Node goldens on every target | P0 | L | B-01 |
 | [B-04](docs/backlog/B-04-transition-geometry.md) `[ ]` | Transition geometry: venom, pour and error blocks ported and held to goldens | P0 | M | B-03 |
 | [B-05](docs/backlog/B-05-pixel-references-and-floor.md) `[ ]` | Pixel references rendered here from the pages at a fixed engine time, and the parity floor | P0 | M | B-01, B-02 |

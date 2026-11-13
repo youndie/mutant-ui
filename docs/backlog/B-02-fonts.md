@@ -1,7 +1,7 @@
 ---
 id: B-02
 title: "Fonts: Handjet and Rubik as static OFL instances, coverage and metrics pinned"
-status: open
+status: wip
 priority: P0
 size: S
 stage: stage-0-risks
