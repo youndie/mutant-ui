@@ -1,7 +1,7 @@
 ---
 id: B-05
 title: "Pixel references rendered here from the pages at a fixed engine time, and the parity floor"
-status: open
+status: wip
 priority: P0
 size: M
 stage: stage-0-risks
