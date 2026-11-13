@@ -1,7 +1,7 @@
 ---
 id: B-04
 title: "Transition geometry: venom, pour and error blocks ported and held to goldens"
-status: open
+status: done
 priority: P0
 size: M
 stage: stage-0-risks
@@ -18,3 +18,11 @@ Three functions draw outside the resting frame: `venomShapes` (the selection's t
 
 - AC: goldens regenerate byte-identically; the port matches them on all targets within ±0.1 dp; the nine vendored venom entries pass; a mutant in the venom's phase boundaries (0.25, 0.2–0.8, 0.96) is caught.
 - Anchors: `reference/design-system/mutant-generator.js`, `reference/design-system/mutant-golden.json`, `reference/design-system/mutant-ui Анимационные спеки.dc.html`
+
+## Result (2026-11-14)
+
+- `Transitions.kt`: `errorBlocks` (`errBlocks`), `pourFront` (`pourPath`), `venomShapes` with `VenomFrom`, `VenomPart` (stroke, circle, rounded rect) and `VenomShapes`; `taper` moved to a top-level `taperInto` shared with the flow lines. All `internal`; the ABI dump is unchanged.
+- `scripts/gen-goldens.mjs` adds `GoldenTransitions.kt`: the three venom cases of the designer's golden (menu, segmented, drawer) at p = 0…1 in 1/24 steps, 432 shapes in all; the pour of chip, box, track, button and card at p = 0…1 in 1/8 steps; the error blocks of five instances. The JS's SVG is parsed into numbers: it prints venom with `toFixed(1)` and the pour's bottom and left unrounded.
+- `TransitionGoldenTest` (3) passes on the JVM, the iOS simulator and wasm; `GeneratorExactnessTest` holds every venom shape and pour front exactly on the JVM.
+- Mutants, each fails `TransitionGoldenTest` by name: the fat tentacle's let-go `.96` → `.95`, its catch `.2` → `.21`, the flow's `smoothstep(.15, .8)` → `.81`, `full` at `.8` → `.79`, the pour's `2.4` → `2.5`, the error colour's `.75` → `.65`. The error colour's `.45` → `.46` survives: none of the 70 draws falls in that interval, equivalent on these inputs.
+- Not covered: the blur and alpha threshold that soften the venom's fat joins, and drawing any of it ([B-12](B-12-transitions.md)).

@@ -25,7 +25,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 |---|---|
 | `mutant-core/build.gradle.kts` | targets, dependencies, ABI validation, the test inputs, the iOS metadata exception |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/` | the library's root package |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/` | the generator, Compose-free: `Instances.kt` (instance, drips, flow lines, mosaic, dead pixels), `Field.kt` (field, marching squares, outline), `Frame.kt` (a frame as the engine draws it) ([B-03](../backlog/B-03-generator-port.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/` | the generator, Compose-free: `Instances.kt` (instance, drips, flow lines, mosaic, dead pixels), `Field.kt` (field, marching squares, outline), `Frame.kt` (a frame as the engine draws it) ([B-03](../backlog/B-03-generator-port.md)), `Transitions.kt` (venom, pour, error blocks, [B-04](../backlog/B-04-transition-geometry.md)) |
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/goldens/` | the generator's goldens, written by `scripts/gen-goldens.mjs` |
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/GeneratorGoldenTest.kt` | the port held to the goldens on every target |
 | `mutant-core/api/` | the committed public API dump |
@@ -58,7 +58,12 @@ or any Material artefact; and its generator package does not depend on Compose.
 - The fonts are static instances on purpose: Rubik's variable default is 300, and a `wght`
   setting needs Android API 26. `./gradlew :mutant-core:bundleAndroidMainAar` carries all four
   files and both licences in its compose-resources assets.
-- The generator's goldens are 1.5 MB of generated Kotlin with `@file:Suppress("ktlint")`; `make check`
+- A generated golden file keeps each case in its own function: one static initialiser holding them all
+  exceeded the JVM's 64 KB method limit (`MethodTooLargeException`).
+- Classes nested in an `internal` sealed type must be `internal` themselves (so a sealed class, not an
+  interface): declared public, the Compose compiler gives them public stability properties and the
+  ABI dump changes.
+- The generator's goldens are 1.9 MB of generated Kotlin with `@file:Suppress("ktlint")`; `make check`
   runs `scripts/gen-goldens.mjs --check` on them. Regenerate with `node scripts/gen-goldens.mjs`, never by hand.
 - The browser tests run under Mocha and Karma limits raised to 30 s and 60 s
   (`mutant-core/karma.config.d/mocha-timeout.js`): Mocha's 2 s turned plakat-ui's `main` red on a

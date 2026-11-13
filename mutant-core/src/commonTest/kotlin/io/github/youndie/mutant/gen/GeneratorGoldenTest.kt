@@ -5,12 +5,9 @@ import io.github.youndie.mutant.gen.goldens.genGoldens
 import io.github.youndie.mutant.gen.goldens.goldenHashes
 import io.github.youndie.mutant.gen.goldens.goldenNoise
 import io.github.youndie.mutant.gen.goldens.goldenStreams
-import kotlin.math.abs
-import kotlin.math.max
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 /**
  * B-03: the port draws what `mutant-generator.js` draws, on every target. The goldens are emitted by the
@@ -31,7 +28,7 @@ class GeneratorGoldenTest {
         for ((seed, stream, want) in goldenStreams) {
             val r = Mulberry32(seed, stream)
             val got = DoubleArray(want.size) { r.next() }
-            assertNumbers(want, got, "$seed | $stream")
+            GoldenAssert.numbers(want, got, "$seed | $stream")
         }
     }
 
@@ -40,8 +37,8 @@ class GeneratorGoldenTest {
         for (i in goldenNoise.indices step 4) {
             val x = goldenNoise[i]
             val y = goldenNoise[i + 1]
-            assertNear(goldenNoise[i + 2], latticeHash(x, y), "h21($x, $y)")
-            assertNear(goldenNoise[i + 3], valueNoise(x, y), "vn($x, $y)")
+            GoldenAssert.near(goldenNoise[i + 2], latticeHash(x, y), "h21($x, $y)")
+            GoldenAssert.near(goldenNoise[i + 3], valueNoise(x, y), "vn($x, $y)")
         }
     }
 
@@ -63,10 +60,14 @@ class GeneratorGoldenTest {
                 val at = "${golden.name} @${f.t} heat ${f.heat}"
                 val frame = gen.frame(g, cache, f.t, f.heat)
                 assertEquals(f.boilPhase, frame.boilPhase, "$at boil phase")
-                assertNear(f.boil, frame.boil, "$at boil")
-                assertNumbers(f.primitives, frame.primitives.flatMap { it.toList() }.toDoubleArray(), "$at primitives")
+                GoldenAssert.near(f.boil, frame.boil, "$at boil")
+                GoldenAssert.numbers(
+                    f.primitives,
+                    frame.primitives.flatMap { it.toList() }.toDoubleArray(),
+                    "$at primitives",
+                )
                 val fd = frame.field
-                assertNumbers(
+                GoldenAssert.numbers(
                     f.grid,
                     doubleArrayOf(fd.nx.toDouble(), fd.ny.toDouble(), fd.x0, fd.y0, fd.step),
                     "$at grid",
@@ -77,7 +78,7 @@ class GeneratorGoldenTest {
                     Triple("flow lines", f.flowLines, frame.flowLines.toSvg()),
                 )) {
                     total++
-                    if (want == got) exact++ else assertPath(want, got, "$at $what")
+                    if (want == got) exact++ else GoldenAssert.path(want, got, "$at $what")
                 }
             }
         }
@@ -109,7 +110,7 @@ class GeneratorGoldenTest {
                 ),
                 "btn/01",
             )
-        assertNumbers(
+        GoldenAssert.numbers(
             doubleArrayOf(2.48, 27.7573, 2.4557, 5.9511, 0.0007),
             g.wave.map { round4(it) }.toDoubleArray(),
             "wave",
@@ -145,10 +146,10 @@ class GeneratorGoldenTest {
     private fun checkInstance(golden: GoldenInstance) {
         val at = golden.name
         val g = instanceOf(golden)
-        assertNear(golden.k, g.k, "$at k")
-        assertNear(golden.bottomRadius, g.bottomRadius, "$at rb")
-        assertNumbers(golden.wave, g.wave, "$at wave")
-        assertNumbers(golden.shape, g.shape, "$at shape")
+        GoldenAssert.near(golden.k, g.k, "$at k")
+        GoldenAssert.near(golden.bottomRadius, g.bottomRadius, "$at rb")
+        GoldenAssert.numbers(golden.wave, g.wave, "$at wave")
+        GoldenAssert.numbers(golden.shape, g.shape, "$at shape")
         val drips =
             g.drips.flatMap {
                 listOf(
@@ -162,7 +163,7 @@ class GeneratorGoldenTest {
                     if (it.drips) 1.0 else 0.0,
                 )
             }
-        assertNumbers(golden.drips, drips.toDoubleArray(), "$at drips")
+        GoldenAssert.numbers(golden.drips, drips.toDoubleArray(), "$at drips")
         val lines =
             g.flowLines.flatMap {
                 listOf(
@@ -183,15 +184,19 @@ class GeneratorGoldenTest {
                     it.noiseSeed,
                 )
             }
-        assertNumbers(golden.flowLines, lines.toDoubleArray(), "$at flow lines")
-        assertNumbers(golden.mosaic, g.mosaic.flatMap { listOf(it.x, it.y, it.size) }.toDoubleArray(), "$at mosaic")
+        GoldenAssert.numbers(golden.flowLines, lines.toDoubleArray(), "$at flow lines")
+        GoldenAssert.numbers(
+            golden.mosaic,
+            g.mosaic.flatMap { listOf(it.x, it.y, it.size) }.toDoubleArray(),
+            "$at mosaic",
+        )
         val tiles = g.mosaicTiles.flatMap { listOf(it.x, it.y, it.size, if (it.black) 1.0 else 0.0, it.opacity) }
-        assertNumbers(golden.mosaicTiles, tiles.toDoubleArray(), "$at mosaic tiles")
+        GoldenAssert.numbers(golden.mosaicTiles, tiles.toDoubleArray(), "$at mosaic tiles")
         assertEquals(golden.mosaicSide, g.mosaicSide?.ordinal ?: -1, "$at mosaic side")
-        assertNumbers(golden.deadZone, g.deadZone ?: doubleArrayOf(), "$at dead zone")
+        GoldenAssert.numbers(golden.deadZone, g.deadZone ?: doubleArrayOf(), "$at dead zone")
         if (g.slot.dead) {
             val dp = gen.deadPixels(g)
-            assertNumbers(
+            GoldenAssert.numbers(
                 golden.deadPixels,
                 dp.pixels.flatMap { listOf(it.x, it.y, it.size, it.color.ordinal.toDouble()) }.toDoubleArray(),
                 "$at dead pixels",
@@ -199,49 +204,7 @@ class GeneratorGoldenTest {
             // The JS prints the line's x's with toFixed(1).
             assertEquals(golden.deadLine[0], dp.lineX1, .05 + 1e-9, "$at dead line x1")
             assertEquals(golden.deadLine[1], dp.lineX2, .05 + 1e-9, "$at dead line x2")
-            assertNear(golden.deadLine[2], dp.lineY, "$at dead line y")
+            GoldenAssert.near(golden.deadLine[2], dp.lineY, "$at dead line y")
         }
     }
-
-    private fun assertNear(
-        want: Double,
-        got: Double,
-        what: String,
-    ) {
-        if (abs(want - got) > 1e-9 * max(1.0, abs(want))) fail("$what: expected $want, got $got")
-    }
-
-    private fun assertNumbers(
-        want: DoubleArray,
-        got: DoubleArray,
-        what: String,
-    ) {
-        assertEquals(want.size, got.size, "$what: count")
-        for (i in want.indices) assertNear(want[i], got[i], "$what[$i]")
-    }
-
-    /** The same commands in the same order, every coordinate within 0.1 dp. */
-    private fun assertPath(
-        want: String,
-        got: String,
-        what: String,
-    ) {
-        val a = tokens(want)
-        val b = tokens(got)
-        assertEquals(a.map { it.first }, b.map { it.first }, "$what: command structure")
-        for (i in a.indices) {
-            val d = abs(a[i].second - b[i].second)
-            if (d > .1 + 1e-9) fail("$what: token $i is ${b[i].second}, expected ${a[i].second}")
-        }
-    }
-
-    /** Commands as `'M'`/`'Q'`/`'Z'` with NaN, numbers as `'#'` with their value. */
-    private fun tokens(path: String): List<Pair<Char, Double>> =
-        Regex("""[MQZ]|-?\d+(?:\.\d+)?""")
-            .findAll(path)
-            .map {
-                val v = it.value
-                if (v[0] in "MQZ") v[0] to Double.NaN else '#' to v.toDouble()
-            }.toList()
-            .let { list -> list.map { (c, v) -> c to (if (v.isNaN()) 0.0 else v) } }
 }
