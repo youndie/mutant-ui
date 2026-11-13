@@ -1,7 +1,7 @@
 ---
 id: B-03
 title: "Generator: a 1:1 common-code port of the resting frame, held to Node goldens on every target"
-status: open
+status: wip
 priority: P0
 size: L
 stage: stage-0-risks
