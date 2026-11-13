@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&family=Yeseva+One&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf2:#2f3960;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section data-screen-label="Геном и токены" style="padding:56px clamp(20px,5vw,64px) 80px;display:flex;flex-direction:column;gap:32px;max-width:1320px;margin:0 auto;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:980px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · АРТЕФАКТ 3</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:clamp(40px,6vw,64px);line-height:1.05">Геном и токены</h1>
+    <p style="margin:0;font-size:16px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Цвет, типографика, сетка, гены с диапазонами, профили типов и движение. Числа сняты с движка: эта страница и файл <a href="mutant-tokens.json">mutant-tokens.json</a> строятся одной функцией, поэтому не расходятся с тем, что нарисовано в <a href="mutant-ui%20Компоненты.dc.html">Компонентах</a>. У каждого гена указано, как он реализован; часть генов брифа пока не реализована.</p>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:8px;flex-wrap:wrap">
+      <div onClick="{{ download }}" style="flex:none;white-space:nowrap;cursor:pointer;user-select:none;font-family:Handjet,monospace;font-size:24px;line-height:44px;padding:0 20px;background:#b6ff1a;color:#05060c;border-radius:6px;box-shadow:inset 0 0 0 2px #05060c" style-hover="background:#19e3ff">СКАЧАТЬ JSON</div>
+      <span style="font-size:14px;color:var(--mu-text2)">Имена токенов — <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd)">mutant/раздел/…</span></span>
+    </div>
+  </header>
+
+  <div data-screen-label="Цвет" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px;display:flex;flex-direction:column;gap:20px">
+    <span style="font-family:var(--mu-head);font-size:28px">Цвет</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:28px 40px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd);letter-spacing:1px">MUTANT/COLOR/EFIR · «ЭФИР»</span>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 16px">
+          <sc-for list="{{ efir }}" as="c" hint-placeholder-count="12"><div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="flex:none;width:36px;height:36px;border-radius:6px;box-shadow:0 0 0 2px #05060c, 0 0 0 3px #2f3960;background:{{ c.value }}"></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:13px;font-weight:500">{{ c.short }}</span><span style="font-family:Handjet,monospace;font-size:16px;color:var(--mu-text2)">{{ c.value }}</span></div></div></sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd);letter-spacing:1px">MUTANT/COLOR/KOPIYA · «КОПИЯ»</span>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 16px">
+          <sc-for list="{{ kopiya }}" as="c" hint-placeholder-count="12"><div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="flex:none;width:36px;height:36px;border-radius:6px;box-shadow:0 0 0 2px #05060c, 0 0 0 3px #2f3960;background:{{ c.value }}"></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:13px;font-weight:500">{{ c.short }}</span><span style="font-family:Handjet,monospace;font-size:16px;color:var(--mu-text2)">{{ c.value }}</span></div></div></sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-screen-label="Контраст" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Контраст</span><span style="font-size:13px;color:var(--mu-text2)">WCAG; слева чистые цвета, справа — под Лентой на худшем тике; порог для текста 4.5:1</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 64px 84px 64px 84px;gap:12px;padding:8px 0;font-family:Handjet,monospace;font-size:16px;line-height:1.1;align-items:end;color:var(--mu-osd);border-bottom:1px solid var(--mu-surf2)"><span>ПАРА</span><span>ЭФИР</span><span>ПОД ЛЕНТОЙ</span><span>КОПИЯ</span><span>ПОД ЛЕНТОЙ</span></div>
+    <sc-for list="{{ contrast }}" as="r" hint-placeholder-count="8"><div style="display:grid;grid-template-columns:minmax(0,1fr) 64px 84px 64px 84px;gap:12px;padding:7px 0;font-size:14px;border-bottom:1px solid var(--mu-surf2)"><span>{{ r.pair }}</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-text2)">{{ r.efir }}</span><span style="font-family:Handjet,monospace;font-size:20px">{{ r.efirT }}</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-text2)">{{ r.kopiya }}</span><span style="font-family:Handjet,monospace;font-size:20px">{{ r.kopiyaT }}</span></div></sc-for>
+    <p style="margin:6px 0 0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty">«Под Лентой» — расчёт для худшего тика: на текст и фон под ним легли строка развёртки и полоса трекинга. Это модель наложений, а не замер по пикселям. Зерно в расчёт не входит: это точки в 1 dp меньше чем на 1 % площади. Штрих шума головки: {{ noiseEfir }} в «Эфире», {{ noiseKopiya }} в «Копии».</p>
+  </div>
+
+  <div data-screen-label="Вспышки" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Вспышки</span><span style="font-size:13px;color:var(--mu-text2)">{{ flashRule }}</span></div>
+    <sc-for list="{{ flash }}" as="r" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:16px;padding:7px 0;font-size:14px;line-height:1.4;border-bottom:1px solid var(--mu-surf2)"><span style="font-family:Handjet,monospace;font-size:19px;color:var(--mu-acc);overflow-wrap:anywhere">{{ r.name }}</span><span>{{ r.value }}</span></div></sc-for>
+  </div>
+
+  <div data-screen-label="Типографика" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Типографика</span><span style="font-size:13px;color:var(--mu-text2)">два семейства, оба под OFL, с кириллицей</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px 32px">
+      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd)">MUTANT/TYPE/DISPLAY</span><span style="font-family:Handjet,monospace;font-size:28px;line-height:1.15">Стереть запись?</span><span style="font-size:13px;color:var(--mu-text2)">Handjet 400 · заголовки экранов и диалогов · 22 / 24 / 26 / 28</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd)">MUTANT/TYPE/TEXT</span><span style="font-size:16px;font-weight:500;line-height:1.3">Эфир, ночь на вторник</span><span style="font-size:13px;color:var(--mu-text2)">Rubik 400 и 500 · текст и подписи · 11 / 13 / 14 / 15 / 16</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd)">MUTANT/TYPE/OSD</span><span style="font-family:Handjet,monospace;font-size:20px;letter-spacing:1px;line-height:1.3">CH 03 · SP · 0:42:17</span><span style="font-size:13px;color:var(--mu-text2)">Handjet · экранные надписи, счётчики, бейджи · 14 / 16 / 18 / 20</span></div>
+    </div>
+  </div>
+
+  <div data-screen-label="Сетка" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Сетка и пределы</span><span style="font-size:13px;color:var(--mu-text2)">значения в dp</span></div>
+    <sc-for list="{{ grid }}" as="r" hint-placeholder-count="6"><div style="display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px;padding:7px 0;font-size:14px;border-bottom:1px solid var(--mu-surf2)"><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-acc);overflow-wrap:anywhere">{{ r.name }}</span><span>{{ r.value }}</span></div></sc-for>
+  </div>
+
+  <div data-screen-label="Геном" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Геном</span><span style="font-size:13px;color:var(--mu-text2)">12 генов брифа и один добавленный (boil); диапазон и значение по умолчанию — как в движке</span></div>
+    <div style="overflow-x:auto"><div style="min-width:560px;display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:96px 84px 104px 48px minmax(0,1fr);gap:12px;padding:8px 0;font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd);border-bottom:1px solid var(--mu-surf2)"><span>ГЕН</span><span>УРОВЕНЬ</span><span>ДИАПАЗОН</span><span>ПО УМ.</span><span>СТАТУС · КАК РЕАЛИЗОВАН</span></div>
+      <sc-for list="{{ genome }}" as="g" hint-placeholder-count="8"><div style="display:grid;grid-template-columns:96px 84px 104px 48px minmax(0,1fr);gap:12px;padding:8px 0;font-size:14px;line-height:1.4;border-bottom:1px solid var(--mu-surf2)"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-acc)">{{ g.name }}</span><span style="color:var(--mu-text2)">{{ g.level }}</span><span style="font-family:Handjet,monospace;font-size:18px">{{ g.range }}</span><span style="font-family:Handjet,monospace;font-size:18px">{{ g.def }}</span><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-weight:500">{{ g.status }}</span><span style="color:var(--mu-text2)">{{ g.engine }}</span></div></div></sc-for>
+    </div></div>
+  </div>
+
+  <div data-screen-label="Профили типов" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Профили типов</span><span style="font-size:13px;color:var(--mu-text2)">mutant/profile/… — задаются таблицей, а не seed; доля капель 1 значит, что капают все подтёки</span></div>
+    <div style="overflow-x:auto"><div style="min-width:560px;display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:56px repeat(8,minmax(0,1fr));gap:8px;padding:8px 0;font-family:Handjet,monospace;font-size:16px;line-height:1.1;align-items:end;color:var(--mu-osd);border-bottom:1px solid var(--mu-surf2)"><span>ТИП</span><span>РАДИУС</span><span>СВЕС</span><span>ДОЛЯ КАПЕЛЬ</span><span>ЗАЛИВКА</span><span>КОНТУР</span><span>ЛИНИИ</span><span>МОЗАИКА</span><span>ОПЛЫВ</span></div>
+      <sc-for list="{{ profile }}" as="p" hint-placeholder-count="8"><div style="display:grid;grid-template-columns:56px repeat(8,minmax(0,1fr));gap:8px;padding:7px 0;font-family:Handjet,monospace;font-size:19px;border-bottom:1px solid var(--mu-surf2)"><span style="color:var(--mu-acc)">{{ p.type }}</span><span>{{ p.radius }}</span><span>{{ p.overhang }}</span><span>{{ p.drip }}</span><span>{{ p.fill }}</span><span>{{ p.outline }}</span><span>{{ p.marks }}</span><span>{{ p.mosaic }}</span><span>{{ p.wobble }}</span></div></sc-for>
+    </div></div>
+  </div>
+
+  <div data-screen-label="Компоненты" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Компоненты</span><span style="font-size:13px;color:var(--mu-text2)">mutant/component/… — из каких тел собран каждый и чем отличается от профиля типа</span></div>
+    <div style="overflow-x:auto"><div style="min-width:860px;display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:170px 60px 150px minmax(0,1.5fr) minmax(0,1fr);gap:16px;padding:8px 0;font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd);border-bottom:1px solid var(--mu-surf2)"><span>КОМПОНЕНТ</span><span>ЭТАП</span><span>ТЕЛА</span><span>ОТЛИЧИЯ ОТ ПРОФИЛЯ</span><span>СОСТОЯНИЯ</span></div>
+      <sc-for list="{{ components }}" as="c" hint-placeholder-count="12"><div style="display:grid;grid-template-columns:170px 60px 150px minmax(0,1.5fr) minmax(0,1fr);gap:16px;padding:7px 0;font-size:14px;line-height:1.4;border-bottom:1px solid var(--mu-surf2)"><span style="font-family:Handjet,monospace;font-size:19px;color:var(--mu-acc)">{{ c.name }}</span><span style="font-family:Handjet,monospace;font-size:18px">{{ c.tier }}</span><span style="font-family:Handjet,monospace;font-size:18px">{{ c.body }}</span><span>{{ c.variants }}</span><span style="color:var(--mu-text2)">{{ c.states }}</span></div></sc-for>
+    </div></div>
+  </div>
+
+  <div data-screen-label="Движение" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 20px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mu-head);font-size:28px">Движение</span><span style="font-size:13px;color:var(--mu-text2)">имена событий и длительности, как в движке; отличия от брифа отмечены</span></div>
+    <sc-for list="{{ motion }}" as="m" hint-placeholder-count="8"><div style="display:grid;grid-template-columns:minmax(0,260px) minmax(0,220px) minmax(0,1fr);gap:16px;padding:7px 0;font-size:14px;line-height:1.4;border-bottom:1px solid var(--mu-surf2)"><span style="font-family:Handjet,monospace;font-size:19px;color:var(--mu-acc);overflow-wrap:anywhere">{{ m.name }}</span><span style="font-family:Handjet,monospace;font-size:19px">{{ m.value }}</span><span style="color:var(--mu-text2)">{{ m.note }}</span></div></sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentWillUnmount() { clearInterval(this.poll); }
+  renderVals() {
+    const ME = window.MutantEngine;
+    if (!ME || !ME.tokens) {
+      if (!this.poll) this.poll = setInterval(() => { if (window.MutantEngine && window.MutantEngine.tokens) { clearInterval(this.poll); this.forceUpdate(); } }, 80);
+      return { noiseEfir: '…', noiseKopiya: '…', flashRule: '', efir: [], kopiya: [], contrast: [], flash: [], grid: [], genome: [], profile: [], components: [], motion: [], download: () => {} };
+    }
+    const all = ME.tokens(), t = all.mutant, yn = v => v ? 'да' : 'нет';
+    const cols = th => Object.entries(t.color[th]).map(([k, v]) => ({ short: k, value: v }));
+    const flat = v => Array.isArray(v) ? v.join(' / ') : v && typeof v === 'object' ? Object.entries(v).map(([a, b]) => a + ' ' + b).join(' · ') : String(v);
+    const dur = m => { let s = m.ms === undefined ? '' : m.ms === null ? '—' : Array.isArray(m.ms) ? m.ms.join('–') + ' мс' : m.ms + ' мс'; if (m.gravity) s = m.gravity + ' ' + m.unit; if (m.recover) s += ' + ' + m.recover + ' мс'; if (m.every) s += ' · раз в ' + m.every + ' мс'; return s; };
+    return {
+      efir: cols('efir'), kopiya: cols('kopiya'),
+      contrast: Object.keys(t.contrast.efir).map(k => ({ pair: k, efir: t.contrast.efir[k] + ':1', kopiya: t.contrast.kopiya[k] + ':1', efirT: t['contrast-after-tape'].efir[k] + ':1', kopiyaT: t['contrast-after-tape'].kopiya[k] + ':1' })),
+      noiseEfir: t.tape.efir['noise-row'], noiseKopiya: t.tape.kopiya['noise-row'], flashRule: t.flash.rule,
+      flash: Object.entries(t.flash).filter(([k]) => k !== 'rule').map(([k, v]) => ({ name: k, value: typeof v === 'string' ? v : Object.entries(v).map(([a, b]) => (a === 'flashes-per-second' ? 'вспышек в секунду: ' : a === 'luminance-delta' ? 'перепад яркости: ' : a === 'changes-per-second' ? 'смен в секунду: ' : a === 'area' ? 'площадь: ' : '') + b).join(' · ') })),
+      grid: Object.entries(t.grid).map(([k, v]) => ({ name: 'mutant/grid/' + k, value: flat(v) })),
+      genome: Object.entries(t.genome).map(([k, g]) => ({ name: k, level: g.level, range: g.range.join(' … ') + (g.unit ? ' ' + g.unit : ''), def: g.default === null ? '—' : String(g.default), engine: g.engine, status: g.status })),
+      profile: Object.entries(t.profile).map(([k, p]) => ({ type: k, radius: String(p.radius), overhang: String(p.overhang), drip: String(p['drip-share']), fill: p.fill, outline: String(p.outline), marks: yn(p.marks), mosaic: yn(p.mosaic), wobble: String(p.wobble) })),
+      components: Object.entries(t.component || {}).map(([name, c]) => ({ name, tier: c.tier, body: c.body.join(' + ') || '—', variants: c.variants, states: c.states })),
+      motion: Object.entries(t.motion).map(([k, m]) => ({ name: 'mutant/motion/' + k, value: dur(m), note: [m.event, m.curve, m.note].filter(Boolean).join(' · ') })),
+      download: () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' })); a.download = 'mutant-tokens.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+    };
+  }
+}
+</script>
+</body>
+</html>

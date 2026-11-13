@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Компоненты позже" style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:32px;width:1640px;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:980px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · КОМПОНЕНТЫ «ПОЗЖЕ» · ТЕМЫ «ЭФИР» И «КОПИЯ»</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:64px;line-height:1.05">Компоненты «позже»</h1>
+    <p style="margin:0;font-size:16px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Четыре компонента третьей очереди на том же движке, что <a href="mutant-ui%20Компоненты.dc.html">MVP</a> и <a href="mutant-ui%20Компоненты%20v1.dc.html">v1</a>: Search bar, Date / Time picker, Data table и Carousel. Это статичные образцы: живые только слизь, чекбоксы таблицы и чипы поиска. Тема меняется в Tweaks.</p>
+  </header>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start">
+
+    <div data-mu-stage="l-search" data-screen-label="Search bar" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 32px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px"><span style="font-family:var(--mu-head);font-size:28px">Search bar</span><span style="font-size:13px;color:var(--mu-text2)">строка экранного меню в фокусе, под ней подсказки и найденное</span></div>
+      <div style="display:flex;flex-direction:column;gap:24px;width:328px">
+        <div data-mu="field" data-key="search" data-calm=".3" data-brackets="" style="height:52px;display:flex;align-items:center;gap:8px;padding:0 14px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">ПОИСК</span><span style="font-size:15px">ночь</span><span data-mu-anim="blink" data-keep="" style="width:9px;height:20px;background:var(--mu-text)"></span><span style="flex:1"></span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M5 5l14 14M19 5l-6 6M10 14l-5 5"></path></svg></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px 6px;font-size:13px;font-weight:500">
+          <div data-mu="chip" data-key="sg1" data-slip="2" data-press="" data-mu-toggle="chip" style="height:32px;padding:0 14px;display:flex;align-items:center;color:var(--mu-text);cursor:pointer;user-select:none">ночь на вторник</div>
+          <div data-mu="chip" data-key="sg2" data-slip="2" data-press="" data-mu-toggle="chip" style="height:32px;padding:0 14px;display:flex;align-items:center;color:var(--mu-text);cursor:pointer;user-select:none">ночной эфир</div>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <div style="height:60px;display:flex;align-items:center;gap:12px"><div data-mu="icon" data-key="sr1" data-over="6" style="width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--mu-text)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M8 5l11 7-11 7z"></path></svg></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">Эфир, <span style="color:var(--mu-acc)">ночь</span> на вторник</span><span style="font-size:13px;color:var(--mu-text2)">Записано поверх · 12 мин</span></div></div>
+          <div data-mu-divider="" style="height:2px"></div>
+          <div style="height:60px;display:flex;align-items:center;gap:12px"><div data-mu-cocoon="" style="width:40px;height:40px;flex:none"></div><div style="display:flex;flex-direction:column;gap:8px;flex:1"><div data-mu-cocoon="" style="height:14px;width:70%"></div><div data-mu-cocoon="" style="height:14px;width:45%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-mu-stage="l-date" data-screen-label="Date Time picker" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 32px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px"><span style="font-family:var(--mu-head);font-size:28px">Date · Time picker</span><span style="font-size:13px;color:var(--mu-text2)">таймер записи: календарь на тёмном теле, выбранный день — чистая капля</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:36px 40px;align-items:flex-start">
+        <div data-mu="bar" data-key="cal" data-fill="surf" data-r="12" data-marks="0" style="width:284px;padding:14px 16px 18px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-family:Handjet,monospace;font-size:22px;letter-spacing:1px"><span style="color:var(--mu-osd)">НОЯБРЬ 2026</span><span style="color:var(--mu-text2)">◄ ►</span></div>
+          <div style="display:grid;grid-template-columns:repeat(7,36px);font-family:Handjet,monospace;font-size:16px;color:var(--mu-text2);text-align:center"><span>ПН</span><span>ВТ</span><span>СР</span><span>ЧТ</span><span>ПТ</span><span>СБ</span><span>ВС</span></div>
+          <div style="position:relative;display:grid;grid-template-columns:repeat(7,36px);grid-auto-rows:36px;font-size:14px;text-align:center;line-height:36px">
+            <div data-mu="pill" data-key="cal-day" data-r="18" style="position:absolute;left:144px;top:72px;width:36px;height:36px"></div>
+            <sc-for list="{{ days }}" as="d" hint-placeholder-count="36"><span style="position:relative;color:{{ d.color }};font-weight:{{ d.weight }}">{{ d.n }}</span></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:30px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div data-mu="field" data-key="tp-h" data-fill="green" data-over="14" style="width:76px;height:72px;display:flex;align-items:center;justify-content:center;font-family:Handjet,monospace;font-weight:600;font-size:52px;color:#05060c">21</div>
+            <span style="font-family:Handjet,monospace;font-size:52px;color:var(--mu-osd)">:</span>
+            <div data-mu="field" data-key="tp-m" data-over="14" style="width:76px;height:72px;display:flex;align-items:center;justify-content:center;font-family:Handjet,monospace;font-weight:600;font-size:52px;color:var(--mu-text)">30</div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">часы выбраны, минуты ждут</span>
+        </div>
+      </div>
+    </div>
+
+    <div data-mu-stage="l-table" data-screen-label="Data table" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px"><span style="font-family:var(--mu-head);font-size:28px">Data table</span><span style="font-size:13px;color:var(--mu-text2)">опись кассет: шапка экранным шрифтом, строки на линиях трекинга; чекбоксы нажимаются</span></div>
+      <div style="display:flex;flex-direction:column;width:560px;font-size:14px">
+        <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 90px 80px;align-items:center;height:36px;font-family:Handjet,monospace;font-size:18px;letter-spacing:1px;color:var(--mu-osd)"><span></span><span>ЗАПИСЬ</span><span>ДЛИНА</span><span>КАНАЛ</span></div>
+        <div data-mu-divider="" style="height:2px"></div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 90px 80px;align-items:center;height:48px">
+            <div data-mu-toggle="check" data-on="{{ r.on }}" style="display:flex;align-items:center;height:48px"><div data-mu="box" data-key="{{ r.key }}" data-fill="{{ r.fill }}" style="position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:#05060c"><svg data-on-only="" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="display:{{ r.show }}"><path d="M5 12l5 5M11 17l8-10"></path></svg></div></div>
+            <span style="font-weight:500">{{ r.name }}</span><span style="font-family:Handjet,monospace;font-size:20px">{{ r.len }}</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-text2)">{{ r.ch }}</span>
+          </div>
+          <div data-mu-divider="" style="height:2px"></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div data-mu-stage="l-carousel" data-screen-label="Carousel" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px"><span style="font-family:var(--mu-head);font-size:28px">Carousel</span><span style="font-size:13px;color:var(--mu-text2)">полка кассет: центральная течёт, соседние выглядывают; указатель — капля среди точек</span></div>
+      <div style="display:flex;flex-direction:column;gap:16px;width:400px">
+        <div data-mu-stage="l-carousel-view" style="position:relative;height:172px;overflow:hidden">
+          <div data-mu-layer=""></div>
+          <div style="position:absolute;left:-150px;top:8px;display:flex;gap:14px">
+            <div data-mu="card" data-key="car0" data-calm=".5" style="width:220px;height:120px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span></div>
+            <div data-mu="card" data-key="car1" style="width:220px;height:120px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Эфир, ночь на вторник</span><span style="font-size:13px;color:var(--mu-text2)">Записано поверх · 12 мин</span><span style="margin-top:auto;font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">CH 03 · SP</span></div>
+            <div data-mu="card" data-key="car2" data-calm=".5" style="width:220px;height:120px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Настроечная таблица</span><span style="font-size:13px;color:var(--mu-text2)">Копия 4-го поколения</span></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center;gap:8px"><div data-mu="dot" data-key="cd0" style="width:10px;height:10px"></div><div data-mu="pill" data-key="cd1" style="width:26px;height:10px"></div><div data-mu="dot" data-key="cd2" style="width:10px;height:10px"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Эфир&quot;,&quot;Копия&quot;],&quot;default&quot;:&quot;Эфир&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cassetteSeed&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:999,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  root = React.createRef();
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  pp() { const p = this.props; return { theme: (p.theme ?? 'Эфир') === 'Копия' ? 'kopiya' : 'efir', seed: p.cassetteSeed ?? 5, fps: 8, boil: .8, rough: .35, density: 1, speed: 1, keyframeLoss: false }; }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current) { this.tm = setTimeout(go, 60); return; }
+      this.eng = window.__mu = new window.MutantEngine(this.root.current, this.pp()); this.eng.start();
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const lt = (this.props.theme ?? 'Эфир') === 'Копия'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    if (this.eng) this.eng.setProps(this.pp());
+    // Ноябрь 2026 начинается в воскресенье: шесть пустых ячеек, затем 30 дней; выбрано 13-е.
+    const days = [];
+    for (let i = 0; i < 6; i++) days.push({ n: '', color: 'inherit', weight: 400 });
+    for (let n = 1; n <= 30; n++) days.push({ n: String(n), color: n === 13 ? '#05060c' : 'inherit', weight: n === 13 ? 700 : 400 });
+    const rows = [['Без подписи №3', '46:00', 'CH 03', 0], ['Эфир, ночь на вторник', '12:04', 'CH 03', 1], ['Настроечная таблица', '02:10', 'CH 01', 0], ['Нет сигнала', '00:42', 'CH 99', 0]]
+      .map(([name, len, ch, on], i) => ({ name, len, ch, on: on ? '1' : '0', fill: on ? 'green' : 'surf2', show: on ? '' : 'none', key: 'trow' + i }));
+    return { root: this.root, days, rows };
+  }
+}
+</script>
+</body>
+</html>

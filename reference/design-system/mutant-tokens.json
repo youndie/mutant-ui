@@ -1,0 +1,900 @@
+{
+  "mutant": {
+    "version": "ред. 5 · этап 1 · по состоянию движка",
+    "color": {
+      "efir": {
+        "primary": "#b6ff1a",
+        "on-primary": "#05060c",
+        "magenta": "#ff2e93",
+        "cyan": "#19e3ff",
+        "no-signal": "#3a47a0",
+        "amber": "#ffb000",
+        "phosphor": "#e9f2e4",
+        "danger": "#ff3b30",
+        "background": "#10142a",
+        "surface": "#232b4a",
+        "surface-variant": "#2f3960",
+        "ink": "#05060c",
+        "page": "#0a0c18",
+        "text": "#e9f2e4",
+        "text-secondary": "#aab4cf",
+        "text-disabled": "#8a90a6",
+        "text-accent": "#b6ff1a",
+        "text-osd": "#ffb000",
+        "text-error": "#ff6a61",
+        "on-no-signal": "#e9f2e4",
+        "on-no-signal-accent": "#ffe08a",
+        "focus": "#ffb000",
+        "misregister": "#3a47a0",
+        "shadow-deep": "#1a2040",
+        "highlight-on-dark": "#6b78b6",
+        "dropout": "#e9f2e4"
+      },
+      "kopiya": {
+        "primary": "#b6ff1a",
+        "on-primary": "#05060c",
+        "magenta": "#ff2e93",
+        "cyan": "#19e3ff",
+        "no-signal": "#2b3fbf",
+        "amber": "#ffb000",
+        "phosphor": "#fbf8ee",
+        "danger": "#e0301e",
+        "background": "#efe9d9",
+        "surface": "#e3dbc6",
+        "surface-variant": "#d6ccb2",
+        "ink": "#14110f",
+        "page": "#cfc8b6",
+        "text": "#14110f",
+        "text-secondary": "#5b5446",
+        "text-disabled": "#6f6858",
+        "text-accent": "#2b3fbf",
+        "text-osd": "#a8380b",
+        "text-error": "#b3261e",
+        "on-no-signal": "#f6f2e6",
+        "on-no-signal-accent": "#ffd84a",
+        "focus": "#2b3fbf",
+        "misregister": "#ff5a4a",
+        "shadow-deep": "#14110f",
+        "highlight-on-dark": "#8f9be0",
+        "dropout": "#efe9d9"
+      }
+    },
+    "contrast": {
+      "efir": {
+        "text / background": 15.8,
+        "text / surface": 12.1,
+        "text / surface-variant": 9.8,
+        "text-secondary / background": 8.8,
+        "text-secondary / surface": 6.7,
+        "text-accent / background": 15,
+        "text-osd / background": 9.9,
+        "text-osd / surface": 7.6,
+        "text-error / background": 6.5,
+        "on-primary / primary": 16.7,
+        "on-primary / amber": 11,
+        "on-no-signal / no-signal": 7.1,
+        "on-no-signal-accent / no-signal": 6.3,
+        "text-disabled / background": 5.7
+      },
+      "kopiya": {
+        "text / background": 15.5,
+        "text / surface": 13.6,
+        "text / surface-variant": 11.8,
+        "text-secondary / background": 6.2,
+        "text-secondary / surface": 5.4,
+        "text-accent / background": 6.8,
+        "text-osd / background": 5.4,
+        "text-osd / surface": 4.7,
+        "text-error / background": 5.4,
+        "on-primary / primary": 16.7,
+        "on-primary / amber": 11,
+        "on-no-signal / no-signal": 7.3,
+        "on-no-signal-accent / no-signal": 5.9,
+        "text-disabled / background": 4.6
+      }
+    },
+    "contrast-after-tape": {
+      "efir": {
+        "text / background": 11.8,
+        "text / surface": 8.9,
+        "text / surface-variant": 7.3,
+        "text-secondary / background": 6.9,
+        "text-secondary / surface": 5.2,
+        "text-accent / background": 11.1,
+        "text-osd / background": 7.6,
+        "text-osd / surface": 5.8,
+        "text-error / background": 5.2,
+        "on-primary / primary": 12.7,
+        "on-primary / amber": 8.8,
+        "on-no-signal / no-signal": 5.6,
+        "on-no-signal-accent / no-signal": 5.1,
+        "text-disabled / background": 4.8
+      },
+      "kopiya": {
+        "text / background": 14,
+        "text / surface": 12.4,
+        "text / surface-variant": 10.7,
+        "text-secondary / background": 5.9,
+        "text-secondary / surface": 5.2,
+        "text-accent / background": 6.4,
+        "text-osd / background": 5.1,
+        "text-osd / surface": 4.5,
+        "text-error / background": 5.2,
+        "on-primary / primary": 15,
+        "on-primary / amber": 10,
+        "on-no-signal / no-signal": 7,
+        "on-no-signal-accent / no-signal": 5.6,
+        "text-disabled / background": 4.4
+      }
+    },
+    "tape": {
+      "efir": {
+        "scanline": "чёрный 7.5 %, 1 dp из 3",
+        "band": "фосфорный белый 7 %, высота 22 dp",
+        "grain": "белый до 16 %, 1 dp",
+        "noise-row": "белый до 70 %, 1 dp на один тик; контраст text / background под штрихом 1.7:1"
+      },
+      "kopiya": {
+        "scanline": "нет",
+        "band": "тушь 5 %, высота 22 dp",
+        "grain": "#6b5f48 до 20 %, 1 dp",
+        "noise-row": "#6b5f48 до 20 %, 1 dp на один тик; контраст text / background под штрихом 11.9:1"
+      }
+    },
+    "flash": {
+      "rule": "WCAG 2.3.1: не больше трёх вспышек в секунду; вспышка — пара противоположных изменений относительной яркости на 0.1 и больше",
+      "boil-over": {
+        "flashes-per-second": 1.5,
+        "luminance-delta": 0.064,
+        "note": "заливка при полном нагреве чередует янтарь #ffb000 и осветлённый #ffbf33 раз в 333 мс"
+      },
+      "running-mosaic": {
+        "changes-per-second": 12,
+        "area": "до трёх рядов блоков 4 и 8 dp вдоль одной стороны нажатого тела"
+      },
+      "cocoon": {
+        "changes-per-second": 8,
+        "area": "около 6 % блоков Кокона за тик"
+      },
+      "keyframe-loss": {
+        "changes-per-second": 8,
+        "area": "полоса 9–18 рядов по 16 dp во всю ширину экрана",
+        "note": "замер на двух демо-экранах, 4 прогона, фаза сбоя без восстановления: за шаг яркость меняется на 0.1 и больше не более чем на 2.9 % полосы (до 3032 dp²); чаще трёх раз в секунду мигает не больше 42 dp² при пороге площади 21 824 px²"
+      },
+      "red": "красный не мигает: ошибка и точка радио статичны, в бегущей мозаике красного нет"
+    },
+    "type": {
+      "display": {
+        "family": "Handjet",
+        "license": "OFL",
+        "use": "заголовки экранов и диалогов",
+        "sizes": [
+          22,
+          24,
+          26,
+          28
+        ]
+      },
+      "text": {
+        "family": "Rubik",
+        "license": "OFL",
+        "use": "основной текст и подписи",
+        "sizes": [
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "weights": [
+          400,
+          500
+        ]
+      },
+      "osd": {
+        "family": "Handjet",
+        "license": "OFL",
+        "use": "экранные надписи, счётчики, бейджи",
+        "sizes": [
+          14,
+          16,
+          18,
+          20
+        ],
+        "letter-spacing": 1
+      }
+    },
+    "grid": {
+      "unit": 4,
+      "touch-target": 48,
+      "screen-margin": 16,
+      "mosaic-blocks": [
+        4,
+        8,
+        16
+      ],
+      "clean-zone-padding": {
+        "horizontal": 6,
+        "vertical": 2,
+        "mosaic-extra": 2
+      },
+      "overhang-max": 24,
+      "overhang-list": 8,
+      "field-step": {
+        "small": 0.9,
+        "large": 1.5
+      }
+    },
+    "genome": {
+      "generation": {
+        "level": "кассета",
+        "range": [
+          0,
+          4
+        ],
+        "unit": "поколение",
+        "default": null,
+        "engine": "нет; износ экземпляра задаёт calm 0.2–1.7",
+        "status": "не реализован"
+      },
+      "tracking": {
+        "level": "кассета",
+        "range": [
+          0,
+          1
+        ],
+        "unit": "",
+        "default": 1,
+        "engine": "полоса 22 dp, проход 2100 мс раз в 7000 мс",
+        "status": "фиксирован"
+      },
+      "tick": {
+        "level": "кассета",
+        "range": [
+          8,
+          24
+        ],
+        "unit": "кадров/с",
+        "default": 8,
+        "engine": "fps; нажатый элемент идёт в 1.5 раза чаще",
+        "status": "реализован"
+      },
+      "boil": {
+        "level": "кассета",
+        "range": [
+          0,
+          1.5
+        ],
+        "unit": "",
+        "default": 0.8,
+        "engine": "boil: покадровое дрожание контура и линий",
+        "status": "реализован, в брифе гена нет"
+      },
+      "melt": {
+        "level": "компонент",
+        "range": [
+          0,
+          1
+        ],
+        "unit": "",
+        "default": 1,
+        "engine": "overhang × drip-share из профиля типа",
+        "status": "реализован через профиль"
+      },
+      "blot": {
+        "level": "компонент",
+        "range": [
+          0.6,
+          1.6
+        ],
+        "unit": "",
+        "default": 1,
+        "engine": "density: линии потока внутри тела",
+        "status": "реализован как линии потока, не пятна"
+      },
+      "slip": {
+        "level": "компонент",
+        "range": [
+          0,
+          2
+        ],
+        "unit": "dp",
+        "default": 0,
+        "engine": "сдвиг заливки от контура: чип 2, тема «Копия» 1.5",
+        "status": "только сдвиг заливки; срезов нет"
+      },
+      "split": {
+        "level": "компонент",
+        "range": [
+          0,
+          3
+        ],
+        "unit": "dp",
+        "default": 0,
+        "engine": "нет",
+        "status": "не используется: нажатие заменено кипением"
+      },
+      "crush": {
+        "level": "компонент",
+        "range": [
+          0,
+          1
+        ],
+        "unit": "",
+        "default": 1,
+        "engine": "мозаика края 4 и 8 dp в 3 ряда, контур под ней ломается по блокам; Кокон 16 и 8 dp",
+        "status": "включён или выключен по профилю"
+      },
+      "noise": {
+        "level": "компонент",
+        "range": [
+          0,
+          1
+        ],
+        "unit": "",
+        "default": 0.35,
+        "engine": "rough: рваность кромки и крап",
+        "status": "реализован"
+      },
+      "ghost": {
+        "level": "компонент",
+        "range": [
+          0,
+          1
+        ],
+        "unit": "",
+        "default": 0,
+        "engine": "нет; эхо бегунка переключателя нарисовано отдельно",
+        "status": "не реализован"
+      },
+      "outline": {
+        "level": "компонент",
+        "range": [
+          2,
+          3
+        ],
+        "unit": "dp",
+        "default": 3,
+        "engine": "outline из профиля, ±12 % × boil по кадрам",
+        "status": "реализован"
+      },
+      "hueDrift": {
+        "level": "компонент",
+        "range": [
+          -8,
+          8
+        ],
+        "unit": "°",
+        "default": 0,
+        "engine": "нет",
+        "status": "не реализован"
+      }
+    },
+    "profile": {
+      "btn": {
+        "radius": 12,
+        "overhang": 24,
+        "drip-share": 0.55,
+        "fill": "green",
+        "outline": 3,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 0
+      },
+      "fab": {
+        "radius": 16,
+        "overhang": 24,
+        "drip-share": 1,
+        "fill": "green",
+        "outline": 3,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 0
+      },
+      "icon": {
+        "radius": 14,
+        "overhang": 10,
+        "drip-share": 0.4,
+        "fill": "surf2",
+        "outline": 2.5,
+        "marks": 0,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 0
+      },
+      "chip": {
+        "radius": 16,
+        "overhang": 16,
+        "drip-share": 0.45,
+        "fill": "surf2",
+        "outline": 2.5,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 0
+      },
+      "card": {
+        "radius": 10,
+        "overhang": 24,
+        "drip-share": 0.4,
+        "fill": "surf",
+        "outline": 3,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 1
+      },
+      "field": {
+        "radius": 6,
+        "overhang": 16,
+        "drip-share": 0.4,
+        "fill": "surf",
+        "outline": 3,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 0
+      },
+      "track": {
+        "radius": 14,
+        "overhang": 12,
+        "drip-share": 0.5,
+        "fill": "green",
+        "outline": 2.5,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 0
+      },
+      "thumb": {
+        "radius": 11,
+        "overhang": 8,
+        "drip-share": 0.4,
+        "fill": "white",
+        "outline": 2,
+        "marks": 0,
+        "mosaic": 0,
+        "wobble": 1,
+        "dead-pixels": 0
+      },
+      "box": {
+        "radius": 5,
+        "overhang": 0,
+        "drip-share": 0,
+        "fill": "surf2",
+        "outline": 2,
+        "marks": 0,
+        "mosaic": 0,
+        "wobble": 0.45,
+        "dead-pixels": 0
+      },
+      "dot": {
+        "radius": "full",
+        "overhang": 0,
+        "drip-share": 0,
+        "fill": "surf2",
+        "outline": 2,
+        "marks": 0,
+        "mosaic": 0,
+        "wobble": 0.35,
+        "dead-pixels": 0
+      },
+      "bar": {
+        "radius": 8,
+        "overhang": 0,
+        "drip-share": 0,
+        "fill": "surf",
+        "outline": 3,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 0.6,
+        "dead-pixels": 0
+      },
+      "pill": {
+        "radius": "full",
+        "overhang": 0,
+        "drip-share": 0,
+        "fill": "green",
+        "outline": 2.5,
+        "marks": 0,
+        "mosaic": 0,
+        "wobble": 0.6,
+        "dead-pixels": 0
+      },
+      "blob": {
+        "radius": 14,
+        "overhang": 28,
+        "drip-share": 0.7,
+        "fill": "mag",
+        "outline": 3,
+        "marks": 1,
+        "mosaic": 1,
+        "wobble": 1,
+        "dead-pixels": 0
+      }
+    },
+    "motion": {
+      "tick": {
+        "ms": 125,
+        "note": "8 кадров/с; в брифе 83 мс"
+      },
+      "tick-hot": {
+        "ms": 83,
+        "note": "нажатый элемент и переходы"
+      },
+      "boil-over-in": {
+        "ms": 320,
+        "event": "press",
+        "note": "нагрев: дрожание ×3, пузыри сверху, цвет в янтарь, мозаика бегает, капли стоят"
+      },
+      "boil-over-out": {
+        "ms": 480,
+        "event": "release"
+      },
+      "creep": {
+        "ms": [
+          8000,
+          14000
+        ],
+        "note": "полный цикл подтёка"
+      },
+      "hang": {
+        "ms": [
+          2200,
+          4400
+        ],
+        "note": "капля висит"
+      },
+      "pinch": {
+        "ms": 1000,
+        "curve": "ease-in²"
+      },
+      "drop": {
+        "gravity": 0.00055,
+        "unit": "dp/мс²",
+        "note": "капля гаснет через 10–18 dp"
+      },
+      "recoil": {
+        "ms": 1000,
+        "curve": "затухающая пружина 160 мс"
+      },
+      "flow": {
+        "ms": [
+          5000,
+          9500
+        ],
+        "note": "цикл линии потока"
+      },
+      "wave": {
+        "ms": [
+          6000,
+          10000
+        ],
+        "note": "период волны верхней кромки"
+      },
+      "tracking": {
+        "ms": 2100,
+        "every": 7000
+      },
+      "seek": {
+        "ms": 900,
+        "event": "loading",
+        "note": "цикл полос перемотки"
+      },
+      "pour": {
+        "ms": [
+          300,
+          620
+        ],
+        "event": "toggle",
+        "note": "новый цвет стекает сверху; 260 + 5 × высота"
+      },
+      "melt-in": {
+        "ms": 330,
+        "event": "toggle on",
+        "note": "индикатор натекает сверху"
+      },
+      "melt-out": {
+        "ms": 330,
+        "event": "toggle off",
+        "note": "индикатор оплывает вниз"
+      },
+      "slide": {
+        "ms": 330,
+        "event": "switch",
+        "curve": "ease-out²",
+        "note": "бегунок растягивается на 40 %"
+      },
+      "keyframe-loss": {
+        "ms": [
+          900,
+          1400
+        ],
+        "recover": 375,
+        "every": 9000,
+        "note": "полоса 9–18 рядов блоков 16 и 8 dp"
+      },
+      "clean": {
+        "ms": null,
+        "note": "успех показан статичным чистым кадром; возврата через 600 мс нет"
+      },
+      "venom": {
+        "ms": 720,
+        "event": "selection",
+        "curve": "24 кадра/с; щупальца 0–0.25, перетекание 0.2–0.8, втягивание до 0.96, пружина 0.8–1",
+        "note": "переход плашки выбора в Segmented button, Menu, NavigationDrawer; в брифе нет"
+      }
+    },
+    "component": {
+      "Button": {
+        "tier": "MVP",
+        "body": [
+          "btn"
+        ],
+        "variants": "filled; outlined: fill=bg, stroke=acc, shadow=mis, over=14; text: без тела, подпись над разделителем",
+        "states": "rest, pressed (boil), loading (seek), success (clean), disabled"
+      },
+      "IconButton": {
+        "tier": "MVP",
+        "body": [
+          "icon"
+        ],
+        "variants": "48×48",
+        "states": "rest, pressed, disabled"
+      },
+      "FAB": {
+        "tier": "MVP",
+        "body": [
+          "fab"
+        ],
+        "variants": "56×56; extended 136×56",
+        "states": "rest, pressed"
+      },
+      "Chip": {
+        "tier": "MVP",
+        "body": [
+          "chip"
+        ],
+        "variants": "unselected: slip=2; selected: fill=acc",
+        "states": "rest, pressed, selected (pour), disabled"
+      },
+      "Checkbox": {
+        "tier": "MVP",
+        "body": [
+          "box"
+        ],
+        "variants": "22×22; checked: fill=acc",
+        "states": "unchecked, checked (pour + melt), disabled"
+      },
+      "RadioButton": {
+        "tier": "MVP",
+        "body": [
+          "dot"
+        ],
+        "variants": "22×22",
+        "states": "unselected, selected (melt), disabled"
+      },
+      "Switch": {
+        "tier": "MVP",
+        "body": [
+          "track",
+          "thumb"
+        ],
+        "variants": "52×28, бегунок 22; off: fill=surf2, over=6",
+        "states": "off, on (pour + slide), disabled"
+      },
+      "TextField": {
+        "tier": "MVP",
+        "body": [
+          "field"
+        ],
+        "variants": "высота 52",
+        "states": "rest, focused (calm=.3 + скобки), error (corrupt), disabled"
+      },
+      "Card": {
+        "tier": "MVP",
+        "body": [
+          "card"
+        ],
+        "variants": "битые пиксели в углу",
+        "states": "rest, disabled"
+      },
+      "Skeleton (Кокон)": {
+        "tier": "MVP",
+        "body": [],
+        "variants": "мозаика 16 и 8 dp по форме будущего компонента",
+        "states": "loading"
+      },
+      "TopAppBar": {
+        "tier": "MVP",
+        "body": [],
+        "variants": "высота 56, разделитель трекинга снизу",
+        "states": "rest"
+      },
+      "Tabs": {
+        "tier": "MVP",
+        "body": [],
+        "variants": "индикатор 4 dp с эхом",
+        "states": "rest"
+      },
+      "NavigationBar": {
+        "tier": "MVP",
+        "body": [
+          "bar",
+          "pill"
+        ],
+        "variants": "высота 62–68; активный пункт — pill 56×30",
+        "states": "rest"
+      },
+      "ListItem": {
+        "tier": "MVP",
+        "body": [
+          "icon"
+        ],
+        "variants": "высота 64, плитка 40 (over=6)",
+        "states": "rest"
+      },
+      "Divider": {
+        "tier": "MVP",
+        "body": [],
+        "variants": "штрихи трекинга 2 dp",
+        "states": "rest"
+      },
+      "Badge": {
+        "tier": "MVP",
+        "body": [],
+        "variants": "чистая плашка osd",
+        "states": "rest"
+      },
+      "Snackbar": {
+        "tier": "MVP",
+        "body": [
+          "bar"
+        ],
+        "variants": "fill=blue, shadow, r=6, высота 48",
+        "states": "rest"
+      },
+      "LinearProgress": {
+        "tier": "MVP",
+        "body": [],
+        "variants": "сегменты 6+2 dp; неопределённый — бегущая полоса",
+        "states": "determinate, indeterminate"
+      },
+      "CircularProgress": {
+        "tier": "MVP",
+        "body": [],
+        "variants": "катушка 36 dp, шаг 30° на тик",
+        "states": "indeterminate"
+      },
+      "Dialog": {
+        "tier": "MVP",
+        "body": [
+          "bar",
+          "btn"
+        ],
+        "variants": "окно — чистый кадр (clean), r=12; фон на паузе с полосой",
+        "states": "open"
+      },
+      "EmptyState": {
+        "tier": "MVP",
+        "body": [
+          "blob",
+          "bar",
+          "pill",
+          "dot",
+          "btn"
+        ],
+        "variants": "6 иллюстраций из тел",
+        "states": "rest"
+      },
+      "Slider": {
+        "tier": "v1",
+        "body": [
+          "fab"
+        ],
+        "variants": "канал 14 dp, заливка 8 dp, ручка 34 (fill=osd, r=17, over=12) со значением внутри",
+        "states": "rest, dragging (boil), disabled"
+      },
+      "SegmentedButton": {
+        "tier": "v1",
+        "body": [
+          "btn",
+          "pill"
+        ],
+        "variants": "тело fill=surf2, over=14; окно выбора pill calm=.2, r=9",
+        "states": "rest, selection (venom), disabled"
+      },
+      "Tooltip": {
+        "tier": "v1",
+        "body": [
+          "blob"
+        ],
+        "variants": "fill=blue или osd, r=6, over=20, cf=0; высота 30 или 44",
+        "states": "shown"
+      },
+      "Menu": {
+        "tier": "v1",
+        "body": [
+          "btn",
+          "pill"
+        ],
+        "variants": "тело fill=surf, r=8, over=18; пункт 36; окно выбора pill r=6",
+        "states": "open, selection (venom)"
+      },
+      "NavigationDrawer": {
+        "tier": "v1",
+        "body": [
+          "bar",
+          "pill"
+        ],
+        "variants": "тело fill=surf, r=0, slip=3, shadow; пункт 42; окно выбора pill r=8",
+        "states": "open, selection (venom)"
+      },
+      "BottomSheet": {
+        "tier": "v1",
+        "body": [
+          "blob",
+          "btn"
+        ],
+        "variants": "fill=surf, r=22, over=0, wob=1.6; над листом разделитель",
+        "states": "open"
+      },
+      "PullToRefresh": {
+        "tier": "v1",
+        "body": [
+          "btn",
+          "pill"
+        ],
+        "variants": "язык: r=5–7, over=14–24, cf=0–1; готово — pill clean",
+        "states": "pulling, refreshing (boil), done (clean)"
+      },
+      "SearchBar": {
+        "tier": "later",
+        "body": [
+          "field",
+          "chip",
+          "icon"
+        ],
+        "variants": "TextField в фокусе + чипы подсказок + строки результатов",
+        "states": "focused"
+      },
+      "DatePicker": {
+        "tier": "later",
+        "body": [
+          "bar",
+          "pill"
+        ],
+        "variants": "тело fill=surf, r=12; ячейка 36; выбранный день pill r=18",
+        "states": "rest"
+      },
+      "TimePicker": {
+        "tier": "later",
+        "body": [
+          "field"
+        ],
+        "variants": "два тела 76×72, over=14; активное fill=acc",
+        "states": "rest"
+      },
+      "DataTable": {
+        "tier": "later",
+        "body": [
+          "box"
+        ],
+        "variants": "шапка osd 36, строка 48, разделители трекинга",
+        "states": "rest, row selected"
+      },
+      "Carousel": {
+        "tier": "later",
+        "body": [
+          "card",
+          "dot",
+          "pill"
+        ],
+        "variants": "карточка 220×120; боковые calm=.5; указатель pill 26×10 среди точек 10",
+        "states": "rest"
+      }
+    }
+  }
+}

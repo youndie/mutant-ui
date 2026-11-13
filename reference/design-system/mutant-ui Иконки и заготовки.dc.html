@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&family=Yeseva+One&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Иконки и заготовки" style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:32px;width:1640px;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:980px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · АРТЕФАКТ 6 · ТЕМЫ «ЭФИР» И «КОПИЯ»</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:64px;line-height:1.05">Иконки и заготовки</h1>
+    <p style="margin:0;font-size:16px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Правило перерисовки иконок с 16 примерами, шесть иллюстраций для пустых состояний и четыре узора для Экрана. Иллюстрации собраны из тех же тел, что и компоненты, поэтому плавятся и капают так же. Тема меняется в Tweaks.</p>
+  </header>
+
+  <div data-screen-label="Иконки" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font-family:var(--mu-head);font-size:28px">Иконки</span><span style="font-size:13px;color:var(--mu-text2)">правило перерисовки и 16 примеров; каждая иконка — один path</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 28px;font-size:14px;line-height:1.45">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">1 · СЕТКА</span><span>Сетка 24 dp, поле 2 dp, линия 2 dp с прямыми торцами, привязка к 1 dp. Геометрия исходной Material-иконки сохраняется.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">2 · ОДИН АКЦЕНТ</span><span>На иконку один акцент повреждения: срез со сдвигом до 1 dp, или один подтёк до 3 dp, или выпавший сегмент 1 dp.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">3 · ЦВЕТ</span><span>Иконка одноцветная. Активная красится акцентным цветом темы. Иконки не анимируются и не генерируются.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">4 · ПРОВЕРКА НА 16 DP</span><span>Узнаваемость проверяется в размере 16 dp. Если иконка не читается, акцент убирается. В каждой ячейке ниже: 48, 24, 16 dp и активная.</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:20px 16px">
+      <sc-for list="{{ icons }}" as="i" hint-placeholder-count="16"><div style="display:flex;flex-direction:column;gap:10px;padding:14px 12px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--mu-surf2)">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="{{ i.d }}"></path></svg>
+        <div style="display:flex;align-items:flex-end;gap:10px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="{{ i.d }}"></path></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="{{ i.d }}"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="color:var(--mu-acc)"><path d="{{ i.d }}"></path></svg></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:500">{{ i.name }}</span><span style="font-size:12px;line-height:1.35;color:var(--mu-text2)">{{ i.accent }}</span></div>
+      </div></sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font-family:var(--mu-head);font-size:28px">Иллюстрации</span><span style="font-size:13px;color:var(--mu-text2)">шесть пустых состояний; под каждой — место под заголовок и строку пояснения</span></div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px">
+
+    <div data-mu-stage="il-cassette" data-screen-label="Иллюстрация Кассета" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:20px">
+      <div data-mu-layer=""></div>
+      <div style="height:210px;display:flex;align-items:flex-start;justify-content:center;padding-top:20px;box-sizing:border-box">
+        <div data-mu="blob" data-key="cassette" data-marks="0" style="position:relative;width:216px;height:132px">
+          <div data-mu="bar" data-key="cassette-label" data-fill="white" data-r="4" data-marks="0" data-edge="0" style="position:absolute;left:18px;top:14px;width:180px;height:38px;display:flex;align-items:center;justify-content:center;font-family:Handjet,monospace;font-size:20px;letter-spacing:2px;color:#05060c">БЕЗ ПОДПИСИ</div>
+          <div data-mu="pill" data-key="cassette-win" data-fill="bg" style="position:absolute;left:44px;top:66px;width:128px;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;box-sizing:border-box">
+            <div data-mu-anim="reel" data-keep="" style="position:relative;width:26px;height:26px;border-radius:50%;background:var(--mu-reel)"><i style="position:absolute;left:10px;top:2px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:17px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i></div>
+            <div data-mu-anim="reel" data-keep="" style="position:relative;width:26px;height:26px;border-radius:50%;background:var(--mu-reel)"><i style="position:absolute;left:10px;top:2px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:17px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center"><span style="font-family:var(--mu-head);font-size:24px">Здесь пока пусто</span><span style="font-size:14px;color:var(--mu-text2)">Кассета · запишите первую, и она появится в эфире.</span></div>
+    </div>
+
+    <div data-mu-stage="il-tv" data-screen-label="Иллюстрация Телевизор" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:20px">
+      <div data-mu-layer=""></div>
+      <div style="height:210px;display:flex;align-items:flex-start;justify-content:center">
+        <div style="position:relative;width:220px;height:176px">
+          <i style="position:absolute;left:96px;top:2px;width:3px;height:36px;background:#05060c;transform:rotate(-30deg);transform-origin:50% 100%"></i>
+          <i style="position:absolute;left:118px;top:2px;width:3px;height:36px;background:#05060c;transform:rotate(34deg);transform-origin:50% 100%"></i>
+          <div data-mu="blob" data-key="tv" data-fill="blue" data-marks="0" style="position:absolute;left:0;top:34px;width:220px;height:136px">
+            <div data-mu="bar" data-key="tv-screen" data-fill="bg" data-r="18" data-marks="0" data-edge="0" style="position:absolute;left:14px;top:14px;width:138px;height:106px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:Handjet,monospace;font-size:20px;line-height:1.1;letter-spacing:1px;color:var(--mu-osd)">НЕТ<br>СИГНАЛА</div>
+            <div data-mu="dot" data-key="tv-k1" data-fill="white" style="position:absolute;left:170px;top:16px;width:30px;height:30px"></div>
+            <div data-mu="dot" data-key="tv-k2" data-fill="amber" style="position:absolute;left:174px;top:56px;width:22px;height:22px"></div>
+            <i data-keep="" style="position:absolute;left:168px;top:92px;width:34px;height:3px;background:#05060c"></i><i data-keep="" style="position:absolute;left:168px;top:100px;width:34px;height:3px;background:#05060c"></i><i data-keep="" style="position:absolute;left:168px;top:108px;width:24px;height:3px;background:#05060c"></i>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center"><span style="font-family:var(--mu-head);font-size:24px">Нет сигнала</span><span style="font-size:14px;color:var(--mu-text2)">ЭЛТ-телевизор · для экрана без соединения.</span></div>
+    </div>
+
+    <div data-mu-stage="il-antenna" data-screen-label="Иллюстрация Антенна" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:20px">
+      <div data-mu-layer=""></div>
+      <div style="height:210px;display:flex;align-items:flex-start;justify-content:center">
+        <div style="position:relative;width:200px;height:190px">
+          <div data-mu="bar" data-key="ant-mast" data-fill="white" data-r="4" data-marks="0" data-edge="0" data-wob=".3" style="position:absolute;left:95px;top:4px;width:10px;height:150px"></div>
+          <div data-mu="btn" data-key="ant-a" data-fill="amber" data-r="5" data-over="16" data-cf=".8" data-marks="0" data-edge="0" style="position:absolute;left:22px;top:18px;width:156px;height:11px"></div>
+          <div data-mu="btn" data-key="ant-b" data-fill="amber" data-r="5" data-over="14" data-cf=".8" data-marks="0" data-edge="0" style="position:absolute;left:44px;top:52px;width:112px;height:11px"></div>
+          <div data-mu="btn" data-key="ant-c" data-fill="amber" data-r="5" data-over="12" data-cf=".8" data-marks="0" data-edge="0" style="position:absolute;left:64px;top:86px;width:72px;height:11px"></div>
+          <div data-mu="blob" data-key="ant-base" data-fill="surf2" data-over="14" data-marks="0" data-edge="0" style="position:absolute;left:58px;top:148px;width:84px;height:24px"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center"><span style="font-family:var(--mu-head);font-size:24px">Ничего не поймали</span><span style="font-size:14px;color:var(--mu-text2)">Антенна · для пустого результата поиска.</span></div>
+    </div>
+
+    <div data-mu-stage="il-floppy" data-screen-label="Иллюстрация Дискета" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:20px">
+      <div data-mu-layer=""></div>
+      <div style="height:210px;display:flex;align-items:flex-start;justify-content:center">
+        <div data-mu="blob" data-key="floppy" data-fill="cyan" data-r="8" data-marks="0" style="position:relative;width:156px;height:160px">
+          <div data-mu="bar" data-key="floppy-shutter" data-fill="white" data-r="3" data-marks="0" data-edge="0" data-wob=".4" style="position:absolute;left:36px;top:8px;width:84px;height:50px"><i data-keep="" style="position:absolute;left:54px;top:8px;width:16px;height:34px;background:#05060c"></i></div>
+          <div data-mu="bar" data-key="floppy-label" data-fill="white" data-r="4" data-marks="0" data-edge="0" data-wob=".4" style="position:absolute;left:20px;top:84px;width:116px;height:62px;display:flex;flex-direction:column;justify-content:center;gap:7px;padding:0 12px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:18px;line-height:1;color:#05060c">1.44 МБ</span><i style="height:2px;background:#05060c;opacity:.6"></i><i style="height:2px;width:70%;background:#05060c;opacity:.6"></i></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center"><span style="font-family:var(--mu-head);font-size:24px">Ничего не сохранено</span><span style="font-size:14px;color:var(--mu-text2)">Дискета · для пустых загрузок и черновиков.</span></div>
+    </div>
+
+    <div data-mu-stage="il-remote" data-screen-label="Иллюстрация Пульт" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:20px">
+      <div data-mu-layer=""></div>
+      <div style="height:210px;display:flex;align-items:flex-start;justify-content:center">
+        <div data-mu="blob" data-key="remote" data-fill="surf2" data-r="22" data-over="22" data-marks="0" style="position:relative;width:92px;height:176px">
+          <div data-mu="dot" data-key="rm-p" data-fill="red" style="position:absolute;left:36px;top:14px;width:20px;height:20px"></div>
+          <div data-mu="dot" data-key="rm-1" data-fill="white" style="position:absolute;left:14px;top:48px;width:16px;height:16px"></div><div data-mu="dot" data-key="rm-2" data-fill="white" style="position:absolute;left:38px;top:48px;width:16px;height:16px"></div><div data-mu="dot" data-key="rm-3" data-fill="white" style="position:absolute;left:62px;top:48px;width:16px;height:16px"></div>
+          <div data-mu="dot" data-key="rm-4" data-fill="white" style="position:absolute;left:14px;top:74px;width:16px;height:16px"></div><div data-mu="dot" data-key="rm-5" data-fill="amber" style="position:absolute;left:38px;top:74px;width:16px;height:16px"></div><div data-mu="dot" data-key="rm-6" data-fill="white" style="position:absolute;left:62px;top:74px;width:16px;height:16px"></div>
+          <div data-mu="dot" data-key="rm-7" data-fill="white" style="position:absolute;left:14px;top:100px;width:16px;height:16px"></div><div data-mu="dot" data-key="rm-8" data-fill="white" style="position:absolute;left:38px;top:100px;width:16px;height:16px"></div><div data-mu="dot" data-key="rm-9" data-fill="white" style="position:absolute;left:62px;top:100px;width:16px;height:16px"></div>
+          <div data-mu="pill" data-key="rm-ok" style="position:absolute;left:18px;top:132px;width:56px;height:20px"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center"><span style="font-family:var(--mu-head);font-size:24px">Ничего не выбрано</span><span style="font-size:14px;color:var(--mu-text2)">Пульт · для пустой очереди и избранного.</span></div>
+    </div>
+
+    <div data-mu-stage="il-testcard" data-screen-label="Иллюстрация Настроечная таблица" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:20px">
+      <div data-mu-layer=""></div>
+      <div style="height:210px;display:flex;align-items:flex-start;justify-content:center">
+        <div data-mu="bar" data-key="tc" data-fill="surf" data-r="10" data-marks="0" style="position:relative;width:236px;height:156px">
+          <div data-mu="btn" data-key="tc-0" data-fill="white" data-r="3" data-over="22" data-cf=".8" data-ow="2.5" data-marks="0" data-edge="0" style="position:absolute;left:14px;top:12px;width:26px;height:80px"></div>
+          <div data-mu="btn" data-key="tc-1" data-fill="amber" data-r="3" data-over="22" data-cf=".8" data-ow="2.5" data-marks="0" data-edge="0" style="position:absolute;left:44px;top:12px;width:26px;height:80px"></div>
+          <div data-mu="btn" data-key="tc-2" data-fill="cyan" data-r="3" data-over="22" data-cf=".8" data-ow="2.5" data-marks="0" data-edge="0" style="position:absolute;left:74px;top:12px;width:26px;height:80px"></div>
+          <div data-mu="btn" data-key="tc-3" data-fill="green" data-r="3" data-over="22" data-cf=".8" data-ow="2.5" data-marks="0" data-edge="0" style="position:absolute;left:104px;top:12px;width:26px;height:80px"></div>
+          <div data-mu="btn" data-key="tc-4" data-fill="mag" data-r="3" data-over="22" data-cf=".8" data-ow="2.5" data-marks="0" data-edge="0" style="position:absolute;left:134px;top:12px;width:26px;height:80px"></div>
+          <div data-mu="btn" data-key="tc-5" data-fill="red" data-r="3" data-over="22" data-cf=".8" data-ow="2.5" data-marks="0" data-edge="0" style="position:absolute;left:164px;top:12px;width:26px;height:80px"></div>
+          <div data-mu="btn" data-key="tc-6" data-fill="blue" data-r="3" data-over="22" data-cf=".8" data-ow="2.5" data-marks="0" data-edge="0" style="position:absolute;left:194px;top:12px;width:26px;height:80px"></div>
+          <span style="position:absolute;left:0;right:0;top:126px;text-align:center;font-family:Handjet,monospace;font-size:20px;line-height:1;letter-spacing:1px;color:var(--mu-osd)">CH 03 · НАСТРОЙКА</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center"><span style="font-family:var(--mu-head);font-size:24px">Идёт настройка</span><span style="font-size:14px;color:var(--mu-text2)">Настроечная таблица · для первого запуска.</span></div>
+    </div>
+  </div>
+
+  <div data-screen-label="Узоры" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font-family:var(--mu-head);font-size:28px">Узоры для Экрана</span><span style="font-size:13px;color:var(--mu-text2)">бесшовные; у каждого обычный вариант и «тихий» под текст</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 24px">
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="lines" data-quiet="0" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c"></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">СТРОКИ · шаг 3 dp</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="snow" data-quiet="0" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c"></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">СНЕГ · плитка 64 dp</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="raster" data-quiet="0" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c"></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">РАСТР · шаг 5 dp</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="mosaic" data-quiet="0" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c"></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">МОЗАИКА · блоки 8 dp</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="lines" data-quiet="1" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c;box-sizing:border-box;padding:18px 20px;display:flex;flex-direction:column;gap:6px"><span style="font-size:16px;font-weight:500">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">CH 03 · SP</span></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">СТРОКИ · тихий</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="snow" data-quiet="1" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c;box-sizing:border-box;padding:18px 20px;display:flex;flex-direction:column;gap:6px"><span style="font-size:16px;font-weight:500">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">CH 03 · SP</span></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">СНЕГ · тихий</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="raster" data-quiet="1" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c;box-sizing:border-box;padding:18px 20px;display:flex;flex-direction:column;gap:6px"><span style="font-size:16px;font-weight:500">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">CH 03 · SP</span></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">РАСТР · тихий</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div data-pat="mosaic" data-quiet="1" style="height:150px;border-radius:10px;box-shadow:0 0 0 2px #05060c;box-sizing:border-box;padding:18px 20px;display:flex;flex-direction:column;gap:6px"><span style="font-size:16px;font-weight:500">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">CH 03 · SP</span></div><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">МОЗАИКА · тихий, блоки 16 dp</span></div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Эфир&quot;,&quot;Копия&quot;],&quot;default&quot;:&quot;Эфир&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cassetteSeed&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:999,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  root = React.createRef();
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  static ICONS = [
+    ['меню', 'M4 7h16M4 12h10M15 13h5M4 17h16', 'срез: конец средней линии сдвинут на 1 dp'],
+    ['назад', 'M11 5l-7 7 7 7M5 12h9M15 13h5', 'срез: хвост стрелки сдвинут на 1 dp'],
+    ['закрыть', 'M5 5l14 14M19 5l-6 6M10 14l-5 5', 'выпавший сегмент в центре'],
+    ['поиск', 'M5 10.5a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0-11 0M15 15l1.5 1.5M18 18l2 2', 'выпавший сегмент ручки'],
+    ['домой', 'M4 11l8-7 8 7M6 10v10h4M13 21h5V10', 'срез: правая половина сдвинута на 1 dp'],
+    ['добавить', 'M12 5v14M5 12h6M13 13h6', 'срез: правое плечо сдвинуто на 1 dp'],
+    ['удалить', 'M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v3M14 17v1', 'выпавший сегмент правой прорези'],
+    ['править', 'M5 19l1-4L15 6l3 3-9 9zM5 22h8M15 22h4', 'выпавший сегмент подчёркивания'],
+    ['поделиться', 'M12 15V4M8 8l4-4 4 4M5 12v8h8M14 21h5v-9', 'срез: правая часть лотка сдвинута на 1 dp'],
+    ['обновить', 'M19 12a7 7 0 1 1-2.2-5.1M19 4v4h-4', 'без акцента'],
+    ['настройки', 'M4 7h8M16 7h4M4 17h2M10 18h10M12 7a2 2 0 1 0 4 0a2 2 0 1 0-4 0M6 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0', 'срез: нижняя линия сдвинута на 1 dp'],
+    ['готово', 'M5 12l5 5M11 17l8-10', 'выпавший сегмент в сгибе'],
+    ['ошибка', 'M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0M9 9l6 6M15 9l-2 2M10.5 14.5L9 16', 'выпавший сегмент креста'],
+    ['внимание', 'M12 4l9 16H3zM12 10v4M12 17v1', 'без акцента'],
+    ['инфо', 'M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0M12 11v6M12 7v1', 'без акцента'],
+    ['время', 'M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0M12 8v4l3 2', 'без акцента']
+  ];
+  pp() { const p = this.props; return { theme: (p.theme ?? 'Эфир') === 'Копия' ? 'kopiya' : 'efir', seed: p.cassetteSeed ?? 5, fps: 8, boil: .8, rough: .35, density: 1, speed: 1, keyframeLoss: false }; }
+  patterns() {
+    const ME = window.MutantEngine, root = this.root.current; if (!ME || !root || !this.eng) return;
+    const C = ME.C, pr = !!C.print, tile = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`, ink = a => pr ? `rgba(20,17,15,${a})` : `rgba(233,242,228,${a})`;
+    root.querySelectorAll('[data-pat]').forEach(el => {
+      const q = el.dataset.quiet === '1', R = this.eng.rng('pattern', el.dataset.pat + (q ? 'q' : '')); let bg = '';
+      if (el.dataset.pat === 'lines') bg = `repeating-linear-gradient(to bottom, ${pr ? `rgba(20,17,15,${q ? .06 : .2})` : `rgba(0,0,0,${q ? .1 : .38})`} 0 1px, transparent 1px 3px), ${C.bg}`;
+      else if (el.dataset.pat === 'raster') { const st = q ? 6 : 5, r = q ? .8 : 1.4; bg = `radial-gradient(circle at ${st / 2}px ${st / 2}px, ${ink(q ? (pr ? .16 : .1) : (pr ? .5 : .3))} 0 ${r}px, transparent ${r + .35}px) 0 0/${st}px ${st}px, ${C.bg}`; }
+      else if (el.dataset.pat === 'snow') {
+        let s = ''; for (let i = 0; i < (q ? 30 : 120); i++) { const w = R() < .2 ? 2 : 1, x = Math.floor(R() * (64 - w)), y = Math.floor(R() * 64), o = q ? .08 + .1 * R() : .25 + .5 * R(); s += `<rect x="${x}" y="${y}" width="${w}" height="1" fill="${pr ? '#14110f' : '#ffffff'}" opacity="${o.toFixed(2)}"/>`; }
+        bg = `${tile(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">${s}</svg>`)} 0 0/64px 64px, ${C.bg}`;
+      } else {
+        const b = q ? 16 : 8, pal = q ? [C.bg, C.surf, C.bg, C.coc1] : [C.coc1, C.surf, C.surf2, C.coc2, C.surf]; let s = '';
+        for (let y = 0; y < 64; y += b) for (let x = 0; x < 64; x += b) s += `<rect x="${x}" y="${y}" width="${b}" height="${b}" fill="${pal[Math.floor(R() * pal.length)]}"${q ? ' opacity=".55"' : ''}/>`;
+        bg = `${tile(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">${s}</svg>`)} 0 0/64px 64px, ${C.bg}`;
+      }
+      el.style.background = bg;
+    });
+  }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current) { this.tm = setTimeout(go, 60); return; }
+      this.eng = window.__mu = new window.MutantEngine(this.root.current, this.pp()); this.eng.start(); this.patterns();
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const lt = (this.props.theme ?? 'Эфир') === 'Копия'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    if (this.eng) { this.eng.setProps(this.pp()); this.patterns(); }
+    return { root: this.root, icons: Component.ICONS.map(([name, d, accent]) => ({ name, d, accent })) };
+  }
+}
+</script>
+</body>
+</html>

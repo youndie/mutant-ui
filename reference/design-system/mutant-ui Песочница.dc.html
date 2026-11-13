@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&family=Yeseva+One&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Песочница" style="padding:40px clamp(16px,4vw,56px) 64px;display:flex;flex-direction:column;gap:24px;max-width:1400px;margin:0 auto;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:8px;max-width:980px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · АРТЕФАКТ 4</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:clamp(36px,5vw,56px);line-height:1.05">Песочница генератора</h1>
+    <p style="margin:0;font-size:15px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Один экземпляр компонента на том же движке, что <a href="mutant-ui%20Компоненты.dc.html">Компоненты</a> и <a href="mutant-ui%20Листы%20образцов.dc.html">Листы образцов</a>. Меняются тип, seed, экземпляр, состояние, размер и гены; поверх можно показать слот, чистую зону и предел свеса. Значения генов по умолчанию берутся из профиля типа.</p>
+  </header>
+
+  <div style="display:flex;flex-wrap:wrap-reverse;gap:24px;align-items:flex-end">
+    <div style="flex:1 1 280px;max-width:380px;min-width:0;background:var(--mu-bg);border-radius:16px;padding:20px 20px 22px;display:flex;flex-direction:column;gap:18px">
+      <sc-for list="{{ groupsTop }}" as="g" hint-placeholder-count="2"><div style="display:flex;flex-direction:column;gap:8px"><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd);letter-spacing:1px">{{ g.title }}</span><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="4"><div onClick="{{ o.onClick }}" style="cursor:pointer;user-select:none;font-size:13px;font-weight:500;line-height:32px;padding:0 12px;border-radius:6px;box-shadow:inset 0 0 0 2px #05060c;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div></sc-for></div></div></sc-for>
+
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div onClick="{{ nextInst }}" style="flex:none;white-space:nowrap;cursor:pointer;user-select:none;font-family:Handjet,monospace;font-size:22px;line-height:40px;padding:0 16px;background:#b6ff1a;color:#05060c;border-radius:6px;box-shadow:inset 0 0 0 2px #05060c" style-hover="background:#19e3ff">СЛЕДУЮЩИЙ ЭКЗЕМПЛЯР</div>
+        <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2);white-space:nowrap">ключ {{ keyText }}</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ sliders }}" as="s" hint-placeholder-count="8"><div style="display:flex;flex-direction:column;gap:2px"><sc-if value="{{ s.secShow }}" hint-placeholder-val="{{ false }}"><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd);letter-spacing:1px;margin-top:8px;margin-bottom:4px">{{ s.sec }}</span></sc-if><div style="display:flex;justify-content:space-between;gap:12px;font-size:13px"><span>{{ s.label }}</span><span style="font-family:Handjet,monospace;font-size:18px;line-height:1;color:var(--mu-acc)">{{ s.text }}</span></div><input type="range" min="{{ s.min }}" max="{{ s.max }}" step="{{ s.step }}" value="{{ s.value }}" onChange="{{ s.onInput }}" style="width:100%;margin:0;height:24px;accent-color:#b6ff1a"></div></sc-for>
+      </div>
+
+      <sc-for list="{{ groupsBottom }}" as="g" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:8px"><span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-osd);letter-spacing:1px">{{ g.title }}</span><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="3"><div onClick="{{ o.onClick }}" style="cursor:pointer;user-select:none;font-size:13px;font-weight:500;line-height:32px;padding:0 12px;border-radius:6px;box-shadow:inset 0 0 0 2px #05060c;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div></sc-for></div></div></sc-for>
+
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty">Генов generation, ghost, hueDrift и split в движке нет, поэтому ползунков для них нет; общий износ задаёт ползунок «износ». Шейдерного рендера тоже нет: всё рисуется вектором.</p>
+    </div>
+
+    <div style="flex:3 1 380px;min-width:0;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;z-index:2;background:var(--mu-page);padding:12px 0 10px">
+      <div style="overflow:auto;background:var(--mu-bg);border-radius:16px;padding:16px">
+        <div style="width:{{ zw }}px;height:{{ zh }}px">
+          <div ref="{{ stage }}" data-mu-stage="sandbox" style="position:relative;width:372px;height:230px;background:var(--mu-page);border-radius:10px;transform:scale({{ zoom }});transform-origin:0 0;display:flex;align-items:center;justify-content:center;padding-bottom:24px;box-sizing:border-box">
+            <div data-mu-layer=""></div>
+            <div ref="{{ content }}" style="display:flex"></div>
+            <div ref="{{ ov }}" style="position:absolute;left:0;top:0;pointer-events:none"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px">
+        <span ref="{{ info }}" style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-text);letter-spacing:.5px">—</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;font-size:13px;color:var(--mu-text2)">
+        <span style="display:flex;align-items:center;gap:6px"><i style="width:18px;height:0;border-top:2px dashed #19e3ff"></i>слот</span>
+        <span style="display:flex;align-items:center;gap:6px"><i style="width:18px;height:0;border-top:2px dashed #ff2e93"></i>чистая зона</span>
+        <span style="display:flex;align-items:center;gap:6px"><i style="width:18px;height:0;border-top:2px dashed #ffb000"></i>предел свеса</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <div onClick="{{ saveSvg }}" style="flex:none;white-space:nowrap;cursor:pointer;user-select:none;font-family:Handjet,monospace;font-size:22px;line-height:40px;padding:0 16px;background:var(--mu-surf2);color:var(--mu-text);border-radius:6px;box-shadow:inset 0 0 0 2px #05060c" style-hover="background:var(--mu-surf)">СКАЧАТЬ SVG КАДРА</div>
+        <div onClick="{{ reset }}" style="flex:none;white-space:nowrap;cursor:pointer;user-select:none;font-family:Handjet,monospace;font-size:22px;line-height:40px;padding:0 16px;background:var(--mu-surf2);color:var(--mu-text);border-radius:6px;box-shadow:inset 0 0 0 2px #05060c" style-hover="background:var(--mu-surf)">СБРОСИТЬ К ПРОФИЛЮ</div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty">В SVG попадает только тело компонента, без текста и иконки: они живут в обычной вёрстке поверх.</p>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  static IC = { plus: '<path d="M12 5v14M5 12h6M13 13h6"></path>', share: '<path d="M12 15V4M8 8l4-4 4 4M5 12v8h8M14 21h5v-9"></path>', check: '<path d="M5 12l5 5M11 17l8-10"></path>', home: '<path d="M4 11l8-7 8 7M6 10v10h4M13 21h5V10"></path>', clock: '<circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path>', search: '<circle cx="10.5" cy="10.5" r="5.5"></circle><path d="M15 15l1.5 1.5M18 18l2 2"></path>', settings: '<path d="M4 7h8M16 7h4M4 17h2M10 18h10"></path><circle cx="14" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle>' };
+  static T = {
+    button: { name: 'Button', mu: 'btn', w: 168, h: 48 }, fab: { name: 'FAB', mu: 'fab', w: 56, h: 56 }, icon: { name: 'IconButton', mu: 'icon', w: 48, h: 48 }, chip: { name: 'Chip', mu: 'chip', w: 112, h: 32, slip: 2 },
+    card: { name: 'Card', mu: 'card', w: 328, h: 80 }, field: { name: 'TextField', mu: 'field', w: 260, h: 52 }, switch: { name: 'Switch', mu: 'track', w: 52, h: 28 }, check: { name: 'Checkbox', mu: 'box', w: 22, h: 22 },
+    radio: { name: 'Radio', mu: 'dot', w: 22, h: 22 }, navbar: { name: 'NavBar', mu: 'bar', w: 328, h: 64, marks: 0 }, snack: { name: 'Snackbar', mu: 'bar', w: 328, h: 48, marks: 0 }
+  };
+  static def(type) { const T = Component.T[type], K = (window.MutantEngine ? window.MutantEngine.K[T.mu] : null) || { over: 24, cf: .5 }; return { type, w: T.w, h: T.h, calm: 1, over: K.over, cf: K.cf, ow: K.ow || 3, slip: T.slip || 0, edge: K.edge ?? 1, marks: T.marks ?? K.marks ?? 1 }; }
+  state = { ...Component.def('button'), inst: 1, st: 'rest', seed: 5, fps: 8, boil: .8, rough: .35, density: 1, ovSlot: false, ovClean: false, ovOver: false, mode: 'live', theme: 'efir', zoom: 1 };
+  root = React.createRef(); stage = React.createRef(); content = React.createRef(); ov = React.createRef(); info = React.createRef();
+  key() { return this.state.type + '/' + String(this.state.inst).padStart(2, '0'); }
+  markup() {
+    const s = this.state, I = Component.IC, key = this.key(), flat = s.mode === 'flat', st = flat ? 'success' : s.st, dis = st === 'disabled';
+    const sv = (p, z, sw) => `<svg width="${Math.round(z)}" height="${Math.round(z)}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 2}" stroke-linecap="square">${p}</svg>`;
+    const stA = { rest: '', press: ' data-heat=""', loading: ' data-state="loading"', success: ' data-state="clean"', disabled: ' data-state="disabled"', error: ' data-state="error"' }[st], still = s.mode === 'still' ? ' data-still=""' : '';
+    const a = `data-key="${key}" data-calm="${s.calm}" data-over="${s.over}" data-cf="${s.cf}" data-ow="${s.ow}" data-edge="${s.edge}" data-marks="${s.marks}"` + (s.slip ? ` data-slip="${s.slip}"` : '') + stA + still;
+    const sub = (dis ? ' data-state="disabled"' : flat || st === 'success' ? ' data-state="clean"' : '') + still;
+    const w = s.w, h = s.h, box = `flex:none;width:${w}px;height:${h}px;`, mid = 'display:flex;align-items:center;justify-content:center;', tc = dis ? 'var(--mu-dis)' : 'var(--mu-text)', t2 = dis ? 'var(--mu-dis)' : 'var(--mu-text2)';
+    switch (s.type) {
+      case 'button': return `<div data-mu="btn" ${a} style="${box}${mid}font-size:15px;font-weight:500;color:#05060c;overflow:hidden;white-space:nowrap">Воспроизвести</div>`;
+      case 'fab': return `<div data-mu="fab" ${a} style="${box}${mid}color:#05060c">${sv(I.plus, Math.min(w, h) * .43, 2.5)}</div>`;
+      case 'icon': return `<div data-mu="icon" ${a} style="${box}${mid}color:${tc}">${sv(I.share, Math.min(w, h) * .5)}</div>`;
+      case 'chip': return `<div data-mu="chip" ${a} style="${box}${mid}font-size:13px;font-weight:500;color:${tc};white-space:nowrap">Избранное</div>`;
+      case 'card': return `<div data-mu="card" ${a} style="${box}box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px;overflow:hidden"><span style="font-size:16px;font-weight:500;color:${tc};white-space:nowrap">Без подписи №3</span><span style="font-size:13px;color:${t2};white-space:nowrap">Сторона A · 46 мин</span></div>`;
+      case 'field': return `<div data-mu="field" ${a} style="${box}display:flex;align-items:center;gap:8px;padding:0 14px;box-sizing:border-box;overflow:hidden;white-space:nowrap"><span style="font-family:Handjet,monospace;font-size:20px;color:${dis ? 'var(--mu-dis)' : 'var(--mu-osd)'}">ПОИСК</span><span style="font-size:15px;color:${t2}">Найти запись</span></div>`;
+      case 'switch': { const th = Math.max(8, h - 6); return `<div data-mu="track" data-r="99" ${a} style="position:relative;${box}"><div data-mu="thumb" data-r="99" data-key="${key}-t"${sub} style="position:absolute;left:${w - th - 3}px;top:3px;width:${th}px;height:${th}px"></div></div>`; }
+      case 'check': return `<div data-mu="box" data-fill="green" ${a} style="flex:none;width:${w}px;height:${w}px;${mid}color:#05060c">${sv(I.check, w * .8, 3)}</div>`;
+      case 'radio': return `<div data-mu="dot" ${a} style="flex:none;width:${w}px;height:${w}px;${mid}"><i data-keep="" style="width:${(w * .45).toFixed(1)}px;height:${(w * .45).toFixed(1)}px;border-radius:50%;background:${dis ? 'var(--mu-dis)' : '#ff3b30'}"></i></div>`;
+      case 'navbar': return `<div data-mu="bar" ${a} style="${box}display:grid;grid-template-columns:repeat(4,1fr);align-items:center;justify-items:center;color:${t2}"><div data-mu="pill" data-key="${key}-p"${sub} style="width:56px;height:30px;${mid}color:#05060c">${sv(I.home, 22)}</div>${sv(I.clock, 22)}${sv(I.search, 22)}${sv(I.settings, 22)}</div>`;
+      default: return `<div data-mu="bar" data-fill="blue" data-shadow="deep" data-r="6" ${a} style="${box}display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;overflow:hidden;white-space:nowrap"><span style="font-size:14px;color:var(--mu-onblue)">Добавлено в очередь</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-onblue-acc);letter-spacing:1px">ОТМЕНИТЬ</span></div>`;
+    }
+  }
+  pp() { const s = this.state; return { theme: s.theme, seed: s.seed, fps: s.fps, boil: s.boil, rough: s.rough, density: s.density, speed: 1, keyframeLoss: false }; }
+  sync() {
+    const c = this.content.current; if (!c) return;
+    const lt = this.state.theme === 'kopiya'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    const m = this.markup();
+    if (m !== this._m) { this._m = m; c.innerHTML = m; if (this.eng && this.eng.stages[0]) { this.eng.stages[0].built = false; this.eng.stages[0].sync = true; } }
+    if (this.eng) this.eng.setProps(this.pp());
+  }
+  fit() {
+    if (this.userZoom) return;
+    const card = this.stage.current && this.stage.current.parentNode.parentNode, avail = card ? card.clientWidth - 32 : 0; if (avail <= 0) return;
+    const z = Math.max(1, Math.min(2, Math.floor(avail / 372 * 2) / 2)); if (z !== this.state.zoom) this.setState({ zoom: z });
+  }
+  tick() {
+    this.fit();
+    const c = this.content.current, n = c && c.querySelector('[data-mu]'), it = n && n._muIt, s = this.state; if (!it || !it.g) return;
+    const el = it.el, g = it.g, txt = `СЛОТ ${el.w}×${el.h} DP · ПОДТЁКОВ ${g.D.length} · ЛИНИЙ ${g.ML.length} · БЛОКОВ МОЗАИКИ ${(g.mz || []).length}`;
+    if (this.info.current && this.info.current.textContent !== txt) this.info.current.textContent = txt;
+    let o = '';
+    if (s.ovSlot) o += `<rect x="${el.ox}" y="${el.oy}" width="${el.w}" height="${el.h}" fill="none" stroke="#19e3ff" stroke-width="1" stroke-dasharray="4 3"/>`;
+    if (s.ovClean && el.tz[2] > 0) o += `<rect x="${(el.ox + el.tz[0]).toFixed(1)}" y="${(el.oy + el.tz[1]).toFixed(1)}" width="${el.tz[2].toFixed(1)}" height="${el.tz[3].toFixed(1)}" fill="none" stroke="#ff2e93" stroke-width="1" stroke-dasharray="3 2"/>`;
+    if (s.ovOver) o += `<line x1="${el.ox - 8}" x2="${el.ox + el.w + 8}" y1="${el.oy + el.h + el.over}" y2="${el.oy + el.h + el.over}" stroke="#ffb000" stroke-width="1" stroke-dasharray="4 3"/>`;
+    if (o !== this._o && this.ov.current) { this._o = o; this.ov.current.innerHTML = o ? `<svg width="372" height="230" viewBox="0 0 372 230" style="position:absolute;left:0;top:0;overflow:visible">${o}</svg>` : ''; }
+  }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current || !this.content.current) { this.tm = setTimeout(go, 60); return; }
+      if (!this.touched) this.setState(Component.def(this.state.type));
+      this.sync();
+      this.eng = window.__mu = new window.MutantEngine(this.root.current, this.pp()); this.eng.start();
+      this.iv = setInterval(() => this.tick(), 200);
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentDidUpdate() { this.sync(); clearTimeout(this.tk); this.tk = setTimeout(() => this.tick(), 60); }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); clearInterval(this.iv); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const s = this.state, set = o => { this.touched = true; this.setState(o); }, on = a => ({ bg: a ? '#b6ff1a' : 'var(--mu-surf2)', fg: a ? '#05060c' : 'var(--mu-text)' });
+    const pick = (k, list) => list.map(([v, label]) => ({ label, onClick: () => set({ [k]: v }), ...on(s[k] === v) }));
+    const tog = (k, label) => ({ label, onClick: () => set({ [k]: s[k] ? 0 : 1 }), ...on(!!s[k]) });
+    const sl = (sec, label, key, min, max, step) => ({ sec, secShow: !!sec, label, min, max, step, value: s[key], text: String(s[key]), onInput: e => set({ [key]: +e.target.value }) });
+    return {
+      root: this.root, stage: this.stage, content: this.content, ov: this.ov, info: this.info,
+      zoom: s.zoom, zw: 372 * s.zoom, zh: 230 * s.zoom, keyText: this.key(),
+      groupsTop: [
+        { title: 'ТИП', opts: Object.entries(Component.T).map(([id, T]) => ({ label: T.name, onClick: () => set({ ...Component.def(id), inst: 1 }), ...on(s.type === id) })) },
+        { title: 'СОСТОЯНИЕ', opts: pick('st', [['rest', 'покой'], ['press', 'нажатие'], ['loading', 'загрузка'], ['success', 'успех'], ['error', 'ошибка'], ['disabled', 'disabled']]) }
+      ],
+      sliders: [
+        sl('КАССЕТА', 'seed кассеты', 'seed', 1, 999, 1), sl('', 'boil · дрожание', 'boil', 0, 1.5, .1), sl('', 'noise · рваность и крап', 'rough', 0, 1, .05), sl('', 'blot · линии потока', 'density', .6, 1.6, .1),
+        sl('РАЗМЕР СЛОТА', 'ширина, dp', 'w', 16, 340, 2), sl('', 'высота, dp', 'h', 16, 180, 2),
+        sl('ГЕНЫ КОМПОНЕНТА', 'износ', 'calm', .2, 1.7, .1), sl('', 'melt · свес, dp', 'over', 0, 24, 1), sl('', 'melt · доля капель', 'cf', 0, 1, .05), sl('', 'outline, dp', 'ow', 1.5, 3, .5), sl('', 'slip · сдвиг заливки, dp', 'slip', 0, 3, .5)
+      ],
+      groupsBottom: [
+        { title: 'ТИК, КАДРОВ/С', opts: pick('fps', [[8, '8'], [12, '12'], [24, '24']]) },
+        { title: 'ПРИЁМЫ', opts: [tog('edge', 'crush · мозаика края'), tog('marks', 'линии потока')] },
+        { title: 'НАЛОЖЕНИЯ', opts: [tog('ovSlot', 'слот'), tog('ovClean', 'чистая зона'), tog('ovOver', 'предел свеса')] },
+        { title: 'РЕНДЕР', opts: pick('mode', [['live', 'живой'], ['still', 'кадр покоя'], ['flat', 'плоско']]) },
+        { title: 'ТЕМА', opts: pick('theme', [['efir', 'Эфир'], ['kopiya', 'Копия']]) },
+        { title: 'МАСШТАБ', opts: [[1, '1×'], [1.5, '1.5×'], [2, '2×'], [3, '3×']].map(([v, label]) => ({ label, onClick: () => { this.userZoom = true; set({ zoom: v }); }, ...on(s.zoom === v) })) }
+      ],
+      nextInst: () => set({ inst: s.inst + 1 }),
+      reset: () => set(Component.def(s.type)),
+      saveSvg: () => {
+        const st = this.eng && this.eng.stages[0]; if (!st) return;
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(st.svg)], { type: 'image/svg+xml' }));
+        a.download = `mutant-${this.key().replace('/', '-')}-seed${s.seed}.svg`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

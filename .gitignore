@@ -1,0 +1,9 @@
+.docs-bootstrap/
+.gradle/
+build/
+.kotlin/
+local.properties
+.idea/
+.DS_Store
+CLAUDE.local.md
+.venv/

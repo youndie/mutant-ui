@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&family=Yeseva+One&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Анимационные спеки" style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:28px;width:1640px;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:1040px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · АРТЕФАКТ 8 · ТЕМЫ «ЭФИР» И «КОПИЯ»</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:64px;line-height:1.05">Анимационные спеки</h1>
+    <p style="margin:0;font-size:16px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">По строке на каждое событие, которое есть в движке: имя, длительность, кривая и 2–5 кадров с таймкодами. Кадры не нарисованы, а сняты с того же движка, застывшего в нужный момент. Колонка «пауза» описывает поведение при reduce motion по брифу: тики стоят, переходы заменяются сменой за 100 мс. В движке пауза пока только останавливает часы покоя, замены переходов нет. Вживую события видны в <a href="mutant-ui%20Компоненты.dc.html">Компонентах</a> и <a href="mutant-ui%20Демо.dc.html">Демо</a>.</p>
+  </header>
+  <div ref="{{ host }}" style="display:flex;flex-direction:column;gap:20px"></div>
+  <div data-screen-label="Не реализовано" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px;display:flex;flex-direction:column;gap:10px;max-width:1040px">
+    <span style="font-family:var(--mu-head);font-size:28px">События брифа без спеки</span>
+    <p style="margin:0;font-size:15px;line-height:1.55;color:var(--mu-text2);text-wrap:pretty">Этих событий в движке нет, поэтому кадров для них нет: hiccup, hit и lock (заменены на boil-over), rec, lock-on как переход (фокус показан готовым кадром), corrupt и repair, tune-in у Кокона, osd-in и osd-out у Snackbar, pause и play у диалога, shear при скролле, switch при смене экрана, lost и found.</p>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Эфир&quot;,&quot;Копия&quot;],&quot;default&quot;:&quot;Эфир&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  root = React.createRef(); host = React.createRef();
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  pp() { return { theme: (this.props.theme ?? 'Эфир') === 'Копия' ? 'kopiya' : 'efir', seed: 5, fps: 8, boil: .8, rough: .35, density: 1, speed: 1, keyframeLoss: false }; }
+  dripTimes(eng) {
+    const el = { ox: 0, oy: 0, w: 56, h: 56, r: 16, over: 24, cf: 1, ow: 3, fill: '#b6ff1a', hl: '#ffffff', dead: 0, marks: 0, edge: 0, wob: 1, round: 0, calm: 1, state: '', tz: [14, 14, 28, 28], cz: [12, 12, 32, 32] }, it = { el, key: 'spec-fab', stat: true };
+    eng.genItem(it); const d = it.g.D.filter(x => x.drip).sort((a, b) => b.Lmax - a.Lmax)[0]; if (!d) return null;
+    const Hd = 2200 + 2200 * d.u, Gt = d.P - Hd - 2000, at = tau => Math.round(((tau - d.off * d.P) % d.P + d.P) % d.P + d.P * 2);
+    return [['creep', .55 * Gt], ['hang', Gt + .6 * Hd], ['pinch', Gt + Hd + 800], ['drop', Gt + Hd + 1220], ['recoil', Gt + Hd + 1520]].map(([n, tau]) => ({ n, tau: Math.round(tau), t: at(tau) }));
+  }
+  build(eng) {
+    const mid = 'display:flex;align-items:center;justify-content:center;', cap = 'font-family:Handjet,monospace;font-size:18px;line-height:1.1;color:var(--mu-text2)';
+    const sv = (p, z, sw) => `<svg width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 2}" stroke-linecap="square">${p}</svg>`;
+    let n = 0;
+    const F = (c, o) => { const z = o.z || 1, W = o.W, H = o.H; return `<div style="display:flex;flex-direction:column;gap:8px"><div style="width:${W * z}px;height:${H * z}px"><div data-mu-stage="spec${++n}" data-mu-t="${o.t ?? 5000}"${o.attrs || ''} style="position:relative;width:${W}px;height:${H}px;background:var(--mu-page);border-radius:${10 / z}px;transform:scale(${z});transform-origin:0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${o.gap || 0}px;padding-bottom:${o.pb ?? 22}px;box-sizing:border-box;overflow:hidden"><div data-mu-layer=""></div>${o.html}</div></div><span style="${cap}">${c}</span></div>`; };
+    const btn = x => `<div data-mu="btn" data-key="spec-btn"${x || ''} style="width:168px;height:48px;${mid}font-size:15px;font-weight:500;color:#05060c">Воспроизвести</div>`;
+    const card = (x, w) => `<div data-mu="card" data-key="spec-card"${x || ''} style="width:${w || 210}px;height:64px;box-sizing:border-box;padding:12px 14px;display:flex;flex-direction:column;gap:3px"><span style="font-size:15px;font-weight:500;color:var(--mu-text)">Без подписи №3</span><span style="font-size:12px;color:var(--mu-text2)">Сторона A · 46 мин</span></div>`;
+    const fab = `<div data-mu="fab" data-key="spec-fab" data-marks="0" data-edge="0" style="width:56px;height:56px;${mid}color:#05060c">${sv('<path d="M12 5v14M5 12h6M13 13h6"></path>', 24, 2.5)}</div>`;
+    const tape = '<div data-mu-tape="" style="position:absolute;left:0;top:0;width:250px;height:130px;pointer-events:none"></div>';
+    const check = p => { const q = 1 - p; return `<div data-mu="box" data-key="spec-check" data-fill="green" data-pour="${p}|surf2" style="position:relative;width:22px;height:22px;${mid}color:#05060c"><svg data-keep="" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="transform-origin:50% 0;transform:translateY(${(-q * 7).toFixed(1)}px) scaleY(${(1 + q * .9).toFixed(2)});clip-path:inset(0 0 ${Math.round(q * 100)}% 0)"><path d="M5 12l5 5M11 17l8-10"></path></svg></div>`; };
+    const chip = p => `<div data-mu="chip" data-key="spec-chip" data-fill="green" data-pour="${p}|surf2" style="width:112px;height:32px;${mid}font-size:13px;font-weight:500;color:${p < .5 ? 'var(--mu-text)' : '#05060c'}">Избранное</div>`;
+    const sw = p => `<div data-mu="track" data-key="spec-switch" data-pour="${p}|surf2" style="position:relative;width:52px;height:28px"><div data-mu="thumb" data-key="spec-thumb" data-slide="${p}|-24" style="position:absolute;left:27px;top:3px;width:22px;height:22px"></div></div>`;
+    const prog = '<div style="display:flex;align-items:center;gap:14px;width:214px"><div style="position:relative;flex:1;height:12px;background:#05060c;box-shadow:0 0 0 2px #05060c;overflow:hidden"><div data-mu-anim="rewind" style="position:absolute;left:0;top:0;width:96px;height:100%;background:linear-gradient(90deg,rgba(182,255,26,.15) 0 24px,rgba(182,255,26,.4) 24px 48px,#b6ff1a 48px)"></div></div><div data-mu-anim="reel" style="position:relative;width:36px;height:36px;border-radius:50%;background:#e9f2e4;box-shadow:0 0 0 2.5px #05060c;flex:none"><i style="position:absolute;left:14px;top:4px;width:8px;height:8px;border-radius:50%;background:#05060c"></i><i style="position:absolute;left:5px;top:20px;width:8px;height:8px;border-radius:50%;background:#05060c"></i><i style="position:absolute;left:23px;top:20px;width:8px;height:8px;border-radius:50%;background:#05060c"></i></div></div>';
+    const dt = this.dripTimes(eng) || [], tau0 = dt.length ? dt[0].tau : 0, dn = { creep: 'подтёк растёт', hang: 'капля висит', pinch: 'шейка рвётся', drop: 'капля падает', recoil: 'остаток отскочил' };
+    const mosh = p => F(p === null ? 'до сбоя' : p > 1 ? 'восстановление' : Math.round(p * 100) + ' % сбоя', { W: 250, H: 212, gap: 36, pb: 30, attrs: ' data-mu-mosh=""' + (p === null ? '' : ` data-mu-mosh-p="${p}"`), html: card('', 214) + btn() });
+    const R = [
+      { ev: 'drift', who: 'Лента · покой', dur: 'зерно — каждый тик 125 мс; полоса трекинга идёт 2100 мс раз в 7000 мс', curve: 'ступенями по тикам', pause: 'зерно и полоса стоят', note: 'В брифе полоса 1200–2400 мс.',
+        fr: [['покой, полосы нет', 3000], ['полоса вошла · 350 мс', 7350], ['1050 мс', 8050], ['1900 мс', 8900]].map(([c, t]) => F(c, { W: 250, H: 130, t, pb: 14, html: card() + tape })) },
+      { ev: 'creep · hang · pinch · drop · recoil', who: 'Компонент · покой', dur: 'цикл 8000–14000 мс: рост, капля висит 2200–4400, шейка 1000, падение и отскок 1000', curve: 'рост — разгон под тяжестью; шейка — ease-in²; падение — ускорение 0.00055 dp/мс²; отскок — затухающая пружина', pause: 'подтёк стоит в текущем кадре, капли не падают', note: 'Таймкоды — для самого длинного подтёка FAB, от начала его цикла. В брифе весь creep 4000–9000 мс.',
+        fr: dt.map(x => F(`${x.n} · ${x.tau - tau0 === 0 ? '0' : '+' + (x.tau - tau0)} мс<br>${dn[x.n]}`, { W: 110, H: 118, z: 1.75, t: x.t, pb: 44, html: fab })) },
+      { ev: 'boil-over', who: 'Любой нажимаемый · press и release', dur: 'нагрев 320 мс, остывание 480 мс', curve: 'линейно; кадры идут в 1.5 раза чаще, 12 в секунду', pause: 'без кипения: цвет меняется за 100 мс', note: 'Дрожание втрое сильнее в верхней части, сверху пузыри, цвет уходит в янтарь, мозаика бегает, капли не отрываются. В брифе на этом месте hit 80 мс и lock 240 мс со срезами.',
+        fr: [['press · 0 мс', 0, 5000], ['160 мс', .5, 5166], ['320 мс · кипит', 1, 5333], ['release · +240 мс', .5, 5916]].map(([c, k, t]) => F(c, { W: 220, H: 116, t, pb: 26, html: btn(k ? ` data-heat-k="${k}"` : '') })) },
+      { ev: 'seek', who: 'Button · loading', dur: 'цикл 900 мс', curve: 'линейно, по тикам', pause: 'полосы стоят', note: 'Две полосы перемотки идут снизу вверх по телу, подпись стоит.',
+        fr: [['0 мс', 5000], ['300 мс', 5300], ['600 мс', 5600]].map(([c, t]) => F(c, { W: 220, H: 116, t, pb: 26, html: btn(' data-state="loading"') })) },
+      { ev: 'pour · melt-in', who: 'Checkbox · check', dur: 'заливка 370 мс, галочка 330 мс', curve: 'линейно, 12 кадров в секунду; подтёки фронта бегут впереди', pause: 'цвет и галочка меняются за 100 мс без стекания', note: 'Новый цвет стекает сверху, галочка натекает вытянутой и садится на место. Выключение — melt-out: галочка оплывает вниз, цвет стекает так же. В брифе burn и wipe блоками 4 dp, 200 и 160 мс.',
+        fr: [['0 мс', 0], ['125 мс', .33], ['250 мс', .66], ['370 мс', 1]].map(([c, p]) => F(c, { W: 64, H: 56, z: 2.5, pb: 0, html: check(p) })) },
+      { ev: 'pour', who: 'Chip · select', dur: '420 мс (260 + 5 × высота, от 300 до 620)', curve: 'линейно, 12 кадров в секунду', pause: 'цвет меняется за 100 мс', note: 'Цвет текста меняется на 200-й мс, примерно на середине заливки. В брифе tune 200 мс: заливка проявляется из шума.',
+        fr: [['0 мс', 0], ['125 мс', .3], ['250 мс', .6], ['420 мс', 1]].map(([c, p]) => F(c, { W: 150, H: 80, z: 1.5, pb: 16, html: chip(p) })) },
+      { ev: 'slide', who: 'Switch · toggle', dur: 'бегунок 330 мс, заливка дорожки 400 мс', curve: 'ease-out²; в середине бегунок растянут на 40 % и сплющен на 18 %', pause: 'бегунок и цвет меняются за 100 мс', note: 'Дорожка заливается тем же pour. В брифе 240 мс со следом-эхом, который догоняет бегунок; эхо здесь статичное.',
+        fr: [['0 мс', 0], ['110 мс', .33], ['220 мс', .66], ['330 мс', 1]].map(([c, p]) => F(c, { W: 84, H: 60, z: 2.5, pb: 8, html: sw(p) })) },
+      { ev: 'flow', who: 'Компонент с линиями · покой', dur: 'цикл одной линии 5000–9500 мс', curve: 'линейно, по тикам', pause: 'линии стоят', note: 'Линия появляется короткой, вытягивается, сползает вниз и пропадает. В брифе такого события нет: там кляксы стоят на месте.',
+        fr: [['0 мс', 5000], ['1500 мс', 6500], ['3000 мс', 8000]].map(([c, t]) => F(c, { W: 260, H: 124, t, pb: 26, html: card('', 224) })) },
+      { ev: 'keyframe-loss', who: 'Экран · покой, раз в 9000 мс', dur: 'сбой 900–1400 мс, восстановление 375 мс', curve: 'блоки шагают раз в 125 мс', pause: 'не запускается', note: 'Полоса экрана застывает, блоки 16 и 8 dp тянут картинку по своим векторам, затем опорный кадр восстанавливает полосу сверху вниз. Текст остаётся поверх. В брифе события нет.',
+        fr: [mosh(null), mosh(.45), mosh(.95), mosh(1.2)] },
+      { ev: 'rewind', who: 'Progress · indeterminate', dur: 'блок сдвигается на 12 dp за тик, катушка — на 30°', curve: 'линейно, по тикам', pause: 'стоит', note: 'В брифе цикл 1200 мс.',
+        fr: [['0 мс', 5000], ['125 мс', 5125], ['250 мс', 5250]].map(([c, t]) => F(c, { W: 250, H: 76, t, pb: 0, html: prog })) },
+      { ev: 'no-signal', who: 'Любой · disabled', dur: 'переход мгновенный', curve: '—', pause: 'то же', note: 'Слизь выключена, цвет обесцвечен, строки, снег и сдвинутая полоса стоят. В брифе переход 300 мс.',
+        fr: [F('покой', { W: 220, H: 116, pb: 26, html: btn() }), F('disabled', { W: 220, H: 116, pb: 26, html: btn(' data-state="disabled"') })] },
+      { ev: 'clean', who: 'Любой · success', dur: 'статичный кадр', curve: '—', pause: 'то же', note: 'Чистый кадр без повреждений. В брифе повреждения уходят на 600 мс и возвращаются; возврата здесь нет.',
+        fr: [F('покой', { W: 220, H: 116, pb: 26, html: btn() }), F('success', { W: 220, H: 116, pb: 26, html: btn(' data-state="clean"') })] }
+    ];
+    const lab = 'font-family:Handjet,monospace;font-size:16px;letter-spacing:1px;color:var(--mu-osd)';
+    return R.map(r => `<div data-screen-label="Спека ${r.ev}" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px;display:grid;grid-template-columns:320px minmax(0,1fr);gap:32px;align-items:start"><div style="display:flex;flex-direction:column;gap:10px"><span style="font-family:Handjet,monospace;font-weight:600;font-size:30px;line-height:1;color:var(--mu-acc)">${r.ev}</span><span style="font-size:14px;font-weight:500">${r.who}</span><div style="display:grid;grid-template-columns:104px minmax(0,1fr);gap:6px 10px;font-size:13px;line-height:1.4"><span style="${lab}">ДЛИТЕЛЬНОСТЬ</span><span>${r.dur}</span><span style="${lab}">КРИВАЯ</span><span>${r.curve}</span><span style="${lab}">ПАУЗА</span><span>${r.pause}</span></div><p style="margin:0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty">${r.note}</p></div><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">${r.fr.join('')}</div></div>`).join('');
+  }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current || !this.host.current) { this.tm = setTimeout(go, 60); return; }
+      const eng = new window.MutantEngine(this.root.current, this.pp());
+      this.host.current.innerHTML = this.build(eng);
+      this.eng = window.__mu = eng; eng.start();
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const lt = (this.props.theme ?? 'Эфир') === 'Копия'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    if (this.eng) this.eng.setProps(this.pp());
+    return { root: this.root, host: this.host };
+  }
+}
+</script>
+</body>
+</html>

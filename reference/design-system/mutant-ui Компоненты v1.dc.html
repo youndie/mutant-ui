@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Компоненты v1" style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:32px;width:1640px;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:980px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · КОМПОНЕНТЫ V1 · ТЕМЫ «ЭФИР» И «КОПИЯ»</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:64px;line-height:1.05">Компоненты v1</h1>
+    <p style="margin:0;font-size:16px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Семь компонентов второй очереди на том же движке, что <a href="mutant-ui%20Компоненты.dc.html">Компоненты MVP</a>: Slider, Segmented button, Tooltip, Menu, NavigationDrawer, BottomSheet и Pull-to-refresh. Slider тянется, Segmented button, Menu и Drawer переключаются. Тема меняется в Tweaks.</p>
+  </header>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start">
+
+    <div data-mu-stage="v1-slider" data-screen-label="Slider" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 32px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px"><span style="font-family:var(--mu-head);font-size:28px">Slider</span><span style="font-size:13px;color:var(--mu-text2)">жидкость в тёмном канале; ручка — капля со значением внутри</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:28px 40px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div data-slider="" style="display:flex;flex-direction:column;gap:2px;width:300px">
+            <div style="display:flex;justify-content:space-between;font-family:Handjet,monospace;font-size:20px;letter-spacing:1px;color:var(--mu-osd)"><span>ТРЕКИНГ</span><span>−10 … +10</span></div>
+            <div style="position:relative;height:60px">
+              <div style="position:absolute;left:16px;right:16px;top:2px;height:10px;display:flex;justify-content:space-between;align-items:flex-end"><i style="width:2px;height:10px;background:var(--mu-text2)"></i><i style="width:2px;height:6px;background:var(--mu-text2)"></i><i style="width:2px;height:10px;background:var(--mu-text2)"></i><i style="width:2px;height:6px;background:var(--mu-text2)"></i><i style="width:2px;height:10px;background:var(--mu-text2)"></i></div><div style="position:absolute;z-index:-2;left:0;right:0;top:20px;height:14px;border-radius:7px;background:#05060c;box-shadow:inset 0 0 0 2px var(--mu-surf2)"></div>
+              <div data-slider-fill="" style="position:absolute;z-index:-2;left:3px;top:23px;height:8px;width:188px;background:#b6ff1a;border-radius:4px"></div>
+              <div data-mu="fab" data-key="slider-thumb" data-fill="amber" data-r="17" data-over="12" data-marks="0" data-edge="0" data-mu-drag="" style="position:absolute;left:174px;top:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-family:Handjet,monospace;font-size:18px;line-height:1;color:#05060c;user-select:none"><span data-slider-val="">+3</span></div>
+            </div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">потяните ручку: она течёт, а в руке кипит</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:2px;width:220px">
+            <div style="display:flex;justify-content:space-between;font-family:Handjet,monospace;font-size:20px;letter-spacing:1px;color:var(--mu-dis)"><span>ЧЁТКОСТЬ</span><span>−10 … +10</span></div>
+            <div style="position:relative;height:60px">
+              <div style="position:absolute;left:16px;right:16px;top:2px;height:10px;display:flex;justify-content:space-between;align-items:flex-end"><i style="width:2px;height:10px;background:var(--mu-text2)"></i><i style="width:2px;height:6px;background:var(--mu-text2)"></i><i style="width:2px;height:10px;background:var(--mu-text2)"></i><i style="width:2px;height:6px;background:var(--mu-text2)"></i><i style="width:2px;height:10px;background:var(--mu-text2)"></i></div><div style="position:absolute;z-index:-2;left:0;right:0;top:20px;height:14px;border-radius:7px;background:#05060c;box-shadow:inset 0 0 0 2px var(--mu-surf2)"></div>
+              <div style="position:absolute;z-index:-2;left:3px;top:23px;height:8px;width:66px;background:var(--mu-dis);border-radius:4px"></div>
+              <div data-mu="fab" data-key="slider-thumb" data-fill="amber" data-r="17" data-state="disabled" style="position:absolute;left:52px;top:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-family:Handjet,monospace;font-size:18px;line-height:1;color:#05060c"><span>−4</span></div>
+            </div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">disabled</span>
+        </div>
+      </div>
+    </div>
+
+    <div data-mu-stage="v1-seg" data-screen-label="Segmented button" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 32px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px"><span style="font-family:var(--mu-head);font-size:28px">Segmented button</span><span style="font-size:13px;color:var(--mu-text2)">переключатель режимов деки: тело течёт, выбранный сегмент — чистое окно</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:30px 40px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:30px">
+          <div data-mu="btn" data-key="seg" data-fill="surf2" data-over="14" data-cf=".4" data-marks="0" data-mu-pick="" style="position:relative;width:312px;height:48px;padding:4px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));text-align:center;font-size:14px;font-weight:500;color:var(--mu-text);user-select:none">
+            <div data-mu="pill" data-key="seg-pill" data-calm=".2" data-r="9" data-pick-pill="" style="position:absolute;left:4px;top:4px;width:101px;height:40px"></div>
+            <div data-pick="" data-on="1" style="position:relative;height:40px;line-height:40px;color:#05060c">SP · 2 ч</div>
+            <div data-pick="" style="position:relative;height:40px;line-height:40px">LP · 4 ч</div>
+            <div data-pick="" style="position:relative;height:40px;line-height:40px">EP · 6 ч</div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">нажмите на сегмент: окно перетекает</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:30px">
+          <div data-mu="btn" data-key="seg" data-fill="surf2" data-state="disabled" style="width:208px;height:48px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:center;text-align:center;font-size:14px;font-weight:500;color:var(--mu-dis)"><span>SP · 2 ч</span><span>LP · 4 ч</span></div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">disabled</span>
+        </div>
+      </div>
+    </div>
+
+    <div data-mu-stage="v1-tip" data-screen-label="Tooltip" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 32px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px"><span style="font-family:var(--mu-head);font-size:28px">Tooltip</span><span style="font-size:13px;color:var(--mu-text2)">экранная подсказка: плашка стекает на то, о чём говорит</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:28px 56px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div style="position:relative;width:170px;height:112px">
+            <div data-mu="blob" data-key="tip" data-fill="blue" data-r="6" data-over="20" data-cf="0" data-marks="0" data-edge="0" data-ow="2.5" style="position:absolute;left:0;top:0;height:30px;padding:0 12px;display:flex;align-items:center;font-family:Handjet,monospace;font-size:18px;letter-spacing:1px;color:var(--mu-onblue);white-space:nowrap">ПОДЕЛИТЬСЯ</div>
+            <div data-mu="icon" data-key="iconbtn" style="position:absolute;left:28px;top:58px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--mu-text)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M12 15V4M8 8l4-4 4 4M5 12v8h8M14 21h5v-9"></path></svg></div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">простая</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div style="position:relative;width:220px;height:124px">
+            <div data-mu="blob" data-key="tip-rich" data-fill="amber" data-r="6" data-over="20" data-cf="0" data-marks="0" data-edge="0" data-ow="2.5" style="position:absolute;left:0;top:0;height:44px;padding:0 12px;display:flex;flex-direction:column;justify-content:center;font-family:Handjet,monospace;line-height:1;letter-spacing:1px;color:#05060c;white-space:nowrap"><span style="font-size:18px">REC · 0:42:17</span><span style="font-size:16px">ОСТАЛОСЬ 3 МИН</span></div>
+            <div data-mu="fab" data-key="fab" style="position:absolute;left:36px;top:66px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;color:#05060c"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 5v14M5 12h6M13 13h6"></path></svg></div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">с двумя строками</span>
+        </div>
+      </div>
+    </div>
+
+    <div data-mu-stage="v1-menu" data-screen-label="Menu" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 32px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px"><span style="font-family:var(--mu-head);font-size:28px">Menu · Dropdown</span><span style="font-size:13px;color:var(--mu-text2)">столбец экранного меню: пункты лесенкой; чистое окно выбрасывает щупальца к выбранному пункту и перетекает по ним</span></div>
+      <div style="display:flex;flex-direction:column;gap:26px">
+        <div style="position:relative;width:240px;height:232px">
+          <div data-mu="chip" data-key="menu-anchor" data-fill="green" style="position:absolute;left:0;top:0;height:32px;padding:0 14px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#05060c">Настройка<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M6 9l6 6 6-6"></path></svg></div>
+          <div data-mu="btn" data-key="menu" data-fill="surf" data-r="8" data-over="18" data-cf=".5" data-marks="0" data-mu-pick="" style="position:absolute;left:0;top:50px;width:216px;padding:6px;box-sizing:border-box;display:flex;flex-direction:column;font-family:Handjet,monospace;font-size:20px;letter-spacing:1px;color:var(--mu-text);user-select:none">
+            <div data-mu="pill" data-key="menu-pill" data-calm=".2" data-r="6" data-pick-pill="" style="position:absolute;left:6px;top:6px;width:204px;height:36px;display:flex;align-items:center;padding-left:8px;box-sizing:border-box;color:#05060c"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"></path></svg></div>
+            <div data-pick="" data-on="1" style="position:relative;width:204px;height:36px;line-height:36px;padding-left:30px;box-sizing:border-box;color:#05060c">ТРЕКИНГ</div>
+            <div data-pick="" style="position:relative;width:204px;height:36px;line-height:36px;padding-left:38px;box-sizing:border-box">ЦВЕТНОСТЬ</div>
+            <div data-pick="" style="position:relative;width:204px;height:36px;line-height:36px;padding-left:46px;box-sizing:border-box">ЧЁТКОСТЬ</div>
+            <div data-pick="" style="position:relative;width:204px;height:36px;line-height:36px;padding-left:54px;box-sizing:border-box">СБРОС</div>
+          </div>
+        </div>
+        <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">нажмите на пункт</span>
+      </div>
+    </div>
+
+    <div data-mu-stage="v1-drawer" data-screen-label="NavigationDrawer" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:18px"><span style="font-family:var(--mu-head);font-size:28px">NavigationDrawer</span><span style="font-size:13px;color:var(--mu-text2)">боковое меню каналов: заливка сползла с контура; чистое окно перетекает к выбранному каналу</span></div>
+      <div data-mu-stage="v1-drawer-bg" style="position:relative;width:328px;height:308px;overflow:hidden;border-radius:12px;background:var(--mu-page)">
+        <div data-mu-layer=""></div>
+        <div style="display:flex;flex-direction:column;gap:30px;padding:14px 12px 0 60px">
+          <div data-mu="card" data-key="card" data-still="" style="height:80px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span></div>
+          <div data-mu="card" data-key="card-b" data-still="" style="height:80px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Эфир, ночь на вторник</span><span style="font-size:13px;color:var(--mu-text2)">Записано поверх · 12 мин</span></div>
+        </div>
+        <div style="position:absolute;inset:0;background:rgba(5,6,12,.5)"></div>
+        <div data-mu-stage="v1-drawer-win" style="position:absolute;left:0;top:0;width:230px;height:308px">
+          <div data-mu-layer=""></div>
+          <div data-mu="bar" data-key="drawer" data-fill="surf" data-r="0" data-slip="3" data-shadow="mis" data-marks="0" data-edge="0" data-mu-pick="" style="position:absolute;left:-10px;top:-10px;width:212px;height:328px;padding:26px 10px 0 22px;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;font-size:15px;color:var(--mu-text);user-select:none">
+            <span style="height:28px;font-family:Handjet,monospace;font-size:20px;letter-spacing:1px;color:var(--mu-osd)">КАНАЛЫ</span>
+            <div data-mu="pill" data-key="drawer-pill" data-calm=".2" data-r="8" data-pick-pill="" style="position:absolute;left:22px;top:150px;width:180px;height:42px"></div>
+            <div data-pick="" style="position:relative;width:180px;height:42px;display:flex;align-items:center;gap:12px;padding:0 12px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;letter-spacing:1px">CH 01</span><span>Эфир</span></div>
+            <div data-pick="" style="position:relative;width:180px;height:42px;display:flex;align-items:center;gap:12px;padding:0 12px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;letter-spacing:1px">CH 02</span><span>Очередь</span></div>
+            <div data-pick="" data-on="1" style="position:relative;width:180px;height:42px;display:flex;align-items:center;gap:12px;padding:0 12px;box-sizing:border-box;color:#05060c"><span style="font-family:Handjet,monospace;font-size:20px;letter-spacing:1px">CH 03</span><span>Поиск</span></div>
+            <div data-pick="" style="position:relative;width:180px;height:42px;display:flex;align-items:center;gap:12px;padding:0 12px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;letter-spacing:1px">CH 04</span><span>Настройка</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-mu-stage="v1-sheet" data-screen-label="BottomSheet" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px">
+      <div data-mu-layer=""></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:18px"><span style="font-family:var(--mu-head);font-size:28px">BottomSheet</span><span style="font-size:13px;color:var(--mu-text2)">кадр, поднявшийся снизу: верхняя кромка ходит волной, над ней строка срыва</span></div>
+      <div data-mu-stage="v1-sheet-bg" style="position:relative;width:328px;height:308px;overflow:hidden;border-radius:12px;background:var(--mu-page)">
+        <div data-mu-layer=""></div>
+        <div style="display:flex;flex-direction:column;gap:30px;padding:14px 12px 0">
+          <div data-mu="card" data-key="card" data-still="" style="height:80px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span></div>
+        </div>
+        <div style="position:absolute;inset:0;background:rgba(5,6,12,.5)"></div>
+        <div data-mu-stage="v1-sheet-win" style="position:absolute;left:0;top:100px;width:328px;height:208px">
+          <div data-mu-layer=""></div>
+          <div data-mu-divider="" style="position:absolute;left:0;top:2px;width:328px;height:2px"></div>
+          <div data-mu="blob" data-key="sheet" data-fill="surf" data-r="22" data-over="0" data-wob="1.6" data-marks="0" style="position:absolute;left:-8px;top:14px;width:344px;height:220px;padding:12px 30px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:8px">
+            <i data-keep="" style="align-self:center;width:44px;height:5px;border-radius:3px;background:#05060c"></i>
+            <span style="font-family:var(--mu-head);font-size:26px;line-height:1.1;color:var(--mu-text)">Скорость записи</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;height:32px;font-size:15px;color:var(--mu-text)"><span>SP</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">2 ЧАСА</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;height:32px;font-size:15px;color:var(--mu-text)"><span>LP</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">4 ЧАСА</span></div>
+            <div data-mu="btn" data-key="sheet-ok" data-over="8" data-press="" style="align-self:flex-end;margin-top:2px;width:112px;height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#05060c;cursor:pointer;user-select:none">Готово</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="Pull-to-refresh" style="background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px;grid-column:1 / -1">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:18px"><span style="font-family:var(--mu-head);font-size:28px">Pull-to-refresh</span><span style="font-size:13px;color:var(--mu-text2)">из шапки вытягивается язык слизи; пока идёт обновление, он кипит; в конце застывает чистой плашкой</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:24px 32px;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div data-mu-stage="v1-ptr-a" style="position:relative;width:300px;height:210px;overflow:hidden;border-radius:12px;background:var(--mu-page);padding:0 16px;box-sizing:border-box">
+            <div data-mu-layer=""></div>
+            <div style="height:44px;display:flex;align-items:center;font-family:var(--mu-head);font-size:24px">Эфир</div>
+            <div data-mu-divider="" style="height:2px"></div>
+            <div style="height:40px;display:flex;justify-content:center"><div data-mu="btn" data-key="ptr" data-r="5" data-over="14" data-cf="0" data-marks="0" data-edge="0" data-ow="2.5" style="width:64px;height:10px;margin-top:-2px"></div></div>
+            <div style="display:flex;flex-direction:column;gap:14px"><div data-mu-cocoon="" style="height:16px;width:72%"></div><div data-mu-cocoon="" style="height:16px;width:48%"></div><div data-mu-cocoon="" style="height:16px;width:64%"></div></div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">ТЯНЕМ · язык короткий</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div data-mu-stage="v1-ptr-b" style="position:relative;width:300px;height:210px;overflow:hidden;border-radius:12px;background:var(--mu-page);padding:0 16px;box-sizing:border-box">
+            <div data-mu-layer=""></div>
+            <div style="height:44px;display:flex;align-items:center;font-family:var(--mu-head);font-size:24px">Эфир</div>
+            <div data-mu-divider="" style="height:2px"></div>
+            <div style="height:74px;display:flex;justify-content:center"><div data-mu="btn" data-key="ptr" data-r="7" data-over="24" data-cf="1" data-heat="" data-marks="0" data-edge="0" data-ow="2.5" style="width:124px;height:34px;margin-top:-2px;display:flex;align-items:center;justify-content:center;font-family:Handjet,monospace;font-size:18px;letter-spacing:1px;color:#05060c">ОБНОВЛЯЕМ</div></div>
+            <div style="display:flex;flex-direction:column;gap:14px"><div data-mu-cocoon="" style="height:16px;width:72%"></div><div data-mu-cocoon="" style="height:16px;width:48%"></div></div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">ОБНОВЛЯЕМ · язык вытянулся и кипит</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div data-mu-stage="v1-ptr-c" style="position:relative;width:300px;height:210px;overflow:hidden;border-radius:12px;background:var(--mu-page);padding:0 16px;box-sizing:border-box">
+            <div data-mu-layer=""></div>
+            <div style="height:44px;display:flex;align-items:center;font-family:var(--mu-head);font-size:24px">Эфир</div>
+            <div data-mu-divider="" style="height:2px"></div>
+            <div style="height:52px;display:flex;justify-content:center;align-items:center"><div data-mu="pill" data-key="ptr-done" data-state="clean" style="height:28px;padding:0 14px;display:flex;align-items:center;font-family:Handjet,monospace;font-size:18px;letter-spacing:1px;color:#05060c">ОБНОВЛЕНО</div></div>
+            <div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">Настроечная таблица</span><span style="font-size:13px;color:var(--mu-text2)">Копия 4-го поколения</span></div><div data-mu-divider="" style="height:2px"></div><span style="font-size:15px;font-weight:500">Эфир, ночь на вторник</span></div>
+          </div>
+          <span style="font-family:Handjet,monospace;font-size:18px;color:var(--mu-text2)">ГОТОВО · чистая плашка, список на месте</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Эфир&quot;,&quot;Копия&quot;],&quot;default&quot;:&quot;Эфир&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cassetteSeed&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:999,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  root = React.createRef();
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  pp() { const p = this.props; return { theme: (p.theme ?? 'Эфир') === 'Копия' ? 'kopiya' : 'efir', seed: p.cassetteSeed ?? 5, fps: 8, boil: .8, rough: .35, density: 1, speed: 1, keyframeLoss: false }; }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current) { this.tm = setTimeout(go, 60); return; }
+      this.root.current.addEventListener('mu-drag', e => {
+        const box = e.target.closest('[data-slider]'); if (!box) return;
+        const fill = box.querySelector('[data-slider-fill]'), val = box.querySelector('[data-slider-val]'), v = Math.round(-10 + 20 * e.detail);
+        if (fill) fill.style.width = (e.target.offsetLeft + 14) + 'px';
+        if (val) val.textContent = (v < 0 ? '−' : v > 0 ? '+' : '') + Math.abs(v);
+      });
+      this.eng = window.__mu = new window.MutantEngine(this.root.current, this.pp()); this.eng.start();
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const lt = (this.props.theme ?? 'Эфир') === 'Копия'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    if (this.eng) this.eng.setProps(this.pp());
+    return { root: this.root };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&family=Yeseva+One&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Листы образцов" style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:32px;width:1640px;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:980px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · АРТЕФАКТ 5 · ТЕМЫ «ЭФИР» И «КОПИЯ»</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:64px;line-height:1.05">Листы образцов</h1>
+    <p style="margin:0;font-size:16px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">На каждый компонент с телом: 12 экземпляров одной кассеты, 4 крайних случая и один экземпляр в трёх размерах. Листы собраны движком из ключей экземпляров, вручную ничего не рисовалось. Крайние случаи и размеры построены с ключом образца 01; при смене размера подтёки расставляются заново, поэтому экземпляр похож, но не идентичен. Показан один кадр покоя, без анимации. Тема и seed кассеты меняются в Tweaks. Компоненты в состояниях — в файле <a href="mutant-ui%20Компоненты.dc.html">Компоненты</a>.</p>
+  </header>
+  <div ref="{{ host }}" style="display:flex;flex-direction:column;gap:24px"></div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Эфир&quot;,&quot;Копия&quot;],&quot;default&quot;:&quot;Эфир&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cassetteSeed&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:999,&quot;tsType&quot;:&quot;number&quot;},&quot;rough&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.35,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;},&quot;headFont&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Handjet&quot;,&quot;Yeseva One&quot;,&quot;Ruslan Display&quot;,&quot;Oranienbaum&quot;],&quot;default&quot;:&quot;Handjet&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  root = React.createRef(); host = React.createRef();
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  static FONTS = { 'Yeseva One': "'Yeseva One',serif", 'Ruslan Display': "'Ruslan Display',serif", 'Oranienbaum': "'Oranienbaum',serif", 'Handjet': "Handjet,monospace" };
+  static IC = { plus: '<path d="M12 5v14M5 12h6M13 13h6"></path>', share: '<path d="M12 15V4M8 8l4-4 4 4M5 12v8h8M14 21h5v-9"></path>', check: '<path d="M5 12l5 5M11 17l8-10"></path>', home: '<path d="M4 11l8-7 8 7M6 10v10h4M13 21h5V10"></path>', clock: '<circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path>', search: '<circle cx="10.5" cy="10.5" r="5.5"></circle><path d="M15 15l1.5 1.5M18 18l2 2"></path>', settings: '<path d="M4 7h8M16 7h4M4 17h2M10 18h10"></path><circle cx="14" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle>' };
+  types() {
+    const I = Component.IC, px = v => Math.round(v * 10) / 10 + 'px';
+    const sv = (p, s, sw) => `<svg width="${Math.round(s)}" height="${Math.round(s)}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 2}" stroke-linecap="square">${p}</svg>`;
+    const A = o => `data-key="${o.key}" data-still=""` + (o.calm ? ` data-calm="${o.calm}"` : '') + (o.cf ? ` data-cf="${o.cf}"` : '');
+    const box = o => `align-self:flex-start;width:${px(o.w)};height:${px(o.h)};`, mid = 'display:flex;align-items:center;justify-content:center;';
+    return [
+      { id: 'button', name: 'Button', note: 'filled', over: 24, base: { w: 168, h: 48 }, min: { w: 88, h: 48, t: 'Да' }, max: { w: 328, h: 48 }, sizes: [{ w: 112, h: 36, f: 13 }, { w: 168, h: 48 }, { w: 280, h: 64, f: 18 }],
+        html: o => `<div data-mu="btn" ${A(o)} style="${box(o)}${mid}font-size:${o.f || 15}px;font-weight:500;color:#05060c">${o.t || 'Воспроизвести'}</div>` },
+      { id: 'fab', name: 'FAB', note: 'капают все подтёки', over: 24, base: { w: 56, h: 56 }, min: { w: 36, h: 36 }, max: { w: 112, h: 112 }, sizes: [{ w: 40, h: 40 }, { w: 56, h: 56 }, { w: 72, h: 72 }],
+        html: o => `<div data-mu="fab" ${A(o)} style="${box(o)}${mid}color:#05060c">${sv(I.plus, o.w * .43, 2.5)}</div>` },
+      { id: 'icon', name: 'IconButton', note: 'короткий свес', over: 10, base: { w: 48, h: 48 }, min: { w: 36, h: 36 }, max: { w: 80, h: 80 }, sizes: [{ w: 40, h: 40 }, { w: 48, h: 48 }, { w: 64, h: 64 }],
+        html: o => `<div data-mu="icon" ${A(o)} style="${box(o)}${mid}color:var(--mu-text)">${sv(I.share, o.w * .5)}</div>` },
+      { id: 'chip', name: 'Chip', note: 'не выбран: заливка сползла с контура', over: 16, base: { h: 32 }, min: { h: 32, t: 'Все' }, max: { h: 32, t: 'Копия 4-го поколения' }, sizes: [{ h: 24, f: 11 }, { h: 32 }, { h: 44, f: 16 }],
+        html: o => `<div data-mu="chip" data-slip="2" ${A(o)} style="align-self:flex-start;height:${o.h}px;padding:0 ${o.h / 2}px;display:flex;align-items:center;font-size:${o.f || 13}px;font-weight:500;color:var(--mu-text)">${o.t || 'Избранное'}</div>` },
+      { id: 'card', name: 'Card', note: 'грязный угол справа', over: 24, base: { w: 328, h: 80 }, min: { w: 168, h: 72, t: 'Без подписи' }, max: { w: 480, h: 120 }, sizes: [{ w: 200, h: 72, t: 'Без подписи' }, { w: 328, h: 80 }, { w: 328, h: 168 }],
+        html: o => `<div data-mu="card" ${A(o)} style="${box(o)}box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500;color:var(--mu-text)">${o.t || 'Без подписи №3'}</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span></div>` },
+      { id: 'field', name: 'TextField', note: 'покой', over: 16, base: { w: 260, h: 52 }, min: { w: 132, h: 52, t: '' }, max: { w: 420, h: 52 }, sizes: [{ w: 200, h: 40 }, { w: 260, h: 52 }, { w: 328, h: 64 }],
+        html: o => `<div data-mu="field" ${A(o)} style="${box(o)}display:flex;align-items:center;gap:8px;padding:0 14px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">ПОИСК</span><span style="font-size:15px;color:var(--mu-text2)">${o.t === undefined ? 'Найти запись' : o.t}</span></div>` },
+      { id: 'switch', name: 'Switch', note: 'включён', over: 12, base: { s: 1 }, min: { s: .7 }, max: { s: 2 }, sizes: [{ s: .8 }, { s: 1 }, { s: 1.5 }],
+        html: o => { const s = o.s; return `<div data-mu="track" data-r="99" data-over="${12 * s}" ${A(o)} style="align-self:flex-start;position:relative;width:${px(52 * s)};height:${px(28 * s)}"><div data-mu="thumb" data-r="99" data-over="${8 * s}" data-key="${o.key}-t" data-still="" style="position:absolute;left:${px(27 * s)};top:${px(3 * s)};width:${px(22 * s)};height:${px(22 * s)}"></div></div>`; } },
+      { id: 'check', name: 'Checkbox', note: 'отмечен', over: 0, base: { w: 22 }, min: { w: 16 }, max: { w: 44 }, sizes: [{ w: 18 }, { w: 22 }, { w: 32 }],
+        html: o => `<div data-mu="box" data-fill="green" ${A(o)} style="align-self:flex-start;width:${o.w}px;height:${o.w}px;${mid}color:#05060c">${sv(I.check, o.w * .8, 3)}</div>` },
+      { id: 'radio', name: 'RadioButton', note: 'выбран', over: 0, base: { w: 22 }, min: { w: 16 }, max: { w: 44 }, sizes: [{ w: 18 }, { w: 22 }, { w: 32 }],
+        html: o => `<div data-mu="dot" ${A(o)} style="align-self:flex-start;width:${o.w}px;height:${o.w}px;${mid}"><i data-keep="" style="width:${px(o.w * .45)};height:${px(o.w * .45)};border-radius:50%;background:#ff3b30"></i></div>` },
+      { id: 'navbar', name: 'NavigationBar', note: 'панель и активная пилюля', over: 0, base: { w: 328, h: 64 }, min: { w: 240, h: 56 }, max: { w: 440, h: 64 }, sizes: [{ w: 280, h: 56 }, { w: 328, h: 64 }, { w: 400, h: 76 }],
+        html: o => `<div data-mu="bar" data-marks="0" ${A(o)} style="${box(o)}display:grid;grid-template-columns:repeat(4,1fr);align-items:center;justify-items:center;color:var(--mu-text2)"><div data-mu="pill" data-key="${o.key}-p" data-still="" style="width:56px;height:30px;${mid}color:#05060c">${sv(I.home, 22)}</div>${sv(I.clock, 22)}${sv(I.search, 22)}${sv(I.settings, 22)}</div>` },
+      { id: 'snack', name: 'Snackbar', note: 'синий «нет сигнала» с тенью', over: 0, base: { w: 328, h: 48 }, min: { w: 220, h: 48, a: '' }, max: { w: 440, h: 48 }, sizes: [{ w: 280, h: 40 }, { w: 328, h: 48 }, { w: 328, h: 64 }],
+        html: o => `<div data-mu="bar" data-fill="blue" data-shadow="deep" data-r="6" data-marks="0" ${A(o)} style="${box(o)}display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box"><span style="font-size:14px;color:var(--mu-onblue)">Добавлено в очередь</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-onblue-acc);letter-spacing:1px">${o.a === undefined ? 'ОТМЕНИТЬ' : o.a}</span></div>` }
+    ];
+  }
+  sheet() {
+    const cap = 'font-family:Handjet,monospace;font-size:16px;line-height:1;color:var(--mu-text2)', grp = 'font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd);letter-spacing:1px';
+    const dim = o => o.s ? '×' + o.s : o.w && o.h ? o.w + '×' + o.h : o.w ? o.w + '' : 'h ' + o.h;
+    return this.types().map(T => {
+      const k1 = T.id + '/01', gap = Math.max(10, T.over * (T.max.s || 1) + 12);
+      const cell = (o, c) => `<div style="display:flex;flex-direction:column;gap:${Math.max(10, T.over * (o.s || 1) + 12)}px">${T.html(o)}<span style="${cap}">${c}</span></div>`;
+      const seeds = Array.from({ length: 12 }, (_, i) => { const n = String(i + 1).padStart(2, '0'); return cell({ ...T.base, key: T.id + '/' + n }, n); }).join('');
+      const ext = cell({ ...T.base, key: k1, calm: .2 }, 'мин. износ') + cell({ ...T.base, key: k1, calm: 1.7, cf: 1 }, 'макс. износ') + cell({ ...T.base, ...T.min, key: k1 }, 'мин. размер · ' + dim({ ...T.base, ...T.min })) + cell({ ...T.base, ...T.max, key: k1 }, 'макс. размер · ' + dim({ ...T.base, ...T.max }));
+      const sizes = T.sizes.map(z => cell({ ...T.base, ...z, key: k1 }, dim({ ...T.base, ...z }))).join('');
+      const row = 'display:flex;flex-wrap:wrap;align-items:flex-end;gap:22px 28px';
+      return `<div data-mu-stage="sheet-${T.id}" data-screen-label="Лист ${T.name}" style="position:relative;background:var(--mu-bg);border-radius:16px;padding:24px 28px 28px;display:flex;flex-direction:column;gap:22px"><div data-mu-layer=""></div>`
+        + `<div style="display:flex;align-items:baseline;gap:12px"><span style="font-family:var(--mu-head);font-size:28px">${T.name}</span><span style="font-size:13px;color:var(--mu-text2)">${T.note}</span></div>`
+        + `<div style="display:flex;flex-direction:column;gap:12px"><span style="${grp}">12 SEED</span><div style="${row}">${seeds}</div></div>`
+        + `<div style="display:flex;flex-wrap:wrap;gap:24px 64px;align-items:flex-end"><div style="display:flex;flex-direction:column;gap:12px"><span style="${grp}">4 КРАЙНИХ · ЭКЗЕМПЛЯР 01</span><div style="${row}">${ext}</div></div><div style="display:flex;flex-direction:column;gap:12px"><span style="${grp}">ТРИ РАЗМЕРА · ЭКЗЕМПЛЯР 01</span><div style="${row}">${sizes}</div></div></div></div>`;
+    }).join('');
+  }
+  pp() { const p = this.props; return { theme: (p.theme ?? 'Эфир') === 'Копия' ? 'kopiya' : 'efir', seed: p.cassetteSeed ?? 5, fps: 8, boil: .8, rough: +(p.rough ?? .35), density: 1, speed: 1, keyframeLoss: false }; }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current || !this.host.current) { this.tm = setTimeout(go, 60); return; }
+      this.host.current.innerHTML = this.sheet();
+      this.eng = window.__mu = new window.MutantEngine(this.root.current, this.pp()); this.eng.start();
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const hf = this.props.headFont ?? 'Handjet';
+    if ((hf === 'Ruslan Display' || hf === 'Oranienbaum') && !document.getElementById('muf-' + hf.replace(' ', ''))) { const l = document.createElement('link'); l.id = 'muf-' + hf.replace(' ', ''); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + hf.replace(' ', '+') + '&display=swap'; document.head.appendChild(l); }
+    document.body.style.setProperty('--mu-head', Component.FONTS[hf] || Component.FONTS['Yeseva One']);
+    const lt = (this.props.theme ?? 'Эфир') === 'Копия'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    if (this.eng) this.eng.setProps(this.pp());
+    return { root: this.root, host: this.host };
+  }
+}
+</script>
+</body>
+</html>

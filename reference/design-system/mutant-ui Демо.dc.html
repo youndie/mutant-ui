@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&family=Yeseva+One&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Демо" style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:36px;width:1320px;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:980px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · АРТЕФАКТ 9 · ТЕМЫ «ЭФИР» И «КОПИЯ»</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:64px;line-height:1.05">Демо-экраны</h1>
+    <p style="margin:0;font-size:16px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Три экрана приложения для кассетного архива, собранные из <a href="mutant-ui%20Компоненты.dc.html">компонентов</a>: библиотека, запись и настройка с открытым диалогом. Кнопки и FAB нажимаются, чипы на первом экране переключаются. Потеря ключевого кадра проходит по одному из экранов раз в 9 секунд.</p>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:8px;flex-wrap:wrap">
+      <div onClick="{{ togglePause }}" style="flex:none;white-space:nowrap;cursor:pointer;user-select:none;font-family:Handjet,monospace;font-size:24px;line-height:44px;padding:0 20px;background:var(--mu-surf2);color:var(--mu-text);border-radius:6px;box-shadow:inset 0 0 0 2px #05060c" style-hover="background:var(--mu-surf)">{{ pauseLabel }}</div>
+      <div onClick="{{ mosh }}" style="flex:none;white-space:nowrap;cursor:pointer;user-select:none;font-family:Handjet,monospace;font-size:24px;line-height:44px;padding:0 20px;background:#b6ff1a;color:#05060c;border-radius:6px;box-shadow:inset 0 0 0 2px #05060c" style-hover="background:#19e3ff">ПОТЕРЯ КАДРА</div>
+      <span style="font-size:14px;color:var(--mu-text2)">Тема («Эфир» или «Копия»), шрифт заголовков и автозапуск потери кадра — в Tweaks.</span>
+    </div>
+  </header>
+
+  <div style="display:flex;gap:48px;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:16px;width:360px">
+      <div style="display:flex;align-items:baseline;gap:12px"><span style="font-family:var(--mu-head);font-size:28px">Эфир</span><span style="font-size:13px;color:var(--mu-text2)">библиотека, третья карточка ещё грузится</span></div>
+      <div data-mu-stage="demoA" data-mu-mosh="" data-screen-label="Демо 1 Эфир" style="position:relative;width:360px;height:720px;background:var(--mu-bg);border-radius:28px;overflow:hidden;box-shadow:0 0 0 2px #05060c">
+        <div data-mu-layer=""></div>
+        <div style="padding:0 16px;display:flex;flex-direction:column">
+          <div style="height:56px;display:flex;align-items:center;gap:12px;color:var(--mu-text)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M4 7h16M4 12h10M15 13h5M4 17h16"></path></svg><span style="font-family:var(--mu-head);font-size:26px;flex:1">Эфир</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd);letter-spacing:1px">CH 03 · SP · 0:42:17</span></div>
+          <div data-mu="field" data-key="field" style="margin-top:8px;height:52px;display:flex;align-items:center;gap:8px;padding:0 14px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">ПОИСК</span><span style="font-size:15px;color:var(--mu-text2)">Найти запись</span></div>
+          <div style="margin-top:16px;display:flex;gap:6px;height:32px;font-size:13px;font-weight:500">
+            <div data-mu="chip" data-key="chipA0" data-slip="2" data-press="" data-mu-toggle="chip" style="padding:0 14px;display:flex;align-items:center;color:var(--mu-text);cursor:pointer;user-select:none">Все</div>
+            <div data-mu="chip" data-key="chipA1" data-fill="green" data-press="" data-mu-toggle="chip" data-on="1" style="padding:0 14px;display:flex;align-items:center;color:#05060c;cursor:pointer;user-select:none">Записи</div>
+            <div data-mu="chip" data-key="chipA2" data-slip="2" data-press="" data-mu-toggle="chip" style="padding:0 14px;display:flex;align-items:center;color:var(--mu-text);cursor:pointer;user-select:none">Шум</div>
+            <div data-mu="chip" data-key="chipA3" data-slip="2" data-press="" data-mu-toggle="chip" style="padding:0 14px;display:flex;align-items:center;color:var(--mu-text);cursor:pointer;user-select:none">Избранное</div>
+          </div>
+          <div style="margin-top:20px;display:flex;flex-direction:column;gap:30px">
+            <div data-mu="card" data-key="cardA0" style="height:80px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500;color:var(--mu-text)">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span></div>
+            <div data-mu="card" data-key="cardA1" style="height:80px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500;color:var(--mu-text)">Эфир, ночь на вторник</span><span style="font-size:13px;color:var(--mu-text2)">Записано поверх · 12 мин</span></div>
+            <div data-mu-cocoon="" style="height:80px"></div>
+          </div>
+          <div data-mu="btn" data-key="button" data-press="" style="margin-top:24px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c;cursor:pointer;user-select:none">Воспроизвести всё</div>
+        </div>
+        <div data-mu="fab" data-key="fab" data-press="" style="position:absolute;right:16px;bottom:84px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;color:#05060c;cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 5v14M5 12h6M13 13h6"></path></svg></div>
+        <div data-mu="bar" data-key="navbar" data-marks="0" style="position:absolute;left:8px;right:8px;bottom:8px;height:62px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;justify-items:center;font-size:11px;font-weight:500;color:var(--mu-text2)">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mu-text)"><div data-mu="pill" data-key="navpill" style="width:56px;height:30px;display:flex;align-items:center;justify-content:center;color:#05060c"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M4 11l8-7 8 7M6 10v10h4M13 21h5V10"></path></svg></div><span>Эфир</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="position:relative;width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg><span style="position:absolute;right:6px;top:-2px;font-family:Handjet,monospace;font-size:14px;line-height:16px;padding:0 5px;background:#ffb000;color:#05060c;box-shadow:0 0 0 1.5px #05060c">3</span></div><span>Очередь</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="M15 15l1.5 1.5M18 18l2 2"></path></svg></div><span>Поиск</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:56px;height:30px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M4 7h8M16 7h4M4 17h2M10 18h10"></path><circle cx="14" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></svg></div><span>Настройка</span></div>
+        </div>
+        <div data-mu-tape="" style="position:absolute;left:0;top:0;width:360px;height:720px;pointer-events:none;z-index:5"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;width:360px">
+      <div style="display:flex;align-items:baseline;gap:12px"><span style="font-family:var(--mu-head);font-size:28px">Запись</span><span style="font-size:13px;color:var(--mu-text2)">кассета, дорожки, строка-уведомление</span></div>
+      <div data-mu-stage="demoB" data-mu-mosh="" data-screen-label="Демо 2 Запись" style="position:relative;width:360px;height:720px;background:var(--mu-bg);border-radius:28px;overflow:hidden;box-shadow:0 0 0 2px #05060c">
+        <div data-mu-layer=""></div>
+        <div style="padding:0 16px;display:flex;flex-direction:column">
+          <div style="height:56px;display:flex;align-items:center;gap:12px;color:var(--mu-text)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M11 5l-7 7 7 7M5 12h9M15 13h5"></path></svg><span style="font-family:var(--mu-head);font-size:22px;flex:1">Без подписи №3</span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M5 19l1-4L15 6l3 3-9 9zM5 22h8M15 22h4"></path></svg></div>
+          <div data-mu="blob" data-key="cassette" data-marks="0" style="position:relative;align-self:center;margin-top:10px;width:216px;height:132px">
+            <div data-mu="bar" data-key="cassette-label" data-fill="white" data-r="4" data-marks="0" data-edge="0" style="position:absolute;left:18px;top:14px;width:180px;height:38px;display:flex;align-items:center;justify-content:center;font-family:Handjet,monospace;font-size:20px;letter-spacing:2px;color:#05060c">БЕЗ ПОДПИСИ</div>
+            <div data-mu="pill" data-key="cassette-win" data-fill="bg" style="position:absolute;left:44px;top:66px;width:128px;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;box-sizing:border-box">
+              <div data-mu-anim="reel" data-keep="" style="position:relative;width:26px;height:26px;border-radius:50%;background:var(--mu-reel)"><i style="position:absolute;left:10px;top:2px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:17px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i></div>
+              <div data-mu-anim="reel" data-keep="" style="position:relative;width:26px;height:26px;border-radius:50%;background:var(--mu-reel)"><i style="position:absolute;left:10px;top:2px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i><i style="position:absolute;left:17px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--mu-bg)"></i></div>
+            </div>
+          </div>
+          <div style="margin-top:42px;display:flex;flex-direction:column;gap:2px"><span style="font-family:var(--mu-head);font-size:24px">Сторона A</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd);letter-spacing:1px">46 МИН · SP · КОПИЯ 4-ГО ПОКОЛЕНИЯ</span></div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:12px"><div style="position:relative;flex:1;height:12px;background:#05060c;box-shadow:0 0 0 2px #05060c"><div style="width:26%;height:100%;background:repeating-linear-gradient(90deg,#b6ff1a 0 6px,#05060c 6px 8px)"></div></div><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">12:04</span></div>
+          <div style="margin-top:22px;display:flex;gap:12px;align-items:center">
+            <div data-mu="btn" data-key="buttonB" data-press="" style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:500;color:#05060c;cursor:pointer;user-select:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M8 5l11 7-11 7z"></path></svg>Слушать</div>
+            <div data-mu="btn" data-key="button-o" data-fill="bg" data-stroke="acc" data-shadow="mis" data-over="14" data-press="" style="width:118px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:var(--mu-acc);cursor:pointer;user-select:none">В очередь</div>
+            <div data-mu="icon" data-key="iconbtn" data-press="" style="width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--mu-text);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M12 15V4M8 8l4-4 4 4M5 12v8h8M14 21h5v-9"></path></svg></div>
+          </div>
+          <div style="margin-top:34px;display:flex;flex-direction:column;gap:4px"><div style="display:flex;gap:24px;font-size:14px;font-weight:500;height:32px;align-items:center"><span style="color:var(--mu-acc)">Дорожки</span><span style="color:var(--mu-text2)">Заметки</span><span style="color:var(--mu-text2)">Копии</span></div><div style="position:relative;height:4px"><div style="position:absolute;left:0;top:0;width:62px;height:4px;background:#b6ff1a;box-shadow:0 0 0 1.5px #05060c"></div><div style="position:absolute;left:66px;top:1px;width:10px;height:2px;background:#b6ff1a;opacity:.6"></div><div style="position:absolute;left:80px;top:1px;width:8px;height:2px;background:#b6ff1a;opacity:.3"></div><div style="position:absolute;left:92px;top:1px;width:6px;height:2px;background:#b6ff1a;opacity:.15"></div></div></div>
+          <div style="margin-top:6px;display:flex;flex-direction:column">
+            <div style="height:64px;display:flex;align-items:center;gap:12px"><div data-mu="icon" data-key="tile1" data-over="6" style="width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--mu-text)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M8 5l11 7-11 7z"></path></svg></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">Настроечная таблица</span><span style="font-size:13px;color:var(--mu-text2)">Копия 4-го поколения</span></div><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">12:04</span></div>
+            <div data-mu-divider="" style="height:2px"></div>
+            <div style="height:64px;display:flex;align-items:center;gap:12px"><div data-mu="icon" data-key="tile2" data-over="6" style="width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--mu-text)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M8 5l11 7-11 7z"></path></svg></div><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">Эфир, ночь на вторник</span><span style="font-size:13px;color:var(--mu-text2)">Записано поверх</span></div><span style="font-family:Handjet,monospace;font-size:16px;line-height:20px;padding:0 6px;background:#ffb000;color:#05060c;box-shadow:0 0 0 1.5px #05060c">НОВОЕ</span></div>
+            <div data-mu-divider="" style="height:2px"></div>
+          </div>
+        </div>
+        <div data-mu="bar" data-key="snack" data-fill="blue" data-shadow="deep" data-r="6" data-marks="0" style="position:absolute;left:16px;right:16px;bottom:18px;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box"><span style="font-size:14px;color:var(--mu-onblue)">Добавлено в очередь</span><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-onblue-acc);letter-spacing:1px">ОТМЕНИТЬ</span></div>
+        <div data-mu-tape="" style="position:absolute;left:0;top:0;width:360px;height:720px;pointer-events:none;z-index:5"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;width:360px">
+      <div style="display:flex;align-items:baseline;gap:12px"><span style="font-family:var(--mu-head);font-size:28px">Настройка</span><span style="font-size:13px;color:var(--mu-text2)">форма под диалогом: фон на паузе</span></div>
+      <div data-mu-stage="demoC" data-mu-mosh="" data-screen-label="Демо 3 Настройка" style="position:relative;width:360px;height:720px;background:var(--mu-bg);border-radius:28px;overflow:hidden;box-shadow:0 0 0 2px #05060c">
+        <div data-mu-layer=""></div>
+        <div style="padding:0 16px;display:flex;flex-direction:column;font-size:15px">
+          <div style="height:56px;display:flex;align-items:center;gap:12px;color:var(--mu-text)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M11 5l-7 7 7 7M5 12h9M15 13h5"></path></svg><span style="font-family:var(--mu-head);font-size:26px;flex:1">Настройка</span></div>
+          <div data-mu="field" data-key="fieldC0" data-calm=".3" data-brackets="" data-still="" style="margin-top:12px;height:52px;display:flex;align-items:center;gap:8px;padding:0 14px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">ИМЯ</span><span style="color:var(--mu-text)">Ночь на вт</span><span data-keep="" style="width:9px;height:20px;background:var(--mu-text)"></span></div>
+          <div data-mu="field" data-key="fieldC1" data-state="error" data-still="" style="margin-top:30px;height:52px;display:flex;align-items:center;gap:8px;padding:0 14px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">КАНАЛ</span><span style="color:var(--mu-text)">99</span></div>
+          <span style="margin-top:22px;font-family:Handjet,monospace;font-size:18px;color:var(--mu-err);letter-spacing:.5px">НЕТ СИГНАЛА НА КАНАЛЕ 99</span>
+          <span style="margin-top:16px;font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd);letter-spacing:1px">СКОРОСТЬ ЗАПИСИ</span>
+          <div style="display:flex;gap:28px;height:48px;align-items:center">
+            <div style="display:flex;align-items:center;gap:10px"><div data-mu="dot" data-key="radio" data-still="" style="position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center"><i style="position:absolute;left:9px;top:6px;width:10px;height:10px;border-radius:50%;background:#ff3b30;opacity:.3"></i><i data-keep="" style="position:relative;width:10px;height:10px;border-radius:50%;background:#ff3b30"></i></div><span>SP</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><div data-mu="dot" data-key="radio" data-still="" style="width:22px;height:22px"></div><span>LP</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><div data-mu="dot" data-key="radio" data-still="" style="width:22px;height:22px"></div><span>EP</span></div>
+          </div>
+          <div style="height:48px;display:flex;align-items:center;justify-content:space-between"><span>Автотрекинг</span><div data-mu="track" data-key="switch" data-still="" style="position:relative;width:52px;height:28px;flex:none"><i style="position:absolute;left:19px;top:3px;width:22px;height:22px;border-radius:11px;border:2px solid #05060c;opacity:.35;box-sizing:border-box"></i><div data-mu="thumb" data-key="thumb" data-still="" style="position:absolute;left:27px;top:3px;width:22px;height:22px"></div></div></div>
+          <div style="height:48px;display:flex;align-items:center;justify-content:space-between"><span>Чистый сигнал</span><div data-mu="track" data-key="switchC1" data-fill="surf2" data-over="6" data-still="" style="position:relative;width:52px;height:28px;flex:none"><div data-mu="thumb" data-key="thumbC1" data-still="" style="position:absolute;left:3px;top:3px;width:22px;height:22px"></div></div></div>
+          <div style="height:48px;display:flex;align-items:center;gap:12px"><div data-mu="box" data-key="check" data-fill="green" data-still="" style="position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:#05060c"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12l5 5M11 17l8-10"></path></svg><i style="position:absolute;right:2px;bottom:2px;width:4px;height:4px;background:#05060c;opacity:.5"></i></div><span>Шум головки</span></div>
+          <div style="height:48px;display:flex;align-items:center;gap:12px"><div data-mu="box" data-key="checkC1" data-still="" style="width:22px;height:22px"></div><span>Потеря кадра</span></div>
+          <div style="height:48px;display:flex;flex-direction:column;justify-content:center;gap:5px;align-self:flex-start"><span style="font-weight:500;color:var(--mu-acc)">Сбросить настройки</span><div data-mu-divider="" style="height:2px"></div></div>
+        </div>
+        <div style="position:absolute;inset:0;background:rgba(5,6,12,.5)"></div>
+        <div style="position:absolute;left:0;right:0;top:486px;height:20px;background:rgba(233,242,228,.1);border-top:1px solid rgba(233,242,228,.35);border-bottom:1px solid rgba(5,6,12,.6);transform:translateX(5px)"></div>
+        <div data-mu-stage="demoCdialog" style="position:absolute;left:28px;top:232px;width:304px">
+          <div data-mu-layer=""></div>
+          <div data-mu="bar" data-key="dialog" data-state="clean" data-r="12" style="padding:22px 22px 20px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:var(--mu-head);font-size:24px;color:var(--mu-text)">Стереть запись?</span>
+            <span style="font-size:14px;line-height:1.45;color:var(--mu-text2)">«Эфир, ночь на вторник» будет стёрта. Плёнку можно будет записать заново.</span>
+            <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:10px"><span style="font-size:14px;font-weight:500;color:var(--mu-acc);padding:0 8px">Отмена</span><div data-mu="btn" data-key="dialog-ok" data-over="8" data-press="" style="width:108px;height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#05060c;cursor:pointer;user-select:none">Стереть</div></div>
+          </div>
+        </div>
+        <div data-mu-tape="" style="position:absolute;left:0;top:0;width:360px;height:720px;pointer-events:none;z-index:5"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Эфир&quot;,&quot;Копия&quot;],&quot;default&quot;:&quot;Эфир&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;headFont&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Handjet&quot;,&quot;Yeseva One&quot;,&quot;Ruslan Display&quot;,&quot;Oranienbaum&quot;],&quot;default&quot;:&quot;Handjet&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;keyframeLoss&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;cassetteSeed&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:999,&quot;tsType&quot;:&quot;number&quot;},&quot;fps&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;8&quot;,&quot;12&quot;,&quot;24&quot;],&quot;default&quot;:&quot;8&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;boil&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.8,&quot;min&quot;:0,&quot;max&quot;:1.5,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  state = { paused: false };
+  root = React.createRef();
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  static FONTS = { 'Yeseva One': "'Yeseva One',serif", 'Ruslan Display': "'Ruslan Display',serif", 'Oranienbaum': "'Oranienbaum',serif", 'Handjet': "Handjet,monospace" };
+  pp() { const p = this.props; return { theme: (p.theme ?? 'Эфир') === 'Копия' ? 'kopiya' : 'efir', seed: p.cassetteSeed ?? 5, fps: p.fps ?? '8', boil: +(p.boil ?? .8), rough: +(p.rough ?? .35), density: 1, speed: 1, keyframeLoss: p.keyframeLoss ?? true }; }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current) { this.tm = setTimeout(go, 60); return; }
+      this.eng = window.__mu = new window.MutantEngine(this.root.current, this.pp()); this.eng.setPaused(this.state.paused); this.eng.start();
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const hf = this.props.headFont ?? 'Handjet';
+    if ((hf === 'Ruslan Display' || hf === 'Oranienbaum') && !document.getElementById('muf-' + hf.replace(' ', ''))) { const l = document.createElement('link'); l.id = 'muf-' + hf.replace(' ', ''); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + hf.replace(' ', '+') + '&display=swap'; document.head.appendChild(l); }
+    document.body.style.setProperty('--mu-head', Component.FONTS[hf] || Component.FONTS['Yeseva One']);
+    const lt = (this.props.theme ?? 'Эфир') === 'Копия'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    if (this.eng) { this.eng.setProps(this.pp()); this.eng.setPaused(this.state.paused); }
+    return { root: this.root, mosh: () => this.eng && this.eng.moshStart(), togglePause: () => this.setState(s => ({ paused: !s.paused })), pauseLabel: this.state.paused ? '▶ ПУСК' : '❚❚ ПАУЗА' };
+  }
+}
+</script>
+</body>
+</html>

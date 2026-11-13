@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;600&family=Rubik:wght@400;500;700&family=Yeseva+One&display=swap" rel="stylesheet">
+<script src="./mutant-engine.js?v=50"></script>
+<style>
+body{margin:0;--mu-page:#0a0c18;--mu-bg:#10142a;--mu-text:#e9f2e4;--mu-text2:#aab4cf;--mu-dis:#8a90a6;--mu-acc:#b6ff1a;--mu-osd:#ffb000;--mu-err:#ff6a61;--mu-surf:#3a47a0;--mu-surf2:#2f3960;--mu-onblue:#e9f2e4;--mu-onblue-acc:#ffe08a;--mu-reel:#e9f2e4;--mu-head:Handjet,monospace;background:var(--mu-page);color:var(--mu-text);font-family:Rubik,sans-serif}
+a{color:var(--mu-acc)}a:hover{color:var(--mu-osd)}
+</style>
+</helmet>
+<section ref="{{ root }}" data-screen-label="Принципы" style="padding:56px clamp(20px,5vw,64px) 80px;display:flex;flex-direction:column;gap:28px;max-width:1240px;margin:0 auto;background:var(--mu-page);color:var(--mu-text)">
+  <header style="display:flex;flex-direction:column;gap:12px;max-width:900px">
+    <div style="font-family:Handjet,monospace;font-size:22px;color:var(--mu-osd);letter-spacing:1px">MUTANT-UI · РЕД. 5 · АРТЕФАКТ 9 · ПРИНЦИПЫ</div>
+    <h1 style="margin:0;font-family:var(--mu-head);font-weight:400;font-size:clamp(40px,6vw,64px);line-height:1.05">Повреждённая копия</h1>
+    <p style="margin:0;font-size:17px;line-height:1.55;text-wrap:pretty">Интерфейс — запись, которую много раз переписывали и плохо хранили.</p>
+    <p style="margin:0;font-family:var(--mu-head);font-size:clamp(20px,2.6vw,26px);line-height:1.3;color:var(--mu-acc);text-wrap:pretty">Найденная кассета без подписи. Не страшно и не ностальгически-мило — странно, липко и любопытно.</p>
+    <p style="margin:0;font-size:14px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Шесть принципов из брифа, каждый с живым примером на движке кита. Где текущая сборка расходится с принципом, это отмечено строкой «В сборке». Числа — в <a href="mutant-ui%20Геном%20и%20токены.dc.html">Геноме и токенах</a>, движение — в <a href="mutant-ui%20Анимационные%20спеки.dc.html">Анимационных спеках</a>.</p>
+  </header>
+
+  <div data-screen-label="Принцип 1" style="background:var(--mu-bg);border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px 40px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:Handjet,monospace;font-weight:600;font-size:44px;line-height:1;color:var(--mu-osd)">01</span>
+      <span style="font-family:var(--mu-head);font-size:28px;line-height:1.15">Сообщение чистое, копия грязная</span>
+      <p style="margin:0;font-size:15px;line-height:1.55;text-wrap:pretty">Текст, иконки, слот в раскладке и зона нажатия не повреждаются никогда. Портится только тело компонента вокруг чистой зоны.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div data-mu-stage="p1" style="position:relative;background:var(--mu-page);border-radius:12px;padding:24px 20px 44px;display:flex;flex-wrap:wrap;gap:40px 24px;align-items:flex-start">
+        <div data-mu-layer=""></div>
+        <div data-mu="card" data-key="card" data-ovz="" style="width:260px;max-width:100%;height:80px;box-sizing:border-box;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500;color:var(--mu-text)">Без подписи №3</span><span style="font-size:13px;color:var(--mu-text2)">Сторона A · 46 мин</span></div>
+        <div data-mu="btn" data-key="button" data-ovz="" style="width:168px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Воспроизвести</div>
+      </div>
+      <span style="font-size:13px;line-height:1.45;color:var(--mu-text2)">Пунктир — чистая зона: текст и по 6 dp с боков. Штрихи, мозаика и битые пиксели в неё не заходят, подтёки растут только ниже тела.</span>
+    </div>
+  </div>
+
+  <div data-screen-label="Принцип 2" style="background:var(--mu-bg);border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px 40px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:Handjet,monospace;font-weight:600;font-size:44px;line-height:1;color:var(--mu-osd)">02</span>
+      <span style="font-family:var(--mu-head);font-size:28px;line-height:1.15">Повреждение — система, а не случайность</span>
+      <p style="margin:0;font-size:15px;line-height:1.55;text-wrap:pretty">Шесть приёмов, три диалекта, один геном. Артефакт, которого нет в каталоге, — ошибка. Экран не должен выглядеть сломанным приложением: порча последовательна, обведена контуром и повторяется по правилам.</p>
+      <p style="margin:0;font-size:14px;line-height:1.5;color:var(--mu-text2);text-wrap:pretty">Правило смеси: в одном компоненте в покое — не больше трёх приёмов, и не больше двух диалектов.</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty"><span style="font-family:Handjet,monospace;font-size:17px;color:var(--mu-osd)">В СБОРКЕ </span>ведёт grime; glitch даёт мозаику, Кокон и потерю кадра; VHS — Ленту и disabled. Приёмы «расслоение» и «след» почти не используются.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div data-mu-stage="p2" style="position:relative;background:var(--mu-page);border-radius:12px;padding:24px 20px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px 20px;align-items:start">
+        <div data-mu-layer=""></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="btn" data-key="button" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">ПОТЁК · GRIME</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div style="height:48px;display:flex;align-items:center"><div data-mu="chip" data-key="chip" data-slip="2" style="height:32px;padding:0 16px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--mu-text)">Избранное</div></div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">СРЕЗ · GRIME: ЗАЛИВКА СПОЛЗЛА</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu-cocoon="" style="width:150px;height:48px"></div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">КВАНТОВАНИЕ · GLITCH</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="btn" data-key="button" data-state="disabled" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">ШУМ И СТРОКИ · VHS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div data-screen-label="Принцип 3" style="background:var(--mu-bg);border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px 40px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:Handjet,monospace;font-weight:600;font-size:44px;line-height:1;color:var(--mu-osd)">03</span>
+      <span style="font-family:var(--mu-head);font-size:28px;line-height:1.15">Родство, а не копия</span>
+      <p style="margin:0;font-size:15px;line-height:1.55;text-wrap:pretty">Экземпляры одного типа — копии с одной кассеты: тип узнаётся сразу, экземпляр — при втором взгляде.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div data-mu-stage="p3" style="position:relative;background:var(--mu-page);border-radius:12px;padding:24px 20px 44px;display:flex;flex-wrap:wrap;gap:40px 20px;align-items:flex-start">
+        <div data-mu-layer=""></div>
+        <div data-mu="btn" data-key="p3/01" style="width:132px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div>
+        <div data-mu="btn" data-key="p3/02" style="width:132px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div>
+        <div data-mu="btn" data-key="p3/03" style="width:132px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div>
+        <div data-mu="btn" data-key="p3/04" style="width:132px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div>
+      </div>
+      <span style="font-size:13px;line-height:1.45;color:var(--mu-text2)">Четыре кнопки одной кассеты с разными ключами. Профиль типа общий: радиус, свес, доля капель. Расстановка подтёков, штрихов и мозаики у каждой своя.</span>
+    </div>
+  </div>
+
+  <div data-screen-label="Принцип 4" style="background:var(--mu-bg);border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px 40px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:Handjet,monospace;font-weight:600;font-size:44px;line-height:1;color:var(--mu-osd)">04</span>
+      <span style="font-family:var(--mu-head);font-size:28px;line-height:1.15">Детерминизм, в том числе во времени</span>
+      <p style="margin:0;font-size:15px;line-height:1.55;text-wrap:pretty">Один seed — одно повреждение на всех платформах. Любой кадр покоя — чистая функция (seed, номер тика): шум и трекинг не накапливают состояния и воспроизводятся в тестах.</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty"><span style="font-family:Handjet,monospace;font-size:17px;color:var(--mu-osd)">В СБОРКЕ </span>проверено только в браузере; переноса на Kotlin и сверки по эталонным SVG ещё нет.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+        <div style="display:flex;flex-direction:column;gap:8px"><div data-mu-stage="p4a" data-mu-t="5000" style="position:relative;background:var(--mu-page);border-radius:12px;padding:24px 16px 44px;display:flex;justify-content:center"><div data-mu-layer=""></div><div data-mu="btn" data-key="button" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div></div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">ПРОХОД 1 · SEED 5 · ТИК 40</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div data-mu-stage="p4b" data-mu-t="5000" style="position:relative;background:var(--mu-page);border-radius:12px;padding:24px 16px 44px;display:flex;justify-content:center"><div data-mu-layer=""></div><div data-mu="btn" data-key="button" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div></div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">ПРОХОД 2 · SEED 5 · ТИК 40</span></div>
+      </div>
+      <span style="font-size:13px;line-height:1.45;color:var(--mu-text2)">Два независимых прохода движка с одним ключом, seed и тиком дают один и тот же кадр. Оба кадра застыли на тике 40.</span>
+    </div>
+  </div>
+
+  <div data-screen-label="Принцип 5" style="background:var(--mu-bg);border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px 40px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:Handjet,monospace;font-weight:600;font-size:44px;line-height:1;color:var(--mu-osd)">05</span>
+      <span style="font-family:var(--mu-head);font-size:28px;line-height:1.15">Сбой — это реакция</span>
+      <p style="margin:0;font-size:15px;line-height:1.55;text-wrap:pretty">Состояние читается по характеру повреждения: нажатие — удар и срез, фокус — сигнал пойман, загрузка — перемотка, ошибка — порча данных, disabled — нет сигнала, успех — чистый кадр. Никогда только цветом.</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty"><span style="font-family:Handjet,monospace;font-size:17px;color:var(--mu-osd)">В СБОРКЕ </span>нажатие читается как кипение, а не удар и срез: срезы отрезали подтёки, и от них отказались.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div data-mu-stage="p5" style="position:relative;background:var(--mu-page);border-radius:12px;padding:24px 20px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px 20px;align-items:start">
+        <div data-mu-layer=""></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="btn" data-key="button" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">ПОКОЙ</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="btn" data-key="button" data-heat="" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">НАЖАТИЕ · КИПИТ</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="btn" data-key="button" data-state="loading" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Перемотка…</div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">ЗАГРУЗКА · ПЕРЕМОТКА</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="field" data-key="field" data-state="error" style="width:150px;height:48px;display:flex;align-items:center;gap:8px;padding:0 12px;box-sizing:border-box"><span style="font-family:Handjet,monospace;font-size:20px;color:var(--mu-osd)">КАНАЛ</span><span style="font-size:15px;color:var(--mu-text)">99</span></div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">ОШИБКА · ПОРЧА ДАННЫХ</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="btn" data-key="button" data-state="disabled" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Слушать</div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">DISABLED · НЕТ СИГНАЛА</span></div>
+        <div style="display:flex;flex-direction:column;gap:32px"><div data-mu="btn" data-key="button" data-state="clean" style="width:150px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c">Готово</div><span style="font-family:Handjet,monospace;font-size:17px;line-height:1.1;color:var(--mu-text2)">УСПЕХ · ЧИСТЫЙ КАДР</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div data-screen-label="Принцип 6" style="background:var(--mu-bg);border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px 40px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:Handjet,monospace;font-weight:600;font-size:44px;line-height:1;color:var(--mu-osd)">06</span>
+      <span style="font-family:var(--mu-head);font-size:28px;line-height:1.15">Всё возвращается</span>
+      <p style="margin:0;font-size:15px;line-height:1.55;text-wrap:pretty">Любое возмущение заканчивается «захватом сигнала» не позже чем через 240 мс. Постоянно дёргающегося на экране нет; постоянное — только медленное (подтёки, дрейф).</p>
+      <p style="margin:0;font-size:13px;line-height:1.45;color:var(--mu-text2);text-wrap:pretty"><span style="font-family:Handjet,monospace;font-size:17px;color:var(--mu-osd)">В СБОРКЕ </span>остывание после нажатия длится 480 мс, а не 240. Контур в покое дрожит 8 раз в секунду: это принятое на стенде покадровое дрожание, оно спорит со словами «постоянно дёргающегося нет».</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div data-mu-stage="p6" style="position:relative;background:var(--mu-page);border-radius:12px;padding:24px 20px 44px;display:flex;flex-wrap:wrap;gap:40px 24px;align-items:flex-start">
+        <div data-mu-layer=""></div>
+        <div data-mu="btn" data-key="button" data-press="" style="width:200px;height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:#05060c;cursor:pointer;user-select:none">Нажмите и держите</div>
+        <div data-mu="fab" data-key="fab" data-press="" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;color:#05060c;cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 5v14M5 12h6M13 13h6"></path></svg></div>
+      </div>
+      <span style="font-size:13px;line-height:1.45;color:var(--mu-text2)">Пока держите, слизь кипит и капли не отрываются. После отпускания цвет, мозаика и контур возвращаются в покой.</span>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Эфир&quot;,&quot;Копия&quot;],&quot;default&quot;:&quot;Эфир&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cassetteSeed&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:999,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  root = React.createRef();
+  static LIGHT = { '--mu-page': '#cfc8b6', '--mu-bg': '#efe9d9', '--mu-text': '#14110f', '--mu-text2': '#5b5446', '--mu-dis': '#6f6858', '--mu-acc': '#2b3fbf', '--mu-osd': '#a8380b', '--mu-err': '#b3261e', '--mu-surf': '#c9bfa6', '--mu-surf2': '#d6ccb2', '--mu-onblue': '#f6f2e6', '--mu-onblue-acc': '#ffd84a', '--mu-reel': '#14110f' };
+  pp() { const p = this.props; return { theme: (p.theme ?? 'Эфир') === 'Копия' ? 'kopiya' : 'efir', seed: p.cassetteSeed ?? 5, fps: 8, boil: .8, rough: .35, density: 1, speed: 1, keyframeLoss: false }; }
+  zones() {
+    const root = this.root.current; if (!root) return;
+    root.querySelectorAll('[data-ovz]').forEach(n => {
+      const it = n._muIt, host = n.closest('[data-mu-stage]'); if (!it || !host || it.el.tz[2] <= 0) return;
+      let o = n._ov; if (!o || o.parentNode !== host) { o = n._ov = document.createElement('div'); o.style.cssText = 'position:absolute;box-sizing:border-box;border:1px dashed #ff2e93;pointer-events:none'; host.appendChild(o); }
+      const el = it.el, s = o.style; s.left = (el.ox + el.tz[0]) + 'px'; s.top = (el.oy + el.tz[1]) + 'px'; s.width = el.tz[2] + 'px'; s.height = el.tz[3] + 'px';
+    });
+  }
+  componentDidMount() {
+    const go = () => {
+      if (this.dead) return;
+      if (!window.MutantEngine || !this.root.current) { this.tm = setTimeout(go, 60); return; }
+      this.eng = window.__mu = new window.MutantEngine(this.root.current, this.pp()); this.eng.start();
+      this.iv = setInterval(() => this.zones(), 300);
+    };
+    const fr = document.fonts && document.fonts.ready; let done = false; const once = () => { if (!done) { done = true; go(); } };
+    if (fr) fr.then(once); this.tm2 = setTimeout(once, 1500);
+  }
+  componentWillUnmount() { this.dead = true; clearTimeout(this.tm); clearTimeout(this.tm2); clearInterval(this.iv); if (this.eng) this.eng.stop(); }
+  renderVals() {
+    const lt = (this.props.theme ?? 'Эфир') === 'Копия'; Object.entries(Component.LIGHT).forEach(([k, v]) => lt ? document.body.style.setProperty(k, v) : document.body.style.removeProperty(k));
+    if (this.eng) this.eng.setProps(this.pp());
+    return { root: this.root };
+  }
+}
+</script>
+</body>
+</html>
