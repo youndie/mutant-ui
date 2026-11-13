@@ -88,12 +88,15 @@ taken on a branch of its own, never by overwriting, and only when the owner star
 - **Fonts only under an open licence**: Handjet and Rubik, both OFL (D9).
 - **No brands, franchises, real VCR menus, real test cards, vaporwave or analogue-horror motifs** in
   demo content (brief, «Не делаем»).
+- **What the design does not draw is designed here, and says so** (D15): v1 appearance and gestures,
+  the snackbar's show and hide, hover, «Чистый сигнал». The item lists every number the design does
+  not state; its goldens are recorded when built and revised in the owner's review round.
 - **`main` describes what exists.** A document describing something not yet built is
   `status: draft` and lives on a branch.
 
 ## Licence
 
-Not chosen yet ([B-39](docs/backlog/B-39-licence.md)). Nothing is published before it is.
+MIT (`LICENSE`, research D14), like toon-ui and plakat-ui. The bundled fonts keep their OFL.
 
 ## Language
 

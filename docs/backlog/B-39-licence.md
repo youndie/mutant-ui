@@ -1,7 +1,7 @@
 ---
 id: B-39
 title: "Licence"
-status: question
+status: done
 priority: P2
 size: XS
 stage: stage-5-product
@@ -15,3 +15,5 @@ The repository has no licence yet. toon-ui and plakat-ui are MIT by the owner's 
 
 - AC: `LICENSE` at the root and the research's decision name the owner's choice.
 - Anchors: `reference/README.md`
+
+**Answered 2026-11-14:** MIT. `LICENSE` at the root, research D14.
