@@ -33,14 +33,16 @@ maintains.
 4. **The demo screens and accessibility** (stage 3): the three screens rebuilt from the
    components, contrast after the Tape, the flash rule, greyscale, semantics.
 5. **The v1 set** (stage 4): slider, segmented button, tooltip, menu, drawer, sheet,
-   pull-to-refresh — after the owner answers how what the design does not draw is designed
+   pull-to-refresh — their appearance and gestures designed here, as the owner decided
    ([B-43](docs/backlog/B-43-undesigned-behaviour.md)).
 6. **The library as a product** (stage 5): licence, a QA pass and a real window, publishing,
    re-importing the design.
 7. **Later** (stage 6): the components the brief puts after publication, and keyframe loss.
 
-Two items are questions to the owner: the licence ([B-39](docs/backlog/B-39-licence.md)) and what
-the design does not draw ([B-43](docs/backlog/B-43-undesigned-behaviour.md)). Neither blocks stage 0.
+The owner answered on 2026-11-14: the licence is MIT ([B-39](docs/backlog/B-39-licence.md)); what the
+design does not draw is designed in this repository, as in plakat-ui
+([B-43](docs/backlog/B-43-undesigned-behaviour.md)). The loop works the backlog locally, merges its
+own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 ## Stages
 
@@ -56,7 +58,7 @@ the design does not draw ([B-43](docs/backlog/B-43-undesigned-behaviour.md)). Ne
 
 <!-- BEGIN INDEX -->
 
-## Open (48)
+## Open (46)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -93,7 +95,6 @@ the design does not draw ([B-43](docs/backlog/B-43-undesigned-behaviour.md)). Ne
 | [B-38](docs/backlog/B-38-accessibility.md) `[ ]` | Accessibility: contrast after the Tape, flashes, greyscale, semantics | P1 | M | B-13, B-37 |
 | [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[ ]` | A QA pass over the finished MVP and a real window driven by AWT events | P1 | M | B-37 |
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
-| [B-43](docs/backlog/B-43-undesigned-behaviour.md) `[?]` | What the design does not draw: appearance, gestures, «Чистый сигнал», hover | P1 | S | - |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
@@ -101,7 +102,6 @@ the design does not draw ([B-43](docs/backlog/B-43-undesigned-behaviour.md)). Ne
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[ ]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-35](docs/backlog/B-35-bottom-sheet.md) `[ ]` | BottomSheet: a blob of r 22 with a divider above | P2 | M | B-10, B-43 |
 | [B-36](docs/backlog/B-36-pull-to-refresh.md) `[ ]` | PullToRefresh: the tongue, refreshing by boil, done by a clean pill | P2 | M | B-10, B-11, B-43 |
-| [B-39](docs/backlog/B-39-licence.md) `[?]` | Licence | P2 | XS | - |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-44](docs/backlog/B-44-search-bar.md) `[ ]` | SearchBar: a focused field with suggestion chips and result rows | P3 | M | B-20, B-17 |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[ ]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
@@ -109,6 +109,11 @@ the design does not draw ([B-43](docs/backlog/B-43-undesigned-behaviour.md)). Ne
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (0)
+## Closed (2)
+
+**The owner's questions answered; the QA pass triaged; the repository public and publishing**
+
+- [B-39](docs/backlog/B-39-licence.md) `[x]` - Licence
+- [B-43](docs/backlog/B-43-undesigned-behaviour.md) `[x]` - What the design does not draw: appearance, gestures, «Чистый сигнал», hover
 
 <!-- END INDEX -->

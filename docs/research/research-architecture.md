@@ -254,6 +254,24 @@ cards with the Tape, a 100-item list, an instance in ≤ 1 ms) and its declared 
 ([B-06](../backlog/B-06-frame-cost.md)). Rejected: measuring last, as plakat-ui did — there the
 architecture did not depend on the answer; here it does.
 
+### D14. MIT licence
+
+The owner chose MIT on 2026-11-14, like toon-ui and plakat-ui ([B-39](../backlog/B-39-licence.md)).
+The bundled fonts keep their OFL, each with its licence file beside it.
+
+### D15. What the design does not draw is designed here *(as plakat-ui's D13)*
+
+The owner decided on 2026-11-14: "как в plakat-ui" ([B-43](../backlog/B-43-undesigned-behaviour.md)).
+The appearance and gestures of the v1 set (tooltip on hover and long press, sheet and drawer
+sliding and dragging, pull-to-refresh as a gesture, menu opening), the snackbar's show and hide,
+hover on desktop, and what «Чистый сигнал» changes are built from what the design does say: the
+brief's event table (`osd-in`/`osd-out`, `pause`/`play`, `switch`, `hiccup`, …) and its eight motion
+rules, the Principles page, the tokens, and the nearest drawn component that shares parts. Such a
+behaviour has no Chrome reference; its goldens are recorded when it is built and revised in the
+owner's review round over the finished sample, and its item lists every number it chose that the
+design does not state. Everything the design does draw stays held to the design. The loop does not
+wait for review of what is designed here.
+
 ---
 
 ## 3. Risks and open questions
@@ -267,7 +285,7 @@ architecture did not depend on the answer; here it does.
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | [B-05](../backlog/B-05-pixel-references-and-floor.md) renders each page twice and compares the two. |
 | R1 | **Shape jumps when a slot is resized** (§1.7): a text field growing with its content rebuilds its drips. | Measured on the field and the card; if it is visible, the owner chooses between a size bucket and the jump ([B-10](../backlog/B-10-mutant-surface.md)). |
 | R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | Measured on the kit at the worst tick; the owner chooses WCAG's exemption or a darker token ([B-38](../backlog/B-38-accessibility.md)). |
-| R3 | **What the design does not draw** — appearance and gestures of the v1 set, «Чистый сигнал», hover. | Put to the owner before the first such component ([B-43](../backlog/B-43-undesigned-behaviour.md)). |
+| R3 | **What the design does not draw** — appearance and gestures of the v1 set, «Чистый сигнал», hover. | *Closed by B-43:* designed here (D15), each item listing the numbers it chose. |
 | R4 | **Flashes on a real screen** were measured by the designer in a browser, not on a device. | A recording of the demo screens through the flash rule, in [B-38](../backlog/B-38-accessibility.md). |
 
 ---

@@ -1,7 +1,7 @@
 ---
 id: B-43
 title: "What the design does not draw: appearance, gestures, «Чистый сигнал», hover"
-status: question
+status: done
 priority: P1
 size: S
 stage: stage-5-product
@@ -15,3 +15,5 @@ The v1 set is mostly static samples: the tooltip does not appear on hover, the s
 
 - AC: the owner's answer recorded as a research decision; the v1 items name where their motion comes from.
 - Anchors: `reference/design-system/mutant-ui Компоненты v1.dc.html`, `reference/design-system/brief.md`, `reference/design-system/mutant-ui Принципы.dc.html`
+
+**Answered 2026-11-14:** "как в plakat-ui" — designed here, research D15. The v1 items take their motion from the brief's event table and the Principles page and list every number they chose.
