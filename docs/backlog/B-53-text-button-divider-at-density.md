@@ -1,7 +1,7 @@
 ---
 id: B-53
 title: "Text button: its tracking divider is drawn unscaled at a density above 1"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-2-components
