@@ -320,6 +320,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | A play stepped at 83.33 ms lands a step after its duration when the duration is not a multiple of the step (200 ms at 250, 330 at 333.3): a composition that asks for frames while the time is under the duration, not while the progress is under 1, stops short and stands there — the snackbar at 83 % for ever (found by its test), the melt at 76 % when a frame falls in its last 3 ms ([B-54](../backlog/B-54-melt-stalls-short-of-its-end.md)) (B-26) | `SnackbarBehaviourTest`, 2026-11-14 |
 
+| The theme's clock starts at 0 and, under reduce motion, stands there; what the engine moves by the scene's tick from off-stage (the rewind band, `(fi · 12) % (pw + w) − w`) stands off-stage too, so a paused indeterminate progress showed an empty track. Such a picture is paused at the page's still frame (tick 40, the engine's 5 s) instead of the clock's tick (B-27) | `ProgressBehaviourTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
