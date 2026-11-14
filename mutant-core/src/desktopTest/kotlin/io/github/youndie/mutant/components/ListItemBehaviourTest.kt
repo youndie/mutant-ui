@@ -172,6 +172,45 @@ class ListItemBehaviourTest {
             assertTrue(near(px[4, 1], MutantPalettes.Efir.focus, .05f), "the bracket at the row's corner: ${px[4, 1]}")
         }
 
+    /** The tile's pixels at 320 ms, pressed from the start or not. */
+    private fun tileAt320(pressed: Boolean): List<Color> {
+        var tile = emptyList<Color>()
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            row(onClick = {})
+            mainClock.advanceTimeByFrame()
+            if (pressed) onNodeWithTag("r").performTouchInput { down(center) }
+            mainClock.advanceTimeBy(320)
+            val px = onNodeWithTag("r").captureToImage().toPixelMap()
+            tile = (12 until 52).flatMap { y -> (0 until 40).map { x -> px[x, y] } }
+        }
+        return tile
+    }
+
+    @Test
+    fun `a press boils the tile - at one moment, pressed and not, the tile differs`() {
+        assertNotEquals(tileAt320(false), tileAt320(true))
+    }
+
+    @Test
+    fun `a disabled row's tile loses its signal`() {
+        val tiles =
+            listOf(true, false).map { enabled ->
+                var tile = emptyList<Color>()
+                runComposeUiTest {
+                    mainClock.autoAdvance = false
+                    row(enabled = enabled)
+                    mainClock.advanceTimeByFrame()
+                    val px = onNodeWithTag("r").captureToImage().toPixelMap()
+                    tile = (12 until 52).flatMap { y -> (0 until 40).map { x -> px[x, y] } }
+                }
+                tile
+            }
+        val fill = MutantPalettes.Efir.surfaceVariant
+        assertTrue(tiles[0].count { near(it, fill, .03f) } > 200, "the live tile's fill")
+        assertTrue(tiles[1].count { near(it, fill, .03f) } < 50, "the disabled tile is no longer that fill")
+    }
+
     private fun frames(reduceMotion: Boolean): Boolean {
         var changed = false
         runComposeUiTest {
