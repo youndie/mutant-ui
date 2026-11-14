@@ -301,6 +301,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | An icon in a component is drawn to the pixel, as the icons were (§1.13): inside an icon button's or a FAB's clean zone 0–3 pixels differ, so icon-only content is held like a body, to the floor, where text is held by its place and colour (B-16) | `IconButtonParityTest`, 2026-11-14 |
 
+| A label-sized slot is laid out by Chrome at a fraction the engine records whole (the chip's 103.4 dp as 103), and its text zone at a fraction (83.29) where Compose's label rounds up (84): a body generated at the kit's size is another shape, and a flow line starting between the two edges is kept on the page and dropped by the kit. Fixtures give the body the engine's size and text zone (`LocalMutantSlotSize`, `LocalMutantTextZone`), null in the kit (B-17) | `ChipParityTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
