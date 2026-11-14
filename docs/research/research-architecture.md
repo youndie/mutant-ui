@@ -333,6 +333,28 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
 
+### 1.16 Accessibility, measured on the kit (B-38)
+
+Measured on 2026-11-14 over the sample's three demo screens (B-37), 360 × 720, both themes, Russian, at every scene tick
+of a Tape cycle (56 ticks of 125 ms), on desktop. A word's contrast is its strongest pixel against the commonest pixel
+of its box, after the Tape, at the worst tick; a flash is a pair of ticks whose luminance changes by 0.1 or more, its
+darker side under 0.8, counted as a share of the screen.
+
+| Measure | «Эфир» | «Копия» | Rule | Held by |
+|---|---|---|---|---|
+| Active words' contrast, worst tick: library / recording / settings form / dialog | 5.81 / 6.29 / 6.48 / 7.44 | 4.70 / 5.36 / 4.70 / 5.43 | ≥ 4.5 (brief) | `AccessibilityTest` |
+| Disabled words' contrast, worst tick | 4.38 (button) – 6.33 | 4.49 – 4.52 (12.22 the button) | exempt (WCAG 1.4.3, the owner's answer), held ≥ 4.3 | `DisabledContrastTest` |
+| Largest change between ticks, share of a screen | 1.8 / 2.1 / 1.1 / 0.2 % | 7.3 / 4.3 / 4.1 / 0.3 % | ≤ 25 %, once a second (the kit's rule) | `AccessibilityTest` |
+| Saturated red, tick by tick | the settings form's 559–653 px: the error's offset outline and the radio's dot move with their bodies, never on and off | 448–520 px likewise; the recording screen's outlined button casts a misregistered shadow in red that comes and goes, 2–157 px, under 0.1 % of the screen — the design's print effect, drawn as the engine draws it | the red never flashes | `AccessibilityTest` (the form's area within a quarter of its peak) |
+| States in grey (pixels more than 16 levels apart) | every pair ≥ 99 px but a loading button against one at rest, 8 px | every pair ≥ 86 px but loading against rest, 30 px | distinguishable in grey (brief) | `StatesAndSemanticsTest` (the loading pair listed) |
+| Semantics | the button, icon button, chip (a selectable checkbox, as Material's FilterChip), checkbox, radio, switch, field (editable text), tabs, progress (its value or indeterminate), card: their Material counterparts' roles and states; a body adds no node | — | Material's (brief) | `StatesAndSemanticsTest` |
+
+A loading button's seek bands are a light acid over the acid body, under 16 grey levels from it, running or paused: in
+grey a loading button reads as one at rest, and differs by its motion and its reader's progress. The Tape's grain is
+1 dp strokes 1 or 3 dp long and the head's noise 1 dp lines 6–46 dp long — thinner than the brief's 1.5 dp, longer in
+one direction; the design draws them so.
+
+
 ---
 
 ## 2. Decisions
@@ -492,9 +514,9 @@ composition does it through `MutantSurface` itself, with two internal locals the
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | *Desktop settled by B-12:* a graphics layer with a blur and a colour matrix reproduces the filter but for its edges (§1.11). Android below 12 draws the geometric shapes, as the handoff allows; not run on a device. |
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | *Closed by B-05:* `data-mu-t` on every stage, with keyframe loss off, renders byte-identically twice; the pause is not needed (§1.8). |
 | R1 | **Shape jumps when a slot is resized** (§1.7). | *Measured by B-10:* the drips stay, the mosaic mostly stays, the flow lines all move (§1.10); the owner decides in [B-51](../backlog/B-51-size-change-moves-the-flow-lines.md). |
-| R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | *Measured by B-13:* the kit draws 4.43 under the band's body, and its 1 dp edge and noise go far lower in «Эфир» (§1.12). Measured over the demo screens at every tick; the owner chooses WCAG's exemption or a darker token ([B-38](../backlog/B-38-accessibility.md)). |
+| R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | *Closed by B-38:* measured at every scene tick of a Tape cycle, the disabled words read 4.38 («Эфир»'s disabled button) to 4.52; the owner chose WCAG's exemption for inactive components on 2026-11-14 (1.4.3 asks no contrast of them), the tokens stay, and the words are held from falling under 4.3 (§1.16). |
 | R3 | **What the design does not draw** — appearance and gestures of the v1 set, «Чистый сигнал», hover. | *Closed by B-43:* designed here (D15), each item listing the numbers it chose. |
-| R4 | **Flashes on a real screen** were measured by the designer in a browser, not on a device. | A recording of the demo screens through the flash rule, in [B-38](../backlog/B-38-accessibility.md). |
+| R4 | **Flashes on a real screen** were measured by the designer in a browser, not on a device. | *Closed by B-38 on the kit (desktop):* no scene tick changes more than 7.3 % of a demo screen against the rule's quarter; a device's recording waits for the Pixel 6a ([B-49](../backlog/B-49-frame-cost-on-a-pixel-6a.md)) (§1.16). |
 
 ---
 
