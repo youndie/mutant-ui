@@ -1,7 +1,7 @@
 ---
 id: B-23
 title: "TopAppBar and Tabs: the 56 dp bar with a tracking divider, the 4 dp indicator with an echo"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
