@@ -8,11 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
@@ -24,6 +27,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.IntSize
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.FieldCache
@@ -42,6 +46,13 @@ import io.github.youndie.mutant.tokens.MutantFill
 import io.github.youndie.mutant.tokens.MutantGrid
 import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.tokens.MutantProfile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 /** Collects the bounds of what a surface's content marks clean, relative to the surface. */
 @Stable
@@ -86,6 +97,12 @@ internal val LocalMutantTextZone = staticCompositionLocalOf<((String) -> DoubleA
 internal val LocalMutantSlotSize = staticCompositionLocalOf<((String) -> androidx.compose.ui.geometry.Size?)?> { null }
 
 internal val LocalCleanZone = staticCompositionLocalOf<CleanZoneRegistry?> { null }
+
+/**
+ * Whether a running clock builds a body's first instance off the frame (B-50). Off only for a test or a measurement
+ * that compares with building it in the frame, as before.
+ */
+internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
 
 /**
  * Marks this element's bounds as part of its surface's clean zone: the text and icons that flow lines,
@@ -182,6 +199,10 @@ internal fun MutantSurface(
     val clock = readMutantClock()
     val registry = remember { CleanZoneRegistry() }
     val held = remember { HeldInstance() }
+    val scope = rememberCoroutineScope()
+    // A body's first instance is built off the frame (B-50), unless the clock is frozen (fixtures, references) or an
+    // IDE preview draws it: those draw in their first frame, as before.
+    val offFrame = LocalMutantBuildOffFrame.current && !clock.frozen && !LocalInspectionMode.current
     val boil = remember { HeatMachine() }
     if (interactionSource != null) {
         androidx.compose.runtime.LaunchedEffect(interactionSource, clock) {
@@ -216,6 +237,8 @@ internal fun MutantSurface(
         modifier
             .onGloballyPositioned { registry.surface = it }
             .drawWithCache {
+                // An instance built off the frame arriving invalidates this cache.
+                held.arrivals
                 val d = density
                 val zone = registry.union(d)
                 val w = engineSize?.width?.toDouble() ?: (size.width / d.toDouble())
@@ -264,14 +287,24 @@ internal fun MutantSurface(
                         tz?.toList(),
                         state == BodyState.Disabled || state == BodyState.Success,
                     )
-                val (g, cache, dead) =
-                    held.of(signature) {
-                        gen
-                            .instance(
-                                slot,
-                                key,
-                            ).let { Triple(it, FieldCache(), if (slot.dead) gen.deadPixels(it) else null) }
+                val still = state == BodyState.Disabled || state == BodyState.Success
+                val build = {
+                    gen
+                        .instance(
+                            slot,
+                            key,
+                        ).let { Triple(it, FieldCache(), if (slot.dead) gen.deadPixels(it) else null) }
+                }
+                if (offFrame && held.isEmpty) {
+                    // The static layers are what makes a first frame ten times a warm one: build them with the
+                    // instance on a background thread, and draw the body from the next frame.
+                    val warmAt = clock.nowMs
+                    held.buildOffFrame(signature, scope) {
+                        build().also { (g, cache, _) -> if (!still) gen.frame(g, cache, warmAt, 0.0, pressed = false) }
                     }
+                    return@drawWithCache onDrawBehind {}
+                }
+                val (g, cache, dead) = held.of(signature, build)
                 probe?.invoke(g)
                 if (state == BodyState.Disabled || state == BodyState.Success) {
                     if (state == BodyState.Disabled && slot.edge && slot.w >= 40 &&
@@ -353,30 +386,66 @@ internal fun MutantSurface(
 /** The print theme's default slip, dp (tokens `genome.slip`: «тема «Копия» 1.5»). */
 private const val PRINT_SLIP: Double = 1.5
 
+private typealias Built =
+    Triple<io.github.youndie.mutant.gen.Instance, FieldCache, io.github.youndie.mutant.gen.DeadPixels?>
+
 /**
  * One surface's instance and field cache, kept across ticks and rebuilt only when what shapes the instance
  * changes (cassette, key, size, wear, profile, clean zone): a fresh cache makes a cold frame, ten times a warm
  * one (B-06).
+ *
+ * The first instance can be built off the frame ([buildOffFrame], B-50): on a background thread from the frame
+ * that first knows the slot, and taken in the next frame — finished there, or built then if the thread is late,
+ * so the body always draws from that next frame and the same picture either way. Later rebuilds (a new size, a
+ * focus's wear) stay in their frame, so a resizing window never shows a body missing.
  */
 internal class HeldInstance {
     private var signature: List<Any?>? = null
-    private var held:
-        Triple<io.github.youndie.mutant.gen.Instance, FieldCache, io.github.youndie.mutant.gen.DeadPixels?>? = null
+    private var held: Built? = null
+    private var pending: List<Any?>? = null
 
     /** How many times the instance was built: a test reads it. */
     var builds: Int = 0
         private set
 
+    /** Bumped when an instance built off the frame is taken; a draw cache reads it to be invalidated. */
+    var arrivals: Int by mutableIntStateOf(0)
+        private set
+
+    /** No instance held yet: the body has not drawn. */
+    val isEmpty: Boolean get() = held == null
+
     fun of(
         signature: List<Any?>,
-        build:
-            () -> Triple<io.github.youndie.mutant.gen.Instance, FieldCache, io.github.youndie.mutant.gen.DeadPixels?>,
-    ): Triple<io.github.youndie.mutant.gen.Instance, FieldCache, io.github.youndie.mutant.gen.DeadPixels?> {
+        build: () -> Built,
+    ): Built {
         val h = held
         if (h != null && signature == this.signature) return h
         builds++
         this.signature = signature
+        pending = null
         return build().also { held = it }
+    }
+
+    /** Starts [build] on a background thread for [signature], once, and takes its result in the next frame. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun buildOffFrame(
+        signature: List<Any?>,
+        scope: CoroutineScope,
+        build: () -> Built,
+    ) {
+        if (signature == pending) return
+        pending = signature
+        val off: Deferred<Built> = scope.async(Dispatchers.Default) { build() }
+        // Undispatched: the wait for the next frame is registered in this one, so the result is taken in the next.
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            withFrameNanos { }
+            if (pending != signature) return@launch off.cancel()
+            val done = if (off.isCompleted && off.getCompletionExceptionOrNull() == null) off.getCompleted() else null
+            if (done == null) off.cancel()
+            of(signature) { done ?: build() }
+            arrivals++
+        }
     }
 }
 

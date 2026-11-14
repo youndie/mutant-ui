@@ -267,6 +267,8 @@ class DialogBehaviourTest {
                     }
                 }
             }
+            // A running clock builds a body's first instance off the frame and draws it from the next (B-50).
+            mainClock.advanceTimeByFrame()
             mainClock.advanceTimeByFrame()
         }
         val slot = window!!.slot
