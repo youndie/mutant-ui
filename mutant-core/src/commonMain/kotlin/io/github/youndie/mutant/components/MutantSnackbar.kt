@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
@@ -88,6 +89,7 @@ internal fun SnackbarBody(
     key: String,
     hidden: Boolean = false,
     playIn: Boolean = true,
+    probe: ((Instance) -> Unit)? = null,
 ) {
     val colors = MutantTheme.colors
     val clock = readMutantClock()
@@ -118,6 +120,7 @@ internal fun SnackbarBody(
         shadow = colors.shadowDeep,
         // The page's `data-r="6"` and `data-marks="0"`.
         profile = MutantBody.Bar.profile.with(radius = RADIUS, marks = false),
+        probe = probe,
     ) {
         Row(
             Modifier.fillMaxWidth().height(HEIGHT).padding(start = SIDE, end = if (actionLabel == null) SIDE else 0.dp),

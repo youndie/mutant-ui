@@ -58,7 +58,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (25)
+## Open (26)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -73,6 +73,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
 | [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[ ]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
 | [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[ ]` | Text button: its tracking divider is drawn unscaled at a density above 1 | P1 | S | B-15 |
+| [B-54](docs/backlog/B-54-melt-stalls-short-of-its-end.md) `[ ]` | Melt: a mark can stall at 76 % when a frame falls in its last 3 ms | P1 | S | B-18 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
