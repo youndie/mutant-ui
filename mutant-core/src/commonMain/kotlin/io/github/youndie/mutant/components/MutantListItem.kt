@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
@@ -90,6 +91,7 @@ internal fun ListItemBody(
     key: String,
     interactionSource: MutableInteractionSource?,
     hidden: Boolean = false,
+    probe: ((Instance) -> Unit)? = null,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
@@ -135,6 +137,7 @@ internal fun ListItemBody(
                 interactionSource = if (onClick == null) null else source,
                 // The page's `data-over="6"`: a list keeps its drips short.
                 profile = MutantBody.Icon.profile.with(overhang = OVERHANG),
+                probe = probe,
             ) {
                 Box(Modifier.size(TILE), contentAlignment = Alignment.Center) {
                     MutantIcon(leadingIcon, null, Modifier.mutantCleanZone(), tint = ink(colors.text), size = ICON)

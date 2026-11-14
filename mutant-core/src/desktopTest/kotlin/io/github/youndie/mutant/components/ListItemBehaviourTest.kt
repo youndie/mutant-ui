@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -172,24 +175,70 @@ class ListItemBehaviourTest {
             assertTrue(near(px[4, 1], MutantPalettes.Efir.focus, .05f), "the bracket at the row's corner: ${px[4, 1]}")
         }
 
-    /** The tile's pixels at 320 ms, pressed from the start or not. */
-    private fun tileAt320(pressed: Boolean): List<Color> {
-        var tile = emptyList<Color>()
+    @Test
+    fun `a press boils the tile - two tiles of one key at one moment, one pressed, differ`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
-            row(onClick = {})
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Column {
+                            MutantListItem(
+                                "А",
+                                Modifier.width(328.dp).testTag("a"),
+                                leadingIcon = MutantIcons.Home,
+                                onClick = {},
+                                key = "same",
+                            )
+                            MutantListItem(
+                                "А",
+                                Modifier.width(328.dp).testTag("b"),
+                                leadingIcon = MutantIcons.Home,
+                                onClick = {},
+                                key = "same",
+                            )
+                        }
+                    }
+                }
+            }
             mainClock.advanceTimeByFrame()
-            if (pressed) onNodeWithTag("r").performTouchInput { down(center) }
+
+            fun tile(tag: String) =
+                onNodeWithTag(tag).captureToImage().toPixelMap().let { px ->
+                    (12 until 52).flatMap { y -> (0 until 40).map { x -> px[x, y] } }
+                }
+            assertEquals(tile("a"), tile("b"), "one key, one moment: one tile")
+            onNodeWithTag("a").performTouchInput { down(center) }
             mainClock.advanceTimeBy(320)
-            val px = onNodeWithTag("r").captureToImage().toPixelMap()
-            tile = (12 until 52).flatMap { y -> (0 until 40).map { x -> px[x, y] } }
+            assertNotEquals(tile("a"), tile("b"), "the pressed one boils")
         }
-        return tile
-    }
 
     @Test
-    fun `a press boils the tile - at one moment, pressed and not, the tile differs`() {
-        assertNotEquals(tileAt320(false), tileAt320(true))
+    fun `the tile keeps clean what the engine keeps clean`() {
+        // The page's tile: its 22 dp icon at 9, 9 of the 40 dp tile, with 6 dp across and 2 down (`tz` in the manifest).
+        val zone =
+            (
+                io.github.youndie.mutant.DesignParity
+                    .reference(
+                        "MutantListItem_Time_Efir",
+                    )["slot"]!!
+                    .jsonObject["tz"] as kotlinx.serialization.json.JsonArray
+            ).map { it.jsonPrimitive.double }
+        var tile: io.github.youndie.mutant.gen.Instance? = null
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        val icon = MutantIcons.Home
+                        val keep = { it: io.github.youndie.mutant.gen.Instance -> tile = it }
+                        ListItemBody("А", Modifier, null, icon, null, null, null, true, "tile1", null, probe = keep)
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+        }
+        assertEquals(zone, tile!!.slot.textZone.toList(), "kit against the engine")
     }
 
     @Test
@@ -329,6 +378,9 @@ class ListItemBehaviourTest {
             assertTrue(near(px[2, px.height / 2], MutantPalettes.Kopiya.amber, .03f), "6 dp of amber before the word")
             // The ring's whole row, 1.5 dp out: drawn past the plate, read where the parent leaves room for it.
             val room = onNodeWithTag("room").captureToImage().toPixelMap()
+            // The word's darkest pixel: Handjet 16's stems are covered whole, the page's black, not «Копия»'s ink.
+            val darkest = (0 until px.width * px.height).map { px[it % px.width, it / px.width] }.minBy { it.red }
+            assertTrue(near(darkest, Color(0xFF05060C), .01f), "the word's black: $darkest")
             assertTrue(near(room[room.width / 2, 3], Color(0xFF05060C), .02f), "the ring ${room[room.width / 2, 3]}")
         }
 }
