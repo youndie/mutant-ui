@@ -50,6 +50,20 @@ public final class io/github/youndie/mutant/components/MutantIconButtonKt {
 	public static final fun MutantIconButton (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantNavigationBarKt {
+	public static final fun MutantNavigationBar (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/foundation/layout/WindowInsets;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/youndie/mutant/components/MutantNavigationItem {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBadge ()Ljava/lang/String;
+	public final fun getEnabled ()Z
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLabel ()Ljava/lang/String;
+}
+
 public final class io/github/youndie/mutant/components/MutantSwitchKt {
 	public static final fun MutantSwitch (ZLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 }

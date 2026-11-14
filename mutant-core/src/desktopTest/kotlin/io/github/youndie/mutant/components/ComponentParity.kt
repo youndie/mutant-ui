@@ -151,6 +151,8 @@ internal object ComponentParity {
         val labelPageInk: Int = 0,
         /** Where the cell was placed, within a pixel of its slot. */
         val placed: Pair<Int, Int> = 0 to 0,
+        /** The bare twin, for a test that reads the content part by part (a navigation bar's items). */
+        val bare: DesignParity.Result? = null,
     ) {
         /** The label beside, when there is one, stands where the page's does and is its colour. */
         val labelHolds: Boolean
@@ -237,7 +239,7 @@ internal object ComponentParity {
         // An empty zone (a slot with nothing to keep clean, an unchecked box) has no content and no ink.
         val kitInk = zone.maxByOrNull { channelGap(r.actual[it], bare.actual[it]) }?.let { r.actual[it] } ?: 0
         val pageInk = zone.maxByOrNull { channelGap(r.reference[it], bare.reference[it]) }?.let { r.reference[it] } ?: 0
-        if (!labelBeside) return Split(r, body, kit, page, kitInk, pageInk, content)
+        if (!labelBeside) return Split(r, body, kit, page, kitInk, pageInk, content, placed = dx to dy, bare = bare)
         val labelKit =
             extentOf(r.width, r.height) { label(it) && channelGap(r.actual[it], bare.actual[it]) > threshold }
         val labelPage =
