@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-10](docs/backlog/B-10-mutant-surface.md) `[ ]` | MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds | P0 | L | B-03, B-05, B-07, B-08 |
+| [B-10](docs/backlog/B-10-mutant-surface.md) `[~]` | MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds | P0 | L | B-03, B-05, B-07, B-08 |
 | [B-09](docs/backlog/B-09-theme.md) `[ ]` | MutantTheme: «Эфир» and «Копия», the cassette seed, reduce motion as pause, «Чистый сигнал» | P1 | S | B-07, B-08 |
 | [B-11](docs/backlog/B-11-surface-states.md) `[ ]` | Body states: boil-over, loading, success, disabled, error, focus | P1 | M | B-10, B-04 |
 | [B-12](docs/backlog/B-12-transitions.md) `[ ]` | Transitions: pour, melt, slide, and the venom with its soft joins | P1 | M | B-04, B-11 |

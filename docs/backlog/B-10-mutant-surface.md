@@ -1,7 +1,7 @@
 ---
 id: B-10
 title: "MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds"
-status: open
+status: wip
 priority: P0
 size: L
 stage: stage-1-materials
