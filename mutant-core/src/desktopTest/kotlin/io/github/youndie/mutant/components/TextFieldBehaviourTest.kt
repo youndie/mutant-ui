@@ -160,6 +160,18 @@ class TextFieldBehaviourTest {
             mainClock.advanceTimeByFrame()
             val x = caret("f")
             assertTrue(x != null && x + 9 <= 200 - 14, "the caret inside the field's padding: $x")
+            // The block itself: 9 columns of 20 text-coloured pixels (the page's 9 × 20).
+            val px = onNodeWithTag("f").captureToImage().toPixelMap()
+            val text = MutantPalettes.Efir.text
+            val columns =
+                (x until px.width)
+                    .takeWhile { cx ->
+                        (0 until px.height).count { near(px[cx, it], text) } >=
+                            18
+                    }.size
+            val rows = (0 until px.height).count { near(px[x, it], text) }
+            assertEquals(9, columns, "the caret's width")
+            assertEquals(20, rows, "the caret's height")
         }
 
     @Test
