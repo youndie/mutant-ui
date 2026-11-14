@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (29)
+## Open (28)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10, B-73 |
 | [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[ ]` | The sample's frame cost in the browser (wasm) | P1 | M | B-72, B-75, B-76 |
-| [B-75](docs/backlog/B-75-tick-frames-off-the-main-thread.md) `[ ]` | The generator's tick frame runs on the main thread, 60–80 ms per tick on the Components page | P1 | M | B-72 |
 | [B-76](docs/backlog/B-76-render-thread-replay-on-the-demo-page.md) `[ ]` | Skia's replay on the render thread bounds the Demo page | P1 | M | B-72 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
@@ -92,7 +91,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (47)
+## Closed (48)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -155,5 +154,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[x]` - The code gate replayed failed tests from the build cache as a pass
 - [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[x]` - The sample's frame cost on the JVM, in a real window, and where it goes
 - [B-74](docs/backlog/B-74-handjet-a-row-higher-on-macos-26.md) `[x]` - Handjet's ink a row higher on the CI's macOS 26 than on macOS 27 and in Chrome
+- [B-75](docs/backlog/B-75-tick-frames-off-the-main-thread.md) `[x]` - The generator's tick frame runs on the main thread, 60–80 ms per tick on the Components page
 
 <!-- END INDEX -->

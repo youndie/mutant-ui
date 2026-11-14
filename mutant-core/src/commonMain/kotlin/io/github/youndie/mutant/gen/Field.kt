@@ -39,6 +39,29 @@ internal class FieldStatic(
 /** Per-instance field caches, keyed by grid size. */
 internal class FieldCache {
     val static = HashMap<Long, FieldStatic>()
+
+    /**
+     * Whether a resting frame of [g] would only read this cache: its static layers built and, where the body boils
+     * at rest, all four boil phases. A frame may then be built on another thread while the frame's own thread reads
+     * the cache too (B-75); before that, the first frames fill it, on the frame's thread alone.
+     */
+    fun settledFor(g: Instance): Boolean {
+        val st = static[gridKey(g)] ?: return false
+        return REST_BOIL * g.slot.calm == 0.0 || st.boil.size == BOIL_PHASES
+    }
+}
+
+/** The boil phases a body trembles through, 0…3 ([boilPhase]). */
+private const val BOIL_PHASES = 4
+
+private fun gridStep(g: Instance) = if (g.slot.w > 200) 1.5 else .9
+
+private fun gridKey(g: Instance): Long {
+    val el = g.slot
+    val s = gridStep(g)
+    val nx = ceil((el.w + 14) / s).toInt() + 1
+    val ny = ceil((el.h + el.over + 31) / s).toInt() + 1
+    return nx.toLong() shl 32 or ny.toLong()
 }
 
 /**
@@ -58,14 +81,14 @@ internal fun distanceField(
     boil0: Double,
 ): DistanceField {
     val el = g.slot
-    val s = if (el.w > 200) 1.5 else .9
+    val s = gridStep(g)
     val x0 = el.ox - 7
     val y0 = el.oy - 13
     val nx = ceil((el.w + 14) / s).toInt() + 1
     val ny = ceil((el.h + el.over + 31) / s).toInt() + 1
     val n = nx * ny
     val st =
-        cache.static.getOrPut(nx.toLong() shl 32 or ny.toLong()) {
+        cache.static.getOrPut(gridKey(g)) {
             fieldStatic(g, nx, ny, x0, y0, s)
         }
     val bk =
