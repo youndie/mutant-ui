@@ -1,7 +1,7 @@
 ---
 id: B-78
 title: "The bodies' drawing is most of the render thread's frame on the Demo page"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
