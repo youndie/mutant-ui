@@ -34,6 +34,8 @@ internal class BodyLook(
     val outline: Float,
     val slip: Float = 0f,
     val shadow: Color? = null,
+    /** The profile's outline before the tremble: the error's offset outline is drawn with it. */
+    val baseOutline: Float = outline,
 )
 
 /** The engine's `hl`: white over a light fill, the theme's highlight over a dark one (`lum(fill) > .45`). */
@@ -140,6 +142,7 @@ internal fun DrawScope.drawBody(
     speckle: Speckle,
     speckleOrigin: Offset,
     deadPixels: DeadPixels? = null,
+    decor: BodyDecor = BodyDecor(),
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -149,20 +152,40 @@ internal fun DrawScope.drawBody(
     val over = el.over.toFloat()
     val bb = Rect(ox - 12, oy - 15, ox + w + 12, oy + h + over + 30)
     look.shadow?.let { translate(4f, 4f) { drawPath(paths.contour, it) } }
+    decor.errorOutline?.let {
+        translate(2.5f, 0f) { drawPath(paths.contour, it, style = Stroke(width = look.baseOutline)) }
+    }
     translate(look.slip, look.slip) {
         clipPath(paths.contour) {
             drawRect(look.fill, bb.topLeft, bb.size)
             drawSpeckle(speckle, speckleOrigin, bb, look.ink)
-            for (t in g.mosaicTiles) {
+            val tiles = decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
+            for ((t, c) in tiles) {
                 drawRect(
-                    if (t.black) Color.Black else Color.White,
+                    c,
                     Offset(t.x.toFloat(), t.y.toFloat()),
                     Size(t.size.toFloat(), t.size.toFloat()),
                     alpha = t.opacity.toFloat(),
                 )
             }
             if (deadPixels != null) drawDeadPixels(deadPixels, colors)
+            for ((r, c) in decor.errorBlocks) drawRect(c, r.topLeft, r.size)
             drawPath(paths.flowLines, look.ink)
+            for ((i, b) in decor.bands.withIndex()) {
+                drawRect(
+                    Color.White,
+                    b.topLeft,
+                    b.size,
+                    alpha =
+                        if (i ==
+                            0
+                        ) {
+                            .5f
+                        } else {
+                            .35f
+                        },
+                )
+            }
         }
     }
     val r = el.r.toFloat()
@@ -176,6 +199,7 @@ internal fun DrawScope.drawBody(
         translate(1.5f, 1.5f) { drawPath(paths.highlight, look.fill) }
     }
     drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
+    decor.brackets?.let { drawBrackets(g, it) }
 }
 
 private fun DrawScope.drawSpeckle(

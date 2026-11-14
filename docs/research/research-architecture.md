@@ -211,6 +211,10 @@ Settled by [B-10](../backlog/B-10-mutant-surface.md).
 | The engine samples the edge noise and the boil's noise at the slot's **stage** coordinates, so on a page a body moved within its stage would change its edge; its speckle tile is anchored to the stage | `reference/design-system/mutant-generator.js` (`field`: `vn(X · .8, Y · .8)` at scene X, Y), `mutant-engine.js` (`buildStage`, pattern `sp`) |
 | Growing a field from 260 to 268 dp over 200 keys keeps every drip (3162 of 3162) and 80 % of the mosaic (7810 of 9762 blocks) and moves every flow line (0 of 1460 kept): their spacing is `w / n` | a Node run of the vendored generator, 2026-11-14 |
 
+| *Settled by [B-11](../backlog/B-11-surface-states.md):* the eight states the Components page draws — the button pressed at heat 1, loading, success and disabled; the field focused, in error and disabled; the card disabled — differ from the kit's on at most 0.011 % of pixels, against the body's 0.02 % | `BodyParityTest`, 2026-11-14 |
+| The engine redraws a pressed body on every frame while its heat changes (its key holds the heat to two decimals), but draws it at the hot tick's time; the kit redraws it on the hot tick, 12 times a second, as the handoff states the rule («пока нагрев > 0: тик в 1.5 раза чаще») | `reference/design-system/mutant-engine.js` (`frame`: the `'h' + … + heat.toFixed(2)` key), `MutantSurface` |
+| Under the engine's pause a press does not boil: heat is a function of the engine's time, which stands | `reference/design-system/mutant-engine.js` (`frame`), `SurfaceStatesTest` |
+
 **Consequence 9.** The kit's body is the page's, layer for layer. Where the page relies on its host —
 stage coordinates for the noise, the slot count for the tremble — the kit uses the body's own (D16).
 A size change is visible in the flow lines; whether to accept that is the owner's

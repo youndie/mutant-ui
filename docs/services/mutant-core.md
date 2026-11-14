@@ -32,7 +32,8 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/tokens/MutantTokens.kt` | the generated tokens: public `MutantColors` and `MutantPalettes`, internal type, grid, profiles, motion, genome ([B-08](../backlog/B-08-token-generator.md)) |
 | `scripts/tokens.mjs` | writes them from `mutant-tokens.json` and the engine's `static K` and `TH`; `--check` in the gate |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/` | `MutantSurface` and the body renderer (`BodyDrawing.kt`): layers, speckle, clean zone, the held instance ([B-10](../backlog/B-10-mutant-surface.md)) |
-| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the page's resting button, card and field |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyStates.kt` | the states: boil fill, running mosaic, seek bands, error, brackets, the disabled and clean bodies ([B-11](../backlog/B-11-surface-states.md)) |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the page's eleven resting and state cells |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal; the locals every body reads ([B-09](../backlog/B-09-theme.md)) |
 | `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/theme/PlatformReduceMotion.*.kt` | the platform's reduce-motion setting per target |
 | `mutant-core/api/` | the committed public API dump |

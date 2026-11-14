@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (39)
+## Open (38)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-11](docs/backlog/B-11-surface-states.md) `[ ]` | Body states: boil-over, loading, success, disabled, error, focus | P1 | M | B-10, B-04 |
 | [B-12](docs/backlog/B-12-transitions.md) `[ ]` | Transitions: pour, melt, slide, and the venom with its soft joins | P1 | M | B-04, B-11 |
 | [B-13](docs/backlog/B-13-tape.md) `[ ]` | The Tape («Лента»): one overlay over the screen | P1 | M | B-07, B-09 |
 | [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[ ]` | Icons, the six illustrations and the four patterns | P1 | S | B-10 |
@@ -102,7 +101,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (12)
+## Closed (13)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -119,6 +118,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-08](docs/backlog/B-08-token-generator.md) `[x]` - Tokens generated from mutant-tokens.json, read a second time in a test
 - [B-09](docs/backlog/B-09-theme.md) `[x]` - MutantTheme: «Эфир» and «Копия», the cassette seed, reduce motion as pause, «Чистый сигнал»
 - [B-10](docs/backlog/B-10-mutant-surface.md) `[x]` - MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds
+- [B-11](docs/backlog/B-11-surface-states.md) `[x]` - Body states: boil-over, loading, success, disabled, error, focus
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 

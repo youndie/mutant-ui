@@ -92,24 +92,53 @@ class BodyParityTest {
                 cleanZone = arr("cz"),
             )
         val gen = MutantGenerator(cassette = "5")
-        val g = gen.instance(slot, s["key"]!!.jsonPrimitive.content)
-        val frame = gen.frame(g, FieldCache(), 5000.0)
+        val still = (s["still"] as? JsonPrimitive)?.content == "true"
+        val state =
+            when (s["state"]!!.jsonPrimitive.content) {
+                "loading" -> BodyState.Loading
+                "clean" -> BodyState.Success
+                "disabled" -> BodyState.Disabled
+                "error" -> BodyState.Error
+                else -> BodyState.Rest
+            }
+        val heat = (s["heat"] as? JsonPrimitive)?.content?.toDoubleOrNull() ?: 0.0
+        val focused = (s["brackets"] as? JsonPrimitive)?.content == "true"
+        val g = gen.instance(slot, s["key"]!!.jsonPrimitive.content, still)
+        if (still && slot.edge && slot.w >= 40) gen.edgeMosaic(g)
+        val t = 5000.0
         val colors = MutantPalettes.Efir
         val fill = hexColor(s["fill"]!!.jsonPrimitive.content)
-        val look =
-            BodyLook(
-                fill = fill,
-                highlight = hexColor(s["hl"]!!.jsonPrimitive.content),
-                ink = hexColor(s["stroke"]!!.jsonPrimitive.content),
-                outline = d("drawnOutline").toFloat(),
-                slip = d("slip").toFloat(),
-                shadow = (s["shadow"] as? JsonPrimitive)?.takeIf { it.isString }?.let { hexColor(it.content) },
-            )
-        val dead = if (slot.dead) gen.deadPixels(g) else null
+        val highlight = hexColor(s["hl"]!!.jsonPrimitive.content)
         val origin = s["origin"]!!.jsonArray.map { it.jsonPrimitive.double.toFloat() }
         val background = rgb(s["background"]!!.jsonPrimitive.content)
-        val speckle = Speckle.of("5", s["stage"]!!.jsonPrimitive.content, .35 * slot.calm)
-        val paths = BodyPaths.of(frame)
+        val stage = s["stage"]!!.jsonPrimitive.content
+        val draw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit =
+            if (still) {
+                val patterns = StagePatterns.of("5", stage)
+                val ow = d("drawnOutline").toFloat()
+                if (state == BodyState.Disabled) {
+                    { drawDisabledBody(g, fill, highlight, colors, ow, patterns, Offset.Zero) }
+                } else {
+                    { drawCleanBody(g, fill, highlight, hexColor(s["stroke"]!!.jsonPrimitive.content), ow) }
+                }
+            } else {
+                val frame = gen.frame(g, FieldCache(), t, heat)
+                val look =
+                    BodyLook(
+                        fill = boilFill(fill, colors, heat, t),
+                        highlight = highlight,
+                        ink = hexColor(s["stroke"]!!.jsonPrimitive.content),
+                        outline = d("drawnOutline").toFloat(),
+                        slip = d("slip").toFloat(),
+                        shadow = (s["shadow"] as? JsonPrimitive)?.takeIf { it.isString }?.let { hexColor(it.content) },
+                        baseOutline = d("ow").toFloat(),
+                    )
+                val dead = if (slot.dead) gen.deadPixels(g) else null
+                val speckle = Speckle.of("5", stage, .35 * slot.calm)
+                val paths = BodyPaths.of(frame)
+                val decor = gen.decorOf(g, state, focused, heat, t, colors)
+                ({ drawBody(g, paths, look, colors, speckle, Offset.Zero, dead, decor) })
+            }
         val image = Image.makeFromEncoded(File(dir, "$stem.png").readBytes())
         val bitmap = Bitmap.makeFromImage(image)
         var percent = 0.0
@@ -118,9 +147,7 @@ class BodyParityTest {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     Canvas(Modifier.size(image.width.dp, image.height.dp)) {
                         drawRect(background)
-                        translate(-origin[0], -origin[1]) {
-                            drawBody(g, paths, look, colors, speckle, Offset.Zero, dead)
-                        }
+                        translate(-origin[0], -origin[1]) { draw() }
                     }
                 }
             }
@@ -155,11 +182,10 @@ class BodyParityTest {
         return percent
     }
 
-    @Test
-    fun `a resting button, card and field match the page's within the body's measured parity`() {
+    private fun check(stems: List<String>) {
         val lines = ArrayList<String>()
         var worst = 0.0
-        for (stem in listOf("Button_RestBody_Efir", "Card_RestBody_Efir", "Field_RestBody_Efir")) {
+        for (stem in stems) {
             val p = parity(stem)
             worst = maxOf(worst, p)
             lines += "$stem: ${"%.3f".format(p)} %"
@@ -167,6 +193,25 @@ class BodyParityTest {
         println(lines.joinToString("\n"))
         assertTrue(worst <= BODY_PARITY_PERCENT, lines.joinToString("\n"))
     }
+
+    @Test
+    fun `a resting button, card and field match the page's within the body's measured parity`() =
+        check(listOf("Button_RestBody_Efir", "Card_RestBody_Efir", "Field_RestBody_Efir"))
+
+    @Test
+    fun `every state the page draws matches within the body's measured parity`() =
+        check(
+            listOf(
+                "Button_PressedBody_Efir",
+                "Button_LoadingBody_Efir",
+                "Button_SuccessBody_Efir",
+                "Button_DisabledBody_Efir",
+                "Field_FocusedBody_Efir",
+                "Field_ErrorBody_Efir",
+                "Field_DisabledBody_Efir",
+                "Card_DisabledBody_Efir",
+            ),
+        )
 
     private companion object {
         /** Measured 2026-11-14 (research §1.10). */

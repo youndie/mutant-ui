@@ -1,5 +1,7 @@
 package io.github.youndie.mutant.surface
 
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
@@ -36,6 +38,7 @@ import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantFill
 import io.github.youndie.mutant.tokens.MutantGrid
+import io.github.youndie.mutant.tokens.MutantMotion
 
 /** Collects the bounds of what a surface's content marks clean, relative to the surface. */
 @Stable
@@ -89,8 +92,14 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * with it when it moves; a size change regenerates it.
  *
  * [calm] is the instance's wear (0.2…1.7); [slip] shifts the fill from the outline (default 1.5 dp in a
- * print theme for bodies that are not round); [shadow] draws the misregistered shadow. [probe] is told the
- * instance each time a frame is built, for tests.
+ * print theme for bodies that are not round); [shadow] draws the misregistered shadow.
+ *
+ * [state] is the handoff's: [BodyState.Loading] runs the seek bands, [BodyState.Success] is the clean frame,
+ * [BodyState.Disabled] is «нет сигнала» with no slime, [BodyState.Error] adds the red offset outline and the
+ * corruption blocks. [focused] calms the damage to 0.3 and draws the amber brackets. A press on
+ * [interactionSource] boils the body: heat rises to 1 in 320 ms and cools in 480 ms on the screen's clock,
+ * and while hot the body is redrawn on the hot tick; [heat] fixes it instead (a fixture, the engine's
+ * `data-heat-k`). [probe] is told the instance each time a frame is built, for tests.
  */
 @Composable
 internal fun MutantSurface(
@@ -101,6 +110,10 @@ internal fun MutantSurface(
     calm: Double = 1.0,
     slip: Double? = null,
     shadow: Color? = null,
+    state: BodyState = BodyState.Rest,
+    focused: Boolean = false,
+    interactionSource: InteractionSource? = null,
+    heat: Double? = null,
     probe: ((io.github.youndie.mutant.gen.Instance) -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -110,6 +123,18 @@ internal fun MutantSurface(
     val clock = readMutantClock()
     val registry = remember { CleanZoneRegistry() }
     val held = remember { HeldInstance() }
+    val boil = remember { HeatMachine() }
+    if (interactionSource != null) {
+        androidx.compose.runtime.LaunchedEffect(interactionSource, clock) {
+            interactionSource.interactions.collect {
+                when (it) {
+                    is PressInteraction.Press -> boil.press(clock.nowMs)
+                    is PressInteraction.Release, is PressInteraction.Cancel -> boil.release(clock.nowMs)
+                }
+            }
+        }
+    }
+    val wear = if (focused) FOCUS_CALM else calm
     val p = body.profile
     val bodyFill = fill ?: colors.fillOf(p.fill)
     val look =
@@ -147,11 +172,11 @@ internal fun MutantSurface(
                         w = w,
                         h = h,
                         r = minOf(p.radius, w / 2, h / 2),
-                        over = p.overhang * (if (calm < 1) .4 + .6 * calm else 1.0),
+                        over = p.overhang * (if (wear < 1) .4 + .6 * wear else 1.0),
                         dripShare = p.dripShare,
                         wobble = p.wobble,
                         round = p.round,
-                        calm = calm,
+                        calm = wear,
                         dead = p.deadPixels,
                         marks = p.marks,
                         edge = p.mosaic,
@@ -160,7 +185,17 @@ internal fun MutantSurface(
                             tz?.let { doubleArrayOf(it[0] - 2, it[1] - 2, it[2] + 4, it[3] + 4) }
                                 ?: doubleArrayOf(0.0, 0.0, 0.0, 0.0),
                     )
-                val signature = listOf(cassette, key, slot.w, slot.h, slot.calm, body, tz?.toList())
+                val signature =
+                    listOf(
+                        cassette,
+                        key,
+                        slot.w,
+                        slot.h,
+                        slot.calm,
+                        body,
+                        tz?.toList(),
+                        state == BodyState.Disabled || state == BodyState.Success,
+                    )
                 val (g, cache, dead) =
                     held.of(signature) {
                         gen
@@ -170,14 +205,56 @@ internal fun MutantSurface(
                             ).let { Triple(it, FieldCache(), if (slot.dead) gen.deadPixels(it) else null) }
                     }
                 probe?.invoke(g)
-                val speckle = Speckle.of(cassette, stage, REST_ROUGH * calm)
-                val t = clock.restTimeMs()
-                val frame = gen.frame(g, cache, t)
+                if (state == BodyState.Disabled || state == BodyState.Success) {
+                    if (state == BodyState.Disabled && slot.edge && slot.w >= 40 &&
+                        g.mosaicTiles.isEmpty()
+                    ) {
+                        gen.edgeMosaic(g)
+                    }
+                    val patterns = StagePatterns.of(cassette, stage)
+                    return@drawWithCache onDrawBehind {
+                        scale(d, Offset.Zero) {
+                            if (state == BodyState.Disabled) {
+                                drawDisabledBody(
+                                    g,
+                                    look.fill,
+                                    look.highlight,
+                                    colors,
+                                    p.outline.toFloat(),
+                                    patterns,
+                                    Offset.Zero,
+                                )
+                            } else {
+                                drawCleanBody(g, look.fill, look.highlight, look.ink, p.outline.toFloat())
+                            }
+                        }
+                    }
+                }
+                val speckle = Speckle.of(cassette, stage, REST_ROUGH * wear)
+                val hot = heat?.let { it > 0 } ?: (boil.on || boil.at(clock.nowMs) > 0)
+                val t =
+                    when {
+                        clock.frozen -> clock.nowMs
+                        hot -> clock.hotTimeMs()
+                        else -> clock.restTimeMs()
+                    }
+                val k = heat ?: boil.at(clock.nowMs)
+                val frame = gen.frame(g, cache, t, k, pressed = boil.on)
                 val paths = BodyPaths.of(frame)
-                val outline = outlineWidth(g, p.outline, frame.boilPhase, REST_BOIL * calm)
-                val frameLook = BodyLook(look.fill, look.highlight, look.ink, outline, look.slip, look.shadow)
+                val outline = outlineWidth(g, p.outline, frame.boilPhase, frame.boil)
+                val frameLook =
+                    BodyLook(
+                        boilFill(look.fill, colors, k, t),
+                        look.highlight,
+                        look.ink,
+                        outline,
+                        look.slip,
+                        look.shadow,
+                        p.outline.toFloat(),
+                    )
+                val decor = gen.decorOf(g, state, focused, k, t, colors)
                 onDrawBehind {
-                    scale(d, Offset.Zero) { drawBody(g, paths, frameLook, colors, speckle, Offset.Zero, dead) }
+                    scale(d, Offset.Zero) { drawBody(g, paths, frameLook, colors, speckle, Offset.Zero, dead, decor) }
                 }
             },
         propagateMinConstraints = true,
@@ -213,5 +290,44 @@ internal class HeldInstance {
         builds++
         this.signature = signature
         return build().also { held = it }
+    }
+}
+
+/** A focused body's wear (`data-calm=".3"`: «повреждения 30 %»). */
+private const val FOCUS_CALM: Double = .3
+
+/**
+ * The boil's heat (the engine's `frame`): rising to 1 in 320 ms while pressed, cooling to 0 in 480 ms after,
+ * from wherever it was. A pure function of the clock's time and the last press or release; only [on] is state.
+ */
+@androidx.compose.runtime.Stable
+internal class HeatMachine {
+    var on: Boolean by mutableStateOf(false)
+        private set
+    private var from = 0.0
+    private var since = 0.0
+
+    fun at(now: Double): Double =
+        if (on) {
+            minOf(1.0, from + (now - since) / MutantMotion.BOIL_OVER_IN_MS)
+        } else {
+            maxOf(
+                0.0,
+                from - (now - since) / MutantMotion.BOIL_OVER_OUT_MS,
+            )
+        }
+
+    fun press(now: Double) {
+        if (on) return
+        from = at(now)
+        since = now
+        on = true
+    }
+
+    fun release(now: Double) {
+        if (!on) return
+        from = at(now)
+        since = now
+        on = false
     }
 }
