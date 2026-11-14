@@ -147,3 +147,10 @@ tasks.register<JavaExec>("appearBench") {
     dependsOn(test.compileAllTaskName)
     notCompatibleWithConfigurationCache("a measurement, run by hand")
 }
+
+// B-71: a test task is never taken from the build cache. Under `allTests` and `check`, Kotlin lets a test task
+// with failing tests succeed and fails the aggregate after it, so the failed run is stored like any other; a
+// fresh checkout (every CI run) then loads it and the build passes without a single test having run.
+tasks.withType<AbstractTestTask>().configureEach {
+    outputs.cacheIf("a cached test run replays its failures as a pass (B-71)") { false }
+}

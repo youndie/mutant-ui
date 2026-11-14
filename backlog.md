@@ -58,14 +58,15 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (30)
+## Open (31)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[~]` | The code gate replayed failed tests from the build cache as a pass | P0 | S | B-41 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10, B-73 |
-| [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[?]` | The code gate: three labels' ink a row off on one macos-latest run, not on its rerun | P1 | S | B-41 |
 | [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[ ]` | The sample's frame cost on the JVM, in a real window, and where it goes | P1 | M | B-41 |
 | [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[ ]` | The sample's frame cost in the browser (wasm) | P1 | M | B-72 |
+| [B-74](docs/backlog/B-74-handjet-a-row-higher-on-macos-26.md) `[?]` | Handjet's ink a row higher on the CI's macOS 26 than on macOS 27 and in Chrome | P1 | S | B-71 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
