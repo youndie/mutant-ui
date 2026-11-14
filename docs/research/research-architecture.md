@@ -355,6 +355,18 @@ grey a loading button reads as one at rest, and differs by its motion and its re
 one direction; the design draws them so.
 
 
+### 1.17 What a consumer does to the kit (B-40)
+
+On 2026-11-14 an adversarial pass over every public component on the desktop test runtime, then a real window
+driven by posted AWT events, found 22 defects: one throw (the navigation bar in unbounded width), five wrong for
+every user (no visible focus on the text button, a Success button and the dialog's two hidden Tab stops; the text
+field's narrow click target and its caret standing after the text), eight for a class of input (long dialog text and
+labels, overflowing tabs, font scale, focus through Loading, right-to-left text, no hover), eight small. Every one
+is an item, B-56…B-70, with its finding's table in [B-40](../backlog/B-40-qa-pass-and-real-window.md); the sweeps
+stay as tests in `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/qa/`, each defect an ignored test
+named by its number. The real window confirmed the arrow cursor, the clean click, the Tab order, the wheel at 30 px
+a notch, resize and the scrim taking a press; it does not see the operating system's own delivery of input.
+
 ---
 
 ## 2. Decisions

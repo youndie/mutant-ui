@@ -58,17 +58,19 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (21)
+## Open (35)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[~]` | A QA pass over the finished MVP and a real window driven by AWT events | P1 | M | B-37 |
+| [B-56](docs/backlog/B-56-navigation-bar-unbounded-width.md) `[ ]` | Navigation bar: throws in a horizontally scrolling row | P0 | S | B-40 |
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
 | [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[ ]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
 | [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[ ]` | Text button: its tracking divider is drawn unscaled at a density above 1 | P1 | S | B-15 |
 | [B-54](docs/backlog/B-54-melt-stalls-short-of-its-end.md) `[ ]` | Melt: a mark can stall at 76 % when a frame falls in its last 3 ms | P1 | S | B-18 |
 | [B-55](docs/backlog/B-55-public-text-styles.md) `[ ]` | Public text styles: a consumer cannot set its own words in Handjet or Rubik | P1 | S | B-37 |
+| [B-57](docs/backlog/B-57-visible-keyboard-focus-everywhere.md) `[ ]` | Keyboard focus: every Tab stop visible, and the dialog's Tab cycle | P1 | M | B-40 |
+| [B-58](docs/backlog/B-58-text-field-target-and-caret.md) `[ ]` | Text field: the whole body takes the pointer, and the caret marks the insertion point | P1 | M | B-40 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
@@ -77,14 +79,26 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-35](docs/backlog/B-35-bottom-sheet.md) `[ ]` | BottomSheet: a blob of r 22 with a divider above | P2 | M | B-10, B-43 |
 | [B-36](docs/backlog/B-36-pull-to-refresh.md) `[ ]` | PullToRefresh: the tongue, refreshing by boil, done by a clean pill | P2 | M | B-10, B-11, B-43 |
 | [B-51](docs/backlog/B-51-size-change-moves-the-flow-lines.md) `[?]` | A size change moves every flow line: accept, or hold them? | P2 | S | B-10 |
+| [B-59](docs/backlog/B-59-dialog-actions-always-reachable.md) `[ ]` | Dialog: its actions stay reachable under long text and long labels | P2 | M | B-40 |
+| [B-60](docs/backlog/B-60-tabs-that-do-not-fit.md) `[ ]` | Tabs: tabs past the row's width are invisible yet focusable | P2 | S | B-40 |
+| [B-61](docs/backlog/B-61-text-under-font-scale.md) `[ ]` | Font scale: fixed heights cut text, and illustration labels leave the art | P2 | M | B-40 |
+| [B-62](docs/backlog/B-62-focus-through-loading.md) `[ ]` | Button: keyboard focus survives Loading and Success | P2 | S | B-40 |
+| [B-63](docs/backlog/B-63-hover-and-hand-cursor.md) `[ ]` | Desktop: the hand cursor and a hover look | P2 | M | B-40 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-44](docs/backlog/B-44-search-bar.md) `[ ]` | SearchBar: a focused field with suggestion chips and result rows | P3 | M | B-20, B-17 |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[ ]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
 | [B-46](docs/backlog/B-46-data-table.md) `[ ]` | DataTable: OSD header, 48 dp rows, tracking dividers, row selection | P3 | M | B-18, B-25 |
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
+| [B-64](docs/backlog/B-64-weighted-parts-in-unbounded-width.md) `[ ]` | Unbounded width: weighted parts collapse to nothing | P3 | S | B-40 |
+| [B-65](docs/backlog/B-65-tabs-and-navigation-in-rtl.md) `[ ]` | Tabs and the navigation bar mirror in a right-to-left layout | P3 | S | B-40 |
+| [B-66](docs/backlog/B-66-navigation-pill-in-narrow-cells.md) `[ ]` | Navigation bar: the pill overruns narrow cells | P3 | S | B-40 |
+| [B-67](docs/backlog/B-67-text-field-error-description.md) `[ ]` | Text field: the error has no words for a screen reader | P3 | S | B-40 |
+| [B-68](docs/backlog/B-68-fab-icon-name-match.md) `[ ]` | FAB: a consumer's icon is swapped for the kit's on a name match | P3 | S | B-40 |
+| [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
+| [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (34)
+## Closed (35)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -133,6 +147,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
 - [B-39](docs/backlog/B-39-licence.md) `[x]` - Licence
+- [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[x]` - A QA pass over the finished MVP and a real window driven by AWT events
 - [B-43](docs/backlog/B-43-undesigned-behaviour.md) `[x]` - What the design does not draw: appearance, gestures, «Чистый сигнал», hover
 
 <!-- END INDEX -->
