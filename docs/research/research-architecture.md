@@ -264,12 +264,26 @@ Settled by [B-14](../backlog/B-14-icons-illustrations-patterns.md); references f
 | An illustration's parts are absolutely placed bodies with per-slot overrides of their type (`data-r`, `data-over`, `data-cf`, `data-ow`, `data-wob`, `data-marks`, `data-edge`). A body's clean zone counts every nested body, kept part and text inside it, laid out even where hidden — the test card's mosaic depends on its label | `mutant-engine.js` (`makeItem`, `textZone`), `IllustrationParityTest` |
 | The engine draws a stage's bodies in an `<svg>` at the stage's corner, and Chrome snaps it by a rule the DOM does not show: of the page's three columns, at fractions 0.33, 0.98 and 0.66, the last lands a pixel left of the art's rounded box. The fixture places the whole picture within a pixel of its box where it matches best | `IllustrationParityTest` (`placed`) |
 | With each body generated at the engine's stage origin and drawn at its outline width (D16), the bodies of the six illustrations differ from the page's on 1–16 pixels: 1 for three of them, the rest single pixels where one body's outline lies over another's fill (the label on the cassette, the arms across the mast) — a material the floor's single-body probes never had | `IllustrationParityTest` (`RESIDUAL`), 2026-11-14 |
-| The labels in Handjet read 2 px lower than Chrome's and heavier; neither `LineHeightStyle(Center, Trim.None)` nor an unspecified line height moves them. Unresolved: [B-52](../backlog/B-52-display-text-against-chrome.md) | `IllustrationParityTest` (printed), 2026-11-14 |
+| The labels in Handjet read 2 px lower than Chrome's and heavier; neither `LineHeightStyle(Center, Trim.None)` nor an unspecified line height moved them. *Settled by [B-52](../backlog/B-52-display-text-against-chrome.md)* (§1.14): labels, kept parts and reels now stand within a pixel of the page's | `IllustrationParityTest`, 2026-11-14 |
 
 **Consequence 13.** Icons, patterns and illustrations are held to their references: patterns exactly,
-icons and bodies to residuals measured once and listed with their causes, never raised. Text is not
-yet held anywhere; the first component with a label ([B-15](../backlog/B-15-button.md)) meets the same
-2 px, which is why B-52 comes first.
+icons and bodies to residuals measured once and listed with their causes, never raised; their text as
+§1.14 holds text.
+
+### 1.14 Text against Chrome
+
+Settled by [B-52](../backlog/B-52-display-text-against-chrome.md); probes `Text_<face><weight>_<size>_Efir`, a label alone at a whole pixel.
+
+| Fact | Where verified |
+|---|---|
+| A line height equal to the font size is ignored by Compose, which lays out the face's own line — Handjet's is 22.35 px at 20 — with the baseline at the ascent. Blink rounds the ascent and descent (18 + 5 = 23 at 20 px) and floors the half-leading (−2), so its baseline is at 16 where Compose's was at 18: the labels' 2 px. `cssLine` lays a style on Blink's line box from the faces' metrics, nudging such a line height by 0.01 % so Compose keeps it | `MutantLine.kt` (`cssLine`), `TextFloorTest`; catalogue cmp-ui-parity «Text» |
+| Handjet: ascender 7200, descender −1920 of 8160; Rubik: 935, −250 of 1000; `hhea` and `OS/2` typo agree and `USE_TYPO_METRICS` is set, so Blink has one answer on every platform | `MutantFaceMetricsTest`, the bundled files |
+| On «Эфир»'s dark ground the two renderers' glyph masks differ on nearly every edge pixel: a half-covered stroke reads 186 in Compose and 102 in Chrome (largest difference 64–65 in every probe). Compose's API sets no text gamma or contrast. **The text floor** is therefore 65–87 % of a label's ink pixels differing by more than 16 — 74–80 % Handjet, 65–87 % Rubik — with Chrome's raster (no hinting, fractional glyph x) set in fixtures, 69–89 % without | `TextFloorTest` (printed), 2026-11-14 |
+| What a text defect moves, the floor does not: the ink's extent. Counting pixels more than 64 levels off the ground, on all eight probes the top ink row is Chrome's exactly and the bottom row and the sides within a pixel (descender edges, whole-pixel advances). Before `cssLine`, Handjet 20 read two rows low | `TextFloorTest` (`its top row exactly`) |
+
+**Consequence 14.** Kit text is laid out with `cssLine` and held by where its ink lies, not by how
+many pixels differ: the top row exactly, the rest within a pixel. A parity fixture rasterises text as
+Chrome does through `LocalMutantTextRaster`; the kit never overrides the platform's settings.
 
 ---
 

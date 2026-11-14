@@ -83,6 +83,9 @@ taken on a branch of its own, never by overwriting, and only when the owner star
 - **The red never flashes**: the error state and the radio dot are static (tokens, `flash.red`).
 - **No literal colour, size or duration in a component.** Tokens are generated from
   `mutant-tokens.json` (D8); the generator's constants are named and held by the goldens.
+- **Text goes through `cssLine`** (research §1.14): Compose ignores a line height equal to the font size
+  and centres unrounded metrics, so a label without it sits a pixel or two under Chrome's. Text parity is
+  held by where the ink lies (top row exactly), not by a pixel count: the glyph masks differ on most edges.
 - **Never edit the vendored design, a golden or a reference to make parity pass**, and never raise
   a tolerance to get green. A gap is a number in the commit body with its cause.
 - **Fonts only under an open licence**: Handjet and Rubik, both OFL (D9).
