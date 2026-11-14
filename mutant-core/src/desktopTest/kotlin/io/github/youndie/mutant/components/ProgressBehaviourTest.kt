@@ -56,10 +56,11 @@ class ProgressBehaviourTest {
 
     private fun ComposeUiTest.show(
         reduceMotion: Boolean = false,
+        colors: io.github.youndie.mutant.tokens.MutantColors = MutantPalettes.Efir,
         content: @Composable () -> Unit,
     ) = setContent {
         CompositionLocalProvider(LocalDensity provides Density(1f)) {
-            MutantTheme(reduceMotion = reduceMotion) { Box { content() } }
+            MutantTheme(colors = colors, reduceMotion = reduceMotion) { Box { content() } }
         }
     }
 
@@ -96,10 +97,10 @@ class ProgressBehaviourTest {
         }
 
     @Test
-    fun `the track is ringed 2 dp in the page's black, outside it`() =
+    fun `the track is ringed 2 dp in the page's black, outside it, in both themes`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
-            show {
+            show(colors = MutantPalettes.Kopiya) {
                 Box(
                     Modifier.testTag("room").padding(4.dp),
                 ) { MutantLinearProgress(0f, Modifier.width(100.dp), showValue = false) }
@@ -117,6 +118,14 @@ class ProgressBehaviourTest {
         runComposeUiTest {
             mainClock.autoAdvance = false
             show { MutantLinearProgress(Modifier.width(200.dp).testTag("b")) }
+            onNodeWithTag(
+                "b",
+            ).assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.ProgressBarRangeInfo,
+                    ProgressBarRangeInfo.Indeterminate,
+                ),
+            )
             mainClock.advanceTimeByFrame()
             repeat(30) {
                 // The band's end: its solid half's last column, while it stands inside the track.
