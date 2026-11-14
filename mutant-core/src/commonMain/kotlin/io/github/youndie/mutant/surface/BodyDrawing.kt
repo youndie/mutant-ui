@@ -143,6 +143,7 @@ internal fun DrawScope.drawBody(
     speckleOrigin: Offset,
     deadPixels: DeadPixels? = null,
     decor: BodyDecor = BodyDecor(),
+    pour: Pair<Path, Color>? = null,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -158,6 +159,7 @@ internal fun DrawScope.drawBody(
     translate(look.slip, look.slip) {
         clipPath(paths.contour) {
             drawRect(look.fill, bb.topLeft, bb.size)
+            pour?.let { (path, from) -> drawPath(path, from) }
             drawSpeckle(speckle, speckleOrigin, bb, look.ink)
             val tiles = decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
             for ((t, c) in tiles) {
@@ -194,9 +196,11 @@ internal fun DrawScope.drawBody(
             addRect(Rect(ox - 6, oy + h + .5f, ox + w + 6, oy + h + .5f + over + 30))
             addRect(Rect(ox - 4, oy - 6, ox - 4 + r + 13, oy - 6 + r + 10))
         }
-    clipPath(highlightClip) {
-        drawPath(paths.highlight, look.highlight)
-        translate(1.5f, 1.5f) { drawPath(paths.highlight, look.fill) }
+    if (pour == null) {
+        clipPath(highlightClip) {
+            drawPath(paths.highlight, look.highlight)
+            translate(1.5f, 1.5f) { drawPath(paths.highlight, look.fill) }
+        }
     }
     drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
     decor.brackets?.let { drawBrackets(g, it) }
@@ -217,7 +221,16 @@ private fun DrawScope.drawSpeckle(
         for (i in i0..i1) {
             val dx = origin.x + i * t
             val dy = origin.y + j * t
-            for (r in speckle.rects) drawRect(ink, Offset(dx + r.left, dy + r.top), r.size, alpha = speckle.alpha)
+            // An SVG pattern clips its content to the tile: a square that starts near the tile's edge is cut there,
+            // not carried into the next tile.
+            for (r in speckle.rects) {
+                val c = r.intersect(Rect(0f, 0f, t, t))
+                if (c.width > 0 &&
+                    c.height > 0
+                ) {
+                    drawRect(ink, Offset(dx + c.left, dy + c.top), c.size, alpha = speckle.alpha)
+                }
+            }
         }
     }
 }

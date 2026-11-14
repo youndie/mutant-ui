@@ -31,6 +31,7 @@ import io.github.youndie.mutant.gen.REST_BOIL
 import io.github.youndie.mutant.gen.REST_ROUGH
 import io.github.youndie.mutant.gen.Slot
 import io.github.youndie.mutant.gen.frame
+import io.github.youndie.mutant.gen.pourFront
 import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantColors
 import io.github.youndie.mutant.theme.LocalMutantStage
@@ -99,7 +100,12 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * corruption blocks. [focused] calms the damage to 0.3 and draws the amber brackets. A press on
  * [interactionSource] boils the body: heat rises to 1 in 320 ms and cools in 480 ms on the screen's clock,
  * and while hot the body is redrawn on the hot tick; [heat] fixes it instead (a fixture, the engine's
- * `data-heat-k`). [probe] is told the instance each time a frame is built, for tests.
+ * `data-heat-k`).
+ *
+ * A change of [fill] pours the new colour down from the top (`clamp(260 + 5 · h, 300, 620)` ms); a new [slide]
+ * request slides the body home from `dx` with its stretch (330 ms). Both step at 12 frames a second and land at
+ * once under reduce motion. [pourAt] and [slideAt] fix a progress instead (fixtures, the engine's `data-pour`,
+ * `data-slide`). [probe] is told the instance each time a frame is built, for tests.
  */
 @Composable
 internal fun MutantSurface(
@@ -114,6 +120,9 @@ internal fun MutantSurface(
     focused: Boolean = false,
     interactionSource: InteractionSource? = null,
     heat: Double? = null,
+    slide: SlideRequest? = null,
+    pourAt: Pair<Double, Color>? = null,
+    slideAt: Pair<Double, Double>? = null,
     probe: ((io.github.youndie.mutant.gen.Instance) -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -135,8 +144,11 @@ internal fun MutantSurface(
         }
     }
     val wear = if (focused) FOCUS_CALM else calm
+    val instant = io.github.youndie.mutant.theme.LocalMutantReduceMotion.current
+    val moves = remember { BodyMoves() }
     val p = body.profile
     val bodyFill = fill ?: colors.fillOf(p.fill)
+    moves.follow(bodyFill, slide, clock.nowMs)
     val look =
         BodyLook(
             fill = bodyFill,
@@ -253,8 +265,23 @@ internal fun MutantSurface(
                         p.outline.toFloat(),
                     )
                 val decor = gen.decorOf(g, state, focused, k, t, colors)
+                val now = clock.nowMs
+                val pourP = pourAt?.first ?: if (instant) 1.0 else stepped(now - moves.pourSince, pourDuration(slot.h))
+                val pourFrom = pourAt?.second ?: moves.pourFrom
+                val slideP =
+                    slideAt?.first ?: if (instant) 1.0 else stepped(now - moves.slideSince, MutantMotion.SLIDE_MS)
+                val slideDx = slideAt?.second ?: moves.slideDx
+                // A running transition is evaluated on every frame, as the engine does, so its steps keep to the event.
+                if (pourP < 1 || slideP < 1) clock.frame
+                val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
                 onDrawBehind {
-                    scale(d, Offset.Zero) { drawBody(g, paths, frameLook, colors, speckle, Offset.Zero, dead, decor) }
+                    scale(d, Offset.Zero) {
+                        slid(
+                            g,
+                            slideP,
+                            slideDx,
+                        ) { drawBody(g, paths, frameLook, colors, speckle, Offset.Zero, dead, decor, pour) }
+                    }
                 }
             },
         propagateMinConstraints = true,
@@ -329,5 +356,45 @@ internal class HeatMachine {
         from = at(now)
         since = now
         on = false
+    }
+}
+
+/** A request to slide a body home from [dx] dp; a new [id] starts a new slide. */
+internal class SlideRequest(
+    val id: Any,
+    val dx: Double,
+)
+
+/** Follows a body's fill and slide requests from composition without writing state; a change starts a move then. */
+internal class BodyMoves {
+    private var fill: Color? = null
+    private var slideId: Any? = null
+    var pourFrom: Color? = null
+        private set
+    var pourSince: Double = Double.NEGATIVE_INFINITY
+        private set
+    var slideDx: Double = 0.0
+        private set
+    var slideSince: Double = Double.NEGATIVE_INFINITY
+        private set
+
+    fun follow(
+        newFill: Color,
+        slide: SlideRequest?,
+        now: Double,
+    ) {
+        val old = fill
+        if (old != null && old != newFill) {
+            pourFrom = old
+            pourSince = now
+        }
+        fill = newFill
+        if (slide != null && slide.id != slideId) {
+            if (slideId != null || slideSince == Double.NEGATIVE_INFINITY) {
+                slideDx = slide.dx
+                slideSince = if (slideId == null) Double.NEGATIVE_INFINITY else now
+            }
+            slideId = slide.id
+        }
     }
 }

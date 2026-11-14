@@ -38,6 +38,7 @@ const OUT = join(ROOT, 'mutant-core/src/desktopTest/snapshots/design');
 const GENERATOR = join(DESIGN, 'mutant-generator.js');
 const ENGINE = join(DESIGN, 'mutant-engine.js');
 const MVP = 'mutant-ui Компоненты.dc.html';
+const SPECS = 'mutant-ui Анимационные спеки.dc.html';
 // The engine's own default still time (`tFix`), and the time every probe and fixture is drawn at.
 const T = 5000;
 
@@ -73,6 +74,20 @@ export const REFERENCES = [
     ['Field_DisabledBody_Efir', 'field', '[data-mu="field"][data-state="disabled"]'],
     ['Card_DisabledBody_Efir', 'card', '[data-mu="card"][data-state="disabled"]'],
   ].map(([stem, stage, sel]) => ({ stem, page: MVP, stage, sel, hideText: true })),
+  // B-12: the motion spec page's frames, each a stage of its own frozen at its time with a fixed transition
+  // progress (data-pour, data-slide, data-heat-k). Every slot of the stage is recorded, so a fixture draws
+  // them all: the switch's track pours while its thumb slides.
+  ...[['0', '0'], ['30', '0.3'], ['60', '0.6'], ['100', '1']].map(([n, p]) =>
+    ({ stem: `Chip_Pour${n}Body_Efir`, page: SPECS, sel: `[data-key="spec-chip"][data-pour="${p}|surf2"]`, hideText: true })),
+  ...[['0', '0'], ['33', '0.33'], ['66', '0.66'], ['100', '1']].map(([n, p]) =>
+    ({ stem: `Switch_Slide${n}Body_Efir`, page: SPECS, sel: `[data-key="spec-switch"][data-pour="${p}|surf2"]`, hideText: true })),
+  ...[['0', '0'], ['33', '0.33'], ['66', '0.66'], ['100', '1']].map(([n, p]) =>
+    ({ stem: `Check_Pour${n}Body_Efir`, page: SPECS, sel: `[data-key="spec-check"][data-pour="${p}|surf2"]`, hideText: true })),
+  // B-12: the venom's two layers as the engine's venom() builds them — ink with a doubled outline under the pill,
+  // the fill over it, the fat shapes through the goo filter (blur 3.2, alpha · 18 − 8.2) — for the three cases of
+  // the designer's golden, on a blank page.
+  ...['menu', 'segmented', 'drawer'].flatMap((c) => [10, 30, 50, 70].map((n) => ({ stem: `Venom_${c[0].toUpperCase() + c.slice(1)}${n}_Efir`, venom: { case: c, p: n / 100 } }))),
+  { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
 export const probeSize = (p, over) => ({ w: p.w + 40, h: p.h + over + 52 });
@@ -212,6 +227,37 @@ async function probes(cdp) {
   return out;
 }
 
+// ---- venom probes --------------------------------------------------------------------------------------
+async function venoms(cdp) {
+  const t = await tab(cdp, 800, null, false);
+  await t.evaluate(`window.window = window; ${readFileSync(GENERATOR, 'utf8')}; true`);
+  const cases = JSON.parse(readFileSync(join(DESIGN, 'mutant-golden.json'), 'utf8')).venom;
+  const out = new Map();
+  for (const ref of REFERENCES.filter((r) => r.venom)) {
+    const v = cases.find((c) => c.case === ref.venom.case);
+    const r = await t.evaluate(`(() => {
+      const gen = new window.MutantGenerator({ seed: 5 }), el = ${JSON.stringify(v.el)}, fx = ${JSON.stringify(v.fx)};
+      const { SF, S } = gen.venomShapes(el, ${JSON.stringify(v.key)}, fx, ${ref.venom.p});
+      const f = (x) => x.toFixed(1), X0 = Math.min(el.ox, el.ox + fx.dx) - 30, Y0 = Math.min(el.oy, el.oy + fx.dy) - 30,
+        X1 = Math.max(el.ox, el.ox + fx.dx) + el.w + 30, Y1 = Math.max(el.oy, el.oy + fx.dy) + el.h + 30;
+      const flt = '<filter id="goo" filterUnits="userSpaceOnUse" x="' + f(X0) + '" y="' + f(Y0) + '" width="' + f(X1 - X0) + '" height="' + f(Y1 - Y0) +
+        '" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3.2"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 18 -8.2"/></filter>';
+      const W = Math.ceil(X1) + 10, H = Math.ceil(Y1) + 10;
+      document.documentElement.style.margin = document.body.style.margin = '0';
+      document.body.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" style="display:block"><defs>' + flt + '</defs>' +
+        '<rect width="' + W + '" height="' + H + '" fill="${THEMES.Efir.bg}"/>' +
+        '<g fill="${THEMES.Efir.ink}" stroke="${THEMES.Efir.ink}" stroke-width="' + el.ow * 2 + '" stroke-linejoin="round"><g filter="url(#goo)">' + SF + '</g>' + S + '</g>' +
+        '<g fill="' + el.fill + '"><g filter="url(#goo)">' + SF + '</g>' + S + '</g></svg>';
+      return { w: W, h: H };
+    })()`);
+    await t.resize(r.h);
+    await t.evaluate(settle);
+    out.set(ref.stem, { png: await t.shot({ x: 0, y: 0, w: r.w, h: r.h }), rect: { x: 0, y: 0, w: r.w, h: r.h, venom: { ...ref.venom, el: v.el, key: v.key, fx: v.fx } } });
+  }
+  await t.close();
+  return out;
+}
+
 // ---- page cells ---------------------------------------------------------------------------------------
 async function pageCells(cdp, page, refs) {
   const t = await tab(cdp, 1720, pathToFileURL(join(DESIGN, page)).href, true);
@@ -236,25 +282,38 @@ async function pageCells(cdp, page, refs) {
   for (const ref of refs) {
     // Text goes transparent; content that paints a box of its own (a field's block caret, kept in the clean
     // zone by data-keep) is hidden without leaving the layout, so the zone the engine measured stays.
-    const hide = ref.hideText ? `[data-mu-stage="${ref.stage}"], [data-mu-stage="${ref.stage}"] * { color: transparent !important; } [data-mu-stage="${ref.stage}"] [data-keep], [data-mu-stage="${ref.stage}"] [data-mu-anim] { visibility: hidden !important; }` : '';
+    // The stage the slot stands on: named by the reference, or found from its selector.
+    const stageKey = ref.stage ?? (await t.evaluate(`(() => { const n = document.querySelector(${JSON.stringify(ref.sel ?? '')}); const h = n && n.closest('[data-mu-stage]'); return h ? h.dataset.muStage : null; })()`));
+    if (!stageKey) throw new Error(`${ref.stem}: no stage found`);
+    const hide = ref.hideText ? `[data-mu-stage="${stageKey}"], [data-mu-stage="${stageKey}"] * { color: transparent !important; } [data-mu-stage="${stageKey}"] [data-keep], [data-mu-stage="${stageKey}"] [data-mu-anim] { visibility: hidden !important; }` : '';
     await t.evaluate(`(() => { const s = document.getElementById('mutant-hide') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'mutant-hide' }));
       s.textContent = ${JSON.stringify(hide)}; return true; })()`);
+    if (page === SPECS) await t.evaluate(`(() => { for (const h of document.querySelectorAll('[data-mu-stage]')) h.style.transform = 'none'; return true; })()`);
     await t.evaluate(settle);
     const r = await t.evaluate(`(() => {
-      const host = document.querySelector('[data-mu-stage="${ref.stage}"]');
-      const n = host && (${JSON.stringify(ref.sel ?? null)} ? host.querySelector(${JSON.stringify(ref.sel ?? '')}) : host.querySelectorAll('[data-mu="${ref.type}"]')[${ref.index}]);
-      if (!n) return { error: 'no slot ${ref.sel ?? ref.type} on ${ref.stage}' };
+      const scope = ${JSON.stringify(ref.stage ?? null)} ? document.querySelector('[data-mu-stage="${ref.stage}"]') : document;
+      const n = scope && (${JSON.stringify(ref.sel ?? null)} ? scope.querySelector(${JSON.stringify(ref.sel ?? '')}) : scope.querySelectorAll('[data-mu="${ref.type}"]')[${ref.index}]);
+      if (!n) return { error: 'no slot ${ref.sel ?? ref.type} on ${ref.stage ?? 'the page'}' };
+      const host = n.closest('[data-mu-stage]');
       const e = window.__muEngines.find(x => x.items.some(it => it.n === n)), it = e.items.find(it => it.n === n), el = it.el;
       const st = e.stages.find(s => s.host === host);
       const hr = host.getBoundingClientRect();
-      // The slot with what the body may draw around it: the field's margins and the drips' overhang.
-      const x0 = Math.round(el.ox - 12), y0 = Math.round(el.oy - 15);
-      return { x: Math.round(hr.left + scrollX) + x0, y: Math.round(hr.top + scrollY) + y0, w: Math.round(el.w + 24), h: Math.round(el.h + el.over + 45),
+      // The slot with what the body may draw around it: the field's margins and the drips' overhang — cut to the
+      // stage where the stage clips its content (the spec page's frames do).
+      const cs = getComputedStyle(host), clips = cs.overflow === 'hidden';
+      let x0 = Math.round(el.ox - 12), y0 = Math.round(el.oy - 15), x1 = x0 + Math.round(el.w + 24), y1 = y0 + Math.round(el.h + el.over + 45);
+      if (clips) { x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(host.offsetWidth, x1); y1 = Math.min(host.offsetHeight, y1); }
+      return { x: Math.round(hr.left + scrollX) + x0, y: Math.round(hr.top + scrollY) + y0, w: x1 - x0, h: y1 - y0,
+        stageClip: clips ? [host.offsetWidth, host.offsetHeight, parseFloat(cs.borderTopLeftRadius) || 0] : null,
         slot: { key: it.key, stage: st.key, origin: [x0, y0], ox: el.ox, oy: el.oy, w: el.w, h: el.h, r: el.r, over: el.over, cf: el.cf, ow: el.ow,
           wob: el.wob, round: el.round, calm: el.calm, dead: el.dead, marks: el.marks, edge: el.edge, tz: el.tz, cz: el.cz,
           fill: el.fill, hl: el.hl, slip: el.slip, shadow: el.shadow, stroke: el.stroke, state: el.state,
           drawnOutline: it.H ? +it.H.O.getAttribute('stroke-width') : el.ow, still: !!it.stat, heat: it.heat, brackets: !!el.brackets,
-          background: getComputedStyle(host).backgroundColor } };
+          background: getComputedStyle(host).backgroundColor },
+        stageSlots: st.items.map((x) => ({ key: x.key, ox: x.el.ox, oy: x.el.oy, w: x.el.w, h: x.el.h, r: x.el.r, over: x.el.over, cf: x.el.cf, ow: x.el.ow,
+          wob: x.el.wob, round: x.el.round, calm: x.el.calm, dead: x.el.dead, marks: x.el.marks, edge: x.el.edge, tz: x.el.tz, cz: x.el.cz,
+          fill: x.el.fill, hl: x.el.hl, slip: x.el.slip, shadow: x.el.shadow, stroke: x.el.stroke, state: x.el.state, still: !!x.stat, t: x.el.tFix,
+          heat: x.el.hkFix ?? x.heat, pour: x.el.pourFix, slide: x.el.slideFix, brackets: !!x.el.brackets, drawnOutline: x.H ? +x.H.O.getAttribute('stroke-width') : x.el.ow })) };
     })()`);
     if (r.error) throw new Error(`${ref.stem}: ${r.error}`);
     out.set(ref.stem, { png: await t.shot(r), rect: r });
@@ -291,6 +350,7 @@ const { cdp, version, close } = await launch(chrome);
 const shots = new Map();
 try {
   for (const [k, v] of await probes(cdp)) shots.set(k, v);
+  for (const [k, v] of await venoms(cdp)) shots.set(k, v);
   for (const page of [...new Set(REFERENCES.filter((r) => r.page).map((r) => r.page))]) {
     for (const [k, v] of await pageCells(cdp, page, REFERENCES.filter((r) => r.page === page))) shots.set(k, v);
   }
