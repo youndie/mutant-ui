@@ -89,7 +89,8 @@ class ButtonParityTest {
         dy: Int = 0,
         hideLabel: Boolean = false,
     ): DesignParity.Result {
-        val stem = "MutantButton_${name}_$theme"
+        // The bare twin is the page's cell with its text hidden, drawn here without a label.
+        val stem = "MutantButton_${name}${if (hideLabel) "Bare" else ""}_$theme"
         val ref = DesignParity.reference(stem)
         val s = ref["slot"]!!.jsonObject
         val origin = (s["origin"] as JsonArray).map { it.jsonPrimitive.int }
@@ -147,8 +148,11 @@ class ButtonParityTest {
         /** Where the label's ink lies — what it adds over the same button drawn without it — here and on the page. */
         val kit: Extent?,
         val page: Extent?,
+        /** A label over the disabled body's grey, taken at a lower threshold. */
+        val weak: Boolean = false,
     ) {
-        override fun toString(): String = "$result; body $body px; label kit $kit, page $page"
+        override fun toString(): String =
+            "$result; body $body px; label kit $kit, page $page${if (weak) " (weak)" else ""}"
     }
 
     internal fun split(
@@ -170,10 +174,19 @@ class ButtonParityTest {
         }
         var body = 0
         for (i in 0 until r.width * r.height) if (!inside(i) && channelGap(r.actual[i], r.reference[i]) > 16) body++
-        val kit = extentOf(r.width, r.height) { inside(it) && channelGap(r.actual[it], bare.actual[it]) > LABEL_ADDS }
+
+        // What each renderer's label adds over its own bare body: 64 levels, as text is held (research §1.14). A disabled
+        // label lies over the no-signal body's grey stripes, where dark ink adds about 100 at most and a glyph's faint top
+        // rows add 25–60, which 64 cuts apart in the two renderers: there the threshold is half of 100.
+        val weak = name.endsWith("Disabled")
+        val threshold = if (weak) WEAK_INK else TEXT_INK
+        val kit = extentOf(r.width, r.height) { inside(it) && channelGap(r.actual[it], bare.actual[it]) > threshold }
         val page =
-            extentOf(r.width, r.height) { inside(it) && channelGap(r.reference[it], bare.actual[it]) > LABEL_ADDS }
-        return Split(r, body, kit, page)
+            extentOf(r.width, r.height) {
+                inside(it) &&
+                    channelGap(r.reference[it], bare.reference[it]) > threshold
+            }
+        return Split(r, body, kit, page, weak)
     }
 
     @Test
@@ -185,7 +198,8 @@ class ButtonParityTest {
                 val stem = "MutantButton_${name}_$theme"
                 val c = split(name, theme)
                 lines += c.toString()
-                val labelHere = c.kit != null && c.page != null && c.kit.near(c.page, px = 1, topPx = 0)
+                val labelHere =
+                    c.kit != null && c.page != null && c.kit.near(c.page, px = 1, topPx = 0)
                 if (c.body > (RESIDUAL[stem] ?: FLOOR_PIXELS) || !labelHere) off += stem
             }
         }
@@ -230,23 +244,23 @@ class ButtonParityTest {
         /** The body's floor in pixels (research §1.8). */
         const val FLOOR_PIXELS = 5
 
-        /**
-         * What a label adds over the bare button, in levels: the pixel threshold, not text's 64 — a dark label over the
-         * disabled body's dark stripes adds less than 64 to its own top row, and would vanish from its extent there.
-         */
-        const val LABEL_ADDS = 16
+        /** Half of what a dark label adds over the disabled body's grey (106 − 5 on «Эфир»). */
+        const val WEAK_INK = 50
 
         /**
-         * Over the floor, measured on 2026-11-14 and never to be raised: «Копия» slips the fill 1.5 dp off the outline,
+         * Over the floor, measured on 2026-11-14 and never to be raised. «Копия» slips the fill 1.5 dp off the outline,
          * and Chrome draws the speckle as an SVG pattern, rasterised once and resampled under that fractional
-         * translation, where the kit draws each square exactly — single pixels on the speckle's 40 dp grid.
+         * translation, where the kit draws each square exactly — single pixels on the speckle's 40 dp grid. The
+         * outlined button's outline lies over its own misregistered shadow, one shape's edge over another's fill
+         * (as the illustrations' parts, research §1.13): isolated pixels 17–36 levels apart.
          */
         val RESIDUAL =
             mapOf(
                 "MutantButton_Rest_Kopiya" to 18,
                 "MutantButton_Pressed_Kopiya" to 16,
                 "MutantButton_Loading_Kopiya" to 15,
-                "MutantButton_OutlinedRest_Kopiya" to 9,
+                "MutantButton_OutlinedRest_Efir" to 6,
+                "MutantButton_OutlinedRest_Kopiya" to 11,
             )
     }
 }

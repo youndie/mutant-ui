@@ -30,6 +30,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
+import { inflateSync } from 'node:zlib';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DESIGN = join(ROOT, 'reference/design-system');
@@ -473,12 +474,59 @@ try {
   }
 } finally { await close(); }
 
+// Chrome's screenshots, decoded (8-bit RGB or RGBA, non-interlaced, as CDP writes them), to measure two renders apart.
+function pixels(png) {
+  const w = png.readUInt32BE(16), h = png.readUInt32BE(20), type = png[25], bpp = type === 6 ? 4 : 3;
+  const chunks = [];
+  for (let o = 8; o < png.length;) {
+    const len = png.readUInt32BE(o), kind = png.toString('ascii', o + 4, o + 8);
+    if (kind === 'IDAT') chunks.push(png.subarray(o + 8, o + 8 + len));
+    o += 12 + len;
+  }
+  const raw = inflateSync(Buffer.concat(chunks)), stride = w * bpp, out = Buffer.alloc(h * stride);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)], src = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)), row = y * stride;
+    for (let x = 0; x < stride; x++) {
+      const a = x >= bpp ? out[row + x - bpp] : 0, b = y ? out[row - stride + x] : 0, c = x >= bpp && y ? out[row - stride + x - bpp] : 0;
+      const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+      const pred = [0, a, b, (a + b) >> 1, pa <= pb && pa <= pc ? a : pb <= pc ? b : c][f];
+      out[row + x] = (src[x] + pred) & 255;
+    }
+  }
+  return { w, h, bpp, data: out };
+}
+
+// Two renders of one stem apart: pixels whose channels differ by more than 16 (parity's threshold).
+function apart(a, b) {
+  const p = pixels(a), q = pixels(b);
+  if (p.w !== q.w || p.h !== q.h) return Infinity;
+  let n = 0;
+  for (let i = 0; i < p.w * p.h; i++) {
+    let m = 0;
+    for (let c = 0; c < 3; c++) m = Math.max(m, Math.abs(p.data[i * p.bpp + c] - q.data[i * q.bpp + c]));
+    if (m > 16) n++;
+  }
+  return n;
+}
+
+// A render that is not byte-identical passes only when it stays within the body's floor (research §1.8) of the
+// committed one: Chrome rasterises some pages' patterns a little apart from run to run (B-15: the Button stage's
+// disabled and outlined cells, up to 25 pixels changed, 2 of them by more than 16). The stems that did are printed.
+const FLOOR = 5;
 const stale = [];
+const unsteady = [];
 if (!check) mkdirSync(OUT, { recursive: true });
 for (const ref of REFERENCES) {
   const target = join(OUT, `${ref.stem}.png`), { png } = shots.get(ref.stem);
-  if (check) { if (!existsSync(target) || !readFileSync(target).equals(png)) stale.push(ref.stem); } else writeFileSync(target, png);
+  if (check) {
+    if (!existsSync(target)) { stale.push(ref.stem); continue; }
+    const committed = readFileSync(target);
+    if (committed.equals(png)) continue;
+    const n = apart(committed, png);
+    if (n > FLOOR) stale.push(`${ref.stem} (${n} px)`); else unsteady.push(`${ref.stem} (${n} px)`);
+  } else writeFileSync(target, png);
 }
+if (unsteady.length) console.log(`design-references: not byte-identical, within the floor: ${unsteady.join(', ')}`);
 const manifest = {
   browser: version, scale: 1, time: T, ...inputs(),
   references: REFERENCES.map((r) => ({ stem: r.stem, page: r.page, stage: r.stage, type: r.type, index: r.index, sel: r.sel, hideText: r.hideText, probe: r.probe?.name, theme: r.theme, ...shots.get(r.stem).rect })),
