@@ -186,7 +186,8 @@ class BarTabsBehaviourTest {
             val e = 1 - Math.pow(1 - p, 3.0)
             val expected = start.first + (end.left - start.first) * e
             assertTrue(abs(mid.first - expected) <= 1.0, "at 160 ms the bar at ${mid.first}, eased to $expected")
-            assertTrue(echoLeftOf(mid.first, 45), "running right, the echo trails on the left")
+            // Two columns clear of the bar's own edge, which stands at a fraction mid-run.
+            assertTrue(echoLeftOf(mid.first - 2, 45), "running right, the echo trails on the left")
             mainClock.advanceTimeBy(200)
             assertEquals(end.left.toInt(), acid(43)!!.first, "landed")
             assertTrue(!echoLeftOf(end.left.toInt(), 45), "landed, the echo back to the right")
@@ -202,6 +203,28 @@ class BarTabsBehaviourTest {
             assertEquals(end.left.toInt(), acid(43)!!.first, "paused: at once")
         }
     }
+
+    @Test
+    fun `the bar's ring is the page's black in both themes`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(
+                        colors = MutantPalettes.Kopiya,
+                    ) { Box { MutantTabs(three, 0, {}, Modifier.testTag("t")) } }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val bar = acid(44)!!
+            // The ring's whole row 1.5 dp above the bar: row 41 of 43 is half covered, row 42 whole.
+            val ring = onNodeWithTag("t").captureToImage().toPixelMap()[bar.first + 10, 42]
+            val black = Color(0xFF05060C)
+            assertTrue(
+                abs(ring.red - black.red) + abs(ring.green - black.green) + abs(ring.blue - black.blue) < .02f,
+                "$ring",
+            )
+        }
 
     @Test
     fun `keyboard focus draws the brackets around a tab`() =
@@ -319,6 +342,12 @@ class BarTabsBehaviourTest {
                 val b = node.boundsInRoot
                 if (b.top < row.top) continue
                 assertTrue(b.right <= row.right + .5f && b.bottom <= row.bottom, "label $b inside $row")
+                val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                node.config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+                assertEquals(
+                    androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    layouts.single().layoutInput.overflow,
+                )
             }
         }
 }
