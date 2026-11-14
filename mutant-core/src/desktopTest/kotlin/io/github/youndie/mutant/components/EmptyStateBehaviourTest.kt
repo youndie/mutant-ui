@@ -151,34 +151,22 @@ class EmptyStateBehaviourTest {
                 if (b.top < e.top) continue
                 assertTrue(b.left >= e.left - .5f && b.right <= e.right + .5f, "wrapped inside: $b in $e")
             }
-            // Wrapped, each line stands centred: the ink leaves as much room on the left as on the right.
+            // Wrapped, each line stands centred: its layout puts as much room before it as after it.
             val inside =
                 onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes().filter {
                     it.boundsInRoot.top >=
                         e.top
                 }
-            for (node in inside.filter { it.boundsInRoot.width > 0 }) {
-                val px = captureToImage(node).toPixelMap()
-                // Line by line: runs of inked rows, each with its own ink's left and right.
-                val rows = (0 until px.height).filter { y -> (0 until px.width).any { x -> px[x, y].alpha > .5f } }
-                val runs =
-                    rows.fold(mutableListOf<MutableList<Int>>()) { acc, y ->
-                        acc.apply {
-                            if (isEmpty() ||
-                                last().last() + 3 < y
-                            ) {
-                                add(mutableListOf(y))
-                            } else {
-                                last().add(y)
-                            }
-                        }
-                    }
-                assertTrue(runs.size >= 2, "wrapped: ${runs.size} lines")
-                for (run in runs) {
-                    val inked = (0 until px.width).filter { x -> run.any { y -> px[x, y].alpha > .5f } }
-                    val left = inked.first()
-                    val right = px.width - 1 - inked.last()
-                    assertTrue(abs(left - right) <= 3, "a centred line: $left on the left, $right on the right")
+            for (node in inside.filter { it.boundsInRoot.width > 0f }) {
+                val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                node.config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+                val layout = layouts.single()
+                assertTrue(layout.lineCount >= 2, "wrapped: ${layout.lineCount} lines")
+                val w = layout.size.width.toFloat()
+                for (i in 0 until layout.lineCount) {
+                    val before = layout.getLineLeft(i)
+                    val after = w - layout.getLineRight(i)
+                    assertTrue(abs(before - after) <= 2f, "line $i centred: $before before, $after after")
                 }
             }
         }
