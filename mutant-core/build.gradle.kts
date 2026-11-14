@@ -53,6 +53,7 @@ kotlin {
             implementation(wip.compose.runtime)
             implementation(wip.compose.foundation)
             implementation(wip.compose.ui)
+            implementation(libs.navigationevent.compose)
             // The bundled fonts (B-02). Not in `wip`, and the plugin's accessor is the one place its
             // version follows the Compose plugin's own (toon-ui and plakat-ui do the same).
             implementation(compose.components.resources)

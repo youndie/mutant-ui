@@ -184,6 +184,17 @@ export const REFERENCES = [
   // the reel — both themes; the rows are the stage column's third and fourth children.
   ...['Efir', 'Kopiya'].flatMap((theme) => [['Determinate', 3], ['Indeterminate', 4]].map(([s, n]) =>
     ({ stem: `MutantProgress_${s}_${theme}`, page: MVP, el: true, sel: `[data-mu-stage="list"] > div:nth-child(3) > div:nth-child(${n})`, index: 0, theme }))),
+  // B-28: the dialog demo's frame — two still cards, the scrim, the pause band and the window — as it stands, whole and
+  // with every word in it hidden, both themes.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
+    ({ stem: `MutantDialog_Open${bare ? 'Bare' : ''}_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="dialogdemo"] > div:nth-child(3)', index: 0, theme,
+      hide: bare ? '[data-mu-stage="dialogdemo"], [data-mu-stage="dialogdemo"] * { color: transparent !important; }' : '' }))),
+  // …and the two stages' cells, whose records carry where the engine stood each body (the window and its button on
+  // `dialogwin`, the cards on `dialogdemo`) for the frame's fixture.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [
+    { stem: `MutantDialog_Window_${theme}`, page: MVP, stage: 'dialogwin', type: 'bar', index: 0, theme, below: 24 },
+    { stem: `MutantDialog_Card_${theme}`, page: MVP, stage: 'dialogdemo', type: 'card', index: 0, theme, below: 20 },
+  ]),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.

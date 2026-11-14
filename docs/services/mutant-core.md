@@ -51,6 +51,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantBadge.kt` | `MutantBadge`, full and compact, the navigation bar's too ([B-25](../backlog/B-25-list-item-divider-badge.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSnackbar.kt` | `MutantSnackbar` and its ride in and out ([B-26](../backlog/B-26-snackbar.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantProgress.kt` | `MutantLinearProgress` (determinate and the running band), `MutantCircularProgress`, the reel ([B-27](../backlog/B-27-progress.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDialog.kt` | `MutantDialog`, `MutantDialogAction`, the held screen and the window's own clock ([B-28](../backlog/B-28-dialog.md)) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/ComponentParity.kt` | the shared fixture holding a component's page cells: body outside the clean zone, content by its bare twin |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantDivider.kt` | the tracking divider |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/ButtonParityTest.kt` | every button cell against the page, body and label, both themes |

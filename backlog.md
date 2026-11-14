@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (24)
+## Open (23)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-28](docs/backlog/B-28-dialog.md) `[ ]` | Dialog: a clean window over a paused background | P1 | M | B-10, B-11 |
 | [B-29](docs/backlog/B-29-empty-state.md) `[ ]` | EmptyState: the six illustrations with a title | P1 | M | B-14 |
 | [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[ ]` | The three demo screens and the sample kit on desktop and the web | P1 | M | B-15, B-16, B-17, B-18, B-19, B-20, B-21, B-22, B-23, B-24, B-25, B-26, B-27, B-28, B-29 |
 | [B-38](docs/backlog/B-38-accessibility.md) `[ ]` | Accessibility: contrast after the Tape, flashes, greyscale, semantics | P1 | M | B-13, B-37 |
@@ -87,7 +86,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (30)
+## Closed (31)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -125,6 +124,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-25](docs/backlog/B-25-list-item-divider-badge.md) `[x]` - ListItem, Divider and Badge
 - [B-26](docs/backlog/B-26-snackbar.md) `[x]` - Snackbar: a blue bar with a shadow
 - [B-27](docs/backlog/B-27-progress.md) `[x]` - LinearProgress and CircularProgress
+- [B-28](docs/backlog/B-28-dialog.md) `[x]` - Dialog: a clean window over a paused background
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 

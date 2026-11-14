@@ -41,6 +41,12 @@ internal class MutantClock(
     var speed: Double by mutableDoubleStateOf(speed)
     var paused: Boolean by mutableStateOf(false)
 
+    /**
+     * Holds on the clock: while any stands (a dialog open over the screen, the brief's `pause`), time stands and no
+     * frame is asked for, as under [paused], without touching the theme's own switch.
+     */
+    internal var holds: Int by mutableIntStateOf(0)
+
     /** The engine's `step`: one resting tick, ms. */
     val stepMs: Double get() = 1000.0 / fps
 
@@ -92,7 +98,7 @@ internal class MutantClock(
         if (frozen) return
         val dt = if (lastNanos == NO_FRAME) FIRST_STEP_MS else min(MAX_STEP_MS, (frameNanos - lastNanos) / 1e6)
         lastNanos = frameNanos
-        if (!paused) time += dt * speed
+        if (!paused && holds == 0) time += dt * speed
         frames.longValue++
         publish()
     }
@@ -142,7 +148,7 @@ internal fun ProvideMutantClock(
     clock: MutantClock = remember { MutantClock() },
     content: @Composable () -> Unit,
 ) {
-    val running = !clock.frozen && !clock.paused && clock.readers > 0
+    val running = !clock.frozen && !clock.paused && clock.holds == 0 && clock.readers > 0
     LaunchedEffect(clock, running) {
         if (!running) return@LaunchedEffect
         clock.forgetFrame()

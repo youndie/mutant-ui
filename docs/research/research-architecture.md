@@ -322,6 +322,9 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | The theme's clock starts at 0 and, under reduce motion, stands there; what the engine moves by the scene's tick from off-stage (the rewind band, `(fi · 12) % (pw + w) − w`) stands off-stage too, so a paused indeterminate progress showed an empty track. Such a picture is paused at the page's still frame (tick 40, the engine's 5 s) instead of the clock's tick (B-27) | `ProgressBehaviourTest`, 2026-11-14 |
 
+| A dialog pauses the screen (the brief's `pause`): the screen's clock takes a hold (`MutantClock.holds`) while anything of it shows, so every body behind it stands, and the window runs on a clock of its own, frozen with a frozen screen — one clock per screen (D6) bent for an overlay, not broken (B-28) | `DialogBehaviourTest`, 2026-11-14 |
+| A fractional `line-height` (14 × 1.45 = 20.3) lays two lines 40.6 tall in Chrome and 40 in Compose; what follows stands at 112.6, and the engine paints a body there at its slot's rounded 113 while the DOM's words stay at the fraction a row above. A kit that lays body and words together can match one: the dialog's text box takes its lines' CSS height rounded (the body exact) and its actions' words are listed a row low (B-28) | `DialogParityTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
