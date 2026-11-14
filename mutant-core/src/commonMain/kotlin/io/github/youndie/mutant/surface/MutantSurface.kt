@@ -71,6 +71,20 @@ internal val LocalMutantOutlineOverride = staticCompositionLocalOf<((String) -> 
  */
 internal val LocalMutantSlotOrigin = staticCompositionLocalOf<((String) -> Offset?)?> { null }
 
+/**
+ * A parity fixture's way to give a body the engine's text zone (`textZone`): Chrome measures a label's box at a
+ * fraction (83.29 dp) where Compose rounds it up (84), and a flow line starting between the two is kept by one and
+ * dropped by the other. Null in the kit, which measures its own content.
+ */
+internal val LocalMutantTextZone = staticCompositionLocalOf<((String) -> DoubleArray?)?> { null }
+
+/**
+ * A parity fixture's way to generate a body at the size the engine generated it: Chrome lays a label-sized slot out
+ * at a fraction (103.4 dp) the engine records whole (103), where Compose rounds the label up (104). The body is
+ * generated at that size and drawn in its own box. Null in the kit.
+ */
+internal val LocalMutantSlotSize = staticCompositionLocalOf<((String) -> androidx.compose.ui.geometry.Size?)?> { null }
+
 internal val LocalCleanZone = staticCompositionLocalOf<CleanZoneRegistry?> { null }
 
 /**
@@ -185,6 +199,8 @@ internal fun MutantSurface(
     val p = profile
     val outlineOverride = LocalMutantOutlineOverride.current
     val origin = LocalMutantSlotOrigin.current?.invoke(key)
+    val engineSize = LocalMutantSlotSize.current?.invoke(key)
+    val engineZone = LocalMutantTextZone.current?.invoke(key)
     val bodyFill = fill ?: colors.fillOf(p.fill)
     moves.follow(bodyFill, slide, clock.nowMs)
     val look =
@@ -202,12 +218,12 @@ internal fun MutantSurface(
             .drawWithCache {
                 val d = density
                 val zone = registry.union(d)
-                val w = size.width / d.toDouble()
-                val h = size.height / d.toDouble()
+                val w = engineSize?.width?.toDouble() ?: (size.width / d.toDouble())
+                val h = engineSize?.height?.toDouble() ?: (size.height / d.toDouble())
                 val gen = MutantGenerator(cassette)
                 if (w < 1 || h < 1) return@drawWithCache onDrawBehind {}
                 val tz =
-                    zone?.let {
+                    engineZone ?: zone?.let {
                         doubleArrayOf(
                             it.left - MutantGrid.CLEAN_ZONE_HORIZONTAL,
                             it.top - MutantGrid.CLEAN_ZONE_VERTICAL,
