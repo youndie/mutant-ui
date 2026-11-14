@@ -5,7 +5,7 @@ status: open
 priority: P1
 size: M
 stage: stage-5-product
-blocked_by: [B-72, B-75, B-76]
+blocked_by: [B-72, B-75, B-76, B-78]
 ---
 
 # B-73 — The sample's frame cost in the browser (wasm)

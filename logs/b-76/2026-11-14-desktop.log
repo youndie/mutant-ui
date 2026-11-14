@@ -1,0 +1,97 @@
+
+# B-72 frame bench
+# commit 869b571
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 6 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 Blank: 604 frames
+round 1 BlankLoad: 604 frames
+round 1 DemoPage: 422 frames
+round 1 DemoPageTicked: 409 frames
+round 1 DemoPageLoad: 340 frames
+round 1 DemoPageClean: 526 frames
+round 1 DemoRow: 476 frames
+round 1 DemoRowNoClip: 471 frames
+round 1 DemoLibrary: 590 frames
+round 1 DemoRecording: 599 frames
+round 1 DemoSettings: 599 frames
+round 2 BlankLoad: 602 frames
+round 2 DemoPage: 431 frames
+round 2 DemoPageTicked: 399 frames
+round 2 DemoPageLoad: 351 frames
+round 2 DemoPageClean: 537 frames
+round 2 DemoRow: 464 frames
+round 2 DemoRowNoClip: 500 frames
+round 2 DemoLibrary: 593 frames
+round 2 DemoRecording: 599 frames
+round 2 DemoSettings: 601 frames
+round 2 Blank: 600 frames
+round 3 DemoPage: 423 frames
+round 3 DemoPageTicked: 397 frames
+round 3 DemoPageLoad: 336 frames
+round 3 DemoPageClean: 506 frames
+round 3 DemoRow: 465 frames
+round 3 DemoRowNoClip: 491 frames
+round 3 DemoLibrary: 580 frames
+round 3 DemoRecording: 598 frames
+round 3 DemoSettings: 600 frames
+round 3 Blank: 604 frames
+round 3 BlankLoad: 601 frames
+round 4 DemoPageTicked: 425 frames
+round 4 DemoPageLoad: 347 frames
+round 4 DemoPageClean: 540 frames
+round 4 DemoRow: 490 frames
+round 4 DemoRowNoClip: 500 frames
+round 4 DemoLibrary: 599 frames
+round 4 DemoRecording: 602 frames
+round 4 DemoSettings: 604 frames
+round 4 Blank: 600 frames
+round 4 BlankLoad: 601 frames
+round 4 DemoPage: 518 frames
+round 5 DemoPageLoad: 375 frames
+round 5 DemoPageClean: 596 frames
+round 5 DemoRow: 526 frames
+round 5 DemoRowNoClip: 541 frames
+round 5 DemoLibrary: 601 frames
+round 5 DemoRecording: 605 frames
+round 5 DemoSettings: 602 frames
+round 5 Blank: 600 frames
+round 5 BlankLoad: 601 frames
+round 5 DemoPage: 474 frames
+round 5 DemoPageTicked: 443 frames
+round 6 DemoPageClean: 582 frames
+round 6 DemoRow: 538 frames
+round 6 DemoRowNoClip: 545 frames
+round 6 DemoLibrary: 606 frames
+round 6 DemoRecording: 599 frames
+round 6 DemoSettings: 606 frames
+round 6 Blank: 602 frames
+round 6 BlankLoad: 605 frames
+round 6 DemoPage: 480 frames
+round 6 DemoPageTicked: 446 frames
+round 6 DemoPageLoad: 380 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95  | render/frame busy
+Blank                    60.1       16.66  18.28   18.69  0.17  |   0.07   0.12   0.15   1.34 |   0.10   0.17 |     0.37    2%  GREY
+BlankLoad                60.2       16.67  18.29   22.43  0.10  |   0.43   0.89   1.03   4.28 |   0.53   1.03 |     3.39   20%  GREY
+DemoPage                 46.5       21.12  27.11   94.49  2.54  |   0.08   0.38   0.51   1.61 |   0.79   1.38 |    19.79   91%  GREY
+DemoPageTicked           42.2       22.80  31.51  100.00  4.37  |   0.99   1.59   1.84   6.69 |   1.70   2.63 |    20.89   88%  GREY
+DemoPageLoad             35.8       27.29  35.39  100.00  6.84  |   1.39   2.22   2.49   5.28 |   2.22   3.45 |    24.55   87%  RED
+DemoPageClean            55.2       17.36  23.60   65.97  1.71  |   0.08   0.38   0.50   1.28 |   0.54   1.01 |    16.62   91%  GREY
+DemoRow                  49.7       19.40  26.60   95.84  2.46  |   0.08   0.38   0.48   4.14 |   0.63   1.10 |    18.58   92%  GREY
+DemoRowNoClip            51.5       18.78  24.40   90.51  1.83  |   0.08   0.38   0.49   1.19 |   0.61   1.05 |    17.97   92%  GREY
+DemoLibrary              59.6       16.66  24.43   38.03  0.64  |   0.07   2.55   3.55  31.12 |   0.39   2.89 |    10.14   60%  GREY
+DemoRecording            60.1       16.66  18.45   22.62  0.30  |   0.08   1.95   2.57   4.60 |   0.35   2.22 |     6.21   37%  GREY
+DemoSettings             60.3       16.66  18.30   19.98  0.23  |   0.07   0.39   0.47   6.34 |   0.35   0.66 |     5.69   34%  GREY
+
+render control, what the load adds to the render thread's CPU per frame, per counted round:
+  on a blank page    3.40, 3.43, 1.49, 3.29, 3.51 ms
+  on the Demo page   3.32, 3.85, 4.46, 3.52, 3.13 ms
+
+control: work p50 over ComponentsRest per counted round  ms
+         (busy-wait 10 ms)
+render threads seen: 2
+wheel: scrolled per counted round [] px
+exit 0
