@@ -19,7 +19,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
@@ -170,12 +172,15 @@ internal fun TextButtonBody(
                 }
             ).height(DIVIDER),
         ) {
-            drawTrackingDivider(
-                seed,
-                size.width / density,
-                2f,
-                colors,
-            )
+            // The generator's numbers are dp: drawn inside a scale by the density, as the top app bar's divider is.
+            scale(density, Offset.Zero) {
+                drawTrackingDivider(
+                    seed,
+                    size.width / density,
+                    2f,
+                    colors,
+                )
+            }
         }
     }
 }

@@ -43,6 +43,37 @@ import kotlin.test.assertTrue
 /** B-15: what the buttons do — on release, not while working or disabled — and what a consumer does to them. */
 @OptIn(ExperimentalTestApi::class)
 class ButtonBehaviourTest {
+    @Test
+    fun `the text button's divider spans its label and stands 2 dp tall at any density`() {
+        for (d in listOf(1f, 2f, 3f)) {
+            runComposeUiTest {
+                mainClock.autoAdvance = false
+                setContent {
+                    CompositionLocalProvider(LocalDensity provides Density(d)) {
+                        io.github.youndie.mutant.theme.MutantTheme {
+                            Box(Modifier.testTag("t")) { MutantTextButton("Сбросить настройки", {}) }
+                        }
+                    }
+                }
+                mainClock.advanceTimeByFrame()
+                val px = onNodeWithTag("t").captureToImage().toPixelMap()
+                val blue = io.github.youndie.mutant.tokens.MutantPalettes.Efir.noSignal
+
+                fun isBlue(c: Color) =
+                    kotlin.math.abs(c.red - blue.red) + kotlin.math.abs(c.green - blue.green) +
+                        kotlin.math.abs(c.blue - blue.blue) < .06f && c.alpha > .9f
+                val xs = (0 until px.width).filter { x -> (0 until px.height).any { y -> isBlue(px[x, y]) } }
+                val ys = (0 until px.height).filter { y -> (0 until px.width).count { x -> isBlue(px[x, y]) } > 4 }
+                assertTrue(xs.isNotEmpty(), "strokes drawn at density $d")
+                assertTrue(
+                    xs.last() > px.width * .75f,
+                    "strokes reach the far end at density $d: ${xs.last()} of ${px.width}",
+                )
+                assertEquals((2 * d).toInt(), ys.size, "2 dp of strokes at density $d: rows $ys")
+            }
+        }
+    }
+
     private fun ComposeUiTest.pixels(tag: String): List<Color> =
         onNodeWithTag(tag).captureToImage().toPixelMap().let { px ->
             List(px.width * px.height) {
