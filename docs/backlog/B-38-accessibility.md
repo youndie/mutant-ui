@@ -1,7 +1,7 @@
 ---
 id: B-38
 title: "Accessibility: contrast after the Tape, flashes, greyscale, semantics"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-3-screens
