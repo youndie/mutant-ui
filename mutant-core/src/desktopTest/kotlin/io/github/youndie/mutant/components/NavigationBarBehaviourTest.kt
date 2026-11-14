@@ -139,9 +139,10 @@ class NavigationBarBehaviourTest {
         }
 
     @Test
-    fun `in a horizontally scrolling row each item takes the design's 82 dp cell`() =
+    fun `in a horizontally scrolling row each item takes the design's 82 dp cell, and the pill slides one cell`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
+            var at by mutableIntStateOf(0)
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     MutantTheme {
@@ -151,7 +152,7 @@ class NavigationBarBehaviourTest {
                                     MutantNavigationItem("Эфир", MutantIcons.Home),
                                     MutantNavigationItem("Поиск", MutantIcons.Search),
                                 ),
-                                1,
+                                at,
                                 {},
                                 Modifier.testTag("n"),
                                 windowInsets = WindowInsets(0),
@@ -165,6 +166,13 @@ class NavigationBarBehaviourTest {
             val second = onNodeWithText("Поиск").getBoundsInRoot()
             assertEquals(82f, second.left.value, "the second cell starts one design cell in")
             assertEquals(164f, second.right.value, "and ends at the bar's end")
+            at = 1
+            mainClock.advanceTimeBy(160)
+            val mid = pill()!!
+            assertTrue((mid.first + mid.last) / 2 in 61..103, "under way from 41 to 123: $mid")
+            mainClock.advanceTimeBy(400)
+            val end = pill()!!
+            assertTrue(abs((end.first + end.last) / 2 - 123) <= 2, "landed in the second cell: $end")
         }
 
     @Test
