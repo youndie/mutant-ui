@@ -1,7 +1,7 @@
 ---
 id: B-28
 title: "Dialog: a clean window over a paused background"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
