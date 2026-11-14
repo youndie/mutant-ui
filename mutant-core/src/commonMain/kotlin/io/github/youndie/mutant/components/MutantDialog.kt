@@ -251,7 +251,10 @@ private fun DialogScene(
                             TEXT_SIZE * TEXT_LINE,
                         )
                     }
-                    androidx.compose.runtime.CompositionLocalProvider(LocalDialogHidden provides hidden) {
+                    androidx.compose.runtime.CompositionLocalProvider(
+                        LocalDialogHidden provides hidden,
+                        LocalDialogOpen provides visible,
+                    ) {
                         Row(
                             Modifier.fillMaxWidth().padding(top = ACTIONS_TOP),
                             horizontalArrangement = Arrangement.spacedBy(ACTIONS_GAP, Alignment.End),
@@ -322,6 +325,8 @@ public fun MutantDialogAction(
 ) {
     val colors = MutantTheme.colors
     val hidden = LocalDialogHidden.current
+    // From the moment its dialog starts to close, an action no longer answers.
+    val open = LocalDialogOpen.current
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
@@ -334,7 +339,7 @@ public fun MutantDialogAction(
         ).cssLine(MutantFaceMetrics.Rubik)
     Box(
         modifier
-            .clickable(source, indication = null, role = Role.Button, onClick = onClick)
+            .clickable(source, indication = null, enabled = open, role = Role.Button, onClick = onClick)
             .height(TOUCH)
             .widthIn(min = TOUCH)
             .drawWithContent {
@@ -426,6 +431,9 @@ internal class DialogFollow(
         since = now
     }
 }
+
+/** Whether the dialog around an action is open, not closing: its actions answer only then. */
+internal val LocalDialogOpen = androidx.compose.runtime.staticCompositionLocalOf { true }
 
 /** A fixture's bare twin, for the actions it composes: their words transparent. False in the kit. */
 internal val LocalDialogHidden = androidx.compose.runtime.staticCompositionLocalOf { false }
