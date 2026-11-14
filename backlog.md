@@ -58,7 +58,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (29)
+## Open (28)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -73,7 +73,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-35](docs/backlog/B-35-bottom-sheet.md) `[ ]` | BottomSheet: a blob of r 22 with a divider above | P2 | M | B-10, B-43 |
 | [B-36](docs/backlog/B-36-pull-to-refresh.md) `[ ]` | PullToRefresh: the tongue, refreshing by boil, done by a clean pill | P2 | M | B-10, B-11, B-43 |
 | [B-51](docs/backlog/B-51-size-change-moves-the-flow-lines.md) `[?]` | A size change moves every flow line: accept, or hold them? | P2 | S | B-10 |
-| [B-59](docs/backlog/B-59-dialog-actions-always-reachable.md) `[ ]` | Dialog: its actions stay reachable under long text and long labels | P2 | M | B-40 |
 | [B-60](docs/backlog/B-60-tabs-that-do-not-fit.md) `[ ]` | Tabs: tabs past the row's width are invisible yet focusable | P2 | S | B-40 |
 | [B-61](docs/backlog/B-61-text-under-font-scale.md) `[ ]` | Font scale: fixed heights cut text, and illustration labels leave the art | P2 | M | B-40 |
 | [B-62](docs/backlog/B-62-focus-through-loading.md) `[ ]` | Button: keyboard focus survives Loading and Success | P2 | S | B-40 |
@@ -92,7 +91,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (45)
+## Closed (46)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -151,6 +150,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-56](docs/backlog/B-56-navigation-bar-unbounded-width.md) `[x]` - Navigation bar: throws in a horizontally scrolling row
 - [B-57](docs/backlog/B-57-visible-keyboard-focus-everywhere.md) `[x]` - Keyboard focus: every Tab stop visible, and the dialog's Tab cycle
 - [B-58](docs/backlog/B-58-text-field-target-and-caret.md) `[x]` - Text field: the whole body takes the pointer, and the caret marks the insertion point
+- [B-59](docs/backlog/B-59-dialog-actions-always-reachable.md) `[x]` - Dialog: its actions stay reachable under long text and long labels
 - [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[x]` - The code gate replayed failed tests from the build cache as a pass
 - [B-74](docs/backlog/B-74-handjet-a-row-higher-on-macos-26.md) `[x]` - Handjet's ink a row higher on the CI's macOS 26 than on macOS 27 and in Chrome
 

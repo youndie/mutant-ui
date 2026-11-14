@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.dp
@@ -129,7 +130,6 @@ class LongContentSweepTest {
             }
         }
 
-    @Ignore("F06: a dialog whose text is taller than the screen lays its actions out at zero height, out of reach")
     @Test
     fun `F06 a dialog with a long text keeps its actions inside the screen and at their size`() =
         runComposeUiTest {
@@ -145,9 +145,17 @@ class LongContentSweepTest {
                 val b = boundsOf(label, exact = true)
                 assertTrue(b.height > 0f && b.top >= 0f && b.bottom <= 600f, "$label at $b")
             }
+            assertTrue(scrollRange() > 0f, "the text scrolls inside the window: ${scrollRange()}")
         }
 
-    @Ignore("F07: a long label on one dialog action squeezes the action after it to zero width")
+    /** How far the dialog's text can scroll, 0 when nothing in the window scrolls. */
+    private fun androidx.compose.ui.test.ComposeUiTest.scrollRange(): Float =
+        onAllNodes(
+            androidx.compose.ui.test.SemanticsMatcher
+                .keyIsDefined(SemanticsProperties.VerticalScrollAxisRange),
+        ).fetchSemanticsNodes()
+            .maxOfOrNull { it.config[SemanticsProperties.VerticalScrollAxisRange].maxValue() } ?: 0f
+
     @Test
     fun `F07 a long first action leaves the primary action visible`() =
         runComposeUiTest {
@@ -163,6 +171,7 @@ class LongContentSweepTest {
                 boundsOf("Стереть", exact = true).width >= 48f,
                 "the primary action: ${boundsOf("Стереть", exact = true)}",
             )
+            assertEquals(0f, scrollRange(), "a text that fits has nothing to scroll")
         }
 
     @Ignore("F08: tabs past the row's width get zero width, yet stay focusable and selectable; no scroll, no bar")
