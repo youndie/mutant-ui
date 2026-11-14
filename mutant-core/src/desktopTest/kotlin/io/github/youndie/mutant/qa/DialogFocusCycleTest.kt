@@ -91,15 +91,16 @@ class DialogFocusCycleTest {
             }
         }
 
-    @Ignore("F22: Tab inside a dialog stops on the scrim and the sheet, both invisible, and stays on the last action")
     @Test
     fun `F22 Tab inside a dialog visits only its actions and wraps`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             dialog()
             val seen = List(5) { tab().let { focused() } }
-            assertEquals(listOf("cancel", "erase", "cancel", "erase", "cancel"), seen)
+            assertEquals(listOf("cancel", "erase", "cancel", "erase", "cancel"), seen, "Tab comes round")
             tab(shift = true)
             assertEquals("erase", focused(), "Shift+Tab from the first action wraps to the last")
+            tab(shift = true)
+            assertEquals("cancel", focused())
         }
 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
@@ -38,6 +39,7 @@ import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.drawTrackingDivider
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.with
@@ -150,11 +152,21 @@ internal fun TextButtonBody(
 ) {
     val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
+    val focused by source.collectIsFocusedAsState()
+    val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val seed = "${LocalMutantCassette.current}/${LocalMutantStage.current}/div$key"
     Column(
         modifier
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
-            .defaultMinSize(minWidth = TOUCH)
+            // It has no body to draw them on: the brackets stand at the corners of its 48 dp target (B-57).
+            .drawWithContent {
+                drawContent()
+                if (focused && keyboard) {
+                    scale(density, Offset.Zero) {
+                        drawCornerBrackets(1f, 1f, size.width / density - 1, size.height / density - 1, colors.focus)
+                    }
+                }
+            }.defaultMinSize(minWidth = TOUCH)
             .height(TOUCH)
             .width(IntrinsicSize.Max)
             .padding(horizontal = TEXT_PADDING),

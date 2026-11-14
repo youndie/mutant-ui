@@ -34,9 +34,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -45,6 +47,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -94,7 +97,8 @@ import kotlin.math.roundToInt
  * With [visible] true, from the start or set later, it opens: scrim, band and window come up together in 320 ms
  * (`pause`); set false they go in 200 (`play`), the screen's clock running again, and it is gone from the composition
  * after. Both step twelve times a second, and under reduce motion are at once. A click on the scrim, Escape or the
- * system back gesture calls [onDismissRequest]. Focus moves into the dialog as it opens and stays there; on closing it
+ * system back gesture calls [onDismissRequest]. Focus moves into the dialog as it opens and stays there, a Tab on its
+ * actions only, coming round from the last to the first and with Shift+Tab the other way. On closing it
  * goes to [returnFocusTo], a requester on whatever opened it, or with none is left to the window.
  */
 @Composable
@@ -183,6 +187,7 @@ private fun DialogScene(
     val raster = LocalMutantTextRaster.current
     val dismiss by rememberUpdatedState(onDismissRequest)
     val focus = remember { FocusRequester() }
+    val actionFocus = remember { DialogActionFocus() }
     LaunchedEffect(visible) { if (visible) focus.requestFocus() }
     NavigationBackHandler(rememberNavigationEventState(NavigationEventInfo.None), isBackEnabled = visible) { dismiss() }
     Box(
@@ -191,15 +196,37 @@ private fun DialogScene(
             .clipToBounds()
             .graphicsLayer { alpha = shown }
             // Focus stays in here while it is open, and what is under the scrim cannot be reached by the keys.
-            .focusProperties { onExit = { if (visible) cancelFocusChange() } }
-            .focusGroup()
+            .focusProperties {
+                onExit = {
+                    if (visible) {
+                        // Tab past the last action comes round to the first, Shift+Tab past the first to the last.
+                        when (requestedFocusDirection) {
+                            FocusDirection.Next -> actionFocus.requesters.firstOrNull()?.requestFocus()
+                            FocusDirection.Previous -> actionFocus.requesters.lastOrNull()?.requestFocus()
+                            else -> null
+                        } ?: cancelFocusChange()
+                    }
+                }
+            }.focusGroup()
             .focusRequester(focus)
             .onPreviewKeyEvent {
-                if (visible && it.type == KeyEventType.KeyDown && it.key == Key.Escape) {
-                    dismiss()
-                    true
-                } else {
-                    false
+                val down = visible && it.type == KeyEventType.KeyDown
+                when {
+                    down && it.key == Key.Escape -> {
+                        dismiss()
+                        true
+                    }
+
+                    // Shift+Tab on the first action would stop on the dialog itself, which shows nothing: round to
+                    // the last action instead (B-57).
+                    down && it.key == Key.Tab && it.isShiftPressed && actionFocus.atFirst() -> {
+                        actionFocus.requesters.last().requestFocus()
+                        true
+                    }
+
+                    else -> {
+                        false
+                    }
                 }
             }.focusable(),
     ) {
@@ -208,6 +235,8 @@ private fun DialogScene(
             Modifier
                 .fillMaxSize()
                 .background(SCRIM)
+                // Not a Tab stop: nothing of it shows focus, and Enter on it would dismiss unseen (B-57).
+                .focusProperties { canFocus = false }
                 .clickable(remember { MutableInteractionSource() }, indication = null, enabled = visible) { dismiss() },
         )
         PauseBand(Modifier.align(Alignment.BottomStart).offset(BAND_SHIFT, -BAND_FROM_FOOT))
@@ -223,7 +252,8 @@ private fun DialogScene(
                 (if (windowTop == null) Modifier else Modifier.offset(y = windowTop))
                     .widthIn(max = WINDOW)
                     .fillMaxWidth()
-                    // Its own clicks: none reaches the scrim under it.
+                    // Its own clicks: none reaches the scrim under it. Not a Tab stop either (B-57).
+                    .focusProperties { canFocus = false }
                     .clickable(remember { MutableInteractionSource() }, indication = null) {}
                     .semantics {
                         dialog()
@@ -268,6 +298,7 @@ private fun DialogScene(
                     androidx.compose.runtime.CompositionLocalProvider(
                         LocalDialogHidden provides hidden,
                         LocalDialogOpen provides visible,
+                        LocalDialogActionFocus provides actionFocus,
                     ) {
                         Row(
                             Modifier.fillMaxWidth().padding(top = ACTIONS_TOP),
@@ -344,6 +375,13 @@ public fun MutantDialogAction(
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    // Registered with its dialog in composition order, so Tab can come round from the last action to the first.
+    val requester = remember { FocusRequester() }
+    val actions = LocalDialogActionFocus.current
+    DisposableEffect(actions) {
+        actions?.requesters?.add(requester)
+        onDispose { actions?.requesters?.remove(requester) }
+    }
     val style =
         TextStyle(
             fontFamily = LocalMutantFonts.current?.text,
@@ -353,7 +391,14 @@ public fun MutantDialogAction(
         ).cssLine(MutantFaceMetrics.Rubik)
     Box(
         modifier
-            .clickable(source, indication = null, enabled = open, role = Role.Button, onClick = onClick)
+            .focusRequester(requester)
+            .onFocusChanged { state ->
+                if (state.isFocused) {
+                    actions?.focused = requester
+                } else if (actions?.focused === requester) {
+                    actions.focused = null
+                }
+            }.clickable(source, indication = null, enabled = open, role = Role.Button, onClick = onClick)
             .height(TOUCH)
             .widthIn(min = TOUCH)
             .drawWithContent {
@@ -448,6 +493,18 @@ internal class DialogFollow(
 
 /** Whether the dialog around an action is open, not closing: its actions answer only then. */
 internal val LocalDialogOpen = androidx.compose.runtime.staticCompositionLocalOf { true }
+
+/** The focus requesters of a dialog's actions, in composition order: where Tab comes round to. */
+internal class DialogActionFocus {
+    val requesters = ArrayList<FocusRequester>()
+
+    /** The action holding focus, null when none does. */
+    var focused: FocusRequester? = null
+
+    fun atFirst(): Boolean = focused != null && focused === requesters.firstOrNull()
+}
+
+internal val LocalDialogActionFocus = androidx.compose.runtime.staticCompositionLocalOf<DialogActionFocus?> { null }
 
 /** A fixture's bare twin, for the actions it composes: their words transparent. False in the kit. */
 internal val LocalDialogHidden = androidx.compose.runtime.staticCompositionLocalOf { false }

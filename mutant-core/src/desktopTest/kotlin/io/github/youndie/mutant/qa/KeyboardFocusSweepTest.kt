@@ -155,12 +155,10 @@ class KeyboardFocusSweepTest {
         assertEquals(emptyList(), failures)
     }
 
-    @Ignore("F02: the text button draws nothing on keyboard focus")
     @Test
     fun `F02 the text button shows keyboard focus`() =
         assertTrue(visit(controls.first { it.name == "TextButton" }, Key.Unknown).second > 0)
 
-    @Ignore("F03: a button in its Success state draws no brackets on keyboard focus (the clean frame skips the decor)")
     @Test
     fun `F03 a button in Success shows keyboard focus`() =
         assertTrue(visit(controls.first { it.name == "Button.Success" }, Key.Unknown).second > 0)
