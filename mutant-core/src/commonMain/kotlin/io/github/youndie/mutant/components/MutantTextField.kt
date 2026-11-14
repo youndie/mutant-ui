@@ -263,7 +263,9 @@ private fun Caret(
 
                         else -> x
                     }
-                val px = left.roundToInt().coerceAtMost(constraints.maxWidth - p.width).coerceAtLeast(0)
+                // The bar may stand in the padding or the gap before the text, the block never leaves the line.
+                val min = if (atEnd) 0 else -p.width
+                val px = left.roundToInt().coerceAtMost(constraints.maxWidth - p.width).coerceAtLeast(min)
                 layout(constraints.maxWidth, p.height) { p.place(px, 0) }
             }.size(width, CARET_H)
             .mutantCleanZone(),

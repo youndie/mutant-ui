@@ -265,6 +265,10 @@ class OverlayAndMouseTest {
                 }
             }
             mainClock.advanceTimeBy(100)
+            val glyphs =
+                onNodeWithTag("f").captureToImage().toPixelMap().let { px ->
+                    (0 until px.width).filter { x -> (0 until px.height).any { y -> near(px[x, y], text) } }
+                }
             press(Key.Tab)
             // Focused by Tab, the cursor is at the end: the block stands past the text, and a letter goes there.
             val atTab = onNodeWithTag("f").captureToImage().toPixelMap().columnsOf(text)
@@ -276,6 +280,7 @@ class OverlayAndMouseTest {
             press(Key.MoveHome)
             val atHome = onNodeWithTag("f").captureToImage().toPixelMap().columnsOf(text)
             assertTrue(atHome.isNotEmpty() && atHome.last() <= 16, "after Home the caret stands at $atHome")
+            assertTrue(atHome.none { it in glyphs }, "and covers no letter: caret $atHome, glyphs $glyphs")
             onNode(hasSetTextAction()).performTextInput("Y")
             mainClock.advanceTimeBy(100)
             assertEquals("YabcZ", value)
