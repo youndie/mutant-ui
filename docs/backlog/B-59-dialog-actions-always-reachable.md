@@ -1,7 +1,7 @@
 ---
 id: B-59
 title: "Dialog: its actions stay reachable under long text and long labels"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-5-product

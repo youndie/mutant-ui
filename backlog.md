@@ -73,7 +73,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-35](docs/backlog/B-35-bottom-sheet.md) `[ ]` | BottomSheet: a blob of r 22 with a divider above | P2 | M | B-10, B-43 |
 | [B-36](docs/backlog/B-36-pull-to-refresh.md) `[ ]` | PullToRefresh: the tongue, refreshing by boil, done by a clean pill | P2 | M | B-10, B-11, B-43 |
 | [B-51](docs/backlog/B-51-size-change-moves-the-flow-lines.md) `[?]` | A size change moves every flow line: accept, or hold them? | P2 | S | B-10 |
-| [B-59](docs/backlog/B-59-dialog-actions-always-reachable.md) `[ ]` | Dialog: its actions stay reachable under long text and long labels | P2 | M | B-40 |
+| [B-59](docs/backlog/B-59-dialog-actions-always-reachable.md) `[~]` | Dialog: its actions stay reachable under long text and long labels | P2 | M | B-40 |
 | [B-60](docs/backlog/B-60-tabs-that-do-not-fit.md) `[ ]` | Tabs: tabs past the row's width are invisible yet focusable | P2 | S | B-40 |
 | [B-61](docs/backlog/B-61-text-under-font-scale.md) `[ ]` | Font scale: fixed heights cut text, and illustration labels leave the art | P2 | M | B-40 |
 | [B-62](docs/backlog/B-62-focus-through-loading.md) `[ ]` | Button: keyboard focus survives Loading and Success | P2 | S | B-40 |
