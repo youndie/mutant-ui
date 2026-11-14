@@ -1,7 +1,7 @@
 ---
 id: B-24
 title: "NavigationBar: bar body, the active item a 56 × 30 pill"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
