@@ -1,7 +1,7 @@
 ---
 id: B-57
 title: "Keyboard focus: every Tab stop visible, and the dialog's Tab cycle"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
