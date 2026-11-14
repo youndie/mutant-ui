@@ -1,7 +1,7 @@
 ---
 id: B-09
 title: "MutantTheme: «Эфир» and «Копия», the cassette seed, reduce motion as pause, «Чистый сигнал»"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-1-materials
