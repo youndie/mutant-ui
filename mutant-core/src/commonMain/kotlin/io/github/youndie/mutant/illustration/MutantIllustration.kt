@@ -89,13 +89,15 @@ internal class IllustrationParts(
     }
 }
 
+/** The art of [kind]; [stage] seeds its bodies, its own in the kit, another page's in a fixture of that page. */
 @Composable
 internal fun IllustrationArt(
     kind: MutantIllustrationKind,
     modifier: Modifier,
     parts: IllustrationParts,
+    stage: String = kind.stage,
 ) {
-    CompositionLocalProvider(LocalMutantStage provides kind.stage) {
+    CompositionLocalProvider(LocalMutantStage provides stage) {
         Box(modifier.size(kind.width.dp, kind.height.dp)) {
             val art = Art(LocalMutantColors.current, parts)
             when (kind) {
