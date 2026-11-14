@@ -325,6 +325,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 | A dialog pauses the screen (the brief's `pause`): the screen's clock takes a hold (`MutantClock.holds`) while anything of it shows, so every body behind it stands, and the window runs on a clock of its own, frozen with a frozen screen — one clock per screen (D6) bent for an overlay, not broken (B-28) | `DialogBehaviourTest`, 2026-11-14 |
 | A fractional `line-height` (14 × 1.45 = 20.3) lays two lines 40.6 tall in Chrome and 40 in Compose; what follows stands at 112.6, and the engine paints a body there at its slot's rounded 113 while the DOM's words stay at the fraction a row above. A kit that lays body and words together can match one: the dialog's text box takes its lines' CSS height rounded (the body exact) and its actions' words are listed a row low (B-28) | `DialogParityTest`, 2026-11-14 |
 
+| A test over "every node that …" passes over none as readily as over all: an empty state given no width lays its words a letter a line, thousands of dp tall, and stacked above the measured one it pushed that out of the test window, so the sweep's checks ran over nothing and a mutant survived them. Such a check asserts how many it measured (B-29) | `EmptyStateBehaviourTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
