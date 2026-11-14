@@ -206,6 +206,7 @@ internal fun MutantSurface(
     val held = remember { HeldInstance() }
     val ahead = remember { FrameAhead() }
     val frameProbe = LocalMutantFrameProbe.current
+    val skipParts = LocalMutantSkipBodyParts.current
     val scope = rememberCoroutineScope()
     // A body's first instance is built off the frame (B-50), unless the clock is frozen (fixtures, references) or an
     // IDE preview draws it: those draw in their first frame, as before.
@@ -391,7 +392,20 @@ internal fun MutantSurface(
                                 g,
                                 slideP,
                                 slideDx,
-                            ) { drawBody(g, paths, frameLook, colors, speckle, Offset.Zero, dead, decor, pour) }
+                            ) {
+                                drawBody(
+                                    g,
+                                    paths,
+                                    frameLook,
+                                    colors,
+                                    speckle,
+                                    Offset.Zero,
+                                    dead,
+                                    decor,
+                                    pour,
+                                    skipParts,
+                                )
+                            }
                         }
                     }
                 }
