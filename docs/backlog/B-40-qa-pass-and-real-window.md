@@ -1,7 +1,7 @@
 ---
 id: B-40
 title: "A QA pass over the finished MVP and a real window driven by AWT events"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
