@@ -41,6 +41,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.gen.Instance
@@ -115,6 +116,8 @@ internal fun NavigationBarBody(
             val n = items.size.coerceAtLeast(1)
             val cell = maxWidth / n
             val chosen = selectedIndex in items.indices
+            // Captured by the pill's content, so the lambda is not a singleton whose name moves with every edit (ABI).
+            val box = DpSize(ICON_BOX_W, ICON_BOX_H)
             // Where an item's icon box stands in its cell, from the measure of the items (written as they measure).
             val tops = remember(n) { IntArray(n) }
             Layout(
@@ -125,11 +128,11 @@ internal fun NavigationBarBody(
                             MutantBody.Pill,
                             pillKey,
                             // The pill is a body inside the bar: the engine keeps it in the bar's clean zone.
-                            Modifier.size(ICON_BOX_W, ICON_BOX_H).mutantCleanZone(),
+                            Modifier.size(box).mutantCleanZone(),
                             slide = SlideRequest(selectedIndex, dx.value.toDouble()),
                             probe = pillProbe,
                         ) {
-                            Box(Modifier.size(ICON_BOX_W, ICON_BOX_H), contentAlignment = Alignment.Center) {
+                            Box(Modifier.size(box), contentAlignment = Alignment.Center) {
                                 Box(Modifier.size(ICON).mutantCleanZone())
                             }
                         }
