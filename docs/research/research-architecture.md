@@ -125,6 +125,11 @@ the last bit between V8, the JVM, Kotlin/Native's libm and the browser under was
 | After the Tape («Лента») one pair falls under 4.5: «Копия» `text-disabled / background` 4.4. Under the one-tick white noise stroke «Эфир» text falls to 1.7:1, which the owner accepted | `mutant-tokens.json` (`mutant.contrast-after-tape`, `mutant.tape.efir.noise-row`); handoff README, «Контраст текста» |
 | The flash budget is measured by the designer: boil-over 1.5 changes per second at a luminance delta of 0.064; keyframe loss changes ≥ 0.1 on at most 2.9 % of its band | `mutant-tokens.json` (`mutant.flash`) |
 
+| *Read by [B-08](../backlog/B-08-token-generator.md):* every colour the engine's `static TH` and the tokens both name agrees. The engine draws with paints the tokens do not carry: the divider's comet, the cocoon's two paints (in «Копия» `#cfc5aa` and `#bfb394`, which appear nowhere in the tokens), the disabled tint and darkening, and the print flag | `scripts/tokens.mjs` (`TH_TO_TOKEN`, `ENGINE_ONLY`) |
+| The profiles agree with `static K` but for one field: the tokens give the pill radius "full", the engine gives it `r: 99` with no `round` flag, so its corner radii are randomised and clamped to half its side — the same on every size the kit uses, and the engine's is generated | `scripts/tokens.mjs` (`KNOWN`), `MutantTokensTest` |
+| `motion.tick-hot` says 83 ms; the engine's hot tick is `125 / 1.5` = 83⅓ ms. The token is generated as written; the clock computes the engine's | `reference/design-system/mutant-tokens.json`, `MutantClock` |
+| The Tape's parameters are prose in the tokens («чёрный 7.5 %, 1 dp из 3»), not numbers; [B-13](../backlog/B-13-tape.md) reads them from the engine's `tapeHtml` | `reference/design-system/mutant-tokens.json` (`tape`) |
+
 **Consequence 5.** The brief asks for 4.5:1 *after the Tape at the worst tick*. WCAG 1.4.3 exempts
 inactive components, so disabled text at 4.4 is within WCAG and outside the brief; the
 accessibility item measures it on the rendered kit and puts the choice to the owner
