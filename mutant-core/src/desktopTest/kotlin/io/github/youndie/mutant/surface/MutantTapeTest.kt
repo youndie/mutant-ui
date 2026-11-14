@@ -41,10 +41,10 @@ class MutantTapeTest {
         assertNull(tapeBandTop(6999.0, 130f))
         assertEquals(130f, tapeBandTop(7000.0, 130f), "back at the bottom on the next cycle")
         assertEquals(tapeBandTop(1050.0, 130f), tapeBandTop(71050.0, 130f))
-        var last = Float.MAX_VALUE
-        for (ms in 0 until 2100) {
+        var last = tapeBandTop(0.0, 800f)!!
+        for (ms in 1 until 2100) {
             val top = tapeBandTop(ms.toDouble(), 800f)!!
-            assertTrue(top <= last && last - top <= 1f || last == Float.MAX_VALUE, "steady at $ms: $last → $top")
+            assertTrue(top <= last && last - top <= 1f, "steady at $ms: $last → $top")
             last = top
         }
     }
