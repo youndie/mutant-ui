@@ -1,7 +1,7 @@
 ---
 id: B-14
 title: "Icons, the six illustrations and the four patterns"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-1-materials
