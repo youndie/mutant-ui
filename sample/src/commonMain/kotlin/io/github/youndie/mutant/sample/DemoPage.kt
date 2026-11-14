@@ -83,11 +83,12 @@ internal enum class DemoScreen { Library, Recording, Settings }
 internal fun DemoScreenFrame(
     screen: DemoScreen,
     strings: SampleStrings,
+    dialogOpen: Boolean = true,
 ) {
     when (screen) {
         DemoScreen.Library -> Screen(strings.demoLibrary, "demo-library") { Library(strings) }
         DemoScreen.Recording -> Screen(strings.demoRecording, "demo-recording") { Recording(strings) }
-        DemoScreen.Settings -> Screen(strings.demoSettings, "demo-settings") { Settings(strings) }
+        DemoScreen.Settings -> Screen(strings.demoSettings, "demo-settings") { Settings(strings, dialogOpen) }
     }
 }
 
@@ -230,14 +231,17 @@ private fun Recording(s: SampleStrings) {
 }
 
 @Composable
-private fun Settings(s: SampleStrings) {
+private fun Settings(
+    s: SampleStrings,
+    dialogOpen: Boolean,
+) {
     var name by remember { mutableStateOf(s.nightTue) }
     var speed by remember { mutableIntStateOf(0) }
     var tracking by remember { mutableStateOf(true) }
     var clean by remember { mutableStateOf(false) }
     var noise by remember { mutableStateOf(true) }
     var loss by remember { mutableStateOf(false) }
-    var open by remember { mutableStateOf(true) }
+    var open by remember { mutableStateOf(dialogOpen) }
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.padding(horizontal = 16.dp)) {
             MutantTopAppBar(
