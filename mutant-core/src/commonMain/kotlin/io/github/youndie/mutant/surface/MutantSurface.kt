@@ -121,6 +121,8 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * [mutantCleanZone]; nothing decorative enters that zone. The body's origin is its own, so its shape travels
  * with it when it moves; a size change regenerates it.
  *
+ * [stroke] is the outline's ink, the theme's unless given (the outlined button's accent, `data-stroke`).
+ *
  * [profile] is [body]'s unless a composition overrides some of its numbers per slot, as the design's
  * illustrations do with `data-r`, `data-over` and the like ([with]).
  *
@@ -156,6 +158,7 @@ internal fun MutantSurface(
     pourAt: Pair<Double, Color>? = null,
     slideAt: Pair<Double, Double>? = null,
     profile: MutantProfile = body.profile,
+    stroke: Color? = null,
     probe: ((io.github.youndie.mutant.gen.Instance) -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -188,7 +191,7 @@ internal fun MutantSurface(
         BodyLook(
             fill = bodyFill,
             highlight = highlightFor(bodyFill, colors),
-            ink = colors.ink,
+            ink = stroke ?: colors.ink,
             outline = p.outline.toFloat(),
             slip = (slip ?: if (colors.print && !p.round) PRINT_SLIP else 0.0).toFloat(),
             shadow = shadow,
@@ -263,18 +266,20 @@ internal fun MutantSurface(
                     val patterns = StagePatterns.of(cassette, stage)
                     return@drawWithCache onDrawBehind {
                         scale(d, Offset.Zero) {
-                            if (state == BodyState.Disabled) {
-                                drawDisabledBody(
-                                    g,
-                                    look.fill,
-                                    look.highlight,
-                                    colors,
-                                    p.outline.toFloat(),
-                                    patterns,
-                                    Offset.Zero,
-                                )
-                            } else {
-                                drawCleanBody(g, look.fill, look.highlight, look.ink, p.outline.toFloat())
+                            translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
+                                if (state == BodyState.Disabled) {
+                                    drawDisabledBody(
+                                        g,
+                                        look.fill,
+                                        look.highlight,
+                                        colors,
+                                        p.outline.toFloat(),
+                                        patterns,
+                                        Offset.Zero,
+                                    )
+                                } else {
+                                    drawCleanBody(g, look.fill, look.highlight, look.ink, p.outline.toFloat())
+                                }
                             }
                         }
                     }

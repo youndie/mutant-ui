@@ -160,7 +160,8 @@ internal fun DrawScope.drawBody(
         clipPath(paths.contour) {
             drawRect(look.fill, bb.topLeft, bb.size)
             pour?.let { (path, from) -> drawPath(path, from) }
-            drawSpeckle(speckle, speckleOrigin, bb, look.ink)
+            // Speckle and flow lines are the theme's ink whatever the outline's colour (the engine's `C.ink`).
+            drawSpeckle(speckle, speckleOrigin, bb, colors.ink)
             val tiles = decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
             for ((t, c) in tiles) {
                 drawRect(
@@ -172,7 +173,7 @@ internal fun DrawScope.drawBody(
             }
             if (deadPixels != null) drawDeadPixels(deadPixels, colors)
             for ((r, c) in decor.errorBlocks) drawRect(c, r.topLeft, r.size)
-            drawPath(paths.flowLines, look.ink)
+            drawPath(paths.flowLines, colors.ink)
             for ((i, b) in decor.bands.withIndex()) {
                 drawRect(
                     Color.White,
