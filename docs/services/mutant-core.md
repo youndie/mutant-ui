@@ -34,7 +34,10 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/` | `MutantSurface` and the body renderer (`BodyDrawing.kt`): layers, speckle, clean zone, the held instance ([B-10](../backlog/B-10-mutant-surface.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyStates.kt` | the states: boil fill, running mosaic, seek bands, error, brackets, the disabled and clean bodies ([B-11](../backlog/B-11-surface-states.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyTransitions.kt` | pour, slide, melt, the venom's goo and spring ([B-12](../backlog/B-12-transitions.md)) |
-| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the Components page's resting and state cells and the spec page's transition frames, every body of a stage drawn |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantTape.kt` | the Tape: `Modifier.mutantTape()` over a screen, the band's place, the grain tile ([B-13](../backlog/B-13-tape.md)) |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the Components page's resting and state cells and the spec page's transition and Tape frames, every body of a stage drawn |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/MutantTapeTest.kt` | the Tape's band cycle, scanlines, clean signal, pause, scene tick and density |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/TapeContrastTest.kt` | contrast under the Tape against the tokens' `contrast-after-tape` |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/VenomParityTest.kt` | the venom's goo against the engine's filter in Chrome |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal; the locals every body reads ([B-09](../backlog/B-09-theme.md)) |
 | `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/theme/PlatformReduceMotion.*.kt` | the platform's reduce-motion setting per target |
@@ -83,6 +86,9 @@ or any Material artefact; and its generator package does not depend on Compose.
 - The kit clock asks for frames only while something reads it and it is neither paused nor frozen;
   readers observe its ticks, not its time, so a body recomposes 8 times a second, not 60. Outside any
   provider a body reads a frozen clock at 5000 ms, as the references are drawn.
+- The Tape steps on the clock's scene tick, a fixed 125 ms (`MutantClock.sceneTick`), as the engine's
+  `stageStep` does, not on the resting tick, whose rate the genome may change. Live, it is drawn at the
+  tick's start; the engine draws it at the first frame past it, within a frame of that.
 - `MutantSurface` builds its instance and the field's static layers in its draw cache on the main
   thread, so a body's first frame costs about ten times a warm one; ten bodies appearing together cost
   tens of ms ([B-50](../backlog/B-50-first-frame-off-the-frame.md)).

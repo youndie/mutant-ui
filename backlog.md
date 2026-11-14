@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (37)
+## Open (36)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-13](docs/backlog/B-13-tape.md) `[~]` | The Tape («Лента»): one overlay over the screen | P1 | M | B-07, B-09 |
 | [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[ ]` | Icons, the six illustrations and the four patterns | P1 | S | B-10 |
 | [B-15](docs/backlog/B-15-button.md) `[ ]` | Button: filled, outlined, text; pressed, loading, success, disabled | P1 | M | B-10, B-11 |
 | [B-16](docs/backlog/B-16-icon-button-and-fab.md) `[ ]` | IconButton and FAB: 48 and 56 dp bodies, the extended FAB | P1 | M | B-10, B-11 |
@@ -100,7 +99,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (14)
+## Closed (15)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -119,6 +118,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-10](docs/backlog/B-10-mutant-surface.md) `[x]` - MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds
 - [B-11](docs/backlog/B-11-surface-states.md) `[x]` - Body states: boil-over, loading, success, disabled, error, focus
 - [B-12](docs/backlog/B-12-transitions.md) `[x]` - Transitions: pour, melt, slide, and the venom with its soft joins
+- [B-13](docs/backlog/B-13-tape.md) `[x]` - The Tape («Лента»): one overlay over the screen
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
