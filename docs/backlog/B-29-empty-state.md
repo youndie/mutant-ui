@@ -1,7 +1,7 @@
 ---
 id: B-29
 title: "EmptyState: the six illustrations with a title"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
