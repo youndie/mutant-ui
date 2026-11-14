@@ -218,8 +218,7 @@ Settled by [B-10](../backlog/B-10-mutant-surface.md).
 
 **Consequence 9.** The kit's body is the page's, layer for layer. Where the page relies on its host —
 stage coordinates for the noise, the slot count for the tremble — the kit uses the body's own (D16).
-A size change is visible in the flow lines; whether to accept that is the owner's
-([B-51](../backlog/B-51-size-change-moves-the-flow-lines.md)).
+A size change is visible in the flow lines, and the owner accepted it (D17).
 
 ### 1.11 Transitions
 
@@ -525,6 +524,15 @@ the engine's running slot count. Parity fixtures pass the page's stage coordinat
 width to compare like with like ([B-10](../backlog/B-10-mutant-surface.md)); a fixture drawing a whole
 composition does it through `MutantSurface` itself, with two internal locals the kit leaves null
 (`LocalMutantSlotOrigin`, `LocalMutantOutlineOverride`, [B-14](../backlog/B-14-icons-illustrations-patterns.md)).
+
+### D17. A size change regenerates the body, flow lines included
+
+The owner's choice of 2026-11-14 ([B-51](../backlog/B-51-size-change-moves-the-flow-lines.md)). A body follows its slot's size, as the generator does. A change of size is a discrete event (a new label, a new value), and the body is generated anew at the new size. The drips and most of the mosaic stay; every flow line moves, because the lines are spaced `w / n` (§1.10). Rejected:
+
+- holding the flow lines on a width rounded up to 32 dp;
+- generating the whole body on a 16 dp bucket and stretching it.
+
+Both are departures from the generator, for a jump the engine itself makes.
 
 ---
 

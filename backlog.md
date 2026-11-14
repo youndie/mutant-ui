@@ -58,7 +58,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (29)
+## Open (28)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -72,7 +72,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[ ]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-35](docs/backlog/B-35-bottom-sheet.md) `[ ]` | BottomSheet: a blob of r 22 with a divider above | P2 | M | B-10, B-43 |
 | [B-36](docs/backlog/B-36-pull-to-refresh.md) `[ ]` | PullToRefresh: the tongue, refreshing by boil, done by a clean pill | P2 | M | B-10, B-11, B-43 |
-| [B-51](docs/backlog/B-51-size-change-moves-the-flow-lines.md) `[?]` | A size change moves every flow line: accept, or hold them? | P2 | S | B-10 |
 | [B-60](docs/backlog/B-60-tabs-that-do-not-fit.md) `[ ]` | Tabs: tabs past the row's width are invisible yet focusable | P2 | S | B-40 |
 | [B-61](docs/backlog/B-61-text-under-font-scale.md) `[ ]` | Font scale: fixed heights cut text, and illustration labels leave the art | P2 | M | B-40 |
 | [B-62](docs/backlog/B-62-focus-through-loading.md) `[ ]` | Button: keyboard focus survives Loading and Success | P2 | S | B-40 |
@@ -92,7 +91,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (49)
+## Closed (50)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -114,6 +113,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-13](docs/backlog/B-13-tape.md) `[x]` - The Tape («Лента»): one overlay over the screen
 - [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[x]` - Icons, the six illustrations and the four patterns
 - [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[x]` - Build a body's instance and first frame off the frame
+- [B-51](docs/backlog/B-51-size-change-moves-the-flow-lines.md) `[x]` - A size change moves every flow line: accept, or hold them?
 - [B-52](docs/backlog/B-52-display-text-against-chrome.md) `[x]` - Display text against Chrome: Handjet labels 2 px low, and a floor for text
 
 **Each MVP component matches its page's states in both themes and its motion at the engine's timestamps**

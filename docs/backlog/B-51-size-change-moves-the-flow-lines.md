@@ -1,7 +1,7 @@
 ---
 id: B-51
 title: "A size change moves every flow line: accept, or hold them?"
-status: question
+status: done
 priority: P2
 size: S
 stage: stage-1-materials
@@ -28,3 +28,7 @@ and moves every flow line, because the lines are spaced `w / n` with `n` from th
 - AC: the owner's choice recorded in research as a decision; under 2 or 3, the departure listed and a test
   holding the flow lines across a small resize.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt`, `reference/design-system/mutant-generator.js`
+
+## Decision
+
+The owner, 2026-11-14: **accept the jump** (option 1), recorded in research as D17. A size change regenerates the body as the generator does, and the flow lines move with it. Nothing in the code changes: this is how the kit already draws. There is no departure, so there is no registry entry and no holding test.
