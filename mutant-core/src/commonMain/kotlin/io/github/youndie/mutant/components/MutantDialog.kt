@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -19,7 +20,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -61,7 +64,9 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -284,16 +289,36 @@ private fun DialogScene(
                             ).cssLine(MutantFaceMetrics.Handjet),
                     )
                     if (text != null) {
-                        CssParagraph(
-                            text,
+                        // Measured after the title and the actions, which keep their size: a text taller than the
+                        // room left scrolls inside the window, and is clipped only then (B-59). A clip moves glyph
+                        // edges, so a text that fits is drawn exactly as before.
+                        val textStyle =
                             TextStyle(
                                 fontFamily = fonts?.text,
                                 fontSize = TEXT_SIZE.sp,
                                 color = if (hidden) Color.Transparent else colors.textSecondary,
                                 platformStyle = raster,
-                            ).cssLine(MutantFaceMetrics.Rubik, TEXT_LINE),
-                            TEXT_SIZE * TEXT_LINE,
-                        )
+                            ).cssLine(MutantFaceMetrics.Rubik, TEXT_LINE)
+                        val measurer = rememberTextMeasurer()
+                        BoxWithConstraints(Modifier.weight(1f, fill = false)) {
+                            val lines =
+                                remember(text, textStyle, constraints.maxWidth) {
+                                    measurer
+                                        .measure(
+                                            text,
+                                            textStyle,
+                                            constraints = Constraints(maxWidth = constraints.maxWidth),
+                                        ).lineCount
+                                }
+                            val scrolls =
+                                constraints.hasBoundedHeight && lines * TEXT_SIZE * TEXT_LINE > maxHeight.value
+                            CssParagraph(
+                                text,
+                                textStyle,
+                                TEXT_SIZE * TEXT_LINE,
+                                if (scrolls) Modifier.verticalScroll(rememberScrollState()) else Modifier,
+                            )
+                        }
                     }
                     androidx.compose.runtime.CompositionLocalProvider(
                         LocalDialogHidden provides hidden,
@@ -304,8 +329,13 @@ private fun DialogScene(
                             Modifier.fillMaxWidth().padding(top = ACTIONS_TOP),
                             horizontalArrangement = Arrangement.spacedBy(ACTIONS_GAP, Alignment.End),
                             verticalAlignment = Alignment.CenterVertically,
-                            content = actions,
-                        )
+                        ) {
+                            // Each action takes at most an even share of the row and its own width under it, so a
+                            // long label ellipsizes in its share and never squeezes the next one out (B-59).
+                            androidx.compose.runtime.CompositionLocalProvider(LocalDialogActionRow provides this) {
+                                actions()
+                            }
+                        }
                     }
                 }
             }
@@ -323,9 +353,11 @@ private fun CssParagraph(
     text: String,
     style: TextStyle,
     lineDp: Float,
+    modifier: Modifier = Modifier,
 ) {
     val lines = remember { IntArray(1) }
     Layout(
+        modifier = modifier,
         content = {
             BasicText(text, Modifier.mutantCleanZone(), style = style, onTextLayout = { lines[0] = it.lineCount })
         },
@@ -389,8 +421,9 @@ public fun MutantDialogAction(
             fontSize = ACTION_SIZE.sp,
             platformStyle = LocalMutantTextRaster.current,
         ).cssLine(MutantFaceMetrics.Rubik)
+    val row = LocalDialogActionRow.current
     Box(
-        modifier
+        (if (row == null) modifier else with(row) { modifier.weight(1f, fill = false) })
             .focusRequester(requester)
             .onFocusChanged { state ->
                 if (state.isFocused) {
@@ -505,6 +538,9 @@ internal class DialogActionFocus {
 }
 
 internal val LocalDialogActionFocus = androidx.compose.runtime.staticCompositionLocalOf<DialogActionFocus?> { null }
+
+/** The row a dialog's actions stand in, so an action can take its share of it (B-59). */
+internal val LocalDialogActionRow = androidx.compose.runtime.staticCompositionLocalOf<RowScope?> { null }
 
 /** A fixture's bare twin, for the actions it composes: their words transparent. False in the kit. */
 internal val LocalDialogHidden = androidx.compose.runtime.staticCompositionLocalOf { false }
