@@ -29,6 +29,8 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/goldens/` | the generator's goldens, written by `scripts/gen-goldens.mjs` |
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/GeneratorGoldenTest.kt` | the port held to the goldens on every target |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/clock/MutantClock.kt` | the kit clock, its provider and its readers ([B-07](../backlog/B-07-kit-clock.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/tokens/MutantTokens.kt` | the generated tokens: public `MutantColors` and `MutantPalettes`, internal type, grid, profiles, motion, genome ([B-08](../backlog/B-08-token-generator.md)) |
+| `scripts/tokens.mjs` | writes them from `mutant-tokens.json` and the engine's `static K` and `TH`; `--check` in the gate |
 | `mutant-core/api/` | the committed public API dump |
 | `mutant-core/src/desktopTest/snapshots/design/` | the Chrome references and their `manifest.json`, rendered by `scripts/design-references.mjs` (`make references`) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/gen/BodyFloorTest.kt` | the floor of the body: Chrome's outline against Compose's |
