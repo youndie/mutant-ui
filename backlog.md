@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (39)
+## Open (40)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-10](docs/backlog/B-10-mutant-surface.md) `[~]` | MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds | P0 | L | B-03, B-05, B-07, B-08 |
 | [B-09](docs/backlog/B-09-theme.md) `[ ]` | MutantTheme: «Эфир» and «Копия», the cassette seed, reduce motion as pause, «Чистый сигнал» | P1 | S | B-07, B-08 |
 | [B-11](docs/backlog/B-11-surface-states.md) `[ ]` | Body states: boil-over, loading, success, disabled, error, focus | P1 | M | B-10, B-04 |
 | [B-12](docs/backlog/B-12-transitions.md) `[ ]` | Transitions: pour, melt, slide, and the venom with its soft joins | P1 | M | B-04, B-11 |
@@ -88,6 +87,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[ ]` | A QA pass over the finished MVP and a real window driven by AWT events | P1 | M | B-37 |
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
+| [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[ ]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
@@ -95,6 +95,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[ ]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-35](docs/backlog/B-35-bottom-sheet.md) `[ ]` | BottomSheet: a blob of r 22 with a divider above | P2 | M | B-10, B-43 |
 | [B-36](docs/backlog/B-36-pull-to-refresh.md) `[ ]` | PullToRefresh: the tongue, refreshing by boil, done by a clean pill | P2 | M | B-10, B-11, B-43 |
+| [B-51](docs/backlog/B-51-size-change-moves-the-flow-lines.md) `[?]` | A size change moves every flow line: accept, or hold them? | P2 | S | B-10 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-44](docs/backlog/B-44-search-bar.md) `[ ]` | SearchBar: a focused field with suggestion chips and result rows | P3 | M | B-20, B-17 |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[ ]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
@@ -102,7 +103,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (10)
+## Closed (11)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -117,6 +118,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 - [B-07](docs/backlog/B-07-kit-clock.md) `[x]` - The kit clock: one per screen, in ms, ticks of 125 and 83 ms, pausable
 - [B-08](docs/backlog/B-08-token-generator.md) `[x]` - Tokens generated from mutant-tokens.json, read a second time in a test
+- [B-10](docs/backlog/B-10-mutant-surface.md) `[x]` - MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
