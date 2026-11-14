@@ -195,6 +195,13 @@ export const REFERENCES = [
     { stem: `MutantDialog_Window_${theme}`, page: MVP, stage: 'dialogwin', type: 'bar', index: 0, theme, below: 24 },
     { stem: `MutantDialog_Card_${theme}`, page: MVP, stage: 'dialogdemo', type: 'card', index: 0, theme, below: 20 },
   ]),
+  // B-29: the Components page's empty state — the cassette, its title and its line — as it stands, whole and with its
+  // text, kept parts and reels hidden; and the stage's cell, whose record gives where the engine stood the cassette.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [
+    ...[false, true].map((bare) => ({ stem: `MutantEmptyState_Cassette${bare ? 'Bare' : ''}_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="illus"] > div:nth-child(3)', index: 0, theme,
+      hide: bare ? '[data-mu-stage="illus"], [data-mu-stage="illus"] * { color: transparent !important; } [data-mu-stage="illus"] [data-keep], [data-mu-stage="illus"] [data-mu-anim] { visibility: hidden !important; }' : '' })),
+    { stem: `MutantEmptyState_Stage_${theme}`, page: MVP, stage: 'illus', type: 'blob', index: 0, theme, below: 20 },
+  ]),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
