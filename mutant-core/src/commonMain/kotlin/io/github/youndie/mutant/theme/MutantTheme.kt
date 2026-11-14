@@ -11,6 +11,7 @@ import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantPalettes
 import io.github.youndie.mutant.type.MutantFonts
+import io.github.youndie.mutant.type.MutantTextStyles
 import io.github.youndie.mutant.type.mutantFonts
 
 /** The platform's "reduce motion" setting: the animator scale 0 on Android, the accessibility switch on iOS, the media query in a browser, off on desktop. */
@@ -91,4 +92,9 @@ public object MutantTheme {
     public val cleanSignal: Boolean
         @Composable @ReadOnlyComposable
         get() = LocalMutantCleanSignal.current
+
+    /** The design's type roles as text styles in the bundled faces: display, OSD and text ([MutantTextStyles]). */
+    public val textStyles: MutantTextStyles
+        @Composable @ReadOnlyComposable
+        get() = MutantTextStyles(LocalMutantFonts.current, LocalMutantColors.current)
 }
