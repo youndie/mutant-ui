@@ -1,7 +1,7 @@
 ---
 id: B-71
 title: "The code gate replayed failed tests from the build cache as a pass"
-status: wip
+status: done
 priority: P0
 size: S
 stage: stage-5-product

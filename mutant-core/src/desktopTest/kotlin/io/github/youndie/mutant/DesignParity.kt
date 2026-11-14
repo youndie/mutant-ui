@@ -53,14 +53,36 @@ internal data class Extent(
     val left: Int,
     val right: Int,
 ) {
-    /** Every side within [px] of [other]'s, the top within [topPx]. */
+    /**
+     * Every side within [px] of [other]'s, the top within [topPx], and further at most [above] rows higher than
+     * [other]'s, never lower ([HANDJET_ROWS_ABOVE], B-74).
+     */
     fun near(
         other: Extent,
         px: Int = 1,
         topPx: Int = px,
+        above: Int = 0,
     ): Boolean =
-        abs(top - other.top) <= topPx && abs(bottom - other.bottom) <= px && abs(left - other.left) <= px &&
-            abs(right - other.right) <= px
+        top - other.top in -(topPx + above)..topPx && abs(bottom - other.bottom) <= px &&
+            abs(left - other.left) <= px && abs(right - other.right) <= px
+}
+
+/**
+ * B-74: how many rows higher than Chrome's this host's rasteriser may put the top of Handjet's ink. 0 on macOS 27
+ * and later, where the references were rendered and every text check was held exactly; 1 on macOS 26 (the hosted
+ * `macos-latest` runner, 26.7.2), whose CoreText puts Handjet's glyphs a row higher with the kit's line box unchanged.
+ * Applied by the three checks that failed there (TextFloorTest's Handjet labels, the Demo page's OSD line, the
+ * dialog's words) and by no other; the exact form runs on this Mac before every merge.
+ */
+internal val HANDJET_ROWS_ABOVE: Int = handjetRowsAbove(System.getProperty("os.name"), System.getProperty("os.version"))
+
+internal fun handjetRowsAbove(
+    os: String?,
+    version: String?,
+): Int {
+    if (os == null || !os.startsWith("Mac")) return 0
+    val major = version?.substringBefore('.')?.toIntOrNull() ?: return 0
+    return if (major == 26) 1 else 0
 }
 
 /**

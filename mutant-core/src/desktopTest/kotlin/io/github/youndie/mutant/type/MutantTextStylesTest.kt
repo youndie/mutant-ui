@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.ChromeText
 import io.github.youndie.mutant.DesignParity
+import io.github.youndie.mutant.HANDJET_ROWS_ABOVE
 import io.github.youndie.mutant.TEXT_INK
 import io.github.youndie.mutant.channelGap
 import io.github.youndie.mutant.components.ComponentParity
@@ -85,7 +86,8 @@ class MutantTextStylesTest {
             lines += "$theme: kit $kit, page $page, $r"
             assertNotNull(kit)
             assertNotNull(page)
-            assertTrue(kit.near(page, 1, 0), lines.joinToString("\n"))
+            // The OSD line is Handjet: a row higher on macOS 26 alone (B-74).
+            assertTrue(kit.near(page, 1, 0, above = HANDJET_ROWS_ABOVE), lines.joinToString("\n"))
         }
     }
 }

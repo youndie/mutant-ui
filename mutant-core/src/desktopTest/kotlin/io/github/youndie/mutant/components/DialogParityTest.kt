@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.ChromeText
 import io.github.youndie.mutant.DesignParity
 import io.github.youndie.mutant.Extent
+import io.github.youndie.mutant.HANDJET_ROWS_ABOVE
 import io.github.youndie.mutant.TEXT_INK
 import io.github.youndie.mutant.channelGap
 import io.github.youndie.mutant.clock.MutantClock
@@ -149,7 +150,10 @@ class DialogParityTest {
                     )
                 lines += "  $name: kit $kit page $page colour $colour"
                 val topPx = TOP_RESIDUAL["$stem/$name"] ?: 0
-                if (kit == null || page == null || !kit.near(page, px = 1, topPx = topPx) || colour > 16) ok = false
+                // The title is Handjet: a row higher on macOS 26 alone (B-74); the text and the actions are Rubik.
+                val above = if (name == "title") HANDJET_ROWS_ABOVE else 0
+                val placed = kit != null && page != null && kit.near(page, px = 1, topPx = topPx, above = above)
+                if (!placed || colour > 16) ok = false
             }
             if (!ok) off += stem
         }
