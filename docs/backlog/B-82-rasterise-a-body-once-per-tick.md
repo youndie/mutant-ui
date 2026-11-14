@@ -1,7 +1,7 @@
 ---
 id: B-82
 title: "Rasterise a body once per tick, and draw the image between ticks"
-status: open
+status: wip
 priority: P1
 size: L
 stage: stage-5-product

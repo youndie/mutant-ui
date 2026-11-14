@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10, B-73 |
 | [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[ ]` | The sample's frame cost in the browser (wasm) | P1 | M | B-72, B-75, B-76, B-78, B-80, B-82 |
 | [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P1 | M | B-78, B-82 |
-| [B-82](docs/backlog/B-82-rasterise-a-body-once-per-tick.md) `[ ]` | Rasterise a body once per tick, and draw the image between ticks | P1 | L | B-78 |
+| [B-82](docs/backlog/B-82-rasterise-a-body-once-per-tick.md) `[~]` | Rasterise a body once per tick, and draw the image between ticks | P1 | L | B-78 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
