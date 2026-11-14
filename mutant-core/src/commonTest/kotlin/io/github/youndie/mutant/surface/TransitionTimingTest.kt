@@ -15,7 +15,7 @@ class TransitionTimingTest {
     }
 
     @Test
-    fun `a pour lasts 260 plus 5 per dp of height, between 300 and 620 ms`() {
+    fun `a pour lasts 260 plus 5 per dp of height and stays between 300 and 620 ms`() {
         assertEquals(300.0, pourDuration(8.0))
         assertEquals(420.0, pourDuration(32.0))
         assertEquals(620.0, pourDuration(80.0))
