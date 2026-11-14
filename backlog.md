@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[ ]` | The three demo screens and the sample kit on desktop and the web | P1 | M | B-15, B-16, B-17, B-18, B-19, B-20, B-21, B-22, B-23, B-24, B-25, B-26, B-27, B-28, B-29 |
+| [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[~]` | The three demo screens and the sample kit on desktop and the web | P1 | M | B-15, B-16, B-17, B-18, B-19, B-20, B-21, B-22, B-23, B-24, B-25, B-26, B-27, B-28, B-29 |
 | [B-38](docs/backlog/B-38-accessibility.md) `[ ]` | Accessibility: contrast after the Tape, flashes, greyscale, semantics | P1 | M | B-13, B-37 |
 | [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[ ]` | A QA pass over the finished MVP and a real window driven by AWT events | P1 | M | B-37 |
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |

@@ -430,8 +430,8 @@ root ([B-13](../backlog/B-13-tape.md)). Keyframe loss, which the handoff calls o
 
 Like the other three kits. The design's demo strings are copied verbatim into fixtures. The brief
 requires the demo screens to be checked in both Cyrillic and Latin, so the sample switches
-language; which one it opens in is the owner's call, asked when the sample is built
-([B-37](../backlog/B-37-demo-screens-and-sample.md)).
+language. It opens in English, the owner decided on 2026-11-14 when the sample was built
+([B-37](../backlog/B-37-demo-screens-and-sample.md)); Russian is one switch away.
 
 ### D12. Built and verified on the Mac; the repository stays out of mutagen sync
 
