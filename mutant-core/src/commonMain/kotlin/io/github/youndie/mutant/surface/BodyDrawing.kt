@@ -144,6 +144,7 @@ internal fun DrawScope.drawBody(
     deadPixels: DeadPixels? = null,
     decor: BodyDecor = BodyDecor(),
     pour: Pair<Path, Color>? = null,
+    skip: Set<BodyPart> = emptySet(),
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -152,17 +153,22 @@ internal fun DrawScope.drawBody(
     val h = el.h.toFloat()
     val over = el.over.toFloat()
     val bb = Rect(ox - 12, oy - 15, ox + w + 12, oy + h + over + 30)
-    look.shadow?.let { translate(4f, 4f) { drawPath(paths.contour, it) } }
+    if (BodyPart.Shadow !in skip) look.shadow?.let { translate(4f, 4f) { drawPath(paths.contour, it) } }
     decor.errorOutline?.let {
         translate(2.5f, 0f) { drawPath(paths.contour, it, style = Stroke(width = look.baseOutline)) }
     }
     translate(look.slip, look.slip) {
-        clipPath(paths.contour) {
-            drawRect(look.fill, bb.topLeft, bb.size)
+        clipPathUnless(BodyPart.ContourClip in skip, paths.contour) {
+            if (BodyPart.Fill !in skip) drawRect(look.fill, bb.topLeft, bb.size)
             pour?.let { (path, from) -> drawPath(path, from) }
             // Speckle and flow lines are the theme's ink whatever the outline's colour (the engine's `C.ink`).
-            drawSpeckle(speckle, speckleOrigin, bb, colors.ink)
-            val tiles = decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
+            if (BodyPart.Speckle !in skip) drawSpeckle(speckle, speckleOrigin, bb, colors.ink)
+            val tiles =
+                if (BodyPart.Mosaic in skip) {
+                    emptyList()
+                } else {
+                    decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
+                }
             for ((t, c) in tiles) {
                 drawRect(
                     c,
@@ -171,9 +177,9 @@ internal fun DrawScope.drawBody(
                     alpha = t.opacity.toFloat(),
                 )
             }
-            if (deadPixels != null) drawDeadPixels(deadPixels, colors)
+            if (deadPixels != null && BodyPart.DeadPixels !in skip) drawDeadPixels(deadPixels, colors)
             for ((r, c) in decor.errorBlocks) drawRect(c, r.topLeft, r.size)
-            drawPath(paths.flowLines, colors.ink)
+            if (BodyPart.FlowLines !in skip) drawPath(paths.flowLines, colors.ink)
             for ((i, b) in decor.bands.withIndex()) {
                 drawRect(
                     Color.White,
@@ -197,14 +203,35 @@ internal fun DrawScope.drawBody(
             addRect(Rect(ox - 6, oy + h + .5f, ox + w + 6, oy + h + .5f + over + 30))
             addRect(Rect(ox - 4, oy - 6, ox - 4 + r + 13, oy - 6 + r + 10))
         }
-    if (pour == null) {
+    if (pour == null && BodyPart.Highlight !in skip) {
         clipPath(highlightClip) {
             drawPath(paths.highlight, look.highlight)
             translate(1.5f, 1.5f) { drawPath(paths.highlight, look.fill) }
         }
     }
-    drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
+    if (BodyPart.Outline !in skip) {
+        drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
+    }
     decor.brackets?.let { drawBrackets(g, it) }
+}
+
+/**
+ * The parts of a body, each of which a measurement can leave out of the draw (B-78). The kit draws them all;
+ * [LocalMutantSkipBodyParts] is empty but for that bench.
+ */
+internal enum class BodyPart { Shadow, Fill, Speckle, Mosaic, DeadPixels, FlowLines, Highlight, Outline, ContourClip }
+
+/** What a measurement leaves out of every body's draw (B-78); empty in the kit. */
+internal val LocalMutantSkipBodyParts =
+    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
+
+/** [block] clipped by [path], or unclipped when [unclipped] (B-78's ablation of the clip alone). */
+private inline fun DrawScope.clipPathUnless(
+    unclipped: Boolean,
+    path: Path,
+    block: DrawScope.() -> Unit,
+) {
+    if (unclipped) block() else clipPath(path) { block() }
 }
 
 private fun DrawScope.drawSpeckle(

@@ -1,0 +1,105 @@
+
+# B-78 body render bench
+# commit c7ddf52
+# host MacBookAir10,1, cpu Apple M1
+# os Mac OS X 27.0.1, jvm 25.0.4.1+1-b635.79
+# window 1280x814, rounds 6 (round 1 not counted), scene 9 s
+round 1 Blank: 541 frames, 0.62 ms render/frame
+round 1 BlankLoad: 539 frames, 3.80 ms render/frame
+round 1 Bodies: 530 frames, 11.31 ms render/frame
+round 1 BodiesLoad: 494 frames, 12.63 ms render/frame
+round 1 NoShadow: 541 frames, 11.08 ms render/frame
+round 1 NoFill: 178 frames, 48.52 ms render/frame
+round 1 NoSpeckle: 541 frames, 9.79 ms render/frame
+round 1 NoMosaic: 541 frames, 10.84 ms render/frame
+round 1 NoDeadPixels: 540 frames, 10.92 ms render/frame
+round 1 NoFlowLines: 540 frames, 11.04 ms render/frame
+round 1 NoHighlight: 540 frames, 10.48 ms render/frame
+round 1 NoOutline: 540 frames, 7.07 ms render/frame
+round 1 NoContourClip: 540 frames, 9.02 ms render/frame
+round 2 BlankLoad: 540 frames, 4.36 ms render/frame
+round 2 Bodies: 540 frames, 11.09 ms render/frame
+round 2 BodiesLoad: 490 frames, 12.67 ms render/frame
+round 2 NoShadow: 541 frames, 11.11 ms render/frame
+round 2 NoFill: 179 frames, 48.31 ms render/frame
+round 2 NoSpeckle: 541 frames, 9.80 ms render/frame
+round 2 NoMosaic: 541 frames, 10.84 ms render/frame
+round 2 NoDeadPixels: 540 frames, 10.91 ms render/frame
+round 2 NoFlowLines: 540 frames, 11.04 ms render/frame
+round 2 NoHighlight: 541 frames, 10.48 ms render/frame
+round 2 NoOutline: 541 frames, 7.07 ms render/frame
+round 2 NoContourClip: 541 frames, 9.02 ms render/frame
+round 2 Blank: 541 frames, 0.68 ms render/frame
+round 3 Bodies: 540 frames, 11.11 ms render/frame
+round 3 BodiesLoad: 496 frames, 12.63 ms render/frame
+round 3 NoShadow: 541 frames, 11.10 ms render/frame
+round 3 NoFill: 179 frames, 48.36 ms render/frame
+round 3 NoSpeckle: 541 frames, 9.77 ms render/frame
+round 3 NoMosaic: 540 frames, 10.83 ms render/frame
+round 3 NoDeadPixels: 540 frames, 10.91 ms render/frame
+round 3 NoFlowLines: 540 frames, 11.02 ms render/frame
+round 3 NoHighlight: 540 frames, 10.49 ms render/frame
+round 3 NoOutline: 541 frames, 7.05 ms render/frame
+round 3 NoContourClip: 540 frames, 9.03 ms render/frame
+round 3 Blank: 541 frames, 0.67 ms render/frame
+round 3 BlankLoad: 540 frames, 4.35 ms render/frame
+round 4 BodiesLoad: 499 frames, 12.62 ms render/frame
+round 4 NoShadow: 541 frames, 11.12 ms render/frame
+round 4 NoFill: 180 frames, 48.08 ms render/frame
+round 4 NoSpeckle: 535 frames, 9.81 ms render/frame
+round 4 NoMosaic: 540 frames, 10.87 ms render/frame
+round 4 NoDeadPixels: 541 frames, 10.86 ms render/frame
+round 4 NoFlowLines: 541 frames, 11.01 ms render/frame
+round 4 NoHighlight: 541 frames, 10.49 ms render/frame
+round 4 NoOutline: 541 frames, 7.08 ms render/frame
+round 4 NoContourClip: 540 frames, 9.03 ms render/frame
+round 4 Blank: 540 frames, 0.67 ms render/frame
+round 4 BlankLoad: 540 frames, 4.35 ms render/frame
+round 4 Bodies: 540 frames, 11.13 ms render/frame
+round 5 NoShadow: 541 frames, 11.11 ms render/frame
+round 5 NoFill: 180 frames, 48.08 ms render/frame
+round 5 NoSpeckle: 541 frames, 9.76 ms render/frame
+round 5 NoMosaic: 540 frames, 10.84 ms render/frame
+round 5 NoDeadPixels: 540 frames, 10.88 ms render/frame
+round 5 NoFlowLines: 540 frames, 11.02 ms render/frame
+round 5 NoHighlight: 540 frames, 10.49 ms render/frame
+round 5 NoOutline: 540 frames, 7.06 ms render/frame
+round 5 NoContourClip: 540 frames, 9.01 ms render/frame
+round 5 Blank: 540 frames, 0.65 ms render/frame
+round 5 BlankLoad: 540 frames, 4.29 ms render/frame
+round 5 Bodies: 541 frames, 11.03 ms render/frame
+round 5 BodiesLoad: 500 frames, 12.49 ms render/frame
+round 6 NoFill: 183 frames, 47.42 ms render/frame
+round 6 NoSpeckle: 540 frames, 9.62 ms render/frame
+round 6 NoMosaic: 540 frames, 10.69 ms render/frame
+round 6 NoDeadPixels: 541 frames, 10.75 ms render/frame
+round 6 NoFlowLines: 541 frames, 10.87 ms render/frame
+round 6 NoHighlight: 540 frames, 10.34 ms render/frame
+round 6 NoOutline: 541 frames, 6.93 ms render/frame
+round 6 NoContourClip: 540 frames, 8.92 ms render/frame
+round 6 Blank: 540 frames, 0.56 ms render/frame
+round 6 BlankLoad: 540 frames, 4.56 ms render/frame
+round 6 Bodies: 540 frames, 10.99 ms render/frame
+round 6 BodiesLoad: 497 frames, 12.47 ms render/frame
+round 6 NoShadow: 540 frames, 10.98 ms render/frame
+
+scene            frames/s  render/frame  vs Bodies   (counted rounds 2..6, mean; per round)
+Blank                60.0        0.65 ms           ms   0.68 0.67 0.67 0.65 0.56
+BlankLoad            60.0        4.38 ms           ms   4.36 4.35 4.35 4.29 4.56
+Bodies               60.0       11.07 ms      0.00 ms   11.09 11.11 11.13 11.03 10.99
+BodiesLoad           55.1       12.58 ms      1.51 ms   12.67 12.63 12.62 12.49 12.47
+NoShadow             60.0       11.08 ms      0.01 ms   11.11 11.10 11.12 11.11 10.98
+NoFill               20.0       48.05 ms     36.98 ms   48.31 48.36 48.08 48.08 47.42
+NoSpeckle            59.9        9.75 ms     -1.32 ms   9.80 9.77 9.81 9.76 9.62
+NoMosaic             60.0       10.81 ms     -0.26 ms   10.84 10.83 10.87 10.84 10.69
+NoDeadPixels         60.0       10.86 ms     -0.21 ms   10.91 10.91 10.86 10.88 10.75
+NoFlowLines          60.0       10.99 ms     -0.08 ms   11.04 11.02 11.01 11.02 10.87
+NoHighlight          60.0       10.46 ms     -0.61 ms   10.48 10.49 10.49 10.49 10.34
+NoOutline            60.0        7.04 ms     -4.03 ms   7.07 7.05 7.08 7.06 6.93
+NoContourClip        60.0        9.00 ms     -2.07 ms   9.02 9.03 9.03 9.01 8.92
+
+control, what the load adds per frame per counted round:
+  on a blank page    3.69, 3.68, 3.67, 3.64, 3.99 ms
+  over the bodies    1.58, 1.52, 1.49, 1.46, 1.48 ms
+render threads seen: 2
+exit 0
