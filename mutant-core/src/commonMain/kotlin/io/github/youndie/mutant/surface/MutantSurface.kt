@@ -106,8 +106,19 @@ internal val LocalCleanZone = staticCompositionLocalOf<CleanZoneRegistry?> { nul
  */
 internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
 
-/** Told, for every body frame a surface draws, whether it was built ahead off the frame (B-75): a test reads it. */
-internal val LocalMutantFrameProbe = staticCompositionLocalOf<((fromAhead: Boolean) -> Unit)?> { null }
+/**
+ * Told, for every body frame a surface draws, whether it was built ahead off the frame (B-75) and whether it is
+ * drawn from an image rasterised ahead (B-82): a test reads it.
+ */
+internal val LocalMutantFrameProbe =
+    staticCompositionLocalOf<
+        (
+            (
+                fromAhead: Boolean,
+                asImage: Boolean,
+            ) -> Unit
+        )?,
+    > { null }
 
 /**
  * Marks this element's bounds as part of its surface's clean zone: the text and icons that flow lines,
@@ -207,6 +218,8 @@ internal fun MutantSurface(
     val ahead = remember { FrameAhead() }
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
+    val bodyAsImage = LocalMutantBodyAsImage.current
+    val rasterProbe = LocalMutantRasterProbe.current
     val scope = rememberCoroutineScope()
     // A body's first instance is built off the frame (B-50), unless the clock is frozen (fixtures, references) or an
     // IDE preview draws it: those draw in their first frame, as before.
@@ -357,25 +370,85 @@ internal fun MutantSurface(
                 // frame not ready in time build in the frame, as before.
                 val resting = offFrame && !hot && !boil.on && k == 0.0
                 val early = if (resting) ahead.take(g, t) else null
-                val frame = early ?: gen.frame(g, cache, t, k, pressed = boil.on)
-                frameProbe?.invoke(early != null)
+                val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on)
+
+                // What a body's picture is drawn with at time [tt] and heat [kk], from its frame.
+                fun pictureOf(
+                    f: BodyFrame,
+                    tt: Double,
+                    kk: Double,
+                ): BodyPicture {
+                    val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, f.boilPhase, f.boil)
+                    val frameLook =
+                        BodyLook(
+                            boilFill(look.fill, colors, kk, tt),
+                            look.highlight,
+                            look.ink,
+                            outline,
+                            look.slip,
+                            look.shadow,
+                            p.outline.toFloat(),
+                        )
+                    return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
+                }
+                // B-82: everything the image of a resting body depends on besides its frame. An image built ahead is
+                // used only if these are still what they were when it was prepared.
+                val imageInputs =
+                    if (bodyAsImage) {
+                        listOf(
+                            look.fill,
+                            look.highlight,
+                            look.ink,
+                            look.outline,
+                            look.slip,
+                            look.shadow,
+                            colors,
+                            state,
+                            focused,
+                            d,
+                            layoutDirection,
+                            skipParts,
+                            cassette,
+                            stage,
+                            wear,
+                            dead,
+                        )
+                    } else {
+                        null
+                    }
                 if (resting && cache.settledFor(g)) {
                     val next = t + clock.stepMs
-                    ahead.prepare(g, next, scope) { gen.frame(g, cache, next, 0.0, pressed = false) }
+                    ahead.prepare(g, next, scope) {
+                        val f = gen.frame(g, cache, next, 0.0, pressed = false)
+                        val image =
+                            imageInputs?.let {
+                                val t0 =
+                                    kotlin.time.TimeSource.Monotonic
+                                        .markNow()
+                                val pic = pictureOf(f, next, 0.0)
+                                rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection) {
+                                    drawBody(
+                                        g,
+                                        pic.paths,
+                                        pic.look,
+                                        colors,
+                                        speckle,
+                                        Offset.Zero,
+                                        dead,
+                                        pic.decor,
+                                        null,
+                                        skipParts,
+                                    )
+                                }.also {
+                                    rasterProbe?.invoke(
+                                        t0.elapsedNow().inWholeNanoseconds,
+                                        it.image.width * it.image.height * 4L,
+                                    )
+                                }
+                            }
+                        Ahead(f, image, imageInputs)
+                    }
                 }
-                val paths = BodyPaths.of(frame)
-                val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, frame.boilPhase, frame.boil)
-                val frameLook =
-                    BodyLook(
-                        boilFill(look.fill, colors, k, t),
-                        look.highlight,
-                        look.ink,
-                        outline,
-                        look.slip,
-                        look.shadow,
-                        p.outline.toFloat(),
-                    )
-                val decor = gen.decorOf(g, state, focused, k, t, colors)
                 val now = clock.nowMs
                 val pourP = pourAt?.first ?: if (instant) 1.0 else stepped(now - moves.pourSince, pourDuration(slot.h))
                 val pourFrom = pourAt?.second ?: moves.pourFrom
@@ -385,6 +458,28 @@ internal fun MutantSurface(
                 // A running transition is evaluated on every frame, as the engine does, so its steps keep to the event.
                 if (pourP < 1 || slideP < 1) clock.frame
                 val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
+                // B-82: a resting body's picture changes only at a tick. Rasterised ahead with its frame, the image is
+                // drawn until the next tick; a pouring, sliding or heated body, or one whose inputs moved since, draws
+                // as vectors.
+                val image =
+                    early?.image?.takeIf {
+                        imageInputs != null && early.inputs == imageInputs && pour == null &&
+                            slideP >= 1
+                    }
+                frameProbe?.invoke(early != null, image != null)
+                if (image != null) {
+                    return@drawWithCache onDrawBehind {
+                        drawImage(
+                            image.image,
+                            dstOffset = image.offset,
+                            dstSize =
+                                androidx.compose.ui.unit
+                                    .IntSize(image.image.width, image.image.height),
+                            filterQuality = androidx.compose.ui.graphics.FilterQuality.None,
+                        )
+                    }
+                }
+                val (paths, frameLook, decor) = pictureOf(frame, t, k)
                 onDrawBehind {
                     scale(d, Offset.Zero) {
                         translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
@@ -482,6 +577,78 @@ internal class HeldInstance {
     }
 }
 
+/** A tick's frame built ahead, with its image when one was asked for and the inputs that image was drawn with. */
+internal class Ahead(
+    val frame: BodyFrame,
+    val image: RasterisedBody?,
+    val inputs: List<Any?>?,
+)
+
+/** What one frame of a body is drawn with. */
+internal data class BodyPicture(
+    val paths: BodyPaths,
+    val look: BodyLook,
+    val decor: BodyDecor,
+)
+
+/**
+ * Whether a resting body under a running clock is rasterised once per tick, ahead with its frame, and drawn as that
+ * image until the next tick (B-82). Off only for a test or a measurement comparing it with drawing the vectors.
+ */
+internal val LocalMutantBodyAsImage = staticCompositionLocalOf { true }
+
+/** Told the time and the bytes of every body rasterised (B-82): the bench reads it. */
+internal val LocalMutantRasterProbe = staticCompositionLocalOf<((nanos: Long, bytes: Long) -> Unit)?> { null }
+
+/** A body rasterised at the device's pixels, and where its top-left pixel goes in the surface's own pixels. */
+internal class RasterisedBody(
+    val image: androidx.compose.ui.graphics.ImageBitmap,
+    val offset: androidx.compose.ui.unit.IntOffset,
+)
+
+/**
+ * Draws [draw] (in the generator's scene coordinates) into an image covering everything a body can ink: its box,
+ * the drips under it, the shadow, the slip, the outline's half width and the focus brackets (B-82).
+ */
+internal fun rasterisedBody(
+    g: Instance,
+    ox: Double,
+    oy: Double,
+    density: Float,
+    direction: androidx.compose.ui.unit.LayoutDirection,
+    draw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit,
+): RasterisedBody {
+    val el = g.slot
+    val left = kotlin.math.floor(el.ox - RASTER_MARGIN).toFloat()
+    val top = kotlin.math.floor(el.oy - RASTER_MARGIN - 4).toFloat()
+    val right = kotlin.math.ceil(el.ox + el.w + RASTER_MARGIN).toFloat()
+    val bottom = kotlin.math.ceil(el.oy + el.h + el.over + RASTER_MARGIN + 16).toFloat()
+    val w = kotlin.math.ceil((right - left) * density).toInt()
+    val h = kotlin.math.ceil((bottom - top) * density).toInt()
+    val image =
+        androidx.compose.ui.graphics
+            .ImageBitmap(w, h)
+    androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
+        androidx.compose.ui.unit
+            .Density(density),
+        direction,
+        androidx.compose.ui.graphics
+            .Canvas(image),
+        androidx.compose.ui.geometry
+            .Size(w.toFloat(), h.toFloat()),
+    ) {
+        scale(density, Offset.Zero) { translate(-left, -top) { draw() } }
+    }
+    val offset =
+        androidx.compose.ui.unit.IntOffset(
+            kotlin.math.round((left - ox) * density).toInt(),
+            kotlin.math.round((top - oy) * density).toInt(),
+        )
+    return RasterisedBody(image, offset)
+}
+
+private const val RASTER_MARGIN = 20.0
+
 /**
  * The next resting tick's frame of one body, built on a background thread (B-75): [prepare] starts it for an
  * instance and a time, once; [take] hands it over only for that very instance and time, and only once it is done.
@@ -489,13 +656,13 @@ internal class HeldInstance {
 internal class FrameAhead {
     private var instance: Instance? = null
     private var at = Double.NaN
-    private var job: Deferred<BodyFrame>? = null
+    private var job: Deferred<Ahead>? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun take(
         g: Instance,
         t: Double,
-    ): BodyFrame? {
+    ): Ahead? {
         val j = job ?: return null
         if (instance !== g || at != t || !j.isCompleted || j.getCompletionExceptionOrNull() != null) return null
         return j.getCompleted()
@@ -505,7 +672,7 @@ internal class FrameAhead {
         g: Instance,
         t: Double,
         scope: CoroutineScope,
-        build: () -> BodyFrame,
+        build: () -> Ahead,
     ) {
         if (instance === g && at == t) return
         job?.cancel()
