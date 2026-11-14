@@ -250,6 +250,27 @@ falls far under 4.5:1 in «Эфир»; whether a 1 dp line crossing a glyph coun
 the worst tick" is the brief's question, and goes to [B-38](../backlog/B-38-accessibility.md) with
 these numbers.
 
+
+### 1.13 Icons, patterns and illustrations
+
+Settled by [B-14](../backlog/B-14-icons-illustrations-patterns.md); references from the Icons page (`Icon_*`, `Pattern_*`, `Illustration_*`).
+
+| Fact | Where verified |
+|---|---|
+| The sixteen icons are the page's `static ICONS`: one path each on a 24 grid, stroke 2, square caps, the accent of damage already in the path. Generated as path data, checked in `make check`, and built as `ImageVector`s | `reference/design-system/mutant-ui Иконки и заготовки.dc.html`, `scripts/icons.mjs` |
+| The icon grid's columns are `1fr`, so cells stand at fractions of a pixel, and Chrome snaps an `<svg>` to whole pixels: drawn at the fraction instead, every icon reads worse (Menu at 48 dp: 216 px against 0) | `IconParityTest`, a scratch run on 2026-11-14 |
+| 25 of 32 icon cells (16 icons at 48 and 16 dp) match to the pixel. The rest, 5–58 px, is two causes: Compose turns an SVG arc into cubics where Chrome's Skia draws conics (with Skia's own arcs Settings reads 0 and Search 3), and the two renderers anti-alias the same strokes apart — Schedule's circle is Error's byte for byte, and only Schedule differs | `IconParityTest` (`RESIDUAL`), 2026-11-14 |
+| The four patterns and their quiet variants, drawn from the page's `patterns()` (snow and mosaic from `rng('pattern', name)`), match the page's swatches to the pixel once the swatch's own frame (`box-shadow: 0 0 0 2px #05060c`, filling its rounded corners) is drawn by the fixture. On «Эфир»'s dark ground the lines' 0.38 and 0.30 are 3 levels apart, under the 4 the frame's edge already moves, so those alphas are held to the page's source, not its pixels | `PatternParityTest`, `PatternSourceTest`, 2026-11-14 |
+| An illustration's parts are absolutely placed bodies with per-slot overrides of their type (`data-r`, `data-over`, `data-cf`, `data-ow`, `data-wob`, `data-marks`, `data-edge`). A body's clean zone counts every nested body, kept part and text inside it, laid out even where hidden — the test card's mosaic depends on its label | `mutant-engine.js` (`makeItem`, `textZone`), `IllustrationParityTest` |
+| The engine draws a stage's bodies in an `<svg>` at the stage's corner, and Chrome snaps it by a rule the DOM does not show: of the page's three columns, at fractions 0.33, 0.98 and 0.66, the last lands a pixel left of the art's rounded box. The fixture places the whole picture within a pixel of its box where it matches best | `IllustrationParityTest` (`placed`) |
+| With each body generated at the engine's stage origin and drawn at its outline width (D16), the bodies of the six illustrations differ from the page's on 1–16 pixels: 1 for three of them, the rest single pixels where one body's outline lies over another's fill (the label on the cassette, the arms across the mast) — a material the floor's single-body probes never had | `IllustrationParityTest` (`RESIDUAL`), 2026-11-14 |
+| The labels in Handjet read 2 px lower than Chrome's and heavier; neither `LineHeightStyle(Center, Trim.None)` nor an unspecified line height moves them. Unresolved: [B-52](../backlog/B-52-display-text-against-chrome.md) | `IllustrationParityTest` (printed), 2026-11-14 |
+
+**Consequence 13.** Icons, patterns and illustrations are held to their references: patterns exactly,
+icons and bodies to residuals measured once and listed with their causes, never raised. Text is not
+yet held anywhere; the first component with a label ([B-15](../backlog/B-15-button.md)) meets the same
+2 px, which is why B-52 comes first.
+
 ---
 
 ## 2. Decisions
@@ -391,7 +412,9 @@ moves — scrolled, animated, re-laid out — keeps its edge, its noise and its 
 same body moved within its stage would re-noise its edge and slide under the speckle; no page moves one,
 so nothing the design draws is lost. The outline's tremble is seeded by the instance's hash instead of
 the engine's running slot count. Parity fixtures pass the page's stage coordinates and its drawn outline
-width to compare like with like ([B-10](../backlog/B-10-mutant-surface.md)).
+width to compare like with like ([B-10](../backlog/B-10-mutant-surface.md)); a fixture drawing a whole
+composition does it through `MutantSurface` itself, with two internal locals the kit leaves null
+(`LocalMutantSlotOrigin`, `LocalMutantOutlineOverride`, [B-14](../backlog/B-14-icons-illustrations-patterns.md)).
 
 ---
 
