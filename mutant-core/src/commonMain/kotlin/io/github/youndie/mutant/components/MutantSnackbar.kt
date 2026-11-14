@@ -96,9 +96,10 @@ internal fun SnackbarBody(
     ride.follow(visible, clock.nowMs)
     val duration = if (visible) IN_MS else OUT_MS
     val elapsed = if (reduce) Double.POSITIVE_INFINITY else clock.nowMs - ride.since
-    // While it rides it reads every frame, so composition follows it and it leaves the moment it is gone.
-    if (elapsed < duration) clock.frame
     val p = stepped(elapsed, duration)
+    // While it rides it reads every frame, so composition follows it and it leaves the moment it is gone. Stepped, it
+    // lands a step after its duration (250 ms for 200): asked by the time alone, it would stand at 83 % for ever.
+    if (p < 1) clock.frame
     val gone = !visible && p >= 1
     val done by rememberUpdatedState(onHidden)
     LaunchedEffect(gone) { if (gone && ride.left) done() }
