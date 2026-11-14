@@ -145,6 +145,7 @@ internal fun DrawScope.drawBody(
     decor: BodyDecor = BodyDecor(),
     pour: Pair<Path, Color>? = null,
     skip: Set<BodyPart> = emptySet(),
+    outline: Path? = null,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -210,7 +211,9 @@ internal fun DrawScope.drawBody(
         }
     }
     if (BodyPart.Outline !in skip) {
-        drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
+        // Filled where the outline was stroked once per tick (B-79); stroked where it was not.
+        outline?.let { drawPath(it, look.ink) }
+            ?: drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
     }
     decor.brackets?.let { drawBrackets(g, it) }
 }
@@ -220,6 +223,9 @@ internal fun DrawScope.drawBody(
  * [LocalMutantSkipBodyParts] is empty but for that bench.
  */
 internal enum class BodyPart { Shadow, Fill, Speckle, Mosaic, DeadPixels, FlowLines, Highlight, Outline, ContourClip }
+
+/** Whether a body fills its outline stroked once per tick (B-79); false only for a measurement comparing the two. */
+internal val LocalMutantOutlineAsFill = androidx.compose.runtime.staticCompositionLocalOf { true }
 
 /** What a measurement leaves out of every body's draw (B-78); empty in the kit. */
 internal val LocalMutantSkipBodyParts =

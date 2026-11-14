@@ -207,6 +207,7 @@ internal fun MutantSurface(
     val ahead = remember { FrameAhead() }
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
+    val outlineAsFill = LocalMutantOutlineAsFill.current
     val scope = rememberCoroutineScope()
     // A body's first instance is built off the frame (B-50), unless the clock is frozen (fixtures, references) or an
     // IDE preview draws it: those draw in their first frame, as before.
@@ -365,6 +366,7 @@ internal fun MutantSurface(
                 }
                 val paths = BodyPaths.of(frame)
                 val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, frame.boilPhase, frame.boil)
+                val outlineFill = if (outlineAsFill) paths.contour.strokedOutline(outline, d) else null
                 val frameLook =
                     BodyLook(
                         boilFill(look.fill, colors, k, t),
