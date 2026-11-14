@@ -158,7 +158,7 @@ internal fun TextButtonBody(
             .padding(horizontal = TEXT_PADDING),
         verticalArrangement = Arrangement.spacedBy(TEXT_GAP, Alignment.CenterVertically),
     ) {
-        Label(text, if (enabled) colors.textAccent else colors.textDisabled, Modifier)
+        ButtonLabel(text, if (enabled) colors.textAccent else colors.textDisabled, Modifier)
         Canvas(
             (
                 if (dividerWidth !=
@@ -230,14 +230,14 @@ internal fun ButtonBody(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) MutantIcon(icon, null, Modifier.mutantCleanZone(), tint = label)
-            Label(text, label, Modifier.weight(1f, fill = false))
+            ButtonLabel(text, label, Modifier.weight(1f, fill = false))
         }
     }
 }
 
 /** A button's label: Rubik 500 at 15, on Blink's line box (research §1.14), one line. */
 @Composable
-private fun Label(
+internal fun ButtonLabel(
     text: String,
     color: Color,
     modifier: Modifier,

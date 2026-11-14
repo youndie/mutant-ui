@@ -124,6 +124,13 @@ export const REFERENCES = [
         ({ stem: `MutantButton_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'button', type: 'btn', index, theme, below: 28, hideText: bare }))),
     { stem: `MutantButton_Text_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="button"] div:has(> [data-mu-divider])', index: 0, theme },
   ]),
+  // B-16: the IconButton · FAB stage, whole and bare (text and currentColor icons hidden), both themes; cut above
+  // the captions, 30 px under the icon cells and 38 under the FABs.
+  ...['Efir', 'Kopiya'].flatMap((theme) =>
+    [['IconButton_Rest', 'icon', 0, 28], ['IconButton_Pressed', 'icon', 1, 28], ['IconButton_Disabled', 'icon', 2, 28],
+      ['Fab_Rest', 'fab', 0, 36], ['Fab_Pressed', 'fab', 1, 36], ['Fab_Extended', 'fab', 2, 36]]
+      .flatMap(([s, type, index, below]) => [false, true].map((bare) =>
+        ({ stem: `Mutant${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'iconfab', type, index, theme, below, hideText: bare })))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
@@ -524,6 +531,9 @@ for (const ref of REFERENCES) {
     if (committed.equals(png)) continue;
     const n = apart(committed, png);
     if (n > FLOOR) stale.push(`${ref.stem} (${n} px)`); else unsteady.push(`${ref.stem} (${n} px)`);
+  } else if (existsSync(target) && !readFileSync(target).equals(png) && apart(readFileSync(target), png) <= FLOOR) {
+    // The other of Chrome's renders of an unchanged cell: keep the committed one, so tests stay on what they measured.
+    unsteady.push(`${ref.stem} (kept)`);
   } else writeFileSync(target, png);
 }
 if (unsteady.length) console.log(`design-references: not byte-identical, within the floor: ${unsteady.join(', ')}`);

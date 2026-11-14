@@ -59,22 +59,37 @@ public object MutantIcons {
         )
     }
 
+    /**
+     * [icon] drawn with a line of [width] — the FAB's 2.5 (the page's `stroke-width="2.5"`) — when it is one of the
+     * kit's own; any other icon is returned as it is.
+     */
+    internal fun stroked(
+        icon: ImageVector,
+        width: Float,
+    ): ImageVector {
+        val name = icon.name.removePrefix(PREFIX)
+        val path = MutantIconPaths.all.firstOrNull { it.first == name }?.second ?: return icon
+        return icon(name, path, width)
+    }
+
     private fun icon(
         name: String,
         path: String,
+        width: Float = LINE,
     ): ImageVector =
         ImageVector
-            .Builder("Mutant.$name", GRID.dp, GRID.dp, GRID, GRID)
+            .Builder("$PREFIX$name", GRID.dp, GRID.dp, GRID, GRID)
             .addPath(
                 pathData = addPathNodes(path),
                 fill = null,
                 stroke = SolidColor(Color.Black),
-                strokeLineWidth = LINE,
+                strokeLineWidth = width,
                 strokeLineCap = StrokeCap.Square,
             ).build()
 
     private const val GRID = 24f
     private const val LINE = 2f
+    private const val PREFIX = "Mutant."
 }
 
 /**
