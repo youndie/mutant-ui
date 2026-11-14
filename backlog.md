@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (35)
+## Open (34)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-56](docs/backlog/B-56-navigation-bar-unbounded-width.md) `[~]` | Navigation bar: throws in a horizontally scrolling row | P0 | S | B-40 |
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
 | [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[ ]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
@@ -98,7 +97,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (35)
+## Closed (36)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -149,5 +148,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-39](docs/backlog/B-39-licence.md) `[x]` - Licence
 - [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[x]` - A QA pass over the finished MVP and a real window driven by AWT events
 - [B-43](docs/backlog/B-43-undesigned-behaviour.md) `[x]` - What the design does not draw: appearance, gestures, «Чистый сигнал», hover
+- [B-56](docs/backlog/B-56-navigation-bar-unbounded-width.md) `[x]` - Navigation bar: throws in a horizontally scrolling row
 
 <!-- END INDEX -->
