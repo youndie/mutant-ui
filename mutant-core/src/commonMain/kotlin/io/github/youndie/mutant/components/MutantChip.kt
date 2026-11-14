@@ -75,8 +75,12 @@ internal fun ChipBody(
     val label =
         when {
             hidden -> Color.Transparent
+
             !enabled -> colors.textDisabled
-            inked -> colors.onPrimary
+
+            // Under reduce motion the label turns with the fill, in the same frame.
+            (if (instant) selected else inked) -> colors.onPrimary
+
             else -> colors.text
         }
     Box(
