@@ -380,6 +380,7 @@ a notch, resize and the scrim taking a press; it does not see the operating syst
 | Skiko replays the frame's picture on a thread of its own. On the Demo page that thread is the bound (`drawPicture` 898 of 1 050 native samples), and a recorder timing the main thread alone does not see it | JFR, `logs/b-72/…-profile-demo-page.txt` (B-76) |
 | On the Demo page Skia's render thread is the bound, at 87–92 % busy and 19.8 ms of CPU a frame. The Tape is 3.2 ms of that, the screens' rounded clip 0.6 ms, the screens' content 15–16 ms. A fixed load of paths reads the same on a blank page and on the Demo page (3.1–4.5 ms) | `FrameBench` render sampler, `logs/b-76/` (B-76, B-77, B-78) |
 | Of a body's drawing on the render thread (11.07 ms a frame for the Library screen's bodies ×3), leaving out the outline's stroke saves 4.03 ms, the contour clip 2.07, the speckle 1.32, the highlight 0.61, everything else under 0.3. A load of paths adds 3.7 ms on a blank page but 1.5 over the bodies: on this thread costs do not add, and a reading is what a removal saves in its scene | `bodyRenderBench`, `logs/b-78/` (B-78; items B-79, B-80, B-81) |
+| *Refuted* (B-79): the outline's cost on the render thread is not the stroking. Filling the stroke's outline, built once per tick, cost 11.09–11.10 ms a frame against 11.16 stroked, while leaving the outline out saved 4 ms. The render thread pays for rasterising the contour every frame, and a body's picture changes only at a tick (B-82) | `bodyRenderBench`, `logs/b-79/` |
 
 ## 2. Decisions
 

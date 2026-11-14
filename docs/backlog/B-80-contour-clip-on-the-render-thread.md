@@ -5,7 +5,7 @@ status: open
 priority: P1
 size: M
 stage: stage-5-product
-blocked_by: [B-78]
+blocked_by: [B-78, B-82]
 ---
 
 # B-80 — The clips to the contour on the render thread

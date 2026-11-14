@@ -5,7 +5,7 @@ status: open
 priority: P2
 size: S
 stage: stage-5-product
-blocked_by: [B-78, B-80]
+blocked_by: [B-78, B-80, B-82]
 ---
 
 # B-81 — The speckle on the render thread

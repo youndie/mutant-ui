@@ -1,0 +1,55 @@
+
+# B-78 body render bench
+# commit 51edd61
+# host MacBookAir10,1, cpu Apple M1
+# os Mac OS X 27.0.1, jvm 25.0.4.1+1-b635.79
+# window 1280x814, rounds 6 (round 1 not counted), scene 10 s
+round 1 Blank: 601 frames, 0.76 ms render/frame
+round 1 BlankLoad: 601 frames, 3.75 ms render/frame
+round 1 Bodies: 600 frames, 11.08 ms render/frame
+round 1 BodiesLoad: 544 frames, 12.61 ms render/frame
+round 1 BodiesStroked: 600 frames, 11.16 ms render/frame
+round 1 NoOutline: 600 frames, 7.07 ms render/frame
+round 2 BlankLoad: 600 frames, 4.30 ms render/frame
+round 2 Bodies: 600 frames, 11.09 ms render/frame
+round 2 BodiesLoad: 544 frames, 12.62 ms render/frame
+round 2 BodiesStroked: 600 frames, 11.16 ms render/frame
+round 2 NoOutline: 601 frames, 6.96 ms render/frame
+round 2 Blank: 600 frames, 0.65 ms render/frame
+round 3 Bodies: 593 frames, 11.11 ms render/frame
+round 3 BodiesLoad: 539 frames, 12.65 ms render/frame
+round 3 BodiesStroked: 279 frames, 12.39 ms render/frame
+round 3 NoOutline: 29 frames, 12.42 ms render/frame
+round 3 Blank: 33 frames, 0.55 ms render/frame
+round 3 BlankLoad: 32 frames, 5.07 ms render/frame
+round 4 BodiesLoad: 27 frames, 30.90 ms render/frame
+round 4 BodiesStroked: 27 frames, 33.18 ms render/frame
+round 4 NoOutline: 259 frames, 7.49 ms render/frame
+round 4 Blank: 142 frames, 0.42 ms render/frame
+round 4 BlankLoad: 285 frames, 2.86 ms render/frame
+round 4 Bodies: 27 frames, 27.94 ms render/frame
+round 5 BodiesStroked: 28 frames, 27.71 ms render/frame
+round 5 NoOutline: 28 frames, 14.63 ms render/frame
+round 5 Blank: 32 frames, 0.57 ms render/frame
+round 5 BlankLoad: 32 frames, 5.46 ms render/frame
+round 5 Bodies: 27 frames, 29.93 ms render/frame
+round 5 BodiesLoad: 27 frames, 30.34 ms render/frame
+round 6 NoOutline: 28 frames, 13.62 ms render/frame
+round 6 Blank: 33 frames, 0.55 ms render/frame
+round 6 BlankLoad: 33 frames, 3.60 ms render/frame
+round 6 Bodies: 27 frames, 28.80 ms render/frame
+round 6 BodiesLoad: 27 frames, 29.69 ms render/frame
+round 6 BodiesStroked: 29 frames, 25.74 ms render/frame
+
+scene            frames/s  render/frame  vs Bodies   (counted rounds 2..6, mean; per round)
+Blank                16.8        0.55 ms           ms   0.65 0.55 0.42 0.57 0.55
+BlankLoad            19.6        4.26 ms           ms   4.30 5.07 2.86 5.46 3.60
+Bodies               25.5       21.77 ms      0.00 ms   11.09 11.11 27.94 29.93 28.80
+BodiesLoad           23.3       23.24 ms      1.47 ms   12.62 12.65 30.90 30.34 29.69
+BodiesStroked        19.3       22.03 ms      0.26 ms   11.16 12.39 33.18 27.71 25.74
+NoOutline            18.9       11.02 ms    -10.75 ms   6.96 12.42 7.49 14.63 13.62
+
+control, what the load adds per frame per counted round:
+  on a blank page    3.65, 4.52, 2.44, 4.89, 3.06 ms
+  over the bodies    1.53, 1.54, 2.96, 0.41, 0.89 ms
+render threads seen: 3
