@@ -168,6 +168,10 @@ export const REFERENCES = [
       { stem: `MutantTabs_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="nav"] div:has(> div > span + span + span)', index: 0, theme, hide },
     ];
   })),
+  // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
+  // badge's plate kept), both themes.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
+    ({ stem: `MutantNavigationBar_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'nav', type: 'bar', index: 0, theme, below: 24, hideText: bare }))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
