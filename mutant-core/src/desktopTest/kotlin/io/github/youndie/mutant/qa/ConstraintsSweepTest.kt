@@ -11,7 +11,6 @@ import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -23,12 +22,8 @@ import kotlin.test.assertNull
  */
 @OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)
 class ConstraintsSweepTest {
-    /** Cases that throw today, each held by an ignored test below. */
-    private val known =
-        setOf(
-            "NavigationBar / unbounded width",
-            "NavigationBar / unbounded both, fill",
-        )
+    /** Cases that throw today, each held by an ignored test below (none since B-56). */
+    private val known = emptySet<String>()
 
     private fun sweep(density: Density?): List<String> {
         val failures = mutableListOf<String>()
@@ -69,7 +64,6 @@ class ConstraintsSweepTest {
     @Test
     fun `every component in every place at density 3`() = assertEquals(emptyList(), sweep(Density(3f)))
 
-    @Ignore("F01: the navigation bar throws in unbounded width (Constraints.fixed with Infinity)")
     @Test
     fun `F01 the navigation bar in a horizontally scrolling row does not throw`() =
         assertNull(
