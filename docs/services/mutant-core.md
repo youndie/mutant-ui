@@ -45,7 +45,10 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantCocoon.kt` | `MutantCocoon`, the skeleton, and `CocoonMosaic`, its blocks and flicker ([B-22](../backlog/B-22-skeleton-cocoon.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTopAppBar.kt` | `MutantTopAppBar` ([B-23](../backlog/B-23-top-app-bar-and-tabs.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTabs.kt` | `MutantTabs`, `MutantTab` and the bar's run ([B-23](../backlog/B-23-top-app-bar-and-tabs.md)) |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantNavigationBar.kt` | `MutantNavigationBar`, `MutantNavigationItem`, the pill and the badge ([B-24](../backlog/B-24-navigation-bar.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantNavigationBar.kt` | `MutantNavigationBar`, `MutantNavigationItem` and the pill ([B-24](../backlog/B-24-navigation-bar.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantListItem.kt` | `MutantListItem` ([B-25](../backlog/B-25-list-item-divider-badge.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDivider.kt` | `MutantDivider`, the tracking divider the top app bar and lists use ([B-25](../backlog/B-25-list-item-divider-badge.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantBadge.kt` | `MutantBadge`, full and compact, the navigation bar's too ([B-25](../backlog/B-25-list-item-divider-badge.md)) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/ComponentParity.kt` | the shared fixture holding a component's page cells: body outside the clean zone, content by its bare twin |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantDivider.kt` | the tracking divider |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/ButtonParityTest.kt` | every button cell against the page, body and label, both themes |

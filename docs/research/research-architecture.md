@@ -315,6 +315,9 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 | The engine's text zone is the union of the slot's text runs (a `Range` over each text node: the glyphs' box, not the line's), its `svg` icons, and every `[data-mu]` and `[data-keep]` inside it — a nested body such as the navigation bar's pill counts — plus 6 dp across and 2 down. A kit that marks the boxes around them (an item's column) measures another zone: the navigation bar's stood 2 dp lower and 3 wider until the icons, labels, badge text and pill were marked one by one. A fixture that hands the engine's zone to the kit (`LocalMutantTextZone`) cannot see this, so a component's own zone is read through its probe against the engine's record (B-24) | `NavigationBarParityTest`, 2026-11-14 |
 | What a bare twin keeps inside the clean zone (a nested pill, a badge's plate and ring) is read by neither the body's count (outside the zone) nor the content's (what text adds over the twin): the twins are compared with each other inside the zone (B-24) | `NavigationBarParityTest`, 2026-11-14 |
 
+| A body's `overhang` bounds its hanging drips, not the drops that tear off them and fall: under a list tile with `over` 6 drops reach 9–11 dp over a 30 s run. The list tile draws the same at 6 and at 8 (frozen and over 30 s); 10 moves its frozen frame (B-25) | `ListItemParityTest`, 2026-11-14 |
+| `captureToImage` keeps what a node draws past its bounds (a layer is not clipped to its node): a badge's ring, drawn 1.5 dp outside its plate, is in the plate's capture, and a colour read over the whole capture reads the ring (B-25) | `ListItemBehaviourTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
