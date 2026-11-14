@@ -91,9 +91,10 @@ internal fun Modifier.mutantMelt(on: Boolean): Modifier =
         melt.follow(on, clock.nowMs)
         val instant = io.github.youndie.mutant.theme.LocalMutantReduceMotion.current
         val elapsed = if (instant) Double.POSITIVE_INFINITY else clock.nowMs - melt.since
-        // While it runs, the melt reads every frame, as the engine steps it; done, it reads nothing.
-        if (elapsed < MutantMotion.MELT_IN_MS) clock.frame
         val p = stepped(elapsed, MutantMotion.MELT_IN_MS)
+        // While it runs, the melt reads every frame, as the engine steps it; done, it reads nothing. Done is the
+        // stepped progress at 1, which comes at 333.3 ms, not at the 330 ms duration (B-54).
+        if (p < 1) clock.frame
         val q = if (on) 1 - p else p
         this
             .graphicsLayer {
