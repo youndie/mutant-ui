@@ -159,6 +159,15 @@ export const REFERENCES = [
     { stem: `MutantCocoon_Card_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="card"] [data-mu-cocoon]', index: 0, theme },
     { stem: `MutantCocoon_ListRow_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="card"] div:has(> [data-mu-cocoon] + div)', index: 0, theme },
   ]),
+  // B-23: the nav stage's top app bar (its row and the divider under it) and tabs (the labels and the bar), cropped
+  // as they stand, whole and with text and currentColor icons hidden, both themes.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].flatMap((bare) => {
+    const hide = bare ? '[data-mu-stage="nav"], [data-mu-stage="nav"] * { color: transparent !important; }' : '';
+    return [
+      { stem: `MutantTopAppBar_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="nav"] div:has(> [data-mu-divider])', index: 0, theme, hide },
+      { stem: `MutantTabs_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="nav"] div:has(> div > span + span + span)', index: 0, theme, hide },
+    ];
+  })),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.

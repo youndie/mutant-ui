@@ -4,6 +4,12 @@ public final class io/github/youndie/mutant/components/ComposableSingletons$Muta
 	public final fun getLambda$1232773936$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
 }
 
+public final class io/github/youndie/mutant/components/ComposableSingletons$MutantTopAppBarKt {
+	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantTopAppBarKt;
+	public fun <init> ()V
+	public final fun getLambda$-323496501$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/youndie/mutant/components/MutantButtonKt {
 	public static final fun MutantButton (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLio/github/youndie/mutant/components/MutantButtonState;Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 	public static final fun MutantOutlinedButton (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
@@ -48,8 +54,24 @@ public final class io/github/youndie/mutant/components/MutantSwitchKt {
 	public static final fun MutantSwitch (ZLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantTab {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEnabled ()Z
+	public final fun getLabel ()Ljava/lang/String;
+}
+
+public final class io/github/youndie/mutant/components/MutantTabsKt {
+	public static final fun MutantTabs (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/components/MutantTextFieldKt {
 	public static final fun MutantTextField (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;ZZLandroidx/compose/foundation/text/KeyboardOptions;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/youndie/mutant/components/MutantTopAppBarKt {
+	public static final fun MutantTopAppBar (Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Landroidx/compose/foundation/layout/WindowInsets;Ljava/lang/String;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/icons/MutantIcons {

@@ -185,10 +185,23 @@ internal fun DrawScope.drawBrackets(
     color: Color,
 ) {
     val el = g.slot
-    val x0 = (el.ox - 7).toFloat()
-    val y0 = (el.oy - 7).toFloat()
-    val x1 = (el.ox + el.w + 7).toFloat()
-    val y1 = (el.oy + el.h + 7).toFloat()
+    drawCornerBrackets(
+        (el.ox - 7).toFloat(),
+        (el.oy - 7).toFloat(),
+        (el.ox + el.w + 7).toFloat(),
+        (el.oy + el.h + 7).toFloat(),
+        color,
+    )
+}
+
+/** Four corner strokes on the box from ([x0], [y0]) to ([x1], [y1]), dp: 10 dp long, 2 dp wide. */
+internal fun DrawScope.drawCornerBrackets(
+    x0: Float,
+    y0: Float,
+    x1: Float,
+    y1: Float,
+    color: Color,
+) {
     val q = 10f
     val p =
         Path().apply {
