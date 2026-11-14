@@ -142,6 +142,10 @@ export const REFERENCES = [
       ['Radio_Unselected', 'dot', 0], ['Radio_Selected', 'dot', 1], ['Radio_Disabled', 'dot', 2]]
       .flatMap(([s, type, index]) => [false, true].map((bare) =>
         ({ stem: `Mutant${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'select', type, index, theme, below: 8, wide: 140, hideText: bare })))),
+  // B-19: the select stage's switch cells, whole and bare, both themes, reaching the label beside the track.
+  ...['Efir', 'Kopiya'].flatMap((theme) =>
+    ['Off', 'On', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
+      ({ stem: `MutantSwitch_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'select', type: 'track', index, theme, below: 8, wide: 140, hideText: bare })))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
