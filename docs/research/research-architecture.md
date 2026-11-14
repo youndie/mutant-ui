@@ -193,6 +193,7 @@ raw runs in `logs/b-06/`.
 | On this M1 (JDK 25), generating an instance costs at most 107.7 µs over all 27 golden cases: **green** against 0.25 ms | `logs/b-06/2026-11-14-desktop-2.log`, `scripts/b06_summary.py` |
 | A warm frame of a 328 × 80 card costs 532.5 µs (ruler 10.3 µs): **grey** between 0.4 and 1.6 ms; the blob 858.9 µs, a 22 dp dot 46.8 µs | the same |
 | The first frame of an instance costs about ten times a warm one (card 5.8 ms, blob 10.2 ms): it builds the static layers | the same |
+| *B-50:* built off the frame, ten 328 × 80 cards appearing together cost the main thread 12.8 ms in their frame against 85.8 ms built in it, and 1.5 ms in the next, against a warm frame's 13.6 (the test runtime's frames, render included) | `logs/b-50/2026-11-14-desktop.log`, `AppearBench` |
 | A first run was void: its control read 136–207 µs for 200, because two arms timed in separate blocks saw the machine drift between them; arms are now interleaved per call and the control reads 197.7–199.7 µs | `logs/b-06/2026-11-14-desktop.log`, amendment 1 in the item |
 
 **Consequence 8.** The CPU field survives the screen: ten cards on one tick fit a desktop frame

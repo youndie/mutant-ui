@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (34)
+## Open (33)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
-| [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[~]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
 | [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[ ]` | Text button: its tracking divider is drawn unscaled at a density above 1 | P1 | S | B-15 |
 | [B-54](docs/backlog/B-54-melt-stalls-short-of-its-end.md) `[ ]` | Melt: a mark can stall at 76 % when a frame falls in its last 3 ms | P1 | S | B-18 |
 | [B-55](docs/backlog/B-55-public-text-styles.md) `[ ]` | Public text styles: a consumer cannot set its own words in Handjet or Rubik | P1 | S | B-37 |
@@ -97,7 +96,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (36)
+## Closed (37)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -118,6 +117,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-12](docs/backlog/B-12-transitions.md) `[x]` - Transitions: pour, melt, slide, and the venom with its soft joins
 - [B-13](docs/backlog/B-13-tape.md) `[x]` - The Tape («Лента»): one overlay over the screen
 - [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[x]` - Icons, the six illustrations and the four patterns
+- [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[x]` - Build a body's instance and first frame off the frame
 - [B-52](docs/backlog/B-52-display-text-against-chrome.md) `[x]` - Display text against Chrome: Handjet labels 2 px low, and a floor for text
 
 **Each MVP component matches its page's states in both themes and its motion at the engine's timestamps**

@@ -1,0 +1,17 @@
+# B-50 appear bench, commit 7271ad6, OpenJDK 64-Bit Server VM 25.0.4.1, Mac OS X aarch64, 8 cpus
+round arm          N frame      N draw   N+1 frame  warm frame   (us)
+1     inFrame       324925      216339       18628       13900
+1     offFrame       40366       25993        3237       14916
+2     offFrame       14434        1512        5873       17773
+2     inFrame        98889       77642       13759       13532
+3     inFrame        92589       72703       15544       13126
+3     offFrame        6702         974        1359       13624
+4     offFrame       16043        5267        1584       12902
+4     inFrame        85820       67838       13745       12823
+5     inFrame        85732       68012       15513       12824
+5     offFrame       12205        3359        1508       12995
+6     offFrame       12776         874         974       13718
+6     inFrame        81354       64633       15644       13385
+median of rounds 2-6
+      inFrame        85820       68012       15513       13126
+      offFrame       12776        1512        1508       13624
