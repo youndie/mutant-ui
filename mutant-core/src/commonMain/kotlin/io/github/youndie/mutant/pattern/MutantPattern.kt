@@ -83,7 +83,7 @@ internal fun patternTile(
                             y.toFloat(),
                             b.toFloat(),
                             b.toFloat(),
-                            if (quiet) .55f else 1f,
+                            if (quiet) PatternAlpha.MOSAIC_QUIET else 1f,
                             i.toFloat(),
                         )
                 }
@@ -112,10 +112,9 @@ internal fun DrawScope.drawPattern(
         MutantPattern.Lines -> {
             val (ink, a) =
                 if (print) {
-                    Color(20, 17, 15) to (if (quiet) .06f else .2f)
+                    Color(20, 17, 15) to (if (quiet) PatternAlpha.LINES_PRINT_QUIET else PatternAlpha.LINES_PRINT)
                 } else {
-                    Color.Black to
-                        (if (quiet) .1f else .38f)
+                    Color.Black to (if (quiet) PatternAlpha.LINES_QUIET else PatternAlpha.LINES)
                 }
             var y = 0f
             while (y < h) {
@@ -190,6 +189,18 @@ public fun Modifier.mutantPattern(
             }
         }
     }
+
+/**
+ * The page's alphas that its swatches cannot show: on «Эфир»'s dark ground 0.38 and 0.30 are 3 levels apart, under
+ * what the swatch's frame already moves. `PatternSourceTest` holds them to the page's `patterns()` instead.
+ */
+internal object PatternAlpha {
+    const val LINES: Float = .38f
+    const val LINES_QUIET: Float = .1f
+    const val LINES_PRINT: Float = .2f
+    const val LINES_PRINT_QUIET: Float = .06f
+    const val MOSAIC_QUIET: Float = .55f
+}
 
 private const val TILE = 64f
 private const val RASTER_FADE = .35f

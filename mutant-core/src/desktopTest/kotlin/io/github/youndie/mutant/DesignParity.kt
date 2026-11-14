@@ -50,8 +50,10 @@ internal object DesignParity {
         val stem: String,
         val pixels: Int,
         val percent: Double,
+        /** The largest difference of any channel anywhere, 0…255: what a pixel count under 16 cannot see. */
+        val maxChannel: Int,
     ) {
-        override fun toString(): String = "$stem: ${"%.3f".format(percent)} %, $pixels px"
+        override fun toString(): String = "$stem: ${"%.3f".format(percent)} %, $pixels px, max $maxChannel"
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -64,6 +66,7 @@ internal object DesignParity {
         val h = ref["h"]!!.jsonPrimitive.int
         val bitmap = Bitmap.makeFromImage(Image.makeFromEncoded(File(dir, "$stem.png").readBytes()))
         var differ = 0
+        var most = 0
         runComposeUiTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
@@ -84,6 +87,7 @@ internal object DesignParity {
                             abs((a.blue * 255).toInt() - (c and 0xFF)),
                         )
                     if (m > 16) differ++
+                    most = maxOf(most, m)
                     diff.setRGB(x, y, if (m > 16) 0xFF2020 else (c and 0xFFFFFF).let { (it shr 2) and 0x3F3F3F })
                 }
             }
@@ -91,6 +95,6 @@ internal object DesignParity {
             ImageIO.write(shot.toAwtImage(), "png", File("build/parity/${stem}_ACTUAL.png"))
             ImageIO.write(diff, "png", File("build/parity/${stem}_DIFF.png"))
         }
-        return Result(stem, differ, 100.0 * differ / (w * h))
+        return Result(stem, differ, 100.0 * differ / (w * h), most)
     }
 }
