@@ -208,6 +208,10 @@ export const REFERENCES = [
   // answer of 2026-11-14).
   ...['Efir', 'Kopiya'].flatMap((theme) => [['Library', 'demoA'], ['Recording', 'demoB'], ['Settings', 'demoC']].map(([s, stage]) =>
     ({ stem: `Demo_${s}_${theme}`, page: DEMO, el: true, sel: `[data-mu-stage="${stage}"]`, index: 0, theme }))),
+  // B-55: the OSD line under the cassette on the Demo page's recording screen (`46 МИН · SP · …`), the first span set in
+  // the OSD role there (Handjet 20, tracking 1): what the public `osd` style is held to.
+  ...['Efir', 'Kopiya'].map((theme) =>
+    ({ stem: `Demo_OsdLine_${theme}`, page: DEMO, el: true, sel: '[data-mu-stage="demoB"] span[style*="letter-spacing"]', index: 0, theme })),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.

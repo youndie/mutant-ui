@@ -187,6 +187,7 @@ public final class io/github/youndie/mutant/theme/MutantTheme {
 	public final fun getCleanSignal (Landroidx/compose/runtime/Composer;I)Z
 	public final fun getColors (Landroidx/compose/runtime/Composer;I)Lio/github/youndie/mutant/tokens/MutantColors;
 	public final fun getReduceMotion (Landroidx/compose/runtime/Composer;I)Z
+	public final fun getTextStyles (Landroidx/compose/runtime/Composer;I)Lio/github/youndie/mutant/type/MutantTextStyles;
 }
 
 public final class io/github/youndie/mutant/theme/MutantThemeKt {
@@ -234,5 +235,15 @@ public final class io/github/youndie/mutant/tokens/MutantPalettes {
 	public static final field INSTANCE Lio/github/youndie/mutant/tokens/MutantPalettes;
 	public final fun getEfir ()Lio/github/youndie/mutant/tokens/MutantColors;
 	public final fun getKopiya ()Lio/github/youndie/mutant/tokens/MutantColors;
+}
+
+public final class io/github/youndie/mutant/type/MutantTextStyles {
+	public static final field $stable I
+	public final fun display--R2X_6o (J)Landroidx/compose/ui/text/TextStyle;
+	public static synthetic fun display--R2X_6o$default (Lio/github/youndie/mutant/type/MutantTextStyles;JILjava/lang/Object;)Landroidx/compose/ui/text/TextStyle;
+	public final fun osd--R2X_6o (J)Landroidx/compose/ui/text/TextStyle;
+	public static synthetic fun osd--R2X_6o$default (Lio/github/youndie/mutant/type/MutantTextStyles;JILjava/lang/Object;)Landroidx/compose/ui/text/TextStyle;
+	public final fun text-eAf_CNQ (JLandroidx/compose/ui/text/font/FontWeight;)Landroidx/compose/ui/text/TextStyle;
+	public static synthetic fun text-eAf_CNQ$default (Lio/github/youndie/mutant/type/MutantTextStyles;JLandroidx/compose/ui/text/font/FontWeight;ILjava/lang/Object;)Landroidx/compose/ui/text/TextStyle;
 }
 

@@ -60202,6 +60202,54 @@
       ]
     },
     {
+      "stem": "Demo_OsdLine_Efir",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoB\"] span[style*=\"letter-spacing\"]",
+      "theme": "Efir",
+      "x": 488,
+      "y": 654,
+      "w": 328,
+      "h": 23,
+      "art": [
+        0,
+        0,
+        328,
+        23
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(255, 176, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "Demo_OsdLine_Kopiya",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoB\"] span[style*=\"letter-spacing\"]",
+      "theme": "Kopiya",
+      "x": 488,
+      "y": 654,
+      "w": 328,
+      "h": 23,
+      "art": [
+        0,
+        0,
+        328,
+        23
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(168, 56, 11)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
       "stem": "Button_Boil50Body_Efir",
       "page": "mutant-ui Анимационные спеки.dc.html",
       "index": 0,

@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.components.MutantBadge
@@ -101,7 +100,7 @@ private fun Screen(
 ) {
     val colors = MutantTheme.colors
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        BasicText(title, style = TextStyle(color = colors.text, fontSize = 22.sp))
+        BasicText(title, style = MutantTheme.textStyles.display(28.sp))
         Box(
             Modifier
                 .size(360.dp, 720.dp)
@@ -118,9 +117,10 @@ private fun Screen(
 private fun Osd(
     text: String,
     color: Color = MutantTheme.colors.textOsd,
+    size: Int = 20,
+    tracking: Float = 1f,
 ) {
-    // The kit has no public text styles (B-55): the platform's face stands in for Handjet.
-    BasicText(text, style = TextStyle(color = color, fontSize = 18.sp))
+    BasicText(text, style = MutantTheme.textStyles.osd(size.sp).copy(color = color, letterSpacing = tracking.sp))
 }
 
 @Composable
@@ -191,7 +191,7 @@ private fun Recording(s: SampleStrings) {
                 Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp),
             )
             Spacer(Modifier.height(42.dp))
-            BasicText(s.sideAShort, style = TextStyle(color = MutantTheme.colors.text, fontSize = 24.sp))
+            BasicText(s.sideAShort, style = MutantTheme.textStyles.display(24.sp))
             Osd(s.sideALine)
             Spacer(Modifier.height(14.dp))
             MutantLinearProgress(.26f)
@@ -254,7 +254,8 @@ private fun Settings(
             Spacer(Modifier.height(30.dp))
             MutantTextField("99", {}, Modifier.fillMaxWidth(), prefix = s.channel, isError = true, key = "fieldC1")
             Spacer(Modifier.height(22.dp))
-            Osd(s.noSignal99, MutantTheme.colors.textError)
+            // The page's error line: 18 px, tracked .5.
+            Osd(s.noSignal99, MutantTheme.colors.textError, size = 18, tracking = .5f)
             Spacer(Modifier.height(16.dp))
             Osd(s.speed)
             Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
