@@ -193,7 +193,13 @@ private fun Caret(
 ) {
     val clock = readMutantClock()
     val still = LocalMutantReduceMotion.current
-    val end = layout?.let { if (value.isEmpty()) 0f else it.getHorizontalPosition(value.length, true) } ?: 0f
+    // The end of the text the layout holds: on the frame a value changes, the layout is still the last one's, and
+    // asking it about the new value's end throws.
+    val end =
+        layout?.let {
+            val n = it.layoutInput.text.length
+            if (n == 0) 0f else it.getHorizontalPosition(n, true)
+        } ?: 0f
     val gap = if (value.isEmpty()) 0.dp else GAP
     Canvas(
         Modifier
