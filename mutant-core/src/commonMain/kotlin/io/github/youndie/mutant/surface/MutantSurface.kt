@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -40,6 +41,7 @@ import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantFill
 import io.github.youndie.mutant.tokens.MutantGrid
 import io.github.youndie.mutant.tokens.MutantMotion
+import io.github.youndie.mutant.tokens.MutantProfile
 
 /** Collects the bounds of what a surface's content marks clean, relative to the surface. */
 @Stable
@@ -55,6 +57,19 @@ internal class CleanZoneRegistry {
                 Rect(rs.minOf { it.left }, rs.minOf { it.top }, rs.maxOf { it.right }, rs.maxOf { it.bottom })
             }?.let { Rect(it.left / density, it.top / density, it.right / density, it.bottom / density) }
 }
+
+/**
+ * A parity fixture's way to draw an outline at the width the engine drew it: the engine seeds the outline's
+ * tremble with its running slot count, which a kit has no counterpart for (research §1.10, D16). Null in the kit.
+ */
+internal val LocalMutantOutlineOverride = staticCompositionLocalOf<((String) -> Float?)?> { null }
+
+/**
+ * A parity fixture's way to stand a body where the engine stood it: the engine generates a slot in its stage's
+ * coordinates, so its noise depends on where the slot is, where the kit's is its own (D16). The body is generated
+ * at that origin and drawn back at its place; the speckle is anchored there too. Null in the kit.
+ */
+internal val LocalMutantSlotOrigin = staticCompositionLocalOf<((String) -> Offset?)?> { null }
 
 internal val LocalCleanZone = staticCompositionLocalOf<CleanZoneRegistry?> { null }
 
@@ -75,6 +90,20 @@ internal fun Modifier.mutantCleanZone(): Modifier =
         }
     }
 
+/**
+ * This profile with some numbers replaced, as the engine reads a slot's `data-r`, `data-over`, `data-cf`,
+ * `data-ow`, `data-wob`, `data-marks` and `data-edge` over its type's (`makeItem`).
+ */
+internal fun MutantProfile.with(
+    radius: Double = this.radius,
+    overhang: Double = this.overhang,
+    dripShare: Double = this.dripShare,
+    outline: Double = this.outline,
+    wobble: Double = this.wobble,
+    marks: Boolean = this.marks,
+    mosaic: Boolean = this.mosaic,
+): MutantProfile = MutantProfile(radius, overhang, dripShare, fill, outline, marks, mosaic, wobble, deadPixels, round)
+
 /** The fill a profile asks for, in a theme. */
 internal fun MutantColors.fillOf(fill: MutantFill): Color =
     when (fill) {
@@ -91,6 +120,9 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * to the profile's overhang below the slot and take no space. The content marks its text and icons with
  * [mutantCleanZone]; nothing decorative enters that zone. The body's origin is its own, so its shape travels
  * with it when it moves; a size change regenerates it.
+ *
+ * [profile] is [body]'s unless a composition overrides some of its numbers per slot, as the design's
+ * illustrations do with `data-r`, `data-over` and the like ([with]).
  *
  * [calm] is the instance's wear (0.2…1.7); [slip] shifts the fill from the outline (default 1.5 dp in a
  * print theme for bodies that are not round); [shadow] draws the misregistered shadow.
@@ -123,6 +155,7 @@ internal fun MutantSurface(
     slide: SlideRequest? = null,
     pourAt: Pair<Double, Color>? = null,
     slideAt: Pair<Double, Double>? = null,
+    profile: MutantProfile = body.profile,
     probe: ((io.github.youndie.mutant.gen.Instance) -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -146,7 +179,9 @@ internal fun MutantSurface(
     val wear = if (focused) FOCUS_CALM else calm
     val instant = io.github.youndie.mutant.theme.LocalMutantReduceMotion.current
     val moves = remember { BodyMoves() }
-    val p = body.profile
+    val p = profile
+    val outlineOverride = LocalMutantOutlineOverride.current
+    val origin = LocalMutantSlotOrigin.current?.invoke(key)
     val bodyFill = fill ?: colors.fillOf(p.fill)
     moves.follow(bodyFill, slide, clock.nowMs)
     val look =
@@ -179,8 +214,8 @@ internal fun MutantSurface(
                     }
                 val slot =
                     Slot(
-                        ox = 0.0,
-                        oy = 0.0,
+                        ox = origin?.x?.toDouble() ?: 0.0,
+                        oy = origin?.y?.toDouble() ?: 0.0,
                         w = w,
                         h = h,
                         r = minOf(p.radius, w / 2, h / 2),
@@ -205,6 +240,8 @@ internal fun MutantSurface(
                         slot.h,
                         slot.calm,
                         body,
+                        // A profile overridden per slot: its numbers, not its identity, shape the instance.
+                        listOf(slot.r, slot.over, slot.dripShare, slot.wobble, slot.marks, slot.edge),
                         tz?.toList(),
                         state == BodyState.Disabled || state == BodyState.Success,
                     )
@@ -253,7 +290,7 @@ internal fun MutantSurface(
                 val k = heat ?: boil.at(clock.nowMs)
                 val frame = gen.frame(g, cache, t, k, pressed = boil.on)
                 val paths = BodyPaths.of(frame)
-                val outline = outlineWidth(g, p.outline, frame.boilPhase, frame.boil)
+                val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, frame.boilPhase, frame.boil)
                 val frameLook =
                     BodyLook(
                         boilFill(look.fill, colors, k, t),
@@ -276,11 +313,13 @@ internal fun MutantSurface(
                 val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
                 onDrawBehind {
                     scale(d, Offset.Zero) {
-                        slid(
-                            g,
-                            slideP,
-                            slideDx,
-                        ) { drawBody(g, paths, frameLook, colors, speckle, Offset.Zero, dead, decor, pour) }
+                        translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
+                            slid(
+                                g,
+                                slideP,
+                                slideDx,
+                            ) { drawBody(g, paths, frameLook, colors, speckle, Offset.Zero, dead, decor, pour) }
+                        }
                     }
                 }
             },

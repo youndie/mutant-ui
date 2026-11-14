@@ -39,6 +39,12 @@ const GENERATOR = join(DESIGN, 'mutant-generator.js');
 const ENGINE = join(DESIGN, 'mutant-engine.js');
 const MVP = 'mutant-ui Компоненты.dc.html';
 const SPECS = 'mutant-ui Анимационные спеки.dc.html';
+const ICONS = 'mutant-ui Иконки и заготовки.dc.html';
+// B-14: the Icons page's icons (in its order), patterns and illustrations, named as the kit names them.
+const ICON_NAMES = ['Menu', 'Back', 'Close', 'Search', 'Home', 'Add', 'Delete', 'Edit', 'Share', 'Refresh', 'Settings', 'Done', 'Error', 'Warning', 'Info', 'Schedule'];
+const PATTERNS = [['Lines', 'lines'], ['Snow', 'snow'], ['Raster', 'raster'], ['Mosaic', 'mosaic']];
+// Each illustration and its stage; its art is the box its parts stand in (`elementCell`).
+const ILLUSTRATIONS = [['Cassette', 'il-cassette'], ['Television', 'il-tv'], ['Antenna', 'il-antenna'], ['Floppy', 'il-floppy'], ['Remote', 'il-remote'], ['TestCard', 'il-testcard']];
 // The engine's own default still time (`tFix`), and the time every probe and fixture is drawn at.
 const T = 5000;
 
@@ -89,6 +95,11 @@ export const REFERENCES = [
   ...['menu', 'segmented', 'drawer'].flatMap((c) => [10, 30, 50, 70].map((n) => ({ stem: `Venom_${c[0].toUpperCase() + c.slice(1)}${n}_Efir`, venom: { case: c, p: n / 100 } }))),
   // B-13: the Tape over a card, the spec page's drift frames: at rest, the tracking band entering, mid-pass, gone.
   ...[3000, 7350, 8050, 8900].map((t) => ({ stem: `Tape_Drift${t}_Efir`, page: SPECS, sel: `[data-mu-stage][data-mu-t="${t}"] [data-key="spec-card"]`, hideText: true, tape: true })),
+  // B-14: an element cropped as it stands (`el`), with what its fixture needs to stand it the same way.
+  ...ICON_NAMES.flatMap((name, i) => [48, 16].map((size) => ({ stem: `Icon_${name}${size}_Efir`, page: ICONS, el: true, sel: `[data-screen-label="Иконки"] svg[width="${size}"]`, index: i }))),
+  ...PATTERNS.flatMap(([name, key]) => [0, 1].map((q) => ({ stem: `Pattern_${name}${q ? 'Quiet' : ''}_Efir`, page: ICONS, el: true, sel: `[data-pat="${key}"][data-quiet="${q}"]`, index: 0, hide: `[data-pat] * { color: transparent !important; }` }))),
+  // The art with what its drips may hang below it; the Body twin hides the text, the kept parts and the reels.
+  ...ILLUSTRATIONS.flatMap(([name, stage]) => [false, true].map((body) => ({ stem: `Illustration_${name}${body ? 'Body' : ''}_Efir`, page: ICONS, el: true, stage, hideText: body }))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
@@ -285,6 +296,10 @@ async function pageCells(cdp, page, refs) {
   if (t.errors.length) throw new Error(`${page}: ${t.errors.join('; ')}`);
   const out = new Map();
   for (const ref of refs) {
+    if (ref.el) {
+      out.set(ref.stem, await elementCell(t, ref));
+      continue;
+    }
     // Text goes transparent; content that paints a box of its own (a field's block caret, kept in the clean
     // zone by data-keep) is hidden without leaving the layout, so the zone the engine measured stays.
     // The stage the slot stands on: named by the reference, or found from its selector.
@@ -326,6 +341,44 @@ async function pageCells(cdp, page, refs) {
   }
   await t.close();
   return out;
+}
+
+// An element of a page cropped as it stands. An icon or a pattern swatch is cut to its own box; an illustration to
+// its art (`[data-mu-stage] > div > div`, the box its parts stand in) with room for the drips below, its stage
+// slots recorded as for a body. Recorded: the crop, the art's place in it, the ground behind it, the colour the
+// element inherits and its corner radius.
+async function elementCell(t, ref) {
+  const scope = ref.stage ? `[data-mu-stage="${ref.stage}"]` : null;
+  const hide = ref.hideText
+    ? `${scope}, ${scope} * { color: transparent !important; } ${scope} [data-keep], ${scope} [data-mu-anim] { visibility: hidden !important; }`
+    : (ref.hide ?? '');
+  await t.evaluate(`(() => { const s = document.getElementById('mutant-hide') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'mutant-hide' }));
+    s.textContent = ${JSON.stringify(hide)}; return true; })()`);
+  await t.evaluate(settle);
+  const r = await t.evaluate(`(() => {
+    const host = ${JSON.stringify(scope)} ? document.querySelector(${JSON.stringify(scope)}) : null;
+    const n = host ? host.querySelector(':scope > div:not([data-mu-layer]) > div') : document.querySelectorAll(${JSON.stringify(ref.sel ?? '')})[${ref.index ?? 0}];
+    if (!n) return { error: 'no element' };
+    const b = n.getBoundingClientRect();
+    let g = n.parentElement; while (g && getComputedStyle(g).backgroundColor === 'rgba(0, 0, 0, 0)') g = g.parentElement;
+    const pad = host ? [24, 12, 24, 36] : [0, 0, 0, 0];
+    const x = Math.round(b.left + scrollX) - pad[0], y = Math.round(b.top + scrollY) - pad[1];
+    const out = { x, y, w: Math.round(b.width) + pad[0] + pad[2], h: Math.round(b.height) + pad[1] + pad[3], art: [pad[0], pad[1], Math.round(b.width), Math.round(b.height)],
+      background: getComputedStyle(g).backgroundColor, color: getComputedStyle(n).color, radius: parseFloat(getComputedStyle(n).borderTopLeftRadius) || 0,
+      // A grid of 1fr columns puts an element at a fraction of a pixel; Chrome draws it there, so the fixture does.
+      subpixel: [+(b.left + scrollX - Math.round(b.left + scrollX)).toFixed(4), +(b.top + scrollY - Math.round(b.top + scrollY)).toFixed(4)] };
+    if (host) {
+      const e = window.__muEngines.find(x => x.stages.some(s => s.host === host)), st = e.stages.find(s => s.host === host);
+      const hr = host.getBoundingClientRect();
+      out.artInStage = [Math.round(b.left - hr.left), Math.round(b.top - hr.top)];
+      out.stageSlots = st.items.map((s) => ({ key: s.key, ox: s.el.ox, oy: s.el.oy, w: s.el.w, h: s.el.h, r: s.el.r, over: s.el.over, cf: s.el.cf, ow: s.el.ow,
+        wob: s.el.wob, round: s.el.round, calm: s.el.calm, marks: s.el.marks, edge: s.el.edge, tz: s.el.tz, cz: s.el.cz, fill: s.el.fill, hl: s.el.hl,
+        drawnOutline: s.H ? +s.H.O.getAttribute('stroke-width') : s.el.ow }));
+    }
+    return out;
+  })()`);
+  if (r.error) throw new Error(`${ref.stem}: ${r.error}`);
+  return { png: await t.shot(r), rect: r };
 }
 
 // ---- main ---------------------------------------------------------------------------------------------
