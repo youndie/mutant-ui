@@ -6,6 +6,34 @@
 // - Show declarations: true
 
 // Library unique name: <io.github.youndie:mutant-core>
+final enum class io.github.youndie.mutant.illustration/MutantIllustrationKind : kotlin/Enum<io.github.youndie.mutant.illustration/MutantIllustrationKind> { // io.github.youndie.mutant.illustration/MutantIllustrationKind|null[0]
+    enum entry Antenna // io.github.youndie.mutant.illustration/MutantIllustrationKind.Antenna|null[0]
+    enum entry Cassette // io.github.youndie.mutant.illustration/MutantIllustrationKind.Cassette|null[0]
+    enum entry Floppy // io.github.youndie.mutant.illustration/MutantIllustrationKind.Floppy|null[0]
+    enum entry Remote // io.github.youndie.mutant.illustration/MutantIllustrationKind.Remote|null[0]
+    enum entry Television // io.github.youndie.mutant.illustration/MutantIllustrationKind.Television|null[0]
+    enum entry TestCard // io.github.youndie.mutant.illustration/MutantIllustrationKind.TestCard|null[0]
+
+    final val entries // io.github.youndie.mutant.illustration/MutantIllustrationKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.youndie.mutant.illustration/MutantIllustrationKind> // io.github.youndie.mutant.illustration/MutantIllustrationKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.youndie.mutant.illustration/MutantIllustrationKind // io.github.youndie.mutant.illustration/MutantIllustrationKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.youndie.mutant.illustration/MutantIllustrationKind> // io.github.youndie.mutant.illustration/MutantIllustrationKind.values|values#static(){}[0]
+}
+
+final enum class io.github.youndie.mutant.pattern/MutantPattern : kotlin/Enum<io.github.youndie.mutant.pattern/MutantPattern> { // io.github.youndie.mutant.pattern/MutantPattern|null[0]
+    enum entry Lines // io.github.youndie.mutant.pattern/MutantPattern.Lines|null[0]
+    enum entry Mosaic // io.github.youndie.mutant.pattern/MutantPattern.Mosaic|null[0]
+    enum entry Raster // io.github.youndie.mutant.pattern/MutantPattern.Raster|null[0]
+    enum entry Snow // io.github.youndie.mutant.pattern/MutantPattern.Snow|null[0]
+
+    final val entries // io.github.youndie.mutant.pattern/MutantPattern.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.youndie.mutant.pattern/MutantPattern> // io.github.youndie.mutant.pattern/MutantPattern.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.youndie.mutant.pattern/MutantPattern // io.github.youndie.mutant.pattern/MutantPattern.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.youndie.mutant.pattern/MutantPattern> // io.github.youndie.mutant.pattern/MutantPattern.values|values#static(){}[0]
+}
+
 final class io.github.youndie.mutant.tokens/MutantColors { // io.github.youndie.mutant.tokens/MutantColors|null[0]
     final val amber // io.github.youndie.mutant.tokens/MutantColors.amber|{}amber[0]
         final fun <get-amber>(): androidx.compose.ui.graphics/Color // io.github.youndie.mutant.tokens/MutantColors.amber.<get-amber>|<get-amber>(){}[0]
@@ -73,6 +101,43 @@ final class io.github.youndie.mutant.tokens/MutantColors { // io.github.youndie.
         final fun <get-textSecondary>(): androidx.compose.ui.graphics/Color // io.github.youndie.mutant.tokens/MutantColors.textSecondary.<get-textSecondary>|<get-textSecondary>(){}[0]
 }
 
+final object io.github.youndie.mutant.icons/MutantIcons { // io.github.youndie.mutant.icons/MutantIcons|null[0]
+    final val Add // io.github.youndie.mutant.icons/MutantIcons.Add|{}Add[0]
+        final fun <get-Add>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Add.<get-Add>|<get-Add>(){}[0]
+    final val Back // io.github.youndie.mutant.icons/MutantIcons.Back|{}Back[0]
+        final fun <get-Back>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Back.<get-Back>|<get-Back>(){}[0]
+    final val Close // io.github.youndie.mutant.icons/MutantIcons.Close|{}Close[0]
+        final fun <get-Close>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Close.<get-Close>|<get-Close>(){}[0]
+    final val Delete // io.github.youndie.mutant.icons/MutantIcons.Delete|{}Delete[0]
+        final fun <get-Delete>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Delete.<get-Delete>|<get-Delete>(){}[0]
+    final val Done // io.github.youndie.mutant.icons/MutantIcons.Done|{}Done[0]
+        final fun <get-Done>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Done.<get-Done>|<get-Done>(){}[0]
+    final val Edit // io.github.youndie.mutant.icons/MutantIcons.Edit|{}Edit[0]
+        final fun <get-Edit>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Edit.<get-Edit>|<get-Edit>(){}[0]
+    final val Error // io.github.youndie.mutant.icons/MutantIcons.Error|{}Error[0]
+        final fun <get-Error>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Error.<get-Error>|<get-Error>(){}[0]
+    final val Home // io.github.youndie.mutant.icons/MutantIcons.Home|{}Home[0]
+        final fun <get-Home>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Home.<get-Home>|<get-Home>(){}[0]
+    final val Info // io.github.youndie.mutant.icons/MutantIcons.Info|{}Info[0]
+        final fun <get-Info>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Info.<get-Info>|<get-Info>(){}[0]
+    final val Menu // io.github.youndie.mutant.icons/MutantIcons.Menu|{}Menu[0]
+        final fun <get-Menu>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Menu.<get-Menu>|<get-Menu>(){}[0]
+    final val Refresh // io.github.youndie.mutant.icons/MutantIcons.Refresh|{}Refresh[0]
+        final fun <get-Refresh>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Refresh.<get-Refresh>|<get-Refresh>(){}[0]
+    final val Schedule // io.github.youndie.mutant.icons/MutantIcons.Schedule|{}Schedule[0]
+        final fun <get-Schedule>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Schedule.<get-Schedule>|<get-Schedule>(){}[0]
+    final val Search // io.github.youndie.mutant.icons/MutantIcons.Search|{}Search[0]
+        final fun <get-Search>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Search.<get-Search>|<get-Search>(){}[0]
+    final val Settings // io.github.youndie.mutant.icons/MutantIcons.Settings|{}Settings[0]
+        final fun <get-Settings>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Settings.<get-Settings>|<get-Settings>(){}[0]
+    final val Share // io.github.youndie.mutant.icons/MutantIcons.Share|{}Share[0]
+        final fun <get-Share>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Share.<get-Share>|<get-Share>(){}[0]
+    final val Warning // io.github.youndie.mutant.icons/MutantIcons.Warning|{}Warning[0]
+        final fun <get-Warning>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Warning.<get-Warning>|<get-Warning>(){}[0]
+    final val all // io.github.youndie.mutant.icons/MutantIcons.all|{}all[0]
+        final fun <get-all>(): kotlin.collections/List<kotlin/Pair<kotlin/String, androidx.compose.ui.graphics.vector/ImageVector>> // io.github.youndie.mutant.icons/MutantIcons.all.<get-all>|<get-all>(){}[0]
+}
+
 final object io.github.youndie.mutant.theme/MutantTheme { // io.github.youndie.mutant.theme/MutantTheme|null[0]
     final val cassette // io.github.youndie.mutant.theme/MutantTheme.cassette|{}cassette[0]
         final fun <get-cassette>(androidx.compose.runtime/Composer?, kotlin/Int): kotlin/String // io.github.youndie.mutant.theme/MutantTheme.cassette.<get-cassette>|<get-cassette>(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
@@ -91,6 +156,7 @@ final object io.github.youndie.mutant.tokens/MutantPalettes { // io.github.yound
         final fun <get-Kopiya>(): io.github.youndie.mutant.tokens/MutantColors // io.github.youndie.mutant.tokens/MutantPalettes.Kopiya.<get-Kopiya>|<get-Kopiya>(){}[0]
 }
 
+final val io.github.youndie.mutant.icons/io_github_youndie_mutant_icons_MutantIcons$stableprop // io.github.youndie.mutant.icons/io_github_youndie_mutant_icons_MutantIcons$stableprop|#static{}io_github_youndie_mutant_icons_MutantIcons$stableprop[0]
 final val io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_array$stableprop // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_array$stableprop|#static{}io_github_youndie_mutant_resources_Res_array$stableprop[0]
 final val io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_drawable$stableprop // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_drawable$stableprop|#static{}io_github_youndie_mutant_resources_Res_drawable$stableprop[0]
 final val io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop|#static{}io_github_youndie_mutant_resources_Res_font$stableprop[0]
@@ -100,7 +166,11 @@ final val io.github.youndie.mutant.theme/io_github_youndie_mutant_theme_MutantTh
 final val io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantColors$stableprop // io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantColors$stableprop|#static{}io_github_youndie_mutant_tokens_MutantColors$stableprop[0]
 final val io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantPalettes$stableprop // io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantPalettes$stableprop|#static{}io_github_youndie_mutant_tokens_MutantPalettes$stableprop[0]
 
+final fun (androidx.compose.ui/Modifier).io.github.youndie.mutant.pattern/mutantPattern(io.github.youndie.mutant.pattern/MutantPattern, kotlin/Boolean = ...): androidx.compose.ui/Modifier // io.github.youndie.mutant.pattern/mutantPattern|mutantPattern@androidx.compose.ui.Modifier(io.github.youndie.mutant.pattern.MutantPattern;kotlin.Boolean){}[0]
 final fun (androidx.compose.ui/Modifier).io.github.youndie.mutant.surface/mutantTape(): androidx.compose.ui/Modifier // io.github.youndie.mutant.surface/mutantTape|mutantTape@androidx.compose.ui.Modifier(){}[0]
+final fun io.github.youndie.mutant.icons/MutantIcon(androidx.compose.ui.graphics.vector/ImageVector, kotlin/String?, androidx.compose.ui/Modifier?, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/Dp, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.youndie.mutant.icons/MutantIcon|MutantIcon(androidx.compose.ui.graphics.vector.ImageVector;kotlin.String?;androidx.compose.ui.Modifier?;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.Dp;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun io.github.youndie.mutant.icons/io_github_youndie_mutant_icons_MutantIcons$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.icons/io_github_youndie_mutant_icons_MutantIcons$stableprop_getter|io_github_youndie_mutant_icons_MutantIcons$stableprop_getter(){}[0]
+final fun io.github.youndie.mutant.illustration/MutantIllustration(io.github.youndie.mutant.illustration/MutantIllustrationKind, androidx.compose.ui/Modifier?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.youndie.mutant.illustration/MutantIllustration|MutantIllustration(io.github.youndie.mutant.illustration.MutantIllustrationKind;androidx.compose.ui.Modifier?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 final fun io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_array$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_array$stableprop_getter|io_github_youndie_mutant_resources_Res_array$stableprop_getter(){}[0]
 final fun io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_drawable$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_drawable$stableprop_getter|io_github_youndie_mutant_resources_Res_drawable$stableprop_getter(){}[0]
 final fun io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop_getter|io_github_youndie_mutant_resources_Res_font$stableprop_getter(){}[0]

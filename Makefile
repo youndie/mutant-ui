@@ -94,6 +94,8 @@ gate: docs-gate
 	node scripts/gen-goldens.mjs --check
 	# B-08: the generated tokens are what mutant-tokens.json and the engine say today, and the two agree.
 	node scripts/tokens.mjs --check
+	# B-14: the generated icon paths are the Icons page's `static ICONS` today.
+	node scripts/icons.mjs --check
 	# B-05: the Chrome references were rendered from today's pages, scripts and fonts (no Chrome needed here).
 	node scripts/design-references.mjs --manifest
 	# B-06: the reader that turns the field bench's log into its table can fail on a log whose answer is known.
