@@ -1,7 +1,7 @@
 ---
 id: B-58
 title: "Text field: the whole body takes the pointer, and the caret marks the insertion point"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
