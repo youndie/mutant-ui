@@ -1,7 +1,7 @@
 ---
 id: B-56
 title: "Navigation bar: throws in a horizontally scrolling row"
-status: open
+status: wip
 priority: P0
 size: S
 stage: stage-5-product
