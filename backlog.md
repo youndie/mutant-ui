@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-13](docs/backlog/B-13-tape.md) `[ ]` | The Tape («Лента»): one overlay over the screen | P1 | M | B-07, B-09 |
+| [B-13](docs/backlog/B-13-tape.md) `[~]` | The Tape («Лента»): one overlay over the screen | P1 | M | B-07, B-09 |
 | [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[ ]` | Icons, the six illustrations and the four patterns | P1 | S | B-10 |
 | [B-15](docs/backlog/B-15-button.md) `[ ]` | Button: filled, outlined, text; pressed, loading, success, disabled | P1 | M | B-10, B-11 |
 | [B-16](docs/backlog/B-16-icon-button-and-fab.md) `[ ]` | IconButton and FAB: 48 and 56 dp bodies, the extended FAB | P1 | M | B-10, B-11 |
