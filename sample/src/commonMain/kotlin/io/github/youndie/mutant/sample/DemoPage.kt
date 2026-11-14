@@ -83,19 +83,36 @@ internal fun DemoScreenFrame(
     screen: DemoScreen,
     strings: SampleStrings,
     dialogOpen: Boolean = true,
+    roundedClip: Boolean = true,
 ) {
     when (screen) {
-        DemoScreen.Library -> Screen(strings.demoLibrary, "demo-library") { Library(strings) }
-        DemoScreen.Recording -> Screen(strings.demoRecording, "demo-recording") { Recording(strings) }
-        DemoScreen.Settings -> Screen(strings.demoSettings, "demo-settings") { Settings(strings, dialogOpen) }
+        DemoScreen.Library -> {
+            Screen(strings.demoLibrary, "demo-library", roundedClip) { Library(strings) }
+        }
+
+        DemoScreen.Recording -> {
+            Screen(strings.demoRecording, "demo-recording", roundedClip) { Recording(strings) }
+        }
+
+        DemoScreen.Settings -> {
+            Screen(
+                strings.demoSettings,
+                "demo-settings",
+                roundedClip,
+            ) { Settings(strings, dialogOpen) }
+        }
     }
 }
 
-/** A phone's screen as the page draws it: 360 × 720, its corners 28, ringed in black, the Tape over it. */
+/**
+ * A phone's screen as the page draws it: 360 × 720, its corners 28, ringed in black, the Tape over it. Without
+ * [roundedClip] the corners are not cut: B-76's bench reads what that clip costs the render thread.
+ */
 @Composable
 private fun Screen(
     title: String,
     tag: String,
+    roundedClip: Boolean,
     content: @Composable () -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -105,7 +122,7 @@ private fun Screen(
             Modifier
                 .size(360.dp, 720.dp)
                 .border(2.dp, Color(0xFF05060C), RoundedCornerShape(28.dp))
-                .clip(RoundedCornerShape(28.dp))
+                .then(if (roundedClip) Modifier.clip(RoundedCornerShape(28.dp)) else Modifier)
                 .background(colors.background)
                 .mutantTape()
                 .testTag(tag),
