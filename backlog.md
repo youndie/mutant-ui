@@ -58,12 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (30)
+## Open (29)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10, B-73 |
-| [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[?]` | The code gate: three labels' ink a row off on one macos-latest run, not on its rerun | P1 | S | B-41 |
 | [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[ ]` | The sample's frame cost on the JVM, in a real window, and where it goes | P1 | M | B-41 |
 | [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[ ]` | The sample's frame cost in the browser (wasm) | P1 | M | B-72 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
@@ -93,7 +92,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (43)
+## Closed (45)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -152,5 +151,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-56](docs/backlog/B-56-navigation-bar-unbounded-width.md) `[x]` - Navigation bar: throws in a horizontally scrolling row
 - [B-57](docs/backlog/B-57-visible-keyboard-focus-everywhere.md) `[x]` - Keyboard focus: every Tab stop visible, and the dialog's Tab cycle
 - [B-58](docs/backlog/B-58-text-field-target-and-caret.md) `[x]` - Text field: the whole body takes the pointer, and the caret marks the insertion point
+- [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[x]` - The code gate replayed failed tests from the build cache as a pass
+- [B-74](docs/backlog/B-74-handjet-a-row-higher-on-macos-26.md) `[x]` - Handjet's ink a row higher on the CI's macOS 26 than on macOS 27 and in Chrome
 
 <!-- END INDEX -->

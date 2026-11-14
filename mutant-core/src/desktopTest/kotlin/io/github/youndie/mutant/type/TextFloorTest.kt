@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.ChromeText
 import io.github.youndie.mutant.DesignParity
+import io.github.youndie.mutant.HANDJET_ROWS_ABOVE
 import io.github.youndie.mutant.TEXT_INK
 import io.github.youndie.mutant.channelGap
 import io.github.youndie.mutant.extentOf
@@ -89,7 +90,9 @@ class TextFloorTest {
             lines += "$a, ${"%.1f".format(a.inkPercent)} % of the ink; kit $kit, Chrome $chrome"
             // The top row is the baseline's: exact, as on every probe measured. The bottom (a descender's edge) and the
             // sides (fractional advances, which Compose rounds) may lie a pixel apart.
-            if (!kit.near(chrome, px = 1, topPx = 0)) off += stem
+            // On macOS 26 alone, Handjet's top may lie a row higher (B-74).
+            val above = if (stem.startsWith("Text_Handjet")) HANDJET_ROWS_ABOVE else 0
+            if (!kit.near(chrome, px = 1, topPx = 0, above = above)) off += stem
         }
         println(lines.joinToString("\n"))
         assertTrue(off.isEmpty(), "text out of place: $off\n" + lines.joinToString("\n"))

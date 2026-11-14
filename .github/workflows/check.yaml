@@ -58,9 +58,7 @@ jobs:
       # Java and Gradle in one step and at one version for the portfolio.
       - uses: youndie/sborka/.github/actions/setup-kotlin@v0.5.0.135
 
-      # Which Mac ran the gate. The first public run (B-41) put three labels' ink a row off Chrome's
-      # on macOS 26.7.2, and a rerun on the same image passed: the image does not decide it, and
-      # this line is how the next one says which machine it was (B-71).
+      # Which Mac ran the gate: the text checks' positions depend on the macOS version (B-74).
       - name: the runner
         run: |
           sw_vers
