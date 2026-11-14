@@ -220,6 +220,8 @@ class NavigationBarParityTest {
                     }
                 }
             }
+            // A running clock builds a body's first instance off the frame and draws it from the next (B-50).
+            mainClock.advanceTimeByFrame()
             mainClock.advanceTimeByFrame()
         }
         val tz = bar!!.slot.textZone.toList()
@@ -257,6 +259,8 @@ class NavigationBarParityTest {
                     }
                 }
             }
+            // The first instance arrives in the second frame (B-50).
+            mainClock.advanceTimeByFrame()
             mainClock.advanceTimeByFrame()
         }
         assertEquals(13.0, plain!!.slot.textZone[1], "the icons' top, 15, less 2")

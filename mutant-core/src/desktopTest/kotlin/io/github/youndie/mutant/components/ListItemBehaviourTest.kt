@@ -236,6 +236,8 @@ class ListItemBehaviourTest {
                     }
                 }
             }
+            // A running clock builds a body's first instance off the frame and draws it from the next (B-50).
+            mainClock.advanceTimeByFrame()
             mainClock.advanceTimeByFrame()
         }
         assertEquals(zone, tile!!.slot.textZone.toList(), "kit against the engine")
