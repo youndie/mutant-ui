@@ -167,9 +167,13 @@ class ButtonParityTest {
         val page: Extent?,
         /** A label over the disabled body's grey, taken at a lower threshold. */
         val weak: Boolean = false,
+        /** The label's colour where it adds most — a pixel it covers whole — in the kit and on the page, `0xRRGGBB`. */
+        val kitInk: Int = 0,
+        val pageInk: Int = 0,
     ) {
         override fun toString(): String =
-            "$result; body $body px; label kit $kit, page $page${if (weak) " (weak)" else ""}"
+            "$result; body $body px; label kit $kit, page $page${if (weak) " (weak)" else ""}; " +
+                "ink kit #${kitInk.toString(16)}, page #${pageInk.toString(16)}"
     }
 
     internal fun split(
@@ -203,7 +207,11 @@ class ButtonParityTest {
                 inside(it) &&
                     channelGap(r.reference[it], bare.reference[it]) > threshold
             }
-        return Split(r, body, kit, page, weak)
+        // The label's colour: at the pixel it adds most to, which both renderers cover whole, the colours agree.
+        val inside = (0 until r.width * r.height).filter(::inside)
+        val kitInk = r.actual[inside.maxBy { channelGap(r.actual[it], bare.actual[it]) }]
+        val pageInk = r.reference[inside.maxBy { channelGap(r.reference[it], bare.reference[it]) }]
+        return Split(r, body, kit, page, weak, kitInk, pageInk)
     }
 
     @Test
@@ -216,7 +224,8 @@ class ButtonParityTest {
                 val c = split(name, theme)
                 lines += c.toString()
                 val labelHere =
-                    c.kit != null && c.page != null && c.kit.near(c.page, px = 1, topPx = 0)
+                    c.kit != null && c.page != null && c.kit.near(c.page, px = 1, topPx = 0) &&
+                        channelGap(c.kitInk, c.pageInk) <= INK_COLOUR
                 if (c.body > (RESIDUAL[stem] ?: FLOOR_PIXELS) || !labelHere) off += stem
             }
         }
@@ -260,6 +269,9 @@ class ButtonParityTest {
     private companion object {
         /** The body's floor in pixels (research §1.8). */
         const val FLOOR_PIXELS = 5
+
+        /** The label's colour at a pixel both cover whole: the pixel threshold. */
+        const val INK_COLOUR = 16
 
         /** Half of what a dark label adds over the disabled body's grey (106 − 5 on «Эфир»). */
         const val WEAK_INK = 50
