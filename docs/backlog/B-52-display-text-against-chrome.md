@@ -1,7 +1,7 @@
 ---
 id: B-52
 title: "Display text against Chrome: Handjet labels 2 px low, and a floor for text"
-status: open
+status: wip
 priority: P0
 size: S
 stage: stage-1-materials
