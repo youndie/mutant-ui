@@ -131,6 +131,10 @@ export const REFERENCES = [
       ['Fab_Rest', 'fab', 0, 36], ['Fab_Pressed', 'fab', 1, 36], ['Fab_Extended', 'fab', 2, 36]]
       .flatMap(([s, type, index, below]) => [false, true].map((bare) =>
         ({ stem: `Mutant${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'iconfab', type, index, theme, below, hideText: bare })))),
+  // B-17: the Chip stage, whole and bare, both themes; cut above the captions, 28 px under the slot.
+  ...['Efir', 'Kopiya'].flatMap((theme) =>
+    ['Unselected', 'Selected', 'Pressed', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
+      ({ stem: `MutantChip_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'chip', type: 'chip', index, theme, below: 26, hideText: bare })))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.

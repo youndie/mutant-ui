@@ -235,12 +235,13 @@ internal fun ButtonBody(
     }
 }
 
-/** A button's label: Rubik 500 at 15, on Blink's line box (research §1.14), one line. */
+/** A button's label: Rubik 500 at 15 (a chip's at 13), on Blink's line box (research §1.14), one line. */
 @Composable
 internal fun ButtonLabel(
     text: String,
     color: Color,
     modifier: Modifier,
+    size: Int = LABEL_SIZE,
 ) {
     BasicText(
         text,
@@ -249,7 +250,7 @@ internal fun ButtonLabel(
             TextStyle(
                 fontFamily = LocalMutantFonts.current?.text,
                 fontWeight = FontWeight.Medium,
-                fontSize = LABEL_SIZE.sp,
+                fontSize = size.sp,
                 color = color,
                 platformStyle = LocalMutantTextRaster.current,
             ).cssLine(MutantFaceMetrics.Rubik),

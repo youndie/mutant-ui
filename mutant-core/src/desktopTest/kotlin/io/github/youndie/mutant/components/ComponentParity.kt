@@ -3,8 +3,10 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -21,6 +23,8 @@ import io.github.youndie.mutant.clock.STILL_MS
 import io.github.youndie.mutant.extentOf
 import io.github.youndie.mutant.surface.LocalMutantOutlineOverride
 import io.github.youndie.mutant.surface.LocalMutantSlotOrigin
+import io.github.youndie.mutant.surface.LocalMutantSlotSize
+import io.github.youndie.mutant.surface.LocalMutantTextZone
 import io.github.youndie.mutant.theme.LocalMutantStage
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantColors
@@ -28,6 +32,7 @@ import io.github.youndie.mutant.tokens.MutantPalettes
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.double
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
@@ -52,11 +57,19 @@ internal object ComponentParity {
         val key = slot["key"]!!.jsonPrimitive.content
         val outline = slot["drawnOutline"]!!.jsonPrimitive.float
         val origin = Offset(slot["ox"]!!.jsonPrimitive.float, slot["oy"]!!.jsonPrimitive.float)
+        val engineZone = (slot["tz"] as? JsonArray)?.map { it.jsonPrimitive.double }?.toDoubleArray()
+        val engineSize =
+            androidx.compose.ui.geometry.Size(
+                slot["w"]!!.jsonPrimitive.float,
+                slot["h"]!!.jsonPrimitive.float,
+            )
         MutantTheme(colors = palette(theme)) {
             CompositionLocalProvider(
                 // The cell's own slot: a page may give several cells one key.
                 LocalMutantOutlineOverride provides { if (it == key) outline else null },
                 LocalMutantSlotOrigin provides { if (it == key) origin else null },
+                LocalMutantSlotSize provides { if (it == key) engineSize else null },
+                LocalMutantTextZone provides { if (it == key) engineZone else null },
                 LocalMutantTextRaster provides ChromeText,
                 LocalMutantStage provides slot["stage"]!!.jsonPrimitive.content,
             ) {
@@ -65,10 +78,15 @@ internal object ComponentParity {
         }
     }
 
-    /** The cell [stem] drawn by [draw], given a modifier that places and sizes it at the page's slot. */
+    /**
+     * The cell [stem] drawn by [draw], given a modifier that places and sizes it at the page's slot. A cell sized by
+     * its label ([fit]) gets the slot's width as a minimum: the engine records Chrome's 103.4 dp as 103, and Compose,
+     * which rounds a text's width up, would cut the label to fit it.
+     */
     fun cell(
         stem: String,
         theme: String,
+        fit: Boolean = false,
         draw: @Composable (Modifier) -> Unit,
     ): DesignParity.Result {
         val s = DesignParity.reference(stem)["slot"]!!.jsonObject
@@ -79,7 +97,20 @@ internal object ComponentParity {
         return DesignParity.compare(stem, ground) {
             Fixture(s, theme) {
                 Box(Modifier.fillMaxSize().background(ground)) {
-                    draw(Modifier.offset(x.dp, y.dp).size(s["w"]!!.jsonPrimitive.int.dp, s["h"]!!.jsonPrimitive.int.dp))
+                    val w = s["w"]!!.jsonPrimitive.int.dp
+                    val h = s["h"]!!.jsonPrimitive.int.dp
+                    draw(
+                        if (fit) {
+                            Modifier
+                                .offset(
+                                    x.dp,
+                                    y.dp,
+                                ).widthIn(min = w)
+                                .height(h)
+                        } else {
+                            Modifier.offset(x.dp, y.dp).size(w, h)
+                        },
+                    )
                 }
             }
         }
@@ -119,11 +150,12 @@ internal object ComponentParity {
         base: String,
         theme: String,
         threshold: Int = TEXT_INK,
+        fit: Boolean = false,
         draw: @Composable (Modifier, Boolean) -> Unit,
     ): Split {
         val stem = "${base}_$theme"
-        val r = cell(stem, theme) { draw(it, false) }
-        val bare = cell("${base}Bare_$theme", theme) { draw(it, true) }
+        val r = cell(stem, theme, fit) { draw(it, false) }
+        val bare = cell("${base}Bare_$theme", theme, fit) { draw(it, true) }
         val s = DesignParity.reference(stem)["slot"]!!.jsonObject
         val origin = (s["origin"] as JsonArray).map { it.jsonPrimitive.int }
         val cz = (s["cz"] as JsonArray).map { it.jsonPrimitive.float }
