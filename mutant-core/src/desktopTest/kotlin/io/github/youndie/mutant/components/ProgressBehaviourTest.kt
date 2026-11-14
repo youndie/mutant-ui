@@ -92,6 +92,15 @@ class ProgressBehaviourTest {
             // 6 on, 2 off: columns 0–5 acid, 6–7 black, 8–13 acid.
             assertEquals((0..5).toList() + (8..13).toList(), half.filter { it < 14 })
             assertTrue(acidColumns("over").last() >= 197, "clamped to the whole")
+            onNodeWithTag("over").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.ProgressBarRangeInfo,
+                    ProgressBarRangeInfo(
+                        1f,
+                        0f..1f,
+                    ),
+                ),
+            )
             assertTrue(acidColumns("nan").isEmpty(), "NaN reads as none")
             onNodeWithText("007%").assertExists()
         }
@@ -108,7 +117,9 @@ class ProgressBehaviourTest {
             mainClock.advanceTimeByFrame()
             val px = onNodeWithTag("room").captureToImage().toPixelMap()
             val black = Color(0xFF05060C)
-            assertTrue(near(px[50, 2], black, .02f) && near(px[50, 3], black, .02f), "two rows above the track")
+            // Whole rows: opaque, not a half-covered row over the transparent ground.
+            val solid = { c: Color -> near(c, black, .02f) && c.alpha > .99f }
+            assertTrue(solid(px[50, 2]) && solid(px[50, 3]), "two rows above the track: ${px[50, 2]}, ${px[50, 3]}")
             assertTrue(!near(px[50, 1], black, .02f), "and not a third")
         }
 
@@ -149,6 +160,26 @@ class ProgressBehaviourTest {
             later = pixels("b")
         }
         assertEquals(paused, later, "paused")
+        // The band's quarters over the black: 15 %, 40 % and solid acid, read where each stands whole.
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            // Paused, it stands at the still frame's tick 40: 480 dp round a 200 dp track and its band, 88 dp in.
+            show(reduceMotion = true) { MutantLinearProgress(Modifier.width(200.dp).testTag("q")) }
+            mainClock.advanceTimeByFrame()
+            val px = onNodeWithTag("q").captureToImage().toPixelMap()
+            val end = acidColumns("q").last()
+            assertEquals(183, end, "the band's end, paused at the still frame")
+            val black = Color(0xFF05060C)
+
+            fun over(a: Float) =
+                Color(
+                    acid.red * a + black.red * (1 - a),
+                    acid.green * a + black.green * (1 - a),
+                    acid.blue * a + black.blue * (1 - a),
+                )
+            assertTrue(near(px[end - 60, 6], over(.4f), .02f), "the 40 % quarter: ${px[end - 60, 6]}")
+            assertTrue(near(px[end - 84, 6], over(.15f), .02f), "the 15 % quarter: ${px[end - 84, 6]}")
+        }
     }
 
     @Test
@@ -168,6 +199,9 @@ class ProgressBehaviourTest {
             val first = pixels("r")
             mainClock.advanceTimeBy(125)
             assertNotEquals(first, pixels("r"), "turned a step")
+            // The spool's paper at its centre, which no hole reaches: the page's literal, in both themes.
+            val centre = onNodeWithTag("r").captureToImage().toPixelMap()[18, 18]
+            assertTrue(near(centre, Color(0xFFE9F2E4), .01f), "the spool: $centre")
             // Its holes are not quite 120° apart: the picture comes back after twelve ticks, a whole turn.
             mainClock.advanceTimeBy(125 * 11)
             assertEquals(first, pixels("r"), "a whole turn on, the same picture")

@@ -23,9 +23,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.MutantClock
+import io.github.youndie.mutant.clock.STILL_MS
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.jsRound
 import io.github.youndie.mutant.theme.LocalMutantFonts
+import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
@@ -77,11 +80,13 @@ public fun MutantLinearProgress(
 /**
  * An indeterminate linear progress (`rewind`): the black track with a 96 dp band running through it — a quarter at
  * 15 % acid, a quarter at 40 %, half solid — 12 dp a scene tick, from beyond its start to beyond its end and round.
- * It stands under reduce motion. It reads as indeterminate progress.
+ * Under reduce motion it stands where the page's still frame has it (the engine's 5 s). It reads as indeterminate
+ * progress.
  */
 @Composable
 public fun MutantLinearProgress(modifier: Modifier = Modifier) {
     val clock = readMutantClock()
+    val reduce = LocalMutantReduceMotion.current
     val acid = MutantTheme.colors.primary
     Canvas(
         modifier
@@ -89,7 +94,8 @@ public fun MutantLinearProgress(modifier: Modifier = Modifier) {
             .height(TRACK)
             .semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate },
     ) {
-        val tick = clock.sceneTick
+        // Paused, it stands where the page's still frame has it: the clock's own tick 0 would leave it before the track.
+        val tick = if (reduce) STILL_TICK else clock.sceneTick
         scale(density, Offset.Zero) {
             // The engine measures the track and the band whole (`offsetWidth`).
             val w = jsRound(size.width / density.toDouble()).toFloat()
@@ -151,9 +157,10 @@ private const val SEGMENT_GAP = 2f
 private val VALUE_GAP = 12.dp
 private const val VALUE_SIZE = 20
 
-/** The band: 96 dp, 12 dp a tick (`translateX((fi * 12) % (pw + w) - w)`). */
+/** The band: 96 dp, 12 dp a tick (`translateX((fi * 12) % (pw + w) - w)`); paused, at the still frame's tick. */
 private const val BAND = 96f
 private const val BAND_STEP = 12L
+private val STILL_TICK = (STILL_MS / MutantClock.SCENE_TICK_MS).toLong()
 
 /** The reel: 36 dp, ringed 2.5, its holes 8 dp at 14,4 · 5,20 · 23,20, 30° a tick. */
 private val REEL = 36.dp
