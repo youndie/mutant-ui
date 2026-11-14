@@ -131,7 +131,8 @@ class EmptyStateBehaviourTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = 2f)) {
                     MutantTheme(reduceMotion = true) {
-                        Column(Modifier.testTag("all")) {
+                        // Side by side: the one given no width stands a letter a line, thousands of dp tall.
+                        androidx.compose.foundation.layout.Row(Modifier.testTag("all")) {
                             MutantEmptyState(MutantIllustrationKind.Remote, long, Modifier.width(0.dp), text = long)
                             MutantEmptyState(
                                 MutantIllustrationKind.Remote,
@@ -157,7 +158,9 @@ class EmptyStateBehaviourTest {
                     it.boundsInRoot.top >=
                         e.top
                 }
-            for (node in inside.filter { it.boundsInRoot.width > 0f }) {
+            val measured = inside.filter { it.boundsInRoot.width > 0f && it.boundsInRoot.left >= e.left }
+            assertEquals(2, measured.size, "the title and the text of the 240 dp one")
+            for (node in measured) {
                 val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
                 node.config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
                 val layout = layouts.single()
