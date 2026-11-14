@@ -56,3 +56,17 @@ internal fun clamp(
 
 /** A value as a `Float32Array` stores it and reads it back. */
 internal fun f32(v: Double): Double = v.toFloat().toDouble()
+
+/**
+ * `Number.prototype.toFixed(digits)` as a number, for the few values the JS rounds that way before they
+ * reach the picture (a speckle's position, the outline's width): the magnitude rounded half up.
+ */
+internal fun jsToFixed(
+    v: Double,
+    digits: Int,
+): Double {
+    var scale = 1.0
+    repeat(digits) { scale *= 10 }
+    val t = jsRound(abs(v) * scale) / scale
+    return if (v < 0) -t else t
+}

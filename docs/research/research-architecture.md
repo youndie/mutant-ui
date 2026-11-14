@@ -201,6 +201,21 @@ first thing measured after the first body ([B-49](../backlog/B-49-frame-cost-on-
 first frame is the expensive one, so [B-10](../backlog/B-10-mutant-surface.md) must not build ten
 instances' static layers inside one frame.
 
+### 1.10 The body as the kit draws it
+
+Settled by [B-10](../backlog/B-10-mutant-surface.md).
+
+| Fact | Where verified |
+|---|---|
+| The renderer layers a body as `itemHtml` does — shadow, the outline-clipped group shifted by `slip` (fill, the stage's speckle, edge mosaic, dead pixels, flow lines), the highlight in two clip rectangles, the outline — and against the Components page's resting button, card and field (text made transparent, the slot rebuilt from what the engine recorded) differs on 0.008 %, 0.000 % and 0.000 % of pixels | `BodyParityTest`, `mutant-core/build/parity/*_DIFF.png`, 2026-11-14 |
+| The engine samples the edge noise and the boil's noise at the slot's **stage** coordinates, so on a page a body moved within its stage would change its edge; its speckle tile is anchored to the stage | `reference/design-system/mutant-generator.js` (`field`: `vn(X · .8, Y · .8)` at scene X, Y), `mutant-engine.js` (`buildStage`, pattern `sp`) |
+| Growing a field from 260 to 268 dp over 200 keys keeps every drip (3162 of 3162) and 80 % of the mosaic (7810 of 9762 blocks) and moves every flow line (0 of 1460 kept): their spacing is `w / n` | a Node run of the vendored generator, 2026-11-14 |
+
+**Consequence 9.** The kit's body is the page's, layer for layer. Where the page relies on its host —
+stage coordinates for the noise, the slot count for the tremble — the kit uses the body's own (D16).
+A size change is visible in the flow lines; whether to accept that is the owner's
+([B-51](../backlog/B-51-size-change-moves-the-flow-lines.md)).
+
 ---
 
 ## 2. Decisions
@@ -335,6 +350,15 @@ owner's review round over the finished sample, and its item lists every number i
 design does not state. Everything the design does draw stays held to the design. The loop does not
 wait for review of what is designed here.
 
+### D16. A body's origin is its own
+
+The kit generates every body with its slot at (0, 0) and anchors its speckle to the body, so a body that
+moves — scrolled, animated, re-laid out — keeps its edge, its noise and its speckle. On the page the
+same body moved within its stage would re-noise its edge and slide under the speckle; no page moves one,
+so nothing the design draws is lost. The outline's tremble is seeded by the instance's hash instead of
+the engine's running slot count. Parity fixtures pass the page's stage coordinates and its drawn outline
+width to compare like with like ([B-10](../backlog/B-10-mutant-surface.md)).
+
 ---
 
 ## 3. Risks and open questions
@@ -346,7 +370,7 @@ wait for review of what is designed here.
 | H3 | **The field is too slow on a phone** (D13). | *Desktop half settled by B-06:* instance green, card frame grey (§1.9). The phone is [B-49](../backlog/B-49-frame-cost-on-a-pixel-6a.md); on red, the brief's retreat order and the handoff's two outs, a coarser grid or a shader field. |
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | The handoff allows the geometric fallback on older Android; whether a common-code blur plus colour-matrix layer reproduces `a' = 18·a − 8.2` is checked against the venom references ([B-12](../backlog/B-12-transitions.md)). |
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | *Closed by B-05:* `data-mu-t` on every stage, with keyframe loss off, renders byte-identically twice; the pause is not needed (§1.8). |
-| R1 | **Shape jumps when a slot is resized** (§1.7): a text field growing with its content rebuilds its drips. | Measured on the field and the card; if it is visible, the owner chooses between a size bucket and the jump ([B-10](../backlog/B-10-mutant-surface.md)). |
+| R1 | **Shape jumps when a slot is resized** (§1.7). | *Measured by B-10:* the drips stay, the mosaic mostly stays, the flow lines all move (§1.10); the owner decides in [B-51](../backlog/B-51-size-change-moves-the-flow-lines.md). |
 | R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | Measured on the kit at the worst tick; the owner chooses WCAG's exemption or a darker token ([B-38](../backlog/B-38-accessibility.md)). |
 | R3 | **What the design does not draw** — appearance and gestures of the v1 set, «Чистый сигнал», hover. | *Closed by B-43:* designed here (D15), each item listing the numbers it chose. |
 | R4 | **Flashes on a real screen** were measured by the designer in a browser, not on a device. | A recording of the demo screens through the flash rule, in [B-38](../backlog/B-38-accessibility.md). |

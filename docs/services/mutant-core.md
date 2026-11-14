@@ -31,6 +31,8 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/clock/MutantClock.kt` | the kit clock, its provider and its readers ([B-07](../backlog/B-07-kit-clock.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/tokens/MutantTokens.kt` | the generated tokens: public `MutantColors` and `MutantPalettes`, internal type, grid, profiles, motion, genome ([B-08](../backlog/B-08-token-generator.md)) |
 | `scripts/tokens.mjs` | writes them from `mutant-tokens.json` and the engine's `static K` and `TH`; `--check` in the gate |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/` | `MutantSurface` and the body renderer (`BodyDrawing.kt`): layers, speckle, clean zone, the held instance ([B-10](../backlog/B-10-mutant-surface.md)) |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the page's resting button, card and field |
 | `mutant-core/api/` | the committed public API dump |
 | `mutant-core/src/desktopTest/snapshots/design/` | the Chrome references and their `manifest.json`, rendered by `scripts/design-references.mjs` (`make references`) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/gen/BodyFloorTest.kt` | the floor of the body: Chrome's outline against Compose's |
@@ -76,6 +78,9 @@ or any Material artefact; and its generator package does not depend on Compose.
 - The kit clock asks for frames only while something reads it and it is neither paused nor frozen;
   readers observe its ticks, not its time, so a body recomposes 8 times a second, not 60. Outside any
   provider a body reads a frozen clock at 5000 ms, as the references are drawn.
+- `MutantSurface` builds its instance and the field's static layers in its draw cache on the main
+  thread, so a body's first frame costs about ten times a warm one; ten bodies appearing together cost
+  tens of ms ([B-50](../backlog/B-50-first-frame-off-the-frame.md)).
 - The browser tests run under Mocha and Karma limits raised to 30 s and 60 s
   (`mutant-core/karma.config.d/mocha-timeout.js`): Mocha's 2 s turned plakat-ui's `main` red on a
   hosted runner.

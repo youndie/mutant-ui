@@ -75,11 +75,216 @@
       "stem": "Button_Rest_Efir",
       "page": "mutant-ui Компоненты.dc.html",
       "stage": "button",
+      "type": "btn",
       "index": 0,
       "x": 80,
       "y": 420,
       "w": 224,
-      "h": 117
+      "h": 117,
+      "slot": {
+        "key": "button",
+        "stage": "button",
+        "origin": [
+          16,
+          63
+        ],
+        "ox": 28,
+        "oy": 78,
+        "w": 200,
+        "h": 48,
+        "r": 12,
+        "over": 24,
+        "cf": 0.55,
+        "ow": 3,
+        "wob": 1,
+        "round": 0,
+        "calm": 1,
+        "dead": 0,
+        "marks": 1,
+        "edge": 1,
+        "tz": [
+          36.1875,
+          13,
+          127.625,
+          22
+        ],
+        "cz": [
+          34.1875,
+          11,
+          131.625,
+          26
+        ],
+        "fill": "#b6ff1a",
+        "hl": "#ffffff",
+        "slip": 0,
+        "shadow": null,
+        "stroke": "#05060c",
+        "state": "",
+        "drawnOutline": 2.89,
+        "background": "rgb(16, 20, 42)"
+      }
+    },
+    {
+      "stem": "Button_RestBody_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "stage": "button",
+      "type": "btn",
+      "index": 0,
+      "hideText": true,
+      "x": 80,
+      "y": 420,
+      "w": 224,
+      "h": 117,
+      "slot": {
+        "key": "button",
+        "stage": "button",
+        "origin": [
+          16,
+          63
+        ],
+        "ox": 28,
+        "oy": 78,
+        "w": 200,
+        "h": 48,
+        "r": 12,
+        "over": 24,
+        "cf": 0.55,
+        "ow": 3,
+        "wob": 1,
+        "round": 0,
+        "calm": 1,
+        "dead": 0,
+        "marks": 1,
+        "edge": 1,
+        "tz": [
+          36.1875,
+          13,
+          127.625,
+          22
+        ],
+        "cz": [
+          34.1875,
+          11,
+          131.625,
+          26
+        ],
+        "fill": "#b6ff1a",
+        "hl": "#ffffff",
+        "slip": 0,
+        "shadow": null,
+        "stroke": "#05060c",
+        "state": "",
+        "drawnOutline": 2.89,
+        "background": "rgb(16, 20, 42)"
+      }
+    },
+    {
+      "stem": "Card_RestBody_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "stage": "card",
+      "type": "card",
+      "index": 0,
+      "hideText": true,
+      "x": 80,
+      "y": 1406,
+      "w": 386,
+      "h": 149,
+      "slot": {
+        "key": "card",
+        "stage": "card",
+        "origin": [
+          16,
+          63
+        ],
+        "ox": 28,
+        "oy": 78,
+        "w": 362,
+        "h": 80,
+        "r": 10,
+        "over": 24,
+        "cf": 0.4,
+        "ow": 3,
+        "wob": 1,
+        "round": 0,
+        "calm": 1,
+        "dead": 1,
+        "marks": 1,
+        "edge": 1,
+        "tz": [
+          10,
+          12,
+          144.75,
+          42
+        ],
+        "cz": [
+          8,
+          10,
+          148.75,
+          46
+        ],
+        "fill": "#232b4a",
+        "hl": "#6b78b6",
+        "slip": 0,
+        "shadow": null,
+        "stroke": "#05060c",
+        "state": "",
+        "drawnOutline": 3.17,
+        "background": "rgb(16, 20, 42)"
+      }
+    },
+    {
+      "stem": "Field_RestBody_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "stage": "field",
+      "type": "field",
+      "index": 0,
+      "hideText": true,
+      "x": 912,
+      "y": 1042,
+      "w": 386,
+      "h": 113,
+      "slot": {
+        "key": "field",
+        "stage": "field",
+        "origin": [
+          16,
+          63
+        ],
+        "ox": 28,
+        "oy": 78,
+        "w": 362,
+        "h": 52,
+        "r": 6,
+        "over": 16,
+        "cf": 0.4,
+        "ow": 3,
+        "wob": 1,
+        "round": 0,
+        "calm": 1,
+        "dead": 0,
+        "marks": 1,
+        "edge": 1,
+        "tz": [
+          8,
+          12.5,
+          160.75,
+          27
+        ],
+        "cz": [
+          6,
+          10.5,
+          164.75,
+          31
+        ],
+        "fill": "#232b4a",
+        "hl": "#6b78b6",
+        "slip": 0,
+        "shadow": null,
+        "stroke": "#05060c",
+        "state": "",
+        "drawnOutline": 2.91,
+        "background": "rgb(16, 20, 42)"
+      }
     }
   ]
 }
