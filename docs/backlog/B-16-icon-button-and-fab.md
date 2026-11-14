@@ -1,7 +1,7 @@
 ---
 id: B-16
 title: "IconButton and FAB: 48 and 56 dp bodies, the extended FAB"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
