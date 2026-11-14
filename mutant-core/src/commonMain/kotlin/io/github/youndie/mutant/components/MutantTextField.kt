@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -22,13 +23,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.ResolvedTextDirection
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,9 +59,10 @@ import kotlin.math.roundToInt
 /**
  * A text field: a line of the on-screen menu (body `field`, 52 dp tall). [prefix] is the OSD label before the
  * value (Handjet, the OSD colour), [placeholder] stands in while the value is empty. Focused, the damage drops to 30 %,
- * the corner brackets lock on and a block caret blinks after the text; [isError] corrupts the body (the red offset
- * outline and blocks); disabled, it loses its signal and both texts grey. The text and the caret are never moved by
- * the body. One line.
+ * the corner brackets lock on and a block caret blinks after the text, or a thin one stands before the insertion point
+ * inside it; [isError] corrupts the body (the red offset outline and blocks); disabled, it loses its signal and both
+ * texts grey. A press anywhere on the body focuses it and puts the cursor at the nearest place in the text. The text
+ * and the caret are never moved by the body. One line; its direction is the text's.
  */
 @Composable
 public fun MutantTextField(
@@ -111,13 +123,36 @@ internal fun TextFieldBody(
             platformStyle = LocalMutantTextRaster.current,
         ).cssLine(MutantFaceMetrics.Rubik)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    // The cursor is the field's own, kept here so a press on the body can place it; a value changed from outside puts
+    // it at the end. Focus by Tab finds it at the end too.
+    var held by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    val field = if (held.text == value) held else TextFieldValue(value, TextRange(value.length))
+    val requester = remember { FocusRequester() }
+    var textBox by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var body by remember { mutableStateOf<LayoutCoordinates?>(null) }
     MutantSurface(
         MutantBody.Field,
         key,
         modifier
             .defaultMinSize(minWidth = MIN_WIDTH)
             .height(HEIGHT)
-            .semantics { if (isError) error("") },
+            .onGloballyPositioned { body = it }
+            // A press the text itself does not take (the prefix, the padding, above and below the line) focuses the
+            // field and puts the cursor at the nearest place on the line (B-58).
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                detectTapGestures { at ->
+                    requester.requestFocus()
+                    val l = layout ?: return@detectTapGestures
+                    val b = body ?: return@detectTapGestures
+                    val t = textBox ?: return@detectTapGestures
+                    if (!b.isAttached || !t.isAttached) return@detectTapGestures
+                    val local = t.localPositionOf(b, at)
+                    val n = l.layoutInput.text.length
+                    val offset = l.getOffsetForPosition(Offset(local.x, l.size.height / 2f)).coerceIn(0, n)
+                    held = field.copy(selection = TextRange(offset))
+                }
+            }.semantics { if (isError) error("") },
         state =
             when {
                 !enabled -> BodyState.Disabled
@@ -161,12 +196,18 @@ internal fun TextFieldBody(
                     )
                 }
                 BasicTextField(
-                    value,
-                    onValueChange,
+                    field,
+                    {
+                        held = it
+                        if (it.text != value) onValueChange(it.text)
+                    },
                     // Only the value marks the clean zone: an empty field's box is the placeholder's.
-                    (if (value.isEmpty()) Modifier else Modifier.mutantCleanZone()).fillMaxWidth(),
+                    (if (value.isEmpty()) Modifier else Modifier.mutantCleanZone())
+                        .fillMaxWidth()
+                        .focusRequester(requester)
+                        .onGloballyPositioned { textBox = it },
                     enabled = enabled,
-                    textStyle = valueStyle,
+                    textStyle = valueStyle.copy(textDirection = TextDirection.Content),
                     keyboardOptions = keyboardOptions,
                     singleLine = true,
                     interactionSource = source,
@@ -174,41 +215,59 @@ internal fun TextFieldBody(
                     cursorBrush = SolidColor(Color.Transparent),
                     onTextLayout = { layout = it },
                 )
-                if (focused && enabled) Caret(layout, value, tint(colors.text))
+                if (focused && enabled) Caret(layout, value, field.selection.start, tint(colors.text))
             }
         }
     }
 }
 
 /**
- * The block caret (the page's 9 × 20 `data-mu-anim="blink"`): after the text, 8 dp from its end, shown five scene
- * ticks in eight — 625 ms in each second — and standing under reduce motion. It never leaves the field: past the
- * field's end it stops at its edge.
+ * The caret, shown five scene ticks in eight — 625 ms in each second — and standing under reduce motion. At the end of
+ * the text it is the page's block (9 × 20, `data-mu-anim="blink"`), 8 dp past the end on the side the text runs. Inside
+ * the text, where a block would cover the next letter, it is a bar 2 dp wide standing just before the insertion point,
+ * against the letter already typed (designed here, B-58). It never leaves the field: it stops at its edges.
  */
 @Composable
 private fun Caret(
     layout: TextLayoutResult?,
     value: String,
+    cursor: Int,
     color: Color,
 ) {
     val clock = readMutantClock()
     val still = LocalMutantReduceMotion.current
-    // The end of the text the layout holds: on the frame a value changes, the layout is still the last one's, and
-    // asking it about the new value's end throws.
-    val end =
-        layout?.let {
-            val n = it.layoutInput.text.length
-            if (n == 0) 0f else it.getHorizontalPosition(n, true)
-        } ?: 0f
+    // Asked of the text the layout holds: on the frame a value changes, the layout is still the last one's, and asking
+    // it about the new value throws.
+    val n = layout?.layoutInput?.text?.length ?: 0
+    val at = cursor.coerceIn(0, n)
+    val atEnd = at == n
+    val x = layout?.let { if (n == 0) 0f else it.getHorizontalPosition(at, true) } ?: 0f
+    val rtl =
+        layout?.let { n > 0 && it.getParagraphDirection(if (atEnd) n - 1 else at) == ResolvedTextDirection.Rtl }
+            ?: false
     val gap = if (value.isEmpty()) 0.dp else GAP
+    val width = if (atEnd) CARET_W else CARET_BAR
     Canvas(
         Modifier
             .layout { measurable, constraints ->
                 val p = measurable.measure(constraints.copy(minWidth = 0))
-                // At the text's end, but never past the field's.
-                val x = (end + gap.toPx()).roundToInt().coerceAtMost(constraints.maxWidth - p.width).coerceAtLeast(0)
-                layout(constraints.maxWidth, p.height) { p.place(x, 0) }
-            }.size(CARET_W, CARET_H)
+                val left =
+                    when {
+                        // The block past the end, on the side the text runs.
+                        atEnd && !rtl -> x + gap.toPx()
+
+                        atEnd -> x - gap.toPx() - p.width
+
+                        // The bar against the letter before the insertion point.
+                        !rtl -> x - p.width
+
+                        else -> x
+                    }
+                // The bar may stand in the padding or the gap before the text, the block never leaves the line.
+                val min = if (atEnd) 0 else -p.width
+                val px = left.roundToInt().coerceAtMost(constraints.maxWidth - p.width).coerceAtLeast(min)
+                layout(constraints.maxWidth, p.height) { p.place(px, 0) }
+            }.size(width, CARET_H)
             .mutantCleanZone(),
     ) {
         val shown = still || clock.sceneTick % BLINK_PERIOD < BLINK_ON
@@ -217,7 +276,7 @@ private fun Caret(
                 color,
                 size =
                     androidx.compose.ui.geometry
-                        .Size(CARET_W.toPx(), CARET_H.toPx()),
+                        .Size(width.toPx(), CARET_H.toPx()),
             )
         }
     }
@@ -237,6 +296,9 @@ private const val VALUE_SIZE = 15
 
 /** The block caret, and its blink: on for 5 of every 8 scene ticks (the engine's `fi % 8 < 5`). */
 private val CARET_W = 9.dp
+
+/** The caret inside the text: a bar, so it covers no letter (designed here, B-58). */
+private val CARET_BAR = 2.dp
 private val CARET_H = 20.dp
 private const val BLINK_PERIOD = 8L
 private const val BLINK_ON = 5L

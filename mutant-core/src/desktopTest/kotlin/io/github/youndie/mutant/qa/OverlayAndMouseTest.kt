@@ -226,9 +226,6 @@ class OverlayAndMouseTest {
         assertEquals(emptyList(), failures)
     }
 
-    @Ignore(
-        "F04: only the value's line takes a click: the prefix, the padding and two thirds of the 52 dp body do nothing",
-    )
     @Test
     fun `F04 a click anywhere on the text field's body focuses it`() {
         val missed = mutableListOf<Offset>()
@@ -255,11 +252,8 @@ class OverlayAndMouseTest {
 
     private val text = MutantPalettes.Efir.text
 
-    @Ignore(
-        "F05: the block caret stands after the text whatever the cursor; focused by Tab the cursor is at 0 and typing lands before it",
-    )
     @Test
-    fun `F05 the block caret stands where the next character goes`() =
+    fun `F05 the caret stands where the next character goes`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             var value by mutableStateOf("abc")
@@ -271,19 +265,25 @@ class OverlayAndMouseTest {
                 }
             }
             mainClock.advanceTimeBy(100)
+            val glyphs =
+                onNodeWithTag("f").captureToImage().toPixelMap().let { px ->
+                    (0 until px.width).filter { x -> (0 until px.height).any { y -> near(px[x, y], text) } }
+                }
             press(Key.Tab)
+            // Focused by Tab, the cursor is at the end: the block stands past the text, and a letter goes there.
             val atTab = onNodeWithTag("f").captureToImage().toPixelMap().columnsOf(text)
+            assertTrue(atTab.isNotEmpty() && atTab.first() > 30, "the block past 'abc': $atTab")
             onNode(hasSetTextAction()).performTextInput("Z")
             mainClock.advanceTimeBy(100)
-            assertEquals("Zabc", value, "focused by Tab, the cursor stands at the start")
-            // The block should have stood before 'a', at the field's start: 14 dp in.
-            assertTrue(
-                atTab.isNotEmpty() && atTab.first() <= 16,
-                "the caret at Tab stood at columns $atTab, after the text",
-            )
+            assertEquals("abcZ", value)
+            // After Home the caret stands before 'a', 14 dp in, and a letter goes there.
             press(Key.MoveHome)
             val atHome = onNodeWithTag("f").captureToImage().toPixelMap().columnsOf(text)
-            assertTrue(atHome.isNotEmpty() && atHome.first() <= 16, "after Home the caret stands at $atHome")
+            assertTrue(atHome.isNotEmpty() && atHome.last() <= 16, "after Home the caret stands at $atHome")
+            assertTrue(atHome.none { it in glyphs }, "and covers no letter: caret $atHome, glyphs $glyphs")
+            onNode(hasSetTextAction()).performTextInput("Y")
+            mainClock.advanceTimeBy(100)
+            assertEquals("YabcZ", value)
         }
 
     /** The caret's columns and the glyphs' columns of [value] in a focused field, laid out in [direction]. */
@@ -320,7 +320,6 @@ class OverlayAndMouseTest {
         assertTrue(caret.isNotEmpty() && caret.none { it in glyphs }, "caret $caret over glyphs $glyphs")
     }
 
-    @Ignore("F12: with right-to-left text, or in a right-to-left layout, the block caret is drawn over the text")
     @Test
     fun `F12 the caret stands clear of right-to-left text and of text in a right-to-left layout`() {
         for ((v, d) in listOf(
