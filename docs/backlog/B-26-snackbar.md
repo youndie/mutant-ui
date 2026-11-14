@@ -1,7 +1,7 @@
 ---
 id: B-26
 title: "Snackbar: a blue bar with a shadow"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components

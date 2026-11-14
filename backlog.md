@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-26](docs/backlog/B-26-snackbar.md) `[ ]` | Snackbar: a blue bar with a shadow | P1 | M | B-10, B-11 |
+| [B-26](docs/backlog/B-26-snackbar.md) `[~]` | Snackbar: a blue bar with a shadow | P1 | M | B-10, B-11 |
 | [B-27](docs/backlog/B-27-progress.md) `[ ]` | LinearProgress and CircularProgress | P1 | M | B-07, B-08 |
 | [B-28](docs/backlog/B-28-dialog.md) `[ ]` | Dialog: a clean window over a paused background | P1 | M | B-10, B-11 |
 | [B-29](docs/backlog/B-29-empty-state.md) `[ ]` | EmptyState: the six illustrations with a title | P1 | M | B-14 |
