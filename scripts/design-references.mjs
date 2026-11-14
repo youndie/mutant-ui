@@ -30,6 +30,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
+import { inflateSync } from 'node:zlib';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DESIGN = join(ROOT, 'reference/design-system');
@@ -115,6 +116,14 @@ export const REFERENCES = [
   ...PATTERNS.flatMap(([name, key]) => [0, 1].map((q) => ({ stem: `Pattern_${name}${q ? 'Quiet' : ''}_Efir`, page: ICONS, el: true, sel: `[data-pat="${key}"][data-quiet="${q}"]`, index: 0, hide: `[data-pat] * { color: transparent !important; }` }))),
   // The art with what its drips may hang below it; the Body twin hides the text, the kept parts and the reels.
   ...ILLUSTRATIONS.flatMap(([name, stage]) => [false, true].map((body) => ({ stem: `Illustration_${name}${body ? 'Body' : ''}_Efir`, page: ICONS, el: true, stage, hideText: body }))),
+  // B-15: the Button stage whole, label in, in both themes, each with a bare twin (text hidden) to tell the label
+  // from the body; the outlined pair; the text button over its divider.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [
+    ...['Rest', 'Pressed', 'Loading', 'Success', 'Disabled', 'OutlinedRest', 'OutlinedDisabled']
+      .flatMap((s, index) => [false, true].map((bare) =>
+        ({ stem: `MutantButton_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'button', type: 'btn', index, theme, below: 28, hideText: bare }))),
+    { stem: `MutantButton_Text_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="button"] div:has(> [data-mu-divider])', index: 0, theme },
+  ]),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
@@ -141,6 +150,14 @@ const FREEZE = `(() => {
       start() { freeze(this.root); super.start(); }
     };
   } });
+})();`;
+
+// Runs before any page script on a «Копия» render: the page takes its theme from its `data-props` default, which
+// the runtime reads once the document is parsed. The vendored file stays as it is; this tab's copy says «Копия».
+const KOPIYA = `(() => {
+  const patch = (el) => { const p = JSON.parse(el.getAttribute('data-props')); p.theme.default = 'Копия'; el.setAttribute('data-props', JSON.stringify(p)); };
+  new MutationObserver((ms, o) => { const el = document.querySelector('script[data-dc-script]'); if (el) { patch(el); o.disconnect(); } })
+    .observe(document, { childList: true, subtree: true });
 })();`;
 
 class Cdp {
@@ -181,7 +198,7 @@ async function launch(chrome) {
   return { cdp: new Cdp(ws), version, close: async () => { ws.close(); proc.kill(); await exited; rmSync(profile, { recursive: true, force: true, maxRetries: 5 }); } };
 }
 
-async function tab(cdp, width, url, freeze) {
+async function tab(cdp, width, url, freeze, theme = 'Efir') {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
   const errors = [];
@@ -199,6 +216,7 @@ async function tab(cdp, width, url, freeze) {
   await cdp.send('Fetch.enable', { patterns: [{ urlPattern: '*fonts.googleapis.com*' }] }, sessionId);
   await cdp.send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: false }, sessionId);
   if (freeze) await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: FREEZE }, sessionId);
+  if (theme === 'Kopiya') await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: KOPIYA }, sessionId);
   const evaluate = async (expression) => {
     const r = await cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text);
@@ -308,8 +326,8 @@ async function venoms(cdp) {
 }
 
 // ---- page cells ---------------------------------------------------------------------------------------
-async function pageCells(cdp, page, refs) {
-  const t = await tab(cdp, 1720, pathToFileURL(join(DESIGN, page)).href, true);
+async function pageCells(cdp, page, refs, theme = 'Efir') {
+  const t = await tab(cdp, 1720, pathToFileURL(join(DESIGN, page)).href, true, theme);
   const ready = `(() => { const es = window.__muEngines || []; return !document.querySelector('x-dc') && es.length > 0 &&
     es.every(e => e.stages.length && e.stages.every(s => s.built) && e.items.every(it => !it.H || it.lk !== undefined)); })()`;
   // The engine draws only stages in view: the template first, then the viewport as tall as the page.
@@ -357,7 +375,8 @@ async function pageCells(cdp, page, refs) {
       // The slot with what the body may draw around it: the field's margins and the drips' overhang — cut to the
       // stage where the stage clips its content (the spec page's frames do).
       const cs = getComputedStyle(host), clips = cs.overflow === 'hidden';
-      let x0 = Math.round(el.ox - 12), y0 = Math.round(el.oy - 15), x1 = x0 + Math.round(el.w + 24), y1 = y0 + Math.round(el.h + el.over + 45);
+      // A whole cell (label in) stops above the page's caption, 34 px under the slot: \`below\` px under it.
+      let x0 = Math.round(el.ox - 12), y0 = Math.round(el.oy - 15), x1 = x0 + Math.round(el.w + 24), y1 = ${JSON.stringify(ref.below ?? null)} !== null ? Math.round(el.oy + el.h + ${ref.below ?? 0}) : y0 + Math.round(el.h + el.over + 45);
       if (clips) { x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(host.offsetWidth, x1); y1 = Math.min(host.offsetHeight, y1); }
       return { x: Math.round(hr.left + scrollX) + x0, y: Math.round(hr.top + scrollY) + y0, w: x1 - x0, h: y1 - y0,
         stageClip: clips ? [host.offsetWidth, host.offsetHeight, parseFloat(cs.borderTopLeftRadius) || 0] : null,
@@ -448,16 +467,66 @@ try {
   for (const [k, v] of await venoms(cdp)) shots.set(k, v);
   for (const [k, v] of await textProbes(cdp)) shots.set(k, v);
   for (const page of [...new Set(REFERENCES.filter((r) => r.page).map((r) => r.page))]) {
-    for (const [k, v] of await pageCells(cdp, page, REFERENCES.filter((r) => r.page === page))) shots.set(k, v);
+    for (const theme of ['Efir', 'Kopiya']) {
+      const refs = REFERENCES.filter((r) => r.page === page && (r.theme ?? 'Efir') === theme);
+      if (refs.length) for (const [k, v] of await pageCells(cdp, page, refs, theme)) shots.set(k, v);
+    }
   }
 } finally { await close(); }
 
+// Chrome's screenshots, decoded (8-bit RGB or RGBA, non-interlaced, as CDP writes them), to measure two renders apart.
+function pixels(png) {
+  const w = png.readUInt32BE(16), h = png.readUInt32BE(20), type = png[25], bpp = type === 6 ? 4 : 3;
+  const chunks = [];
+  for (let o = 8; o < png.length;) {
+    const len = png.readUInt32BE(o), kind = png.toString('ascii', o + 4, o + 8);
+    if (kind === 'IDAT') chunks.push(png.subarray(o + 8, o + 8 + len));
+    o += 12 + len;
+  }
+  const raw = inflateSync(Buffer.concat(chunks)), stride = w * bpp, out = Buffer.alloc(h * stride);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)], src = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)), row = y * stride;
+    for (let x = 0; x < stride; x++) {
+      const a = x >= bpp ? out[row + x - bpp] : 0, b = y ? out[row - stride + x] : 0, c = x >= bpp && y ? out[row - stride + x - bpp] : 0;
+      const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+      const pred = [0, a, b, (a + b) >> 1, pa <= pb && pa <= pc ? a : pb <= pc ? b : c][f];
+      out[row + x] = (src[x] + pred) & 255;
+    }
+  }
+  return { w, h, bpp, data: out };
+}
+
+// Two renders of one stem apart: pixels whose channels differ by more than 16 (parity's threshold).
+function apart(a, b) {
+  const p = pixels(a), q = pixels(b);
+  if (p.w !== q.w || p.h !== q.h) return Infinity;
+  let n = 0;
+  for (let i = 0; i < p.w * p.h; i++) {
+    let m = 0;
+    for (let c = 0; c < 3; c++) m = Math.max(m, Math.abs(p.data[i * p.bpp + c] - q.data[i * q.bpp + c]));
+    if (m > 16) n++;
+  }
+  return n;
+}
+
+// A render that is not byte-identical passes only when it stays within the body's floor (research §1.8) of the
+// committed one: Chrome rasterises some pages' patterns a little apart from run to run (B-15: the Button stage's
+// disabled and outlined cells, up to 25 pixels changed, 2 of them by more than 16). The stems that did are printed.
+const FLOOR = 5;
 const stale = [];
+const unsteady = [];
 if (!check) mkdirSync(OUT, { recursive: true });
 for (const ref of REFERENCES) {
   const target = join(OUT, `${ref.stem}.png`), { png } = shots.get(ref.stem);
-  if (check) { if (!existsSync(target) || !readFileSync(target).equals(png)) stale.push(ref.stem); } else writeFileSync(target, png);
+  if (check) {
+    if (!existsSync(target)) { stale.push(ref.stem); continue; }
+    const committed = readFileSync(target);
+    if (committed.equals(png)) continue;
+    const n = apart(committed, png);
+    if (n > FLOOR) stale.push(`${ref.stem} (${n} px)`); else unsteady.push(`${ref.stem} (${n} px)`);
+  } else writeFileSync(target, png);
 }
+if (unsteady.length) console.log(`design-references: not byte-identical, within the floor: ${unsteady.join(', ')}`);
 const manifest = {
   browser: version, scale: 1, time: T, ...inputs(),
   references: REFERENCES.map((r) => ({ stem: r.stem, page: r.page, stage: r.stage, type: r.type, index: r.index, sel: r.sel, hideText: r.hideText, probe: r.probe?.name, theme: r.theme, ...shots.get(r.stem).rect })),

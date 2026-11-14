@@ -285,6 +285,24 @@ Settled by [B-52](../backlog/B-52-display-text-against-chrome.md); probes `Text_
 many pixels differ: the top row exactly, the rest within a pixel. A parity fixture rasterises text as
 Chrome does through `LocalMutantTextRaster`; the kit never overrides the platform's settings.
 
+### 1.15 The Button, the first component
+
+Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Bare]_<theme>` from the Components page's Button stage.
+
+| Fact | Where verified |
+|---|---|
+| The engine strokes a body's outline with its own `stroke` but draws its flow lines and speckle in the theme's ink (`C.ink`) whatever the outline; the kit drew them in the outline's colour, which the outlined button (stroke = accent) showed as 227 px | `mutant-engine.js` (`itemHtml`), `BodyDrawing.kt`, `ButtonParityTest` |
+| The page takes its theme from its `data-props` default when the runtime starts; the reference script patches that attribute in its own headless tab before the runtime reads it, so «Копия» cells come from the same vendored page | `scripts/design-references.mjs` (`KOPIYA`) |
+| The page gives its five filled buttons one key (`button`): a fixture looking a slot up by key finds another cell's. Each cell is drawn from its own recorded slot | `ButtonParityTest` |
+| Bodies outside the label's clean zone: 0–3 px in «Эфир» and the still cells of «Копия». «Копия»'s moving bodies read 15–18 px: its fill slips 1.5 dp off the outline, and Chrome draws the speckle as an SVG pattern rasterised once and resampled under that fractional translation, where the kit draws each square exactly (moving the kit's speckle by the slip either way doubles the count). The outlined rest cells read 6 and 11: the outline over its own misregistered shadow, as an illustration's parts over each other (§1.13) | `ButtonParityTest` (`RESIDUAL`), 2026-11-14 |
+| Labels: what each renderer's label adds over its own bare twin (the page's cell with text hidden, the kit's with a transparent label) starts on the page's top row in every cell, and where it covers a pixel whole its colour is the page's. A disabled label is dark ink over the no-signal body's grey stripes, adding at most about 100 levels, and a glyph's faint top rows (25–60) fall either side of text's 64: there the threshold is 50 | `ButtonParityTest` |
+| Chrome does not always render the pages byte-identically: under a load average of 22–38 a third of the cells moved between two renders; on a quiet machine the Button stage's disabled and outlined cells still alternate between two renders, 25 pixels apart, 2 of them by more than 16. `make references` now passes a cell within the body's floor of its committed render and names it | `scripts/design-references.mjs` (`apart`), 2026-11-14 |
+| The theme's clock asks for frames for ever, so a Compose UI test with a kit body on screen never goes idle under the test clock's auto-advance: such a test drives the clock by hand (`mainClock.autoAdvance = false`) | `ButtonBehaviourTest` |
+
+**Consequence 15.** A component is held to its page as the button is: drawn through its public
+function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
+listed residual, labels by what they add over the bare twin.
+
 ---
 
 ## 2. Decisions
@@ -418,6 +436,8 @@ behaviour has no Chrome reference; its goldens are recorded when it is built and
 owner's review round over the finished sample, and its item lists every number it chose that the
 design does not state. Everything the design does draw stays held to the design. The loop does not
 wait for review of what is designed here.
+
+Numbers chosen for the button under this decision (B-15): the label 24 dp from the body's sides (the page draws fixed widths); a text button's divider as wide as its label (the page draws 76 dp under a 69 dp label in a fixed cell); a disabled text button greys its label; keyboard focus draws the field's brackets and calm (`focused`).
 
 ### D16. A body's origin is its own
 

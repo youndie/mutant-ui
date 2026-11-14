@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (35)
+## Open (34)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-15](docs/backlog/B-15-button.md) `[ ]` | Button: filled, outlined, text; pressed, loading, success, disabled | P1 | M | B-10, B-11 |
 | [B-16](docs/backlog/B-16-icon-button-and-fab.md) `[ ]` | IconButton and FAB: 48 and 56 dp bodies, the extended FAB | P1 | M | B-10, B-11 |
 | [B-17](docs/backlog/B-17-chip.md) `[ ]` | Chip: unselected with slip, selected by pour | P1 | M | B-10, B-11, B-12 |
 | [B-18](docs/backlog/B-18-checkbox-and-radio-button.md) `[ ]` | Checkbox and RadioButton: 22 dp bodies, pour and melt | P1 | M | B-10, B-11, B-12 |
@@ -98,7 +97,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (17)
+## Closed (18)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -120,6 +119,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-13](docs/backlog/B-13-tape.md) `[x]` - The Tape («Лента»): one overlay over the screen
 - [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[x]` - Icons, the six illustrations and the four patterns
 - [B-52](docs/backlog/B-52-display-text-against-chrome.md) `[x]` - Display text against Chrome: Handjet labels 2 px low, and a floor for text
+
+**Each MVP component matches its page's states in both themes and its motion at the engine's timestamps**
+
+- [B-15](docs/backlog/B-15-button.md) `[x]` - Button: filled, outlined, text; pressed, loading, success, disabled
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
