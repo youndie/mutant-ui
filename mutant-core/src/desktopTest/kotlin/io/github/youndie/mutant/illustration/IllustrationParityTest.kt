@@ -8,13 +8,18 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
+import io.github.youndie.mutant.ChromeText
 import io.github.youndie.mutant.DesignParity
+import io.github.youndie.mutant.TEXT_INK
+import io.github.youndie.mutant.channelGap
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.STILL_MS
+import io.github.youndie.mutant.extentOf
 import io.github.youndie.mutant.surface.LocalMutantOutlineOverride
 import io.github.youndie.mutant.surface.LocalMutantSlotOrigin
 import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.type.LocalMutantTextRaster
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.int
@@ -26,8 +31,8 @@ import kotlin.test.assertTrue
 
 /**
  * B-14: the six illustrations against the Icons page at the still time. The bodies are held to the body's floor
- * against a reference whose text, kept parts and reels the script hid; the whole picture, labels and reels in, is
- * printed for its `_DIFF` to be read, since its text has no floor of its own yet.
+ * against a reference whose text, kept parts and reels the script hid. What the whole picture adds to them —
+ * labels, kept parts, reels — is held where text is held (B-52): by where its strong pixels lie, within a pixel.
  */
 class IllustrationParityTest {
     private fun draw(
@@ -62,6 +67,7 @@ class IllustrationParityTest {
                 CompositionLocalProvider(
                     LocalMutantOutlineOverride provides { outlines[it] },
                     LocalMutantSlotOrigin provides { origins[it] },
+                    LocalMutantTextRaster provides ChromeText,
                 ) {
                     ProvideMutantClock(MutantClock(startMs = STILL_MS, frozen = true)) {
                         Box(Modifier.fillMaxSize().background(ground)) {
@@ -112,13 +118,26 @@ class IllustrationParityTest {
     }
 
     @Test
-    fun `the whole illustrations are printed against the page`() {
-        println(
-            MutantIllustrationKind.entries.joinToString("\n") { kind ->
-                val (dx, dy) = placed(kind)
-                draw(kind, body = false, dx, dy).toString()
-            },
-        )
+    fun `the labels, kept parts and reels stand where the page draws them, within a pixel`() {
+        val lines = ArrayList<String>()
+        val off = ArrayList<String>()
+        for (kind in MutantIllustrationKind.entries) {
+            val (dx, dy) = placed(kind)
+            val whole = draw(kind, body = false, dx, dy)
+            val bodies = draw(kind, body = true, dx, dy)
+            // What the whole picture adds to its bodies, in each renderer: its text, kept parts and reels.
+            val kit = extentOf(whole.width, whole.height) { channelGap(whole.actual[it], bodies.actual[it]) > TEXT_INK }
+            val page =
+                extentOf(whole.width, whole.height) {
+                    channelGap(whole.reference[it], bodies.reference[it]) >
+                        TEXT_INK
+                }
+            lines += "$whole; parts: kit $kit, page $page"
+            val near = if (kit == null || page == null) kit == page else kit.near(page)
+            if (!near) off += kind.name
+        }
+        println(lines.joinToString("\n"))
+        assertTrue(off.isEmpty(), "out of place: $off\n" + lines.joinToString("\n"))
     }
 
     private companion object {

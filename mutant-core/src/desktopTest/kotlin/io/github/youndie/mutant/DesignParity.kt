@@ -29,6 +29,81 @@ import javax.imageio.ImageIO
 import kotlin.math.abs
 
 /**
+ * Text as Chrome draws it in the references: antialiased outlines (the script turns macOS smoothing off), glyphs
+ * at fractional x, no hinting. Provided to the kit's text through `LocalMutantTextRaster` in parity fixtures only.
+ */
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+internal val ChromeText =
+    androidx.compose.ui.text.PlatformTextStyle(
+        null,
+        androidx.compose.ui.text.PlatformParagraphStyle(
+            androidx.compose.ui.text.FontRasterizationSettings(
+                androidx.compose.ui.text.FontSmoothing.AntiAlias,
+                androidx.compose.ui.text.FontHinting.None,
+                subpixelPositioning = true,
+                autoHintingForced = false,
+            ),
+        ),
+    )
+
+/** First and last row and column holding ink, or null when there is none. */
+internal data class Extent(
+    val top: Int,
+    val bottom: Int,
+    val left: Int,
+    val right: Int,
+) {
+    /** Every side within [px] of [other]'s, the top within [topPx]. */
+    fun near(
+        other: Extent,
+        px: Int = 1,
+        topPx: Int = px,
+    ): Boolean =
+        abs(top - other.top) <= topPx && abs(bottom - other.bottom) <= px && abs(left - other.left) <= px &&
+            abs(right - other.right) <= px
+}
+
+/**
+ * Where text puts its ink: the rows and columns where [inked] holds for a pixel. Two renderers anti-alias a
+ * glyph's edge apart (Compose's light-on-dark mask reads 186 where Chrome's reads 102), so text is held by where
+ * its strong pixels lie, not by how many differ (B-52).
+ */
+internal fun extentOf(
+    w: Int,
+    h: Int,
+    inked: (Int) -> Boolean,
+): Extent? {
+    var top = Int.MAX_VALUE
+    var bottom = -1
+    var left = Int.MAX_VALUE
+    var right = -1
+    for (i in 0 until w * h) {
+        if (!inked(i)) continue
+        val x = i % w
+        val y = i / w
+        top = minOf(top, y)
+        bottom = maxOf(bottom, y)
+        left = minOf(left, x)
+        right = maxOf(right, x)
+    }
+    return if (bottom < 0) null else Extent(top, bottom, left, right)
+}
+
+/** The largest channel difference of two `0xRRGGBB` pixels. */
+internal fun channelGap(
+    a: Int,
+    b: Int,
+): Int =
+    maxOf(
+        abs((a shr 16 and 0xFF) - (b shr 16 and 0xFF)),
+        abs((a shr 8 and 0xFF) - (b shr 8 and 0xFF)),
+        abs((a and 0xFF) - (b and 0xFF)),
+    )
+
+/** A strong pixel of text: more than 64 levels off its ground in some channel, which both renderers agree on. */
+internal const val TEXT_INK = 64
+
+/**
  * A composable against one of the Chrome references (`snapshots/design/`): rendered at density 1 at the
  * reference's size, a pixel differing when a channel is more than 16 apart, the diff written to
  * `build/parity/<stem>_DIFF.png` beside the kit's `_ACTUAL.png` to be looked at.
@@ -52,13 +127,24 @@ internal object DesignParity {
         val percent: Double,
         /** The largest difference of any channel anywhere, 0…255: what a pixel count under 16 cannot see. */
         val maxChannel: Int,
+        /** Pixels either image inks — off the ground by more than 16 — when a ground was given; else 0. */
+        val ink: Int = 0,
+        val width: Int = 0,
+        val height: Int = 0,
+        /** The kit's pixels and the reference's, `0xRRGGBB`, row by row. */
+        val actual: IntArray = IntArray(0),
+        val reference: IntArray = IntArray(0),
     ) {
+        /** Differing pixels against inked ones, %: a text's share, which a cell's share hides. */
+        val inkPercent: Double get() = if (ink == 0) 0.0 else 100.0 * pixels / ink
+
         override fun toString(): String = "$stem: ${"%.3f".format(percent)} %, $pixels px, max $maxChannel"
     }
 
     @OptIn(ExperimentalTestApi::class)
     fun compare(
         stem: String,
+        ground: Color? = null,
         content: @Composable () -> Unit,
     ): Result {
         val ref = reference(stem)
@@ -67,6 +153,9 @@ internal object DesignParity {
         val bitmap = Bitmap.makeFromImage(Image.makeFromEncoded(File(dir, "$stem.png").readBytes()))
         var differ = 0
         var most = 0
+        var inked = 0
+        val kit = IntArray(w * h)
+        val chrome = IntArray(w * h)
         runComposeUiTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
@@ -80,6 +169,9 @@ internal object DesignParity {
                 for (x in 0 until w) {
                     val a = actual[x, y]
                     val c = bitmap.getColor(x, y)
+                    kit[y * w + x] =
+                        ((a.red * 255).toInt() shl 16) or ((a.green * 255).toInt() shl 8) or (a.blue * 255).toInt()
+                    chrome[y * w + x] = c and 0xFFFFFF
                     val m =
                         maxOf(
                             abs((a.red * 255).toInt() - (c shr 16 and 0xFF)),
@@ -88,6 +180,27 @@ internal object DesignParity {
                         )
                     if (m > 16) differ++
                     most = maxOf(most, m)
+                    if (ground != null) {
+                        val g =
+                            intArrayOf(
+                                (ground.red * 255).toInt(),
+                                (ground.green * 255).toInt(),
+                                (ground.blue * 255).toInt(),
+                            )
+                        val offA =
+                            maxOf(
+                                abs((a.red * 255).toInt() - g[0]),
+                                abs((a.green * 255).toInt() - g[1]),
+                                abs((a.blue * 255).toInt() - g[2]),
+                            )
+                        val offC =
+                            maxOf(
+                                abs((c shr 16 and 0xFF) - g[0]),
+                                abs((c shr 8 and 0xFF) - g[1]),
+                                abs((c and 0xFF) - g[2]),
+                            )
+                        if (offA > 16 || offC > 16) inked++
+                    }
                     diff.setRGB(x, y, if (m > 16) 0xFF2020 else (c and 0xFFFFFF).let { (it shr 2) and 0x3F3F3F })
                 }
             }
@@ -95,6 +208,6 @@ internal object DesignParity {
             ImageIO.write(shot.toAwtImage(), "png", File("build/parity/${stem}_ACTUAL.png"))
             ImageIO.write(diff, "png", File("build/parity/${stem}_DIFF.png"))
         }
-        return Result(stem, differ, 100.0 * differ / (w * h), most)
+        return Result(stem, differ, 100.0 * differ / (w * h), most, inked, w, h, kit, chrome)
     }
 }

@@ -60,7 +60,22 @@ const PROBES = [
   { name: 'Card', type: 'card', key: 'card/a', w: 328, h: 80, content: [16, 14, 200, 36] },
   { name: 'Dot', type: 'dot', key: 'dot/a', w: 22, h: 22 },
 ];
+// B-52: a label alone, in each face at sizes the type roles use (Handjet 18 at line-height 1 and Rubik 14 at
+// 1.2 among them: there Blink's rounding of the face's ascent and descent moves the baseline a pixel), at a whole-pixel origin: what is left between
+// Chrome's text and Compose's when nothing else differs — the text floor. Words from the design's pages.
+const TEXT_PROBES = [
+  ['Handjet', 400, 16, 1, 1, 'CH 03 · НАСТРОЙКА 1.44 МБ'],
+  ['Handjet', 400, 18, 1, 1, 'CH 03 · НАСТРОЙКА 1.44 МБ'],
+  ['Handjet', 400, 20, 1, 1, 'CH 03 · НАСТРОЙКА 1.44 МБ'],
+  ['Handjet', 400, 24, 1, 0, 'Здесь пока пусто'],
+  ['Rubik', 400, 13, 1.4, 0, 'Сторона A · 4 записи · без подписи'],
+  ['Rubik', 400, 16, 1.4, 0, 'Без подписи №3 · Сторона A'],
+  ['Rubik', 500, 14, 1.4, 0, 'Ничего не выбрано · Пульт'],
+  // Two where Blink's rounding of the face's ascent and descent moves the baseline a pixel (B-52).
+  ['Rubik', 400, 14, 1.2, 0, 'Ничего не выбрано · Пульт'],
+].map(([family, weight, size, line, spacing, text]) => ({ family, weight, size, line, spacing, text }));
 export const REFERENCES = [
+  ...TEXT_PROBES.map((p) => ({ stem: `Text_${p.family}${p.weight}_${p.size}_Efir`, text: p })),
   ...PROBES.flatMap((p) => Object.keys(THEMES).map((theme) => ({ stem: `Body_${p.name}_${theme}`, probe: p, theme }))),
   // The Button stage's first cell: the resting button, its drips and the stage's background around it.
   { stem: 'Button_Rest_Efir', page: MVP, stage: 'button', type: 'btn', index: 0 },
@@ -240,6 +255,27 @@ async function probes(cdp) {
   return out;
 }
 
+// ---- text probes --------------------------------------------------------------------------------------
+// One label on «Эфир»'s ground in its text colour, 10 px in and 4 px down, with the repository's faces and the
+// page cells' antialiased smoothing.
+async function textProbes(cdp) {
+  const t = await tab(cdp, 800, null, false);
+  const out = new Map();
+  for (const ref of REFERENCES.filter((r) => r.text)) {
+    const p = ref.text, w = 360, h = Math.ceil(p.size * p.line) + 8;
+    await t.evaluate(`(() => { document.documentElement.style.margin = document.body.style.margin = '0';
+      document.head.innerHTML = '<style>' + ${JSON.stringify(fontCss)} + '*{-webkit-font-smoothing:antialiased}</style>';
+      document.body.innerHTML = '<div style="position:relative;width:${w}px;height:${h}px;background:#10142a">' +
+        '<span style="position:absolute;left:10px;top:4px;white-space:nowrap;font-family:${p.family};font-weight:${p.weight};font-size:${p.size}px;' +
+        'line-height:${p.line};letter-spacing:${p.spacing}px;color:#e9f2e4">${p.text}</span></div>'; return true; })()`);
+    await t.evaluate('document.fonts.ready.then(() => true)');
+    await t.evaluate(settle);
+    out.set(ref.stem, { png: await t.shot({ x: 0, y: 0, w, h }), rect: { x: 0, y: 0, w, h, ...p, left: 10, top: 4, ground: '#10142a', ink: '#e9f2e4' } });
+  }
+  await t.close();
+  return out;
+}
+
 // ---- venom probes --------------------------------------------------------------------------------------
 async function venoms(cdp) {
   const t = await tab(cdp, 800, null, false);
@@ -410,6 +446,7 @@ const shots = new Map();
 try {
   for (const [k, v] of await probes(cdp)) shots.set(k, v);
   for (const [k, v] of await venoms(cdp)) shots.set(k, v);
+  for (const [k, v] of await textProbes(cdp)) shots.set(k, v);
   for (const page of [...new Set(REFERENCES.filter((r) => r.page).map((r) => r.page))]) {
     for (const [k, v] of await pageCells(cdp, page, REFERENCES.filter((r) => r.page === page))) shots.set(k, v);
   }
