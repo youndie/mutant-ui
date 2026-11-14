@@ -51,3 +51,13 @@ desktop JVM, which screens the architecture: a frame too slow here is red everyw
   - anything between is **grey**, decided by B-49.
 - **Kill.** Red on the card frame stops the components built on the CPU field: the retreat order of the
   brief and the handoff's two outs (a coarser grid, a shader field) become the next items before B-10.
+
+## Amendment 1 (2026-11-14, after a void run, before a valid one)
+
+The first run (`logs/b-06/2026-11-14-desktop.log`, harness `e052507`) is **void** by the rule above: the
+control read +136, +157, +207 and +197 µs in the counted rounds against 200 ± 20 %. Its cause is in the
+same log: the warm frame and the control were timed as separate blocks of 200 calls, and the card's warm
+frame itself moved between blocks (523–672 µs), so the control measured the drift. The harness now calls
+every arm once per step, in turn, for all arms and the control alike; nothing else changes — not the
+thresholds, the rounds, the calls or the control's 200 µs. The void run stays in `logs/` and none of its
+numbers is reported as a result.

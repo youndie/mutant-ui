@@ -82,18 +82,26 @@ private val arms: List<Pair<String, (Case) -> Unit>> =
         "cold" to { c -> fold(c.gen.frame(c.instance, FieldCache(), 5000.0)) },
     )
 
-private fun medianMicros(
+/**
+ * One round of a case: every arm called once per step, in turn, [CALLS] steps, so a drift of the machine
+ * between the arms of a step is shared by all of them (amendment 1, 2026-11-14). The median per arm.
+ */
+private fun round(
     case: Case,
-    arm: (Case) -> Unit,
-): Double {
-    val ns = LongArray(CALLS)
+    arms: List<Pair<String, (Case) -> Unit>>,
+): List<Pair<String, Double>> {
+    val ns = Array(arms.size) { LongArray(CALLS) }
     for (i in 0 until CALLS) {
-        val t0 = System.nanoTime()
-        arm(case)
-        ns[i] = System.nanoTime() - t0
+        for ((a, arm) in arms.withIndex()) {
+            val t0 = System.nanoTime()
+            arm.second(case)
+            ns[a][i] = System.nanoTime() - t0
+        }
     }
-    ns.sort()
-    return ns[CALLS / 2] / 1000.0
+    return arms.mapIndexed { a, (name, _) ->
+        ns[a].sort()
+        name to ns[a][CALLS / 2] / 1000.0
+    }
 }
 
 fun main(args: Array<String>) {
@@ -112,7 +120,7 @@ fun main(args: Array<String>) {
         )} ${System.getProperty("java.runtime.version")}, max heap ${rt.maxMemory() / 1_048_576} MiB",
     )
     println(
-        "# calls $CALLS per arm per round, rounds $ROUNDS (round 1 discarded), warm-up ${WARMUP_NS / 1_000_000_000} s per case",
+        "# calls $CALLS per arm per round, arms interleaved per call, rounds $ROUNDS (round 1 discarded), warm-up ${WARMUP_NS / 1_000_000_000} s per case",
     )
     val cases = genGoldens.map { Case(it) }
     for (c in cases) {
@@ -124,18 +132,22 @@ fun main(args: Array<String>) {
         fold(c.gen.frame(c.instance, c.cache, 5000.0 + 125.0 * (c.tick++ % 64)))
         spin(CONTROL_NS)
     }
-    for (round in 1..ROUNDS) {
+    val controlArms =
+        listOf(
+            arms[1],
+            "warm+200us" to control,
+        )
+    for (r in 1..ROUNDS) {
         for (c in cases) {
-            val cells = arms.map { (name, arm) -> name to medianMicros(c, arm) }
-            println("round $round ${c.golden.name} " + cells.joinToString(" ") { (n, v) -> "$n=${"%.1f".format(v)}" })
+            val cells = round(c, arms)
+            println("round $r ${c.golden.name} " + cells.joinToString(" ") { (n, v) -> "$n=${"%.1f".format(v)}" })
         }
-        val warm = medianMicros(card, arms[1].second)
-        val ctl = medianMicros(card, control)
+        val (warm, ctl) = round(card, controlArms).map { it.second }
         println(
-            "round $round control card-a warm=${"%.1f".format(
+            "round $r control card-a warm=${"%.1f".format(
                 warm,
             )} warm+200us=${"%.1f".format(ctl)} delta=${"%.1f".format(ctl - warm)}",
         )
-        println("round $round checksum $checksum")
+        println("round $r checksum $checksum")
     }
 }
