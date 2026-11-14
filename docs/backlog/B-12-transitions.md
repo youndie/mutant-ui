@@ -1,7 +1,7 @@
 ---
 id: B-12
 title: "Transitions: pour, melt, slide, and the venom with its soft joins"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-1-materials
