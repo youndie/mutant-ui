@@ -263,6 +263,7 @@ internal object ComponentParity {
             labelKitInk,
             labelPageInk,
             dx to dy,
+            bare,
         )
     }
 

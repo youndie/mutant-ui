@@ -217,7 +217,17 @@ private fun NavigationItem(
             Box(Modifier.size(ICON_BOX_W, ICON_BOX_H), contentAlignment = Alignment.Center) {
                 // The engine's clean zone is its text runs, its icons and its bodies, not the boxes around them.
                 MutantIcon(item.icon, null, Modifier.mutantCleanZone(), tint = glyph, size = ICON)
-                item.badge?.let { Badge(it, hidden) }
+                item.badge?.let {
+                    BadgeBody(
+                        it,
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .wrapContentSize(Alignment.TopEnd, unbounded = true)
+                            .offset(-BADGE_RIGHT, -BADGE_UP),
+                        compact = true,
+                        hidden = hidden,
+                    )
+                }
             }
             BasicText(
                 item.label,
@@ -236,37 +246,6 @@ private fun NavigationItem(
             )
         }
     }
-}
-
-/** The count over the icon box's corner: Handjet 14 on a 16 dp amber plate, 5 dp in, ringed 1.5 dp in black. */
-@Composable
-private fun androidx.compose.foundation.layout.BoxScope.Badge(
-    text: String,
-    hidden: Boolean,
-) {
-    val colors = MutantTheme.colors
-    BasicText(
-        text,
-        Modifier
-            .align(Alignment.TopEnd)
-            .wrapContentSize(Alignment.TopEnd, unbounded = true)
-            .offset(-BADGE_RIGHT, -BADGE_UP)
-            .drawBehind {
-                val r = BADGE_RING.toPx()
-                drawRect(INK, Offset(-r, -r), Size(size.width + 2 * r, size.height + 2 * r))
-                drawRect(colors.amber)
-            }.padding(horizontal = BADGE_PAD)
-            .mutantCleanZone(),
-        style =
-            TextStyle(
-                fontFamily = LocalMutantFonts.current?.display,
-                fontSize = BADGE_SIZE.sp,
-                color = if (hidden) Color.Transparent else INK,
-                platformStyle = LocalMutantTextRaster.current,
-            ).cssLine(MutantFaceMetrics.Handjet, BADGE_LINE),
-        maxLines = 1,
-        softWrap = false,
-    )
 }
 
 /** Follows the selected index from composition without writing state: the pill slides from where it stood. */
@@ -298,13 +277,9 @@ private const val LABEL_SIZE = 11
 /** A label too long for its cell keeps 4 dp from the cell's sides, then an ellipsis (designed here, D15). */
 private val LABEL_MARGIN = 4.dp
 
-/** The badge: 6 dp in from the icon box's right, 2 dp above it, 5 dp in, Handjet 14 on a 16 dp line (a multiple of the size), ringed 1.5. */
+/** The badge ([MutantBadge], compact) 6 dp in from the icon box's right and 2 dp above it. */
 private val BADGE_RIGHT = 6.dp
 private val BADGE_UP = 2.dp
-private val BADGE_PAD = 5.dp
-private const val BADGE_SIZE = 14
-private const val BADGE_LINE = 16f / BADGE_SIZE
-private val BADGE_RING = 1.5.dp
 
-/** The black on the pill and in the badge: the page's literal `#05060c` in both themes, not «Копия»'s own ink. */
+/** The black on the pill: the page's literal `#05060c` in both themes, not «Копия»'s own ink. */
 private val INK = Color(0xFF05060C)

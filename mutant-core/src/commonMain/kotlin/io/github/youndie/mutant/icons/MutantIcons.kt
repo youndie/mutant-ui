@@ -72,7 +72,7 @@ public object MutantIcons {
         return icon(name, path, width)
     }
 
-    private fun icon(
+    internal fun icon(
         name: String,
         path: String,
         width: Float = LINE,
