@@ -86,5 +86,26 @@ class SampleStrings(
     val emptyText =
         t("Record your first cassette, and it will be on air.", "Запишите первую кассету, и она появится в эфире.")
     val tapeOver = t("The Tape over a card", "Лента поверх карточки")
-    val demoComing = t("The three demo screens", "Три демо-экрана")
+    val demoLibrary = t("Library", "Эфир")
+    val demoRecording = t("Recording", "Запись")
+    val demoSettings = t("Settings under a dialog", "Настройка под диалогом")
+    val clock = "CH 03 · SP · 0:42:17"
+    val playAllWide = t("Play all", "Воспроизвести всё")
+    val sideAShort = t("Side A", "Сторона A")
+    val sideALine = t("46 MIN · SP · 4TH-GENERATION COPY", "46 МИН · SP · КОПИЯ 4-ГО ПОКОЛЕНИЯ")
+    val toQueue = t("Queue", "В очередь")
+    val recordedOverShort = t("Recorded over", "Записано поверх")
+    val name = t("NAME", "ИМЯ")
+    val nightTue = t("Night on Tue", "Ночь на вт")
+    val channel = t("CHANNEL", "КАНАЛ")
+    val noSignal99 = t("NO SIGNAL ON CHANNEL 99", "НЕТ СИГНАЛА НА КАНАЛЕ 99")
+    val speed = t("RECORDING SPEED", "СКОРОСТЬ ЗАПИСИ")
+    val keep = t("Keep", "Не надо")
+    val listen = t("Listen", "Слушать")
+    val eraseNamed =
+        t(
+            "“On air, Tuesday night” will be erased. The tape can be recorded again.",
+            "«Эфир, ночь на вторник» будет стёрта. Плёнку можно будет записать заново.",
+        )
+    val resetSettings = t("Reset settings", "Сбросить настройки")
 }
