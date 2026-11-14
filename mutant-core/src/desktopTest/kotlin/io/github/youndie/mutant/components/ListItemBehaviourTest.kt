@@ -379,7 +379,12 @@ class ListItemBehaviourTest {
             // The ring's whole row, 1.5 dp out: drawn past the plate, read where the parent leaves room for it.
             val room = onNodeWithTag("room").captureToImage().toPixelMap()
             // The word's darkest pixel: Handjet 16's stems are covered whole, the page's black, not «Копия»'s ink.
-            val darkest = (0 until px.width * px.height).map { px[it % px.width, it / px.width] }.minBy { it.red }
+            // Inside the plate only: the capture keeps the ring drawn past the node, which is that black anyway.
+            val darkest =
+                (6 until px.width - 6)
+                    .flatMap { x ->
+                        (3 until px.height - 3).map { y -> px[x, y] }
+                    }.minBy { it.red }
             assertTrue(near(darkest, Color(0xFF05060C), .01f), "the word's black: $darkest")
             assertTrue(near(room[room.width / 2, 3], Color(0xFF05060C), .02f), "the ring ${room[room.width / 2, 3]}")
         }
