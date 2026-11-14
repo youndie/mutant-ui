@@ -88,12 +88,14 @@ internal object ComponentParity {
         theme: String,
         fit: Boolean = false,
         outset: Int = 0,
+        dx: Int = 0,
+        dy: Int = 0,
         draw: @Composable (Modifier) -> Unit,
     ): DesignParity.Result {
         val s = DesignParity.reference(stem)["slot"]!!.jsonObject
         val origin = (s["origin"] as JsonArray).map { it.jsonPrimitive.int }
-        val x = s["ox"]!!.jsonPrimitive.int - origin[0]
-        val y = s["oy"]!!.jsonPrimitive.int - origin[1]
+        val x = s["ox"]!!.jsonPrimitive.int - origin[0] + dx
+        val y = s["oy"]!!.jsonPrimitive.int - origin[1] + dy
         val ground = DesignParity.rgb(s["background"]!!.jsonPrimitive.content)
         return DesignParity.compare(stem, ground) {
             Fixture(s, theme) {
@@ -119,7 +121,23 @@ internal object ComponentParity {
         val pageInk: Int,
         /** Pixels differing inside the clean zone: the content's, for content that is not text (an icon). */
         val content: Int = 0,
+        /** A label beside the slot (a checkbox's row): where its ink lies and its colour, here and on the page. */
+        val labelKit: Extent? = null,
+        val labelPage: Extent? = null,
+        val labelKitInk: Int = 0,
+        val labelPageInk: Int = 0,
+        /** Where the cell was placed, within a pixel of its slot. */
+        val placed: Pair<Int, Int> = 0 to 0,
     ) {
+        /** The label beside, when there is one, stands where the page's does and is its colour. */
+        val labelHolds: Boolean
+            get() =
+                (labelKit == null && labelPage == null) ||
+                    (
+                        labelKit != null && labelPage != null && labelKit.near(labelPage, px = 1, topPx = 0) &&
+                            channelGap(labelKitInk, labelPageInk) <= INK_COLOUR
+                    )
+
         /** The content stands where the page's does — its top row exactly — and is the page's colour. */
         val contentHolds: Boolean
             get() =
@@ -130,9 +148,8 @@ internal object ComponentParity {
                     )
 
         override fun toString(): String =
-            "$result; body $body px; content $content px, kit $kit, page $page; ink kit #${kitInk.toString(
-                16,
-            )}, page #${pageInk.toString(16)}"
+            "$result; body $body px; content $content px, kit $kit, page $page; ink kit #${kitInk.toString(16)}, " +
+                "page #${pageInk.toString(16)}; label kit $labelKit, page $labelPage; placed $placed"
     }
 
     /**
@@ -145,11 +162,18 @@ internal object ComponentParity {
         threshold: Int = TEXT_INK,
         fit: Boolean = false,
         outset: Int = 0,
+        labelBeside: Boolean = false,
         draw: @Composable (Modifier, Boolean) -> Unit,
     ): Split {
         val stem = "${base}_$theme"
-        val r = cell(stem, theme, fit, outset) { draw(it, false) }
-        val bare = cell("${base}Bare_$theme", theme, fit, outset) { draw(it, true) }
+        // Chrome snaps a stage's layer of bodies by a rule the DOM does not show (research §1.13): the whole cell is
+        // placed where its bare twin matches best within a pixel; a part out of place inside it still differs.
+        val (dx, dy) =
+            (-1..1)
+                .flatMap { dx -> (-1..1).map { dy -> dx to dy } }
+                .minBy { (dx, dy) -> cell("${base}Bare_$theme", theme, fit, outset, dx, dy) { draw(it, true) }.pixels }
+        val r = cell(stem, theme, fit, outset, dx, dy) { draw(it, false) }
+        val bare = cell("${base}Bare_$theme", theme, fit, outset, dx, dy) { draw(it, true) }
         val s = DesignParity.reference(stem)["slot"]!!.jsonObject
         val origin = (s["origin"] as JsonArray).map { it.jsonPrimitive.int }
         val cz = (s["cz"] as JsonArray).map { it.jsonPrimitive.float }
@@ -161,11 +185,19 @@ internal object ComponentParity {
             val y = i / r.width
             return x >= x0 && x < x0 + cz[2] && y >= y0 && y < y0 + cz[3]
         }
+        // A label beside the slot starts past the body's right edge and its outline.
+        val labelFrom = s["ox"]!!.jsonPrimitive.int - origin[0] + s["w"]!!.jsonPrimitive.int + LABEL_CLEAR
+
+        fun label(i: Int): Boolean = labelBeside && i % r.width >= labelFrom
         var body = 0
         var content = 0
         for (i in 0 until r.width * r.height) {
             if (channelGap(r.actual[i], r.reference[i]) <= 16) continue
-            if (inside(i)) content++ else body++
+            if (inside(i)) {
+                content++
+            } else if (!label(i)) {
+                body++
+            }
         }
         val kit = extentOf(r.width, r.height) { inside(it) && channelGap(r.actual[it], bare.actual[it]) > threshold }
         val page =
@@ -174,13 +206,41 @@ internal object ComponentParity {
                     channelGap(r.reference[it], bare.reference[it]) > threshold
             }
         val zone = (0 until r.width * r.height).filter(::inside)
-        val kitInk = r.actual[zone.maxBy { channelGap(r.actual[it], bare.actual[it]) }]
-        val pageInk = r.reference[zone.maxBy { channelGap(r.reference[it], bare.reference[it]) }]
-        return Split(r, body, kit, page, kitInk, pageInk, content)
+        // An empty zone (a slot with nothing to keep clean, an unchecked box) has no content and no ink.
+        val kitInk = zone.maxByOrNull { channelGap(r.actual[it], bare.actual[it]) }?.let { r.actual[it] } ?: 0
+        val pageInk = zone.maxByOrNull { channelGap(r.reference[it], bare.reference[it]) }?.let { r.reference[it] } ?: 0
+        if (!labelBeside) return Split(r, body, kit, page, kitInk, pageInk, content)
+        val labelKit =
+            extentOf(r.width, r.height) { label(it) && channelGap(r.actual[it], bare.actual[it]) > threshold }
+        val labelPage =
+            extentOf(r.width, r.height) {
+                label(it) &&
+                    channelGap(r.reference[it], bare.reference[it]) > threshold
+            }
+        val beside = (0 until r.width * r.height).filter(::label)
+        val labelKitInk = r.actual[beside.maxBy { channelGap(r.actual[it], bare.actual[it]) }]
+        val labelPageInk = r.reference[beside.maxBy { channelGap(r.reference[it], bare.reference[it]) }]
+        return Split(
+            r,
+            body,
+            kit,
+            page,
+            kitInk,
+            pageInk,
+            content,
+            labelKit,
+            labelPage,
+            labelKitInk,
+            labelPageInk,
+            dx to dy,
+        )
     }
 
     /** The body's floor in pixels (research §1.8). */
     const val FLOOR_PIXELS = 5
+
+    /** From a slot's right edge to where a label beside it is counted: past the outline, short of a 12 dp gap. */
+    const val LABEL_CLEAR = 6
 
     /** Content's colour at a pixel both cover whole: the pixel threshold. */
     const val INK_COLOUR = 16

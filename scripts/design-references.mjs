@@ -135,6 +135,13 @@ export const REFERENCES = [
   ...['Efir', 'Kopiya'].flatMap((theme) =>
     ['Unselected', 'Selected', 'Pressed', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
       ({ stem: `MutantChip_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'chip', type: 'chip', index, theme, below: 26, hideText: bare })))),
+  // B-18: the select stage's checkbox and radio cells (the switch is B-19's), whole and bare, both themes. A row
+  // is 48 tall; the crop is the slot with the label beside it, 8 px under it.
+  ...['Efir', 'Kopiya'].flatMap((theme) =>
+    [['Checkbox_Unchecked', 'box', 0], ['Checkbox_Checked', 'box', 1], ['Checkbox_Disabled', 'box', 2],
+      ['Radio_Unselected', 'dot', 0], ['Radio_Selected', 'dot', 1], ['Radio_Disabled', 'dot', 2]]
+      .flatMap(([s, type, index]) => [false, true].map((bare) =>
+        ({ stem: `Mutant${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'select', type, index, theme, below: 8, wide: 140, hideText: bare })))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
@@ -386,8 +393,9 @@ async function pageCells(cdp, page, refs, theme = 'Efir') {
       // The slot with what the body may draw around it: the field's margins and the drips' overhang — cut to the
       // stage where the stage clips its content (the spec page's frames do).
       const cs = getComputedStyle(host), clips = cs.overflow === 'hidden';
-      // A whole cell (label in) stops above the page's caption, 34 px under the slot: \`below\` px under it.
-      let x0 = Math.round(el.ox - 12), y0 = Math.round(el.oy - 15), x1 = x0 + Math.round(el.w + 24), y1 = ${JSON.stringify(ref.below ?? null)} !== null ? Math.round(el.oy + el.h + ${ref.below ?? 0}) : y0 + Math.round(el.h + el.over + 45);
+      // A whole cell (label in) stops above the page's caption, 34 px under the slot: \`below\` px under it; \`wide\`
+      // reaches a label beside the slot.
+      let x0 = Math.round(el.ox - 12), y0 = Math.round(el.oy - 15), x1 = x0 + Math.round(el.w + 24) + ${ref.wide ?? 0}, y1 = ${JSON.stringify(ref.below ?? null)} !== null ? Math.round(el.oy + el.h + ${ref.below ?? 0}) : y0 + Math.round(el.h + el.over + 45);
       if (clips) { x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(host.offsetWidth, x1); y1 = Math.min(host.offsetHeight, y1); }
       return { x: Math.round(hr.left + scrollX) + x0, y: Math.round(hr.top + scrollY) + y0, w: x1 - x0, h: y1 - y0,
         stageClip: clips ? [host.offsetWidth, host.offsetHeight, parseFloat(cs.borderTopLeftRadius) || 0] : null,
