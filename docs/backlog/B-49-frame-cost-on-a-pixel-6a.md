@@ -5,7 +5,7 @@ status: open
 priority: P1
 size: M
 stage: stage-1-materials
-blocked_by: [B-06, B-10]
+blocked_by: [B-06, B-10, B-73]
 ---
 
 # B-49 — The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance
@@ -21,6 +21,7 @@ on the desktop JVM and assumed the phone four times slower; this item measures t
 - The verdict against the brief's green and red; on red, the brief's retreat order and the handoff's two
   outs, each measured.
 - Rejected: measuring last, as plakat-ui did; here the architecture depends on the answer.
+- **The order, the owner's (2026-11-14).** The JVM first ([B-72](B-72-frame-cost-on-the-jvm.md)) and its fixes, then the browser ([B-73](B-73-frame-cost-in-the-browser.md)), then this phone: a cost found on the JVM is fixed where it is cheapest to profile, before the phone measures what is left.
 
 - AC: a verdict per target with raw logs under `logs/b-49/` and the control's reading; the factor between
   the M1 and the phone measured, so B-06's assumption is confirmed or refuted in writing.
