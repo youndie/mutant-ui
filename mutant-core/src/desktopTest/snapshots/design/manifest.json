@@ -5,7 +5,8 @@
   "pages": {
     "mutant-ui Компоненты.dc.html": "f9c9f72b3d8ec41b711de0e82dc6e68469b9b6ff64c0e758e3c1aa770702413e",
     "mutant-ui Анимационные спеки.dc.html": "ada677a51242dc96c34b584fe0d41e437139fce2374c13fb822baea461daf1dd",
-    "mutant-ui Иконки и заготовки.dc.html": "484de95b472c565fe2548d9df90ab1724902f5663cb8279d70498e2217fb6450"
+    "mutant-ui Иконки и заготовки.dc.html": "484de95b472c565fe2548d9df90ab1724902f5663cb8279d70498e2217fb6450",
+    "mutant-ui Демо.dc.html": "9db912932852a8fe1dfa30d4e05a251adb7f69f7892807e0082ea4b73be7c471"
   },
   "scripts": {
     "mutant-generator.js": "9f5145ea663b1bca560017d0fc1870921eaf007dd2bd62420dea5a97fe72a7be",
@@ -60054,6 +60055,150 @@
           "brackets": false,
           "drawnOutline": 2.57
         }
+      ]
+    },
+    {
+      "stem": "Demo_Library_Efir",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoA\"]",
+      "theme": "Efir",
+      "x": 64,
+      "y": 385,
+      "w": 360,
+      "h": 720,
+      "art": [
+        0,
+        0,
+        360,
+        720
+      ],
+      "background": "rgb(10, 12, 24)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 28,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "Demo_Recording_Efir",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoB\"]",
+      "theme": "Efir",
+      "x": 472,
+      "y": 385,
+      "w": 360,
+      "h": 720,
+      "art": [
+        0,
+        0,
+        360,
+        720
+      ],
+      "background": "rgb(10, 12, 24)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 28,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "Demo_Settings_Efir",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoC\"]",
+      "theme": "Efir",
+      "x": 880,
+      "y": 385,
+      "w": 360,
+      "h": 720,
+      "art": [
+        0,
+        0,
+        360,
+        720
+      ],
+      "background": "rgb(10, 12, 24)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 28,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "Demo_Library_Kopiya",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoA\"]",
+      "theme": "Kopiya",
+      "x": 64,
+      "y": 385,
+      "w": 360,
+      "h": 720,
+      "art": [
+        0,
+        0,
+        360,
+        720
+      ],
+      "background": "rgb(207, 200, 182)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 28,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "Demo_Recording_Kopiya",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoB\"]",
+      "theme": "Kopiya",
+      "x": 472,
+      "y": 385,
+      "w": 360,
+      "h": 720,
+      "art": [
+        0,
+        0,
+        360,
+        720
+      ],
+      "background": "rgb(207, 200, 182)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 28,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "Demo_Settings_Kopiya",
+      "page": "mutant-ui Демо.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"demoC\"]",
+      "theme": "Kopiya",
+      "x": 880,
+      "y": 385,
+      "w": 360,
+      "h": 720,
+      "art": [
+        0,
+        0,
+        360,
+        720
+      ],
+      "background": "rgb(207, 200, 182)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 28,
+      "subpixel": [
+        0,
+        0.1875
       ]
     },
     {

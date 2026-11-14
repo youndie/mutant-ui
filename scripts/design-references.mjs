@@ -39,6 +39,7 @@ const OUT = join(ROOT, 'mutant-core/src/desktopTest/snapshots/design');
 const GENERATOR = join(DESIGN, 'mutant-generator.js');
 const ENGINE = join(DESIGN, 'mutant-engine.js');
 const MVP = 'mutant-ui Компоненты.dc.html';
+const DEMO = 'mutant-ui Демо.dc.html';
 const SPECS = 'mutant-ui Анимационные спеки.dc.html';
 const ICONS = 'mutant-ui Иконки и заготовки.dc.html';
 // B-14: the Icons page's icons (in its order), patterns and illustrations, named as the kit names them.
@@ -202,6 +203,11 @@ export const REFERENCES = [
       hide: bare ? '[data-mu-stage="illus"], [data-mu-stage="illus"] * { color: transparent !important; } [data-mu-stage="illus"] [data-keep], [data-mu-stage="illus"] [data-mu-anim] { visibility: hidden !important; }' : '' })),
     { stem: `MutantEmptyState_Stage_${theme}`, page: MVP, stage: 'illus', type: 'blob', index: 0, theme, below: 20 },
   ]),
+  // B-37: the Demo page's three screens as they stand, both themes — for the eye: the sample rebuilds them from the
+  // public API as it stands, whose components keep their own numbers where the page composes with its own (the owner's
+  // answer of 2026-11-14).
+  ...['Efir', 'Kopiya'].flatMap((theme) => [['Library', 'demoA'], ['Recording', 'demoB'], ['Settings', 'demoC']].map(([s, stage]) =>
+    ({ stem: `Demo_${s}_${theme}`, page: DEMO, el: true, sel: `[data-mu-stage="${stage}"]`, index: 0, theme }))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.

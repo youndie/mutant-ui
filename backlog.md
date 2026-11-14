@@ -62,7 +62,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[ ]` | The three demo screens and the sample kit on desktop and the web | P1 | M | B-15, B-16, B-17, B-18, B-19, B-20, B-21, B-22, B-23, B-24, B-25, B-26, B-27, B-28, B-29 |
 | [B-38](docs/backlog/B-38-accessibility.md) `[ ]` | Accessibility: contrast after the Tape, flashes, greyscale, semantics | P1 | M | B-13, B-37 |
 | [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[ ]` | A QA pass over the finished MVP and a real window driven by AWT events | P1 | M | B-37 |
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
@@ -70,6 +69,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[ ]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
 | [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[ ]` | Text button: its tracking divider is drawn unscaled at a density above 1 | P1 | S | B-15 |
 | [B-54](docs/backlog/B-54-melt-stalls-short-of-its-end.md) `[ ]` | Melt: a mark can stall at 76 % when a frame falls in its last 3 ms | P1 | S | B-18 |
+| [B-55](docs/backlog/B-55-public-text-styles.md) `[ ]` | Public text styles: a consumer cannot set its own words in Handjet or Rubik | P1 | S | B-37 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
@@ -85,7 +85,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (32)
+## Closed (33)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -125,6 +125,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-27](docs/backlog/B-27-progress.md) `[x]` - LinearProgress and CircularProgress
 - [B-28](docs/backlog/B-28-dialog.md) `[x]` - Dialog: a clean window over a paused background
 - [B-29](docs/backlog/B-29-empty-state.md) `[x]` - EmptyState: the six illustrations with a title
+
+**The three demo screens within the floor in both themes; contrast, flashes and greyscale measured on the kit**
+
+- [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[x]` - The three demo screens and the sample kit on desktop and the web
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 

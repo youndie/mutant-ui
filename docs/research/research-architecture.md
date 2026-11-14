@@ -327,6 +327,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | A test over "every node that …" passes over none as readily as over all: an empty state given no width lays its words a letter a line, thousands of dp tall, and stacked above the measured one it pushed that out of the test window, so the sweep's checks ran over nothing and a mutant survived them. Such a check asserts how many it measured (B-29) | `EmptyStateBehaviourTest`, 2026-11-14 |
 
+| The Demo page composes its three screens with spacing and sizes of its own that the components page does not draw (a 62 dp navigation bar against 68, a tab row of 32 and 4 against 36 and 6, a bar title at 22 against 26, radio labels 10 dp off against 12, a switch's label before it, a progress value read as a time). The owner decided on 2026-11-14: the screens are rebuilt from the public API as it stands, each component held to its own cell; the screens' references are for the eye, with no floor gate (B-37) | `DemoScreensTest`, `sample/build/demo/` |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
@@ -430,8 +432,8 @@ root ([B-13](../backlog/B-13-tape.md)). Keyframe loss, which the handoff calls o
 
 Like the other three kits. The design's demo strings are copied verbatim into fixtures. The brief
 requires the demo screens to be checked in both Cyrillic and Latin, so the sample switches
-language; which one it opens in is the owner's call, asked when the sample is built
-([B-37](../backlog/B-37-demo-screens-and-sample.md)).
+language. It opens in English, the owner decided on 2026-11-14 when the sample was built
+([B-37](../backlog/B-37-demo-screens-and-sample.md)); Russian is one switch away.
 
 ### D12. Built and verified on the Mac; the repository stays out of mutagen sync
 
