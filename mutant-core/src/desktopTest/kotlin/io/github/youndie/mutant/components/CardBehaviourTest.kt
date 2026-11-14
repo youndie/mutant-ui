@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
@@ -27,6 +28,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
@@ -220,5 +222,51 @@ class CardBehaviourTest {
                 )
                 assertTrue(b.bottom <= card.bottom, "inside the bottom: $b in $card")
             }
+            // Cut with an ellipsis, not drawn on past the card (a node's bounds cannot show that).
+            for (node in onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes()) {
+                val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                node.config
+                    .getOrNull(SemanticsActions.GetTextLayoutResult)
+                    ?.action
+                    ?.invoke(results)
+                assertEquals(TextOverflow.Ellipsis, results.single().layoutInput.overflow)
+            }
         }
+
+    /** The pixels under a bare card's lines, drawn with [key]'s seed. */
+    private fun textArea(key: String): List<Color> {
+        var area = emptyList<Color>()
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalCardHidden provides true) {
+                    MutantTheme {
+                        Box {
+                            MutantCard(Modifier.width(328.dp).testTag("c"), key = key) {
+                                MutantCardTitle("Без подписи №3", Modifier.testTag("t"))
+                                MutantCardSubtitle("Сторона A · 46 мин", Modifier.testTag("s"))
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val c = onNodeWithTag("c").fetchSemanticsNode().boundsInRoot
+            val t = onNodeWithTag("t", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val s = onNodeWithTag("s", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val px = onNodeWithTag("c").captureToImage().toPixelMap()
+            area =
+                ((t.top - c.top).toInt() until (s.bottom - c.top).toInt()).flatMap { y ->
+                    ((t.left - c.left).toInt() until (maxOf(t.right, s.right) - c.left).toInt()).map { x -> px[x, y] }
+                }
+        }
+        return area
+    }
+
+    @Test
+    fun `no flow line, mosaic or dead pixel enters the lines - the seed does not reach them`() {
+        // Without the clean zone, 124 to 545 of these 5054 pixels change with the seed (measured 2026-11-14).
+        val first = textArea("card/0")
+        for (k in 1 until 8) assertEquals(first, textArea("card/$k"), "card/$k under its lines")
+    }
 }
