@@ -129,3 +129,19 @@ tasks.register<JavaExec>("fieldBench") {
     dependsOn(test.compileAllTaskName)
     notCompatibleWithConfigurationCache("a measurement, run by hand")
 }
+
+// B-50: the main thread's frame when ten cards appear, built in the frame or off it; run by hand into logs/b-50/.
+// `./gradlew :mutant-core:appearBench --args="$(git rev-parse --short HEAD)" > logs/b-50/<date>-desktop.log`
+tasks.register<JavaExec>("appearBench") {
+    group = "verification"
+    description = "Measures the frame in which ten bodies appear; not part of check."
+    mainClass = "io.github.youndie.mutant.bench.AppearBenchKt"
+    val test =
+        kotlin.targets
+            .getByName("desktop")
+            .compilations
+            .getByName("test")
+    classpath = test.output.allOutputs + test.runtimeDependencyFiles!!
+    dependsOn(test.compileAllTaskName)
+    notCompatibleWithConfigurationCache("a measurement, run by hand")
+}
