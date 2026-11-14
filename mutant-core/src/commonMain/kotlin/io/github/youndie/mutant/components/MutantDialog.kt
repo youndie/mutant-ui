@@ -68,6 +68,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
@@ -125,6 +126,7 @@ internal fun DialogFrame(
     playIn: Boolean = true,
     windowTop: Dp? = null,
     hidden: Boolean = false,
+    probe: ((Instance) -> Unit)? = null,
 ) {
     ReturnFocus(visible, returnFocusTo)
     val reduce = LocalMutantReduceMotion.current
@@ -148,7 +150,18 @@ internal fun DialogFrame(
             onDispose { if (!gone) screen.holds-- }
         }
         if (gone) return@ProvideMutantClock
-        DialogScene(visible, title, onDismissRequest, modifier, text, actions, shown.toFloat(), windowTop, hidden)
+        DialogScene(
+            visible,
+            title,
+            onDismissRequest,
+            modifier,
+            text,
+            actions,
+            shown.toFloat(),
+            windowTop,
+            hidden,
+            probe,
+        )
     }
 }
 
@@ -163,6 +176,7 @@ private fun DialogScene(
     shown: Float,
     windowTop: Dp?,
     hidden: Boolean,
+    probe: ((Instance) -> Unit)?,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
@@ -219,10 +233,10 @@ private fun DialogScene(
                             true
                         }
                     },
-                // The engine's `data-state="clean"`: the clean frame, with no print slip.
+                // The engine's `data-state="clean"`: the clean frame, drawn with no print slip.
                 state = BodyState.Success,
-                slip = 0.0,
                 profile = MutantBody.Bar.profile.with(radius = WINDOW_RADIUS),
+                probe = probe,
             ) {
                 Column(
                     Modifier.padding(start = PAD, top = PAD, end = PAD, bottom = PAD_FOOT),

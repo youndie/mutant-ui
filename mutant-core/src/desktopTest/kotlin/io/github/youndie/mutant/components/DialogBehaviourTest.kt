@@ -44,6 +44,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -176,6 +179,8 @@ class DialogBehaviourTest {
                     generateSequence(title) { it.parent }.first { SemanticsProperties.PaneTitle in it.config }
                 }
             assertEquals("Стереть запись?", window.config[SemanticsProperties.PaneTitle])
+            val title = onAllNodesWithText("Стереть запись?", useUnmergedTree = true).fetchSemanticsNodes().first()
+            assertTrue(SemanticsProperties.Heading in title.config, "the title is a heading")
             assertTrue(SemanticsProperties.IsDialog in window.config, "a dialog")
             window.config[SemanticsActions.Dismiss].action?.invoke()
             mainClock.advanceTimeByFrame()
@@ -224,6 +229,56 @@ class DialogBehaviourTest {
                 "not on the screen behind",
             )
         }
+
+    @Test
+    fun `its window is the engine's - 280 by 171, its clean zone the engine's - and 280 at most on a wide screen`() {
+        val ref =
+            io.github.youndie.mutant.DesignParity
+                .reference("MutantDialog_Window_Efir")["slot"]!!
+                .jsonObject
+        val zone = (ref["tz"] as kotlinx.serialization.json.JsonArray).map { it.jsonPrimitive.double }
+        var window: io.github.youndie.mutant.gen.Instance? = null
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        CompositionLocalProvider(
+                            io.github.youndie.mutant.type.LocalMutantTextRaster provides
+                                io.github.youndie.mutant.ChromeText,
+                        ) {
+                            Box(Modifier.size(600.dp, 400.dp)) {
+                                val keep = { it: io.github.youndie.mutant.gen.Instance -> window = it }
+                                DialogFrame(
+                                    true,
+                                    "Стереть запись?",
+                                    {},
+                                    Modifier,
+                                    "Плёнку можно будет записать заново.",
+                                    null,
+                                    {
+                                        MutantDialogAction("Отмена", {})
+                                        MutantDialogAction("Стереть", {}, primary = true)
+                                    },
+                                    probe = keep,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+        }
+        val slot = window!!.slot
+        assertEquals(280.0, slot.w, "280 wide on a 600 dp screen")
+        assertEquals(ref["h"]!!.jsonPrimitive.double, slot.h, "as tall as the engine's")
+        assertTrue(
+            slot.textZone.toList().zip(zone).all { (k, e) ->
+                kotlin.math.abs(k - e) <= 1.0
+            },
+            "zone ${slot.textZone.toList()}, engine $zone",
+        )
+    }
 
     @Test
     fun `a narrow screen, a long title and a doubled font neither throw nor leave the window`() =
