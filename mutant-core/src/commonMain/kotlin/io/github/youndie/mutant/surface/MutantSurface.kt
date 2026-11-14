@@ -328,6 +328,8 @@ internal fun MutantSurface(
                                     )
                                 } else {
                                     drawCleanBody(g, look.fill, look.highlight, look.ink, p.outline.toFloat())
+                                    // A Success body is still a control: its keyboard focus shows (B-57).
+                                    if (focused) drawBrackets(g, colors.focus)
                                 }
                             }
                         }
