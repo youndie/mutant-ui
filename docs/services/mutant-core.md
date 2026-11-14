@@ -33,6 +33,8 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `scripts/tokens.mjs` | writes them from `mutant-tokens.json` and the engine's `static K` and `TH`; `--check` in the gate |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/` | `MutantSurface` and the body renderer (`BodyDrawing.kt`): layers, speckle, clean zone, the held instance ([B-10](../backlog/B-10-mutant-surface.md)) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the page's resting button, card and field |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal; the locals every body reads ([B-09](../backlog/B-09-theme.md)) |
+| `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/theme/PlatformReduceMotion.*.kt` | the platform's reduce-motion setting per target |
 | `mutant-core/api/` | the committed public API dump |
 | `mutant-core/src/desktopTest/snapshots/design/` | the Chrome references and their `manifest.json`, rendered by `scripts/design-references.mjs` (`make references`) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/gen/BodyFloorTest.kt` | the floor of the body: Chrome's outline against Compose's |
