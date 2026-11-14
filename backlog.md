@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-21](docs/backlog/B-21-card.md) `[ ]` | Card: dead pixels in the corner | P1 | M | B-10, B-11 |
+| [B-21](docs/backlog/B-21-card.md) `[~]` | Card: dead pixels in the corner | P1 | M | B-10, B-11 |
 | [B-22](docs/backlog/B-22-skeleton-cocoon.md) `[ ]` | Skeleton («Кокон»): mosaic of 16 and 8 dp in the shape of the coming component | P1 | M | B-10, B-07 |
 | [B-23](docs/backlog/B-23-top-app-bar-and-tabs.md) `[ ]` | TopAppBar and Tabs: the 56 dp bar with a tracking divider, the 4 dp indicator with an echo | P1 | M | B-10, B-07 |
 | [B-24](docs/backlog/B-24-navigation-bar.md) `[ ]` | NavigationBar: bar body, the active item a 56 × 30 pill | P1 | M | B-10, B-11 |

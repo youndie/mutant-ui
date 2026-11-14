@@ -1,7 +1,7 @@
 ---
 id: B-21
 title: "Card: dead pixels in the corner"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
