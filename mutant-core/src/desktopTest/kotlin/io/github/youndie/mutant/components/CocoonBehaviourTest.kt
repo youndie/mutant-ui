@@ -79,12 +79,14 @@ class CocoonBehaviourTest {
         val before = thin.paints.copyOf()
         thin.at(40, 16, 7)
         assertTrue(before.indices.count { before[it] != thin.paints[it] } <= 2)
-        // The least cocoon, four 8 dp quarters at most: still two repaints a tick, so over many ticks one changes two.
-        val least = CocoonMosaic("1/card/coc9", "card9").apply { at(16, 16, null) }
+        // A small cocoon, eight 8 dp quarters at most, 6 % of which is under one: still two repaints a tick, so over
+        // many ticks one changes two blocks.
+        val least = CocoonMosaic("1/card/coc9", "card9").apply { at(32, 16, null) }
+        assertTrue(least.paints.size in 3..8, "quarters: ${least.paints.size}")
         val most =
             (0L until 60L).maxOf { t ->
                 val was = least.paints.copyOf()
-                least.at(16, 16, t)
+                least.at(32, 16, t)
                 was.indices.count { was[it] != least.paints[it] }
             }
         assertEquals(2, most, "two blocks repainted on some tick")
