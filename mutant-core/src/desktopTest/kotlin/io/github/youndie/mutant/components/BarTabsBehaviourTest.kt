@@ -113,6 +113,21 @@ class BarTabsBehaviourTest {
             onNodeWithText("Заметки").assertIsSelected()
             onNodeWithText("Копии").assertIsNotEnabled().performClick()
             assertEquals(1, at)
+            // A disabled label greys; a live one stands in the secondary colour, the selected in the accent.
+            val c = MutantPalettes.Efir
+            for ((label, colour) in listOf(
+                "Копии" to c.textDisabled,
+                "Дорожки" to c.textSecondary,
+                "Заметки" to c.textAccent,
+            )) {
+                val px = onNodeWithText(label, useUnmergedTree = true).captureToImage().toPixelMap()
+                val inked =
+                    (0 until px.width * px.height).count {
+                        val q = px[it % px.width, it / px.width]
+                        abs(q.red - colour.red) + abs(q.green - colour.green) + abs(q.blue - colour.blue) < .04f
+                    }
+                assertTrue(inked > 10, "$label in its colour: $inked")
+            }
         }
 
     @Test
@@ -164,7 +179,13 @@ class BarTabsBehaviourTest {
             at = 2
             mainClock.advanceTimeBy(160)
             val mid = acid(43)!!
-            assertTrue(mid.first > start.first && mid.first < end.left.toInt(), "halfway: $mid between $start and $end")
+            // 160 ms is one 83 ms step of 330 in: eased out by the cube, 1 - (1 - p)^3, from the first label to the third.
+            val p =
+                io.github.youndie.mutant.surface
+                    .stepped(160.0, 330.0)
+            val e = 1 - Math.pow(1 - p, 3.0)
+            val expected = start.first + (end.left - start.first) * e
+            assertTrue(abs(mid.first - expected) <= 1.0, "at 160 ms the bar at ${mid.first}, eased to $expected")
             assertTrue(echoLeftOf(mid.first, 45), "running right, the echo trails on the left")
             mainClock.advanceTimeBy(200)
             assertEquals(end.left.toInt(), acid(43)!!.first, "landed")
@@ -252,6 +273,18 @@ class BarTabsBehaviourTest {
             assertTrue(status.right <= bar.right + .5f && status.width > 0, "the status kept whole: $status in $bar")
             val title = onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes().first().boundsInRoot
             assertTrue(title.right <= status.left, "the title cut before the status: $title")
+            val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            onAllNodesWithText(long, useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .first()
+                .config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult]
+                .action
+                ?.invoke(layouts)
+            assertEquals(
+                androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                layouts.single().layoutInput.overflow,
+                "with an ellipsis",
+            )
             // The divider: the two rows under the 56 dp row carry the tracking strokes.
             val px = onNodeWithTag("bar").captureToImage().toPixelMap()
             val ground = px[px.width - 1, 0]
