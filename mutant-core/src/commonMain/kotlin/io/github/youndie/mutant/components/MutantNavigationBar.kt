@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
@@ -97,6 +98,8 @@ internal fun NavigationBarBody(
     key: String,
     pillKey: String,
     hidden: Boolean = false,
+    probe: ((Instance) -> Unit)? = null,
+    pillProbe: ((Instance) -> Unit)? = null,
 ) {
     val from = remember { PillFrom(selectedIndex) }
     from.follow(selectedIndex)
@@ -106,6 +109,7 @@ internal fun NavigationBarBody(
         modifier.fillMaxWidth().height(BAR),
         // The page's `data-marks="0"`: no dead pixels or marks on the bar.
         profile = MutantBody.Bar.profile.with(marks = false),
+        probe = probe,
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val n = items.size.coerceAtLeast(1)
@@ -120,8 +124,10 @@ internal fun NavigationBarBody(
                         MutantSurface(
                             MutantBody.Pill,
                             pillKey,
-                            Modifier.size(ICON_BOX_W, ICON_BOX_H),
+                            // The pill is a body inside the bar: the engine keeps it in the bar's clean zone.
+                            Modifier.size(ICON_BOX_W, ICON_BOX_H).mutantCleanZone(),
                             slide = SlideRequest(selectedIndex, dx.value.toDouble()),
+                            probe = pillProbe,
                         ) {
                             Box(Modifier.size(ICON_BOX_W, ICON_BOX_H), contentAlignment = Alignment.Center) {
                                 Box(Modifier.size(ICON).mutantCleanZone())
@@ -198,17 +204,21 @@ private fun NavigationItem(
                     // The icon box's top in the cell, as the Box centres the column: the pill stands there.
                     top(((c.maxHeight - p.height) / 2f).roundToInt())
                     layout(p.width, p.height) { p.place(0, 0) }
-                }.mutantCleanZone(),
+                }
+                // The whole cell wide: the icon box and the label each centre on the cell, as the page's grid centres
+                // them, and not on a column whose width the label sets.
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(GAP),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(Modifier.size(ICON_BOX_W, ICON_BOX_H), contentAlignment = Alignment.Center) {
-                MutantIcon(item.icon, null, tint = glyph, size = ICON)
+                // The engine's clean zone is its text runs, its icons and its bodies, not the boxes around them.
+                MutantIcon(item.icon, null, Modifier.mutantCleanZone(), tint = glyph, size = ICON)
                 item.badge?.let { Badge(it, hidden) }
             }
             BasicText(
                 item.label,
-                Modifier.padding(horizontal = LABEL_MARGIN),
+                Modifier.padding(horizontal = LABEL_MARGIN).mutantCleanZone(),
                 style =
                     TextStyle(
                         fontFamily = LocalMutantFonts.current?.text,
@@ -242,7 +252,8 @@ private fun androidx.compose.foundation.layout.BoxScope.Badge(
                 val r = BADGE_RING.toPx()
                 drawRect(INK, Offset(-r, -r), Size(size.width + 2 * r, size.height + 2 * r))
                 drawRect(colors.amber)
-            }.padding(horizontal = BADGE_PAD),
+            }.padding(horizontal = BADGE_PAD)
+            .mutantCleanZone(),
         style =
             TextStyle(
                 fontFamily = LocalMutantFonts.current?.display,

@@ -123,6 +123,11 @@ class NavigationBarBehaviourTest {
             onNodeWithText("Поиск").assertIsSelected()
             onNodeWithText("Настройка").assertIsNotEnabled().performClick()
             assertEquals(1, at)
+            // A disabled label greys.
+            val grey = MutantPalettes.Efir.textDisabled
+            val px = onNodeWithText("Настройка", useUnmergedTree = true).captureToImage().toPixelMap()
+            val inked = (0 until px.width * px.height).count { near(px[it % px.width, it / px.width], grey, .04f) }
+            assertTrue(inked > 10, "the disabled label in its grey: $inked")
         }
 
     @Test
@@ -218,6 +223,31 @@ class NavigationBarBehaviourTest {
         }
 
     @Test
+    fun `the badge's ring is the page's black in both themes`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(colors = MutantPalettes.Kopiya) {
+                        Box {
+                            MutantNavigationBar(
+                                four,
+                                0,
+                                {},
+                                Modifier.width(328.dp).testTag("n"),
+                                windowInsets = WindowInsets(0),
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val px = onNodeWithTag("n").captureToImage().toPixelMap()
+            // The plate's top is row 9; its ring's whole row is 8, 1.5 dp out. Read it a few columns in from its right.
+            assertTrue(near(px[140, 8], Color(0xFF05060C), .02f), "ring ${px[140, 8]}")
+        }
+
+    @Test
     fun `keyboard focus draws the brackets around an item`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
@@ -271,7 +301,8 @@ class NavigationBarBehaviourTest {
                 val b = node.boundsInRoot
                 val cell = bar.left + i * 100f
                 assertTrue(
-                    b.left >= cell && b.right <= cell + 100f + .5f && b.bottom <= bar.bottom,
+                    // 4 dp from the cell's sides, then an ellipsis.
+                    b.left >= cell + 4 - .5f && b.right <= cell + 96f + .5f && b.bottom <= bar.bottom,
                     "label $b in its cell",
                 )
                 val layouts = mutableListOf<TextLayoutResult>()
