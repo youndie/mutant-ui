@@ -1,7 +1,7 @@
 ---
 id: B-38
 title: "Accessibility: contrast after the Tape, flashes, greyscale, semantics"
-status: open
+status: done
 priority: P1
 size: M
 stage: stage-3-screens
@@ -18,3 +18,13 @@ The brief asks for 4.5:1 for glyphs after the Tape at the worst tick, its own fl
 
 - AC: a table of measured contrasts, flashes and greyscale differences in the research; every component's semantics equal its Material counterpart's; the owner's answer on the disabled pair recorded.
 - Anchors: `reference/design-system/mutant-tokens.json`, `reference/design-system/brief.md`, `reference/design-system/mutant-ui Демо.dc.html`
+
+## Result (2026-11-14)
+
+- Measured on the kit over the sample's demo screens at every scene tick of a Tape cycle, both themes; the table is research §1.16. Every active word reads 4.70:1 or more after the Tape at its worst tick (the brief asks 4.5); no tick changes more than 7.3 % of a screen (the kit's rule: a quarter, once a second); the settings form's red holds 559–653 px tick by tick, moving with its bodies, never on and off.
+- **The owner's answer on the disabled pair, 2026-11-14: WCAG's exemption for inactive components.** Measured 4.38 («Эфир»'s disabled button) to 4.52 («Копия»'s disabled labels); the tokens stay; the words are held from falling under 4.3.
+- Greyscale: every state pair of the button, checkbox, radio, switch, chip and field stands at least 86 pixels apart in grey, but a loading button against one at rest (8 and 30 px): its seek bands are a light acid on the acid body. Listed with that cause.
+- Semantics: each component's role and state are its Material counterpart's (the chip a selectable with the checkbox's role, as Material's FilterChip); a body adds no node.
+- Noted, the design's own: «Копия»'s outlined button casts a misregistered shadow in a saturated red that comes and goes (2–157 px, under 0.1 % of the screen); the Tape's grain strokes are 1 dp thin and up to 3 dp long.
+- Tests (the sample): `AccessibilityTest`, `DisabledContrastTest`, `StatesAndSemanticsTest` (2). Mutants, each failing its test: «Эфир»'s secondary text darker, «Копия»'s lighter, the disabled text darker, the switch's role a checkbox's, the progress without its value.
+- Not covered: a device's recording through the flash rule (the Pixel 6a, B-49), and screen readers on a device.
