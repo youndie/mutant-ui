@@ -52,7 +52,12 @@ class FirstFrameOffTheFrameTest {
     ): Card {
         var width by mutableStateOf(card.width)
         setContent {
-            CompositionLocalProvider(LocalDensity provides Density(1f), LocalMutantBuildOffFrame provides offFrame) {
+            CompositionLocalProvider(
+                LocalDensity provides Density(1f),
+                LocalMutantBuildOffFrame provides offFrame,
+                // The first build alone: drawing a resting body from an image (B-82) is held by BodyAsImageTest.
+                LocalMutantBodyAsImage provides false,
+            ) {
                 ProvideMutantClock(clock) {
                     Box(Modifier.size(360.dp, 120.dp).testTag("stage")) {
                         MutantSurface(MutantBody.Card, "card/b50", Modifier.size(width.dp, 80.dp), probe = {
