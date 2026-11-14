@@ -57,6 +57,10 @@ class NavigationBarBehaviourTest {
             MutantNavigationItem("Настройка", MutantIcons.Settings),
         )
 
+    /** Labels of many widths, odd and even. */
+    private val widths =
+        listOf("Ж", "ЖЖ", "Поиск", "Поиск.", "Настройка", "Настройки", "Настройкам", "Очередь", "Очереди")
+
     private fun ComposeUiTest.pixels(tag: String): List<Color> =
         onNodeWithTag(tag).captureToImage().toPixelMap().let { px ->
             List(px.width * px.height) { px[it % px.width, it / px.width] }
@@ -201,6 +205,40 @@ class NavigationBarBehaviourTest {
             val end = pill()!!
             assertTrue(abs((end.first + end.last) / 2 - 287) <= 2, "paused, at once: $end")
         }
+    }
+
+    @Test
+    fun `an icon centres on its cell whatever its label's width`() {
+        // Labels of many widths: an odd one centres a column on a half pixel, which an icon centred on its column inherits.
+        val columns =
+            widths.map { label ->
+                var ink = IntRange.EMPTY
+                runComposeUiTest {
+                    mainClock.autoAdvance = false
+                    setContent {
+                        CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                            MutantTheme {
+                                Box {
+                                    MutantNavigationBar(
+                                        listOf(MutantNavigationItem(label, MutantIcons.Search)),
+                                        -1,
+                                        {},
+                                        Modifier.width(82.dp).testTag("n"),
+                                        windowInsets = WindowInsets(0),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    mainClock.advanceTimeByFrame()
+                    val px = onNodeWithTag("n").captureToImage().toPixelMap()
+                    val icon = MutantPalettes.Efir.textSecondary
+                    val xs = (0 until px.width).filter { x -> (15 until 37).any { y -> near(px[x, y], icon, .1f) } }
+                    ink = xs.first()..xs.last()
+                }
+                ink
+            }
+        assertEquals(1, columns.toSet().size, "the icon's columns under every label: $columns")
     }
 
     @Test

@@ -12,6 +12,7 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /** B-24: the navigation bar the page draws — bar, pill, icons, badge and labels — in both themes. */
@@ -231,6 +232,34 @@ class NavigationBarParityTest {
             "pill: kit $ptz, engine $pillZone",
         )
         assertTrue(!bar.slot.marks, "the page's data-marks=0: no flow lines on the bar")
+        // With no pill and no badge, the icons are the zone's top: 4 dp into the 30 dp box 11 dp down, less the 2 dp
+        // margin — the engine's measure of a bar like this one.
+        var plain: io.github.youndie.mutant.gen.Instance? = null
+        androidx.compose.ui.test.v2.runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalDensity provides
+                        androidx.compose.ui.unit
+                            .Density(1f),
+                ) {
+                    io.github.youndie.mutant.theme.MutantTheme {
+                        NavigationBarBody(
+                            items.map { MutantNavigationItem(it.label, it.icon) },
+                            -1,
+                            {},
+                            androidx.compose.ui.Modifier
+                                .width(328.dp),
+                            "navbar",
+                            "navpill",
+                            probe = { plain = it },
+                        )
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+        }
+        assertEquals(13.0, plain!!.slot.textZone[1], "the icons' top, 15, less 2")
     }
 
     private companion object {
