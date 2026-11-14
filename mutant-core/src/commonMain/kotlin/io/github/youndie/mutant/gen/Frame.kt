@@ -36,7 +36,7 @@ internal fun MutantGenerator.frame(
 ): BodyFrame {
     val el = g.slot
     val hot = heat > 0 || pressed
-    val boilPhase = (floor(t / (if (hot) TICK_MS / 1.5 else TICK_MS) + .001) % 4).toInt()
+    val boilPhase = boilPhase(t, hot)
     val boil0 = REST_BOIL * el.calm
     val boil = boil0 * (1 + 2 * heat) + .6 * heat
     val prims = primitives(g, t, hot)
@@ -51,3 +51,14 @@ internal fun MutantGenerator.frame(
     val flow = if (g.flowLines.isEmpty()) GenPath.Empty else flowLinePath(g, t, boilPhase, boil)
     return BodyFrame(contour, highlight, flow, prims, fd, boilPhase, boil)
 }
+
+/**
+ * The boil phase 0…3 a body trembles in at [ms] (the engine's `drawItem`): `floor(t / 125 + 0.001) mod 4`
+ * at rest, every 83⅓ ms when [hot], whatever the resting tick's rate. The 0.001 makes a time a hair short
+ * of a boundary count as past it, as the tick does not: at 83.333333 ms the hot phase is already 1 while
+ * the hot tick is still 0.
+ */
+internal fun boilPhase(
+    ms: Double,
+    hot: Boolean,
+): Int = (floor(ms / (if (hot) TICK_MS / 1.5 else TICK_MS) + .001) % 4).toInt()
