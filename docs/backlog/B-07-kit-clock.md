@@ -1,7 +1,7 @@
 ---
 id: B-07
 title: "The kit clock: one per screen, in ms, ticks of 125 and 83 ms, pausable"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-1-materials
