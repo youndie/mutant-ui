@@ -1,6 +1,5 @@
 package io.github.youndie.mutant.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,16 +13,11 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.youndie.mutant.surface.drawTrackingDivider
-import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantFonts
-import io.github.youndie.mutant.theme.LocalMutantStage
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
@@ -48,7 +42,6 @@ public fun MutantTopAppBar(
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
     val raster = LocalMutantTextRaster.current
-    val seed = "${LocalMutantCassette.current}/${LocalMutantStage.current}/div$key"
     Column(modifier.windowInsetsPadding(windowInsets)) {
         Row(
             Modifier.fillMaxWidth().height(BAR),
@@ -87,15 +80,12 @@ public fun MutantTopAppBar(
             }
             actions()
         }
-        Canvas(Modifier.fillMaxWidth().height(DIVIDER)) {
-            scale(density, Offset.Zero) { drawTrackingDivider(seed, size.width / density, DIVIDER.value, colors) }
-        }
+        MutantDivider(key = key)
     }
 }
 
-/** The bar's row and the divider under it (the page's `height: 56px` and `height: 2px`). */
+/** The bar's row (the page's `height: 56px`); the divider under it is [MutantDivider]'s 2 dp. */
 private val BAR = 56.dp
-private val DIVIDER = 2.dp
 
 /** Between the icon, the title, the status and the actions (the page's `gap: 12px`). */
 private val GAP = 12.dp

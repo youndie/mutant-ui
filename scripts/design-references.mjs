@@ -172,6 +172,11 @@ export const REFERENCES = [
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
     ({ stem: `MutantNavigationBar_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'nav', type: 'bar', index: 0, theme, below: 24, hideText: bare }))),
+  // B-25: the list stage's two rows, each with its tile, words, trailing time or badge and the divider under it — the
+  // tile the slot, the row reached by `wide` (328 less the tile's 40), down to the divider's bottom — whole and bare,
+  // both themes.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [['Time', 0], ['Badge', 1]].flatMap(([s, index]) => [false, true].map((bare) =>
+    ({ stem: `MutantListItem_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'list', type: 'icon', index, theme, wide: 288, below: 14, hideText: bare })))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
