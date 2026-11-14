@@ -142,6 +142,21 @@ class SnackbarBehaviourTest {
         }
 
     @Test
+    fun `a short action is still a target at least 48 wide`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(
+                        reduceMotion = true,
+                    ) { MutantSnackbar("Готово", Modifier.width(328.dp), actionLabel = "Ж") }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Ж").assertWidthIsAtLeast(48.dp).assertHeightIsEqualTo(48.dp)
+        }
+
+    @Test
     fun `composed hidden, it draws nothing and reports no leaving`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
