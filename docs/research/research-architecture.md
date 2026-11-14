@@ -156,6 +156,26 @@ asks Handjet for 500 gets 400, in Chrome and in Compose alike, so the references
 | Reduce motion: the brief says "pause, transitions fade 100 ms"; the handoff says "the clock stops, damage stays, toggles switch instantly without transitions", and the engine's paused mode sets every transition delay to 0 | `reference/design-system/brief.md` («Два жёстких ограничения»), handoff README («Время, состояния, взаимодействие»), `mutant-engine.js` (`this.paused ? 0 : …`) |
 | An instance is rebuilt when its slot changes size: drips are laid out again and the shape may jump | handoff README, «Что не сделано и риски»; `mutant-generator.js` (`genItem` depends on `w`, `h`) |
 
+### 1.8 Pixel references and the floor
+
+Settled by [B-05](../backlog/B-05-pixel-references-and-floor.md); `scripts/design-references.mjs` renders, `make references` re-renders.
+
+| Fact | Where verified |
+|---|---|
+| The pages render in headless Chrome 157 at device scale 1 with the repository's fonts answered in place of Google's; the runtime comes from unpkg at the versions `support.js` pins | `scripts/design-references.mjs`, `mutant-core/src/desktopTest/snapshots/design/manifest.json` |
+| The engine is frozen without touching it: `window.MutantEngine` is wrapped as the page assigns it, every stage gets `data-mu-t = 5000` before `start()` (the engine's own "every slot still" switch, which the Tape and the stage animations read too) and keyframe loss is forced off. A render waits until every stage is built and every visible slot drawn, rebuilds once after the fonts load, and a second render is byte-identical | `scripts/design-references.mjs` (`FREEZE`, `pageCells`), two runs on 2026-11-14 |
+| The engine draws only stages within 150 px of the viewport (`IntersectionObserver`); a page is rendered with the viewport as tall as the page | `reference/design-system/mutant-engine.js` (`start`), the same script |
+| The outline's width trembles per frame by `vn(boilPhase · 3.3 + uid · 7.1, 2.5)`, where `uid` is the engine's running count of slots on the page: a host artefact with no counterpart in a kit, which [B-10](../backlog/B-10-mutant-surface.md) replaces by a seed of the instance's own | `reference/design-system/mutant-engine.js` (`drawItem`, `it.uid`) |
+| A page switches to «Копия» only through its Tweaks control (the page component's `theme` prop, which also rewrites its CSS variables); the probes draw both themes, page cells are «Эфир» until a component item needs the other | `reference/design-system/mutant-ui Компоненты.dc.html` (`static FONTS`, the theme handling) |
+| **The floor of the body**: Chrome drawing the generator's contour at t = 5000 against Compose drawing the port's — fill (even-odd) and ink stroke with round joins, nothing else — differs on 0.000–0.017 % of pixels (button 0.010 / 0.017, card and dot 0.000 in «Эфир» / «Копия»), a pixel differing when a channel is more than 16 apart | `BodyFloorTest`, 2026-11-14 |
+| The floor separates: the button's outline 20 % thicker reads 2.644 %, another instance's outline 12.322 % | `BodyFloorTest` (`the floor separates…`) |
+
+**Consequence 7.** Both browsers' renderers are Skia and the numbers are the same, so the body
+itself costs nothing in parity: a body that reads above 0.02 % has moved, and what a component reads
+beyond the floor belongs to its other layers and its text. A wrong instance passes viddik's 5 % default
+by a wide margin only because it is so far off; a 20 % thicker outline (2.6 %) would pass it, so body
+parity is read against 0.02 %, not 5 %.
+
 ---
 
 ## 2. Decisions
@@ -300,7 +320,7 @@ wait for review of what is designed here.
 | H2 | **The fonts lack a script or a weight** (§1.6). | *Closed by B-02:* both carry Cyrillic and Latin; four static instances are bundled. |
 | H3 | **The field is too slow on a phone** (D13). | Measured with a control that proves the harness can see a known cost; then the brief's retreat order and the handoff's two outs, a coarser grid or a shader field ([B-06](../backlog/B-06-frame-cost.md)). |
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | The handoff allows the geometric fallback on older Android; whether a common-code blur plus colour-matrix layer reproduces `a' = 18·a − 8.2` is checked against the venom references ([B-12](../backlog/B-12-transitions.md)). |
-| H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | [B-05](../backlog/B-05-pixel-references-and-floor.md) renders each page twice and compares the two. |
+| H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | *Closed by B-05:* `data-mu-t` on every stage, with keyframe loss off, renders byte-identically twice; the pause is not needed (§1.8). |
 | R1 | **Shape jumps when a slot is resized** (§1.7): a text field growing with its content rebuilds its drips. | Measured on the field and the card; if it is visible, the owner chooses between a size bucket and the jump ([B-10](../backlog/B-10-mutant-surface.md)). |
 | R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | Measured on the kit at the worst tick; the owner chooses WCAG's exemption or a darker token ([B-38](../backlog/B-38-accessibility.md)). |
 | R3 | **What the design does not draw** — appearance and gestures of the v1 set, «Чистый сигнал», hover. | *Closed by B-43:* designed here (D15), each item listing the numbers it chose. |

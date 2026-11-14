@@ -81,6 +81,11 @@ tasks.withType<Test>().configureEach {
         .dir(layout.projectDirectory.dir("src/commonMain/kotlin/io/github/youndie/mutant/gen"))
         .withPropertyName("generatorSources")
         .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+    // The floor test (B-05) and later parity read the Chrome references.
+    inputs
+        .dir(layout.projectDirectory.dir("src/desktopTest/snapshots"))
+        .withPropertyName("designReferences")
+        .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
     // The font tests read the bundled files straight from the resources directory.
     inputs
         .dir(layout.projectDirectory.dir("src/commonMain/composeResources/font"))

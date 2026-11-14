@@ -72,7 +72,7 @@ DOCS_BOOTSTRAP_SHIM := 2
 DOCS_BOOTSTRAP_GOALS := check gate report fix
 
 .DEFAULT_GOAL := help
-.PHONY: help check gate report fix fonts
+.PHONY: help check gate report fix fonts references
 
 help:
 	@echo "make check   - the gate and the reports: exactly what CI runs"
@@ -80,6 +80,7 @@ help:
 	@echo "make report  - non-blocking: BDD coverage, code anchors"
 	@echo "make fix     - regenerate the backlog index, fill in missing coverage-map lines"
 	@echo "make fonts   - re-fetch Handjet and Rubik and cut their static instances (needs .venv with fonttools)"
+	@echo "make references - re-render the Chrome design references (needs Google Chrome)"
 
 check: gate report
 
@@ -91,6 +92,8 @@ gate: docs-gate
 	node scripts/design-golden.mjs --check
 	# B-03: the generator's goldens are what the vendored mutant-generator.js emits today.
 	node scripts/gen-goldens.mjs --check
+	# B-05: the Chrome references were rendered from today's pages, scripts and fonts (no Chrome needed here).
+	node scripts/design-references.mjs --manifest
 
 report: docs-report
 
@@ -102,6 +105,13 @@ fix: docs-fix
 FONTS_PY ?= .venv/bin/python
 fonts:
 	$(FONTS_PY) scripts/fonts.py
+
+# B-05: re-render the design references in headless Chrome, then render again and require identical PNGs.
+# Not in the gate: CI's documentation job runs on Linux, where no Chrome drew these; the gate checks
+# their manifest instead.
+references:
+	node scripts/design-references.mjs
+	node scripts/design-references.mjs --check
 
 # -- where the checks come from. Nothing below is meant to be edited. ------------------------------
 

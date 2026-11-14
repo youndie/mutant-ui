@@ -1,0 +1,85 @@
+{
+  "browser": "Chrome/157.0.8103.51",
+  "scale": 1,
+  "time": 5000,
+  "pages": {
+    "mutant-ui Компоненты.dc.html": "f9c9f72b3d8ec41b711de0e82dc6e68469b9b6ff64c0e758e3c1aa770702413e"
+  },
+  "scripts": {
+    "mutant-generator.js": "9f5145ea663b1bca560017d0fc1870921eaf007dd2bd62420dea5a97fe72a7be",
+    "mutant-engine.js": "c65d01231a7bce59f931fbf0fd09eeea18e38fe76407b428949495c723b61978",
+    "support.js": "8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe"
+  },
+  "fonts": {
+    "handjet_regular.ttf": "14ce3ac21c23126c575425b11ca3a931fab63b99a27d4b20535b7fac9ffaca64",
+    "handjet_semibold.ttf": "7cf75cf8448cfa6c8165ba5f0ec285f75828f6aa9c07713d77c5a09d7cf3b7de",
+    "rubik_regular.ttf": "037bd82dda9de8c1a331743ccdd9da8dc82d3ba2d1f65f3515cd5723729348ed",
+    "rubik_medium.ttf": "d9f44f2c1b4e84ed6f9a9260824f24a8b049251660b4a32c4a11805d945796e3"
+  },
+  "references": [
+    {
+      "stem": "Body_Button_Efir",
+      "probe": "Button",
+      "theme": "Efir",
+      "x": 0,
+      "y": 0,
+      "w": 240,
+      "h": 124
+    },
+    {
+      "stem": "Body_Button_Kopiya",
+      "probe": "Button",
+      "theme": "Kopiya",
+      "x": 0,
+      "y": 0,
+      "w": 240,
+      "h": 124
+    },
+    {
+      "stem": "Body_Card_Efir",
+      "probe": "Card",
+      "theme": "Efir",
+      "x": 0,
+      "y": 0,
+      "w": 368,
+      "h": 156
+    },
+    {
+      "stem": "Body_Card_Kopiya",
+      "probe": "Card",
+      "theme": "Kopiya",
+      "x": 0,
+      "y": 0,
+      "w": 368,
+      "h": 156
+    },
+    {
+      "stem": "Body_Dot_Efir",
+      "probe": "Dot",
+      "theme": "Efir",
+      "x": 0,
+      "y": 0,
+      "w": 62,
+      "h": 74
+    },
+    {
+      "stem": "Body_Dot_Kopiya",
+      "probe": "Dot",
+      "theme": "Kopiya",
+      "x": 0,
+      "y": 0,
+      "w": 62,
+      "h": 74
+    },
+    {
+      "stem": "Button_Rest_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "stage": "button",
+      "index": 0,
+      "x": 80,
+      "y": 420,
+      "w": 224,
+      "h": 117
+    }
+  ]
+}

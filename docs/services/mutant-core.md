@@ -29,6 +29,8 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/goldens/` | the generator's goldens, written by `scripts/gen-goldens.mjs` |
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/GeneratorGoldenTest.kt` | the port held to the goldens on every target |
 | `mutant-core/api/` | the committed public API dump |
+| `mutant-core/src/desktopTest/snapshots/design/` | the Chrome references and their `manifest.json`, rendered by `scripts/design-references.mjs` (`make references`) |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/gen/BodyFloorTest.kt` | the floor of the body: Chrome's outline against Compose's |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/type/MutantFonts.kt` | the two bundled families, loaded through compose resources |
 | `mutant-core/src/commonMain/composeResources/font/` | Handjet 400/600 and Rubik 400/500, static instances |
 | `mutant-core/src/commonMain/composeResources/files/licences/` | the OFL text of each family |
@@ -65,6 +67,9 @@ or any Material artefact; and its generator package does not depend on Compose.
   ABI dump changes.
 - The generator's goldens are 1.9 MB of generated Kotlin with `@file:Suppress("ktlint")`; `make check`
   runs `scripts/gen-goldens.mjs --check` on them. Regenerate with `node scripts/gen-goldens.mjs`, never by hand.
+- The references are rendered on this Mac in Chrome; the gate (`make check`, which CI runs on Linux)
+  checks only their manifest — the sha256 of the pages, the generator, the engine, `support.js` and the
+  fonts they came from. Chrome's own version is recorded, not checked.
 - The browser tests run under Mocha and Karma limits raised to 30 s and 60 s
   (`mutant-core/karma.config.d/mocha-timeout.js`): Mocha's 2 s turned plakat-ui's `main` red on a
   hosted runner.
