@@ -1,7 +1,7 @@
 ---
 id: B-76
 title: "Skia's replay on the render thread bounds the Demo page"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product

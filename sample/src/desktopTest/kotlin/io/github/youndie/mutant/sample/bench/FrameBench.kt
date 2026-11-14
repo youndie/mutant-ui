@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.sample.DemoScreen
 import io.github.youndie.mutant.sample.DemoScreenFrame
@@ -67,13 +69,67 @@ private enum class Scene(
     ComponentsClean,
     ComponentsReduce,
     Control,
+
+    // B-76: the render thread. A blank page and the Demo page each with and without a fixed drawing load (the
+    // control: what the load adds to a blank page it must add to the Demo page), and the Demo page without the Tape.
+    Blank,
+    BlankLoad,
+    DemoPageTicked,
+    DemoPageLoad,
+    DemoPageClean,
+
+    // The three screens alone in a row, no header and no page Tape: with the screens' rounded clip and without.
+    DemoRow,
+    DemoRowNoClip,
 }
 
 private class Frame(
     val startNs: Long,
     val workNs: Long,
     var eventNs: Long = -1,
+    /** The render thread's CPU time when this frame started, so the next frame's minus it is this interval's (B-76). */
+    val renderCpuNs: Long = -1,
 )
+
+/**
+ * Skiko replays the frame's picture on a thread of its own, and its dispatcher may replace that thread. A sampler
+ * on a thread of the bench's own adds up, every [SAMPLE_MS], the CPU time of every thread of that name it has seen,
+ * a finished one at its last reading (B-76).
+ */
+private object RenderThread {
+    private val bean =
+        java.lang.management.ManagementFactory
+            .getThreadMXBean()
+    private val last = HashMap<Long, Long>()
+
+    @Volatile var cumulativeNs = 0L
+        private set
+
+    @Volatile var threadsSeen = 0
+        private set
+
+    fun start() {
+        Thread({
+            while (true) {
+                val ids = bean.allThreadIds
+                for (info in bean.getThreadInfo(ids)) {
+                    if (info == null || info.threadName != RENDER_THREAD) continue
+                    val cpu = bean.getThreadCpuTime(info.threadId)
+                    if (cpu >= 0) last[info.threadId] = cpu
+                }
+                threadsSeen = last.size
+                cumulativeNs = last.values.sum()
+                Thread.sleep(SAMPLE_MS)
+            }
+        }, "b76-render-sampler").apply { isDaemon = true }.start()
+    }
+
+    fun cpuNs(): Long = if (threadsSeen == 0) -1 else cumulativeNs
+}
+
+private const val SAMPLE_MS = 5L
+
+private const val RENDER_THREAD = "skiko-dispatcher-to-block-on"
 
 /** What the event thread writes and the driver reads; every write happens on the event thread. */
 private class Recorder {
@@ -89,7 +145,7 @@ private class Recorder {
         end: Long,
     ) {
         if (!counting) return
-        val f = Frame(start, end - start)
+        val f = Frame(start, end - start, renderCpuNs = RenderThread.cpuNs())
         frames += f
         if (inEvent) eventFrame = f
     }
@@ -171,8 +227,113 @@ private fun SceneContent(
         Scene.Control -> {
             MutantUiSample(remember { SampleSettings() }, scroll)
         }
+
+        Scene.Blank, Scene.BlankLoad -> {
+            Box(
+                Modifier.fillMaxSize().background(
+                    androidx.compose.ui.graphics
+                        .Color(0xFF10142A),
+                ),
+            ) {
+                Ticker()
+                if (scene == Scene.BlankLoad) DrawingLoad()
+            }
+        }
+
+        Scene.DemoPageTicked, Scene.DemoPageLoad -> {
+            Box(Modifier.fillMaxSize()) {
+                MutantUiSample(
+                    remember { SampleSettings(page = io.github.youndie.mutant.sample.SamplePage.Demo) },
+                    scroll,
+                )
+                Ticker()
+                if (scene == Scene.DemoPageLoad) DrawingLoad()
+            }
+        }
+
+        Scene.DemoRow, Scene.DemoRowNoClip -> {
+            Box(Modifier.fillMaxSize().background(MutantTheme.colors.page)) {
+                MutantTheme {
+                    androidx.compose.foundation.layout.Row(
+                        Modifier.padding(24.dp),
+                        horizontalArrangement =
+                            androidx.compose.foundation.layout.Arrangement
+                                .spacedBy(32.dp),
+                    ) {
+                        for (screen in DemoScreen.entries) {
+                            DemoScreenFrame(
+                                screen,
+                                strings,
+                                roundedClip =
+                                    scene == Scene.DemoRow,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Scene.DemoPageClean -> {
+            MutantUiSample(
+                remember { SampleSettings(page = io.github.youndie.mutant.sample.SamplePage.Demo, cleanSignal = true) },
+                scroll,
+            )
+        }
     }
 }
+
+/** One pixel redrawn every frame, so a page with nothing moving still asks for frames (B-76). */
+@Composable
+private fun Ticker() {
+    var n by remember { mutableStateOf(0) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { while (true) androidx.compose.runtime.withFrameNanos { n++ } }
+    Box(
+        Modifier.size(1.dp).drawBehind {
+            drawRect(
+                if (n % 2 ==
+                    0
+                ) {
+                    androidx.compose.ui.graphics.Color.Black
+                } else {
+                    androidx.compose.ui.graphics.Color.White
+                },
+            )
+        },
+    )
+}
+
+/**
+ * A fixed drawing, recorded once and replayed every frame: [LOAD_PATHS] filled anti-aliased paths of
+ * [LOAD_POINTS] points each, which Skia tessellates on the render thread's CPU (B-76's control).
+ */
+@Composable
+private fun DrawingLoad() {
+    val paths =
+        remember {
+            val rnd = java.util.Random(76)
+            List(LOAD_PATHS) {
+                androidx.compose.ui.graphics.Path().apply {
+                    val cx = 40f + rnd.nextFloat() * 1180
+                    val cy = 40f + rnd.nextFloat() * 700
+                    moveTo(cx, cy)
+                    repeat(LOAD_POINTS) { lineTo(cx + rnd.nextFloat() * 80 - 40, cy + rnd.nextFloat() * 80 - 40) }
+                    close()
+                }
+            }
+        }
+    androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+        for (path in paths) {
+            drawPath(
+                path,
+                androidx.compose.ui.graphics
+                    .Color(0x33FFAA00),
+            )
+        }
+    }
+}
+
+private const val LOAD_PATHS = 1_200
+private const val LOAD_POINTS = 120
 
 private fun <T : java.awt.Component> Container.find(type: Class<T>): T? {
     for (c in components) {
@@ -189,6 +350,26 @@ private fun pct(
 
 private fun ms(ns: Long) = ns / 1e6
 
+/** The render thread's CPU time per frame drawn, ms; NaN where the thread was not yet known. */
+private fun renderPerFrame(frames: List<Frame>): Double {
+    val f = frames.filter { it.renderCpuNs >= 0 }
+    if (f.size < 2) return Double.NaN
+    return ms(f.last().renderCpuNs - f.first().renderCpuNs) / (f.size - 1)
+}
+
+/** The render thread's CPU time over a scene's wall time, %; NaN where the thread was not yet known. */
+private fun busyOf(frames: List<Frame>): Double {
+    val f = frames.filter { it.renderCpuNs >= 0 }
+    if (f.size < 2) return Double.NaN
+    return 100.0 * (f.last().renderCpuNs - f.first().renderCpuNs) / (f.last().startNs - f.first().startNs)
+}
+
+/** The render thread's CPU between two frames' starts, ms; NaN where the thread was not yet known. */
+private fun renderMs(
+    a: Frame,
+    b: Frame,
+) = if (a.renderCpuNs < 0 || b.renderCpuNs < 0) Double.NaN else ms(b.renderCpuNs - a.renderCpuNs)
+
 private fun f1(v: Double) = "%.2f".format(v)
 
 fun main(args: Array<String>) {
@@ -198,6 +379,7 @@ fun main(args: Array<String>) {
     args.getOrNull(3)?.let { sceneMs = it.toLong() }
     val only = args.getOrNull(4)?.split(',')?.map { Scene.valueOf(it) }
     Toolkit.getDefaultToolkit().systemEventQueue.push(TimingQueue())
+    RenderThread.start()
 
     val sceneState = AtomicReference<(Scene) -> Unit>()
     val scrollRef = AtomicReference<ScrollState>()
@@ -271,7 +453,7 @@ fun main(args: Array<String>) {
         )
     header.forEach(::println)
     val csv = out.resolve("frames.csv").bufferedWriter()
-    csv.write(header.joinToString("\n") + "\nround,scene,frame,interval_ms,work_ms,event_ms\n")
+    csv.write(header.joinToString("\n") + "\nround,scene,frame,interval_ms,work_ms,event_ms,render_ms\n")
 
     data class Row(
         val round: Int,
@@ -339,7 +521,8 @@ fun main(args: Array<String>) {
             rows += Row(round, scene, frames, travelled)
             for ((n, f) in frames.withIndex()) {
                 val interval = if (n == 0) Double.NaN else ms(f.startNs - frames[n - 1].startNs)
-                csv.write("$round,$scene,$n,${f1(interval)},${f1(ms(f.workNs))},${f1(ms(f.eventNs))}\n")
+                val render = if (n == 0) Double.NaN else renderMs(frames[n - 1], f)
+                csv.write("$round,$scene,$n,${f1(interval)},${f1(ms(f.workNs))},${f1(ms(f.eventNs))},${f1(render)}\n")
             }
             println(
                 "round $round ${scene.name}: ${frames.size} frames${if (scene.wheel) ", scrolled $travelled px" else ""}",
@@ -351,7 +534,7 @@ fun main(args: Array<String>) {
     println()
     println(
         "scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  " +
-            "| event p50  p95",
+            "| event p50  p95  | render/frame busy",
     )
     val counted = rows.filter { it.round > 1 }
     val summary = LinkedHashMap<Scene, String>()
@@ -361,6 +544,8 @@ fun main(args: Array<String>) {
             all.flatMap { r -> r.frames.zipWithNext { a, b -> ms(b.startNs - a.startNs) } }.sorted()
         val work = all.flatMap { r -> r.frames.map { ms(it.workNs) } }.sorted()
         val event = all.flatMap { r -> r.frames.filter { it.eventNs >= 0 }.map { ms(it.eventNs) } }.sorted()
+        val renderFrame = all.map { renderPerFrame(it.frames) }.filter { !it.isNaN() }.average()
+        val renderBusy = all.map { busyOf(it.frames) }.filter { !it.isNaN() }.average()
         val fps = all.sumOf { it.frames.size } / (all.size * sceneMs / 1000.0)
         val over16 = 100.0 * intervals.count { it > 16.7 } / intervals.size
         val over33 = 100.0 * intervals.count { it > 33.0 } / intervals.size
@@ -372,7 +557,7 @@ fun main(args: Array<String>) {
                 else -> "GREY"
             }
         val line =
-            "%-20s %8.1f  %10s %6s %7.2f %5.2f  | %6s %6s %6s %6s | %6s %6s  %s".format(
+            "%-20s %8.1f  %10s %6s %7.2f %5.2f  | %6s %6s %6s %6s | %6s %6s | %8s %4.0f%%  %s".format(
                 scene.name,
                 fps,
                 f1(pct(intervals, .5)),
@@ -385,10 +570,34 @@ fun main(args: Array<String>) {
                 f1(work.lastOrNull() ?: Double.NaN),
                 f1(pct(event, .5)),
                 f1(pct(event, .95)),
+                f1(renderFrame),
+                renderBusy,
                 if (scene == Scene.Control) "(control)" else verdict,
             )
         summary[scene] = line
         println(line)
+    }
+
+    // B-76's control: what the fixed drawing adds to the render thread's CPU per frame on a blank page, it must add
+    // on the Demo page too, round by round. (A share cannot: on the Demo page the thread is near saturation.)
+    fun added(
+        with: Scene,
+        without: Scene,
+    ) = (2..rounds).mapNotNull { r ->
+        val a = counted.firstOrNull { it.round == r && it.scene == with } ?: return@mapNotNull null
+        val b = counted.firstOrNull { it.round == r && it.scene == without } ?: return@mapNotNull null
+        renderPerFrame(a.frames) - renderPerFrame(b.frames)
+    }
+    if (Scene.BlankLoad in scenes) {
+        println()
+        println("render control, what the load adds to the render thread's CPU per frame, per counted round:")
+        println("  on a blank page    ${added(Scene.BlankLoad, Scene.Blank).joinToString { f1(it) }} ms")
+        println(
+            "  on the Demo page   ${added(
+                Scene.DemoPageLoad,
+                Scene.DemoPageTicked,
+            ).joinToString { f1(it) }} ms",
+        )
     }
     // The control: its work over the resting page's, per counted round, must read the busy-wait.
     val rest = counted.filter { it.scene == Scene.ComponentsRest }
@@ -405,6 +614,7 @@ fun main(args: Array<String>) {
     println("control: work p50 over ComponentsRest per counted round ${deltas.joinToString { f1(it) }} ms")
     println("         (busy-wait $CONTROL_MS ms)")
     val wheel = counted.filter { it.scene == Scene.ComponentsWheel }.map { it.scrolled }
+    println("render threads seen: ${RenderThread.threadsSeen}")
     println("wheel: scrolled per counted round $wheel px")
     SwingUtilities.invokeAndWait { window.dispose() }
     exitProcess(0)
