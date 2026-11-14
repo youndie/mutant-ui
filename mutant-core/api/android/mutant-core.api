@@ -1,3 +1,16 @@
+public final class io/github/youndie/mutant/theme/MutantTheme {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/youndie/mutant/theme/MutantTheme;
+	public final fun getCassette (Landroidx/compose/runtime/Composer;I)Ljava/lang/String;
+	public final fun getCleanSignal (Landroidx/compose/runtime/Composer;I)Z
+	public final fun getColors (Landroidx/compose/runtime/Composer;I)Lio/github/youndie/mutant/tokens/MutantColors;
+	public final fun getReduceMotion (Landroidx/compose/runtime/Composer;I)Z
+}
+
+public final class io/github/youndie/mutant/theme/MutantThemeKt {
+	public static final fun MutantTheme (Lio/github/youndie/mutant/tokens/MutantColors;Ljava/lang/String;Ljava/lang/Boolean;ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/tokens/MutantColors {
 	public static final field $stable I
 	public final fun getAmber-0d7_KjU ()J

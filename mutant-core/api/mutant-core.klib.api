@@ -73,6 +73,17 @@ final class io.github.youndie.mutant.tokens/MutantColors { // io.github.youndie.
         final fun <get-textSecondary>(): androidx.compose.ui.graphics/Color // io.github.youndie.mutant.tokens/MutantColors.textSecondary.<get-textSecondary>|<get-textSecondary>(){}[0]
 }
 
+final object io.github.youndie.mutant.theme/MutantTheme { // io.github.youndie.mutant.theme/MutantTheme|null[0]
+    final val cassette // io.github.youndie.mutant.theme/MutantTheme.cassette|{}cassette[0]
+        final fun <get-cassette>(androidx.compose.runtime/Composer?, kotlin/Int): kotlin/String // io.github.youndie.mutant.theme/MutantTheme.cassette.<get-cassette>|<get-cassette>(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+    final val cleanSignal // io.github.youndie.mutant.theme/MutantTheme.cleanSignal|{}cleanSignal[0]
+        final fun <get-cleanSignal>(androidx.compose.runtime/Composer?, kotlin/Int): kotlin/Boolean // io.github.youndie.mutant.theme/MutantTheme.cleanSignal.<get-cleanSignal>|<get-cleanSignal>(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+    final val colors // io.github.youndie.mutant.theme/MutantTheme.colors|{}colors[0]
+        final fun <get-colors>(androidx.compose.runtime/Composer?, kotlin/Int): io.github.youndie.mutant.tokens/MutantColors // io.github.youndie.mutant.theme/MutantTheme.colors.<get-colors>|<get-colors>(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+    final val reduceMotion // io.github.youndie.mutant.theme/MutantTheme.reduceMotion|{}reduceMotion[0]
+        final fun <get-reduceMotion>(androidx.compose.runtime/Composer?, kotlin/Int): kotlin/Boolean // io.github.youndie.mutant.theme/MutantTheme.reduceMotion.<get-reduceMotion>|<get-reduceMotion>(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+}
+
 final object io.github.youndie.mutant.tokens/MutantPalettes { // io.github.youndie.mutant.tokens/MutantPalettes|null[0]
     final val Efir // io.github.youndie.mutant.tokens/MutantPalettes.Efir|{}Efir[0]
         final fun <get-Efir>(): io.github.youndie.mutant.tokens/MutantColors // io.github.youndie.mutant.tokens/MutantPalettes.Efir.<get-Efir>|<get-Efir>(){}[0]
@@ -85,6 +96,7 @@ final val io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_
 final val io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop|#static{}io_github_youndie_mutant_resources_Res_font$stableprop[0]
 final val io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_plurals$stableprop // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_plurals$stableprop|#static{}io_github_youndie_mutant_resources_Res_plurals$stableprop[0]
 final val io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_string$stableprop // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_string$stableprop|#static{}io_github_youndie_mutant_resources_Res_string$stableprop[0]
+final val io.github.youndie.mutant.theme/io_github_youndie_mutant_theme_MutantTheme$stableprop // io.github.youndie.mutant.theme/io_github_youndie_mutant_theme_MutantTheme$stableprop|#static{}io_github_youndie_mutant_theme_MutantTheme$stableprop[0]
 final val io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantColors$stableprop // io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantColors$stableprop|#static{}io_github_youndie_mutant_tokens_MutantColors$stableprop[0]
 final val io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantPalettes$stableprop // io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantPalettes$stableprop|#static{}io_github_youndie_mutant_tokens_MutantPalettes$stableprop[0]
 
@@ -93,5 +105,7 @@ final fun io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_
 final fun io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_font$stableprop_getter|io_github_youndie_mutant_resources_Res_font$stableprop_getter(){}[0]
 final fun io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_plurals$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_plurals$stableprop_getter|io_github_youndie_mutant_resources_Res_plurals$stableprop_getter(){}[0]
 final fun io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_string$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.resources/io_github_youndie_mutant_resources_Res_string$stableprop_getter|io_github_youndie_mutant_resources_Res_string$stableprop_getter(){}[0]
+final fun io.github.youndie.mutant.theme/MutantTheme(io.github.youndie.mutant.tokens/MutantColors?, kotlin/String?, kotlin/Boolean?, kotlin/Boolean, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.youndie.mutant.theme/MutantTheme|MutantTheme(io.github.youndie.mutant.tokens.MutantColors?;kotlin.String?;kotlin.Boolean?;kotlin.Boolean;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun io.github.youndie.mutant.theme/io_github_youndie_mutant_theme_MutantTheme$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.theme/io_github_youndie_mutant_theme_MutantTheme$stableprop_getter|io_github_youndie_mutant_theme_MutantTheme$stableprop_getter(){}[0]
 final fun io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantColors$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantColors$stableprop_getter|io_github_youndie_mutant_tokens_MutantColors$stableprop_getter(){}[0]
 final fun io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantPalettes$stableprop_getter(): kotlin/Int // io.github.youndie.mutant.tokens/io_github_youndie_mutant_tokens_MutantPalettes$stableprop_getter|io_github_youndie_mutant_tokens_MutantPalettes$stableprop_getter(){}[0]
