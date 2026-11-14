@@ -1,7 +1,7 @@
 ---
 id: B-15
 title: "Button: filled, outlined, text; pressed, loading, success, disabled"
-status: wip
+status: done
 priority: P1
 size: M
 stage: stage-2-components
@@ -22,3 +22,13 @@ MVP. Body `btn`. Filled is the acid plate; outlined has fill = background, strok
 - References: the Button stage whole and bare (text hidden), both themes — «Копия» by patching the page's `data-props` in the render tab — and the text button.
 - Parity so far (before the bare twins): bodies 0–5 px in «Эфир»; «Копия»'s moving bodies 9–18 px, the speckle under the print slip; labels on Chrome's top row.
 - Stopped: the machine's load average reached 22–38 (another session's job), and two renders of the pages no longer agreed — six or seven cells, a different set each run, older references included. The references are to be rendered again on a quiet machine, then the label check moved onto the bare twins.
+
+## Result (2026-11-14)
+
+- `MutantButton(text, onClick, …, state = Idle | Loading | Success, icon)`, `MutantOutlinedButton`, `MutantTextButton`; the action fires on release; loading takes no click and reads as indeterminate progress; success shows the check unasked and holds (the handoff: no return after 600 ms); disabled loses the signal. 48 dp tall, at least 48 wide, the label one line cut with an ellipsis. Numbers chosen here (D15): 24 dp padding, the divider as wide as the label, keyboard focus as the field's.
+- Fixed on the way, in the shared body: flow lines and speckle in the theme's ink whatever the outline's colour (the engine's); still bodies translated back from a fixture's origin like moving ones; `MutantSurface` takes a `stroke`.
+- References (37): the Button stage's seven cells whole and bare in both themes — «Копия» by patching the page's theme in the render tab — and the text button in both. `make references` measures a render that is not byte-identical against the floor instead of failing it (research §1.15).
+- Parity (research §1.15): bodies 0–3 px in «Эфир» and the still «Копия» cells; 15–18 px for «Копия»'s moving cells (speckle under the 1.5 dp slip) and 6/11 for the outlined rest cells (outline over shadow), listed and never to be raised; every label on the page's top row; the text button's divider 0 px and its label within a pixel (its line box centred at 11.5 dp).
+- Mutants, each fails a named test: the outlined drip 24; no shadow; no accent stroke; the filled label in the text colour (first survived — the label was held by where its ink lies only — and is now also held by its colour where it covers a pixel whole); the text button's gap 8; the icon gap 4; the label at 14; no default check for success; a loading button that clicks; no minimum width on the text button; no keyboard focus; flow lines in the outline's colour. The label without `cssLine` survives as an equivalent mutant at 15 sp Rubik: Blink's baseline (14 + 0) and Compose's (14.025, drawn at 14) coincide at that size; B-52's probes hold `cssLine` where they do not.
+- Tests: `ButtonParityTest` (2), `ButtonBehaviourTest` (8: release, loading, disabled ×3, success's check, the pause, the touch target, keyboard focus, the sweep — no width, a long label, font scale 2).
+- Not covered: the body's frames are the generator's (B-03, B-10), not re-recorded here; Android and iOS; «Копия»'s keyboard focus colours (the field's); hover (D15, later).
