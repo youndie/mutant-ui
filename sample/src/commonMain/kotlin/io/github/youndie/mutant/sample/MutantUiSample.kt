@@ -1,5 +1,6 @@
 package io.github.youndie.mutant.sample
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,10 +50,13 @@ class SampleSettings(
 /**
  * The sample's root, shared by the desktop window and the browser: a header that switches the theme («Эфир» or
  * «Копия»), reduce motion, «Чистый сигнал», the language (English first, research D11) and the page, over the page.
- * The Tape runs over the whole of it.
+ * The Tape runs over the whole of it. [scroll] is the page's, handed in by a host that reads it (B-72's recorder).
  */
 @Composable
-fun MutantUiSample(settings: SampleSettings = remember { SampleSettings() }) {
+fun MutantUiSample(
+    settings: SampleSettings = remember { SampleSettings() },
+    scroll: ScrollState = rememberScrollState(),
+) {
     val strings = remember(settings.language) { SampleStrings(settings.language) }
     MutantTheme(
         colors = if (settings.print) MutantPalettes.Kopiya else MutantPalettes.Efir,
@@ -67,7 +71,7 @@ fun MutantUiSample(settings: SampleSettings = remember { SampleSettings() }) {
                 .mutantTape()
                 .testTag("sample-root"),
         ) {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
+            Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(24.dp)) {
                 Header(settings, strings)
                 when (settings.page) {
                     SamplePage.Components -> ComponentsPage(strings)

@@ -1,0 +1,41 @@
+# B-72 profile, DemoPage 2 x 12 s (the first ~3 s of the recording is the start page, ComponentsRest)
+threads: [('AWT-EventQueue-1', 209), ('DefaultDispatcher-worker-1', 16), ('DefaultDispatcher-worker-4', 16), ('DefaultDispatcher-worker-6', 14), ('DefaultDispatcher-worker-2', 13), ('DefaultDispatcher-worker-5', 11), ('DefaultDispatcher-worker-7', 11), ('DefaultDispatcher-worker-3', 10)]
+
+AWT-EventQueue: 209 samples
+-- inclusive, mutant + compose ui/graphics --
+ 36.4%  io.github.youndie.mutant.sample.bench.TimingQueue.dispatchEvent
+ 34.0%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$6$0
+ 33.5%  io.github.youndie.mutant.gen.FrameKt.frame
+ 28.7%  io.github.youndie.mutant.gen.FieldKt.distanceField
+ 15.8%  org.jetbrains.skiko.SkiaLayer.update$skiko
+ 13.9%  io.github.youndie.mutant.sample.bench.FrameBenchKt$main$4$1.onRender
+ 11.0%  io.github.youndie.mutant.sample.bench.FrameBenchKt.main$lambda$4
+ 11.0%  io.github.youndie.mutant.components.MutantDialogKt.MutantDialogAction$lambda$5$0
+  7.2%  io.github.youndie.mutant.sample.MutantUiSampleKt.MutantUiSample$lambda$2
+  7.2%  io.github.youndie.mutant.clock.MutantClockKt.ProvideMutantClock
+  6.7%  io.github.youndie.mutant.theme.MutantThemeKt.MutantTheme$lambda$2
+  6.2%  io.github.youndie.mutant.theme.MutantThemeKt.MutantTheme
+  6.2%  io.github.youndie.mutant.sample.MutantUiSampleKt.MutantUiSample
+  5.7%  io.github.youndie.mutant.sample.bench.FrameBenchKt.SceneContent
+  5.7%  io.github.youndie.mutant.sample.bench.FrameBenchKt.main$lambda$4$0
+  4.3%  io.github.youndie.mutant.sample.MutantUiSampleKt.Section
+  4.3%  io.github.youndie.mutant.sample.ComponentsPageKt.ComponentsPage
+  4.3%  io.github.youndie.mutant.gen.FieldKt.march
+  3.8%  io.github.youndie.mutant.surface.HeldInstance.of
+  3.8%  io.github.youndie.mutant.surface.MutantTapeKt.mutantTape$lambda$0$1$0
+  3.3%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$6$0$4
+  3.3%  io.github.youndie.mutant.surface.HeldInstance$buildOffFrame$1.invokeSuspend$lambda$1
+  3.3%  io.github.youndie.mutant.surface.HeldInstance$buildOffFrame$1.invokeSuspend
+  3.3%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$6$0$8
+  2.9%  io.github.youndie.mutant.gen.FieldKt.fieldStatic
+  2.4%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$7$0
+
+# native samples by thread and top frame
+898 skiko-dispatcher-to-block-on org.jetbrains.skia.CanvasKt._nDrawPicture
+137 skiko-dispatcher-to-block-on org.jetbrains.skia.DirectContextKt.DirectContext_nFlushDefault
+28 AWT-EventQueue-1 org.jetbrains.skia.PictureRecorderKt._nFinishRecordingAsPicture
+16 main sun.lwawt.macosx.LWCToolkit.initAppkit
+6 AWT-EventQueue-1 java.util.zip.Inflater.inflateBytesBytes
+5 skiko-dispatcher-to-block-on org.jetbrains.skiko.context.MetalContextHandler.makeMetalRenderTarget
+5 skiko-dispatcher-to-block-on org.jetbrains.skia.DirectContextKt._nFlushAndSubmit
+4 AWT-EventQueue-1 org.jetbrains.skia.impl.Managed._nInvokeFinalizer
