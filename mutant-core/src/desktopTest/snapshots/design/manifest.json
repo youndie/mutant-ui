@@ -58815,6 +58815,102 @@
       ]
     },
     {
+      "stem": "MutantProgress_Determinate_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"list\"] > div:nth-child(3) > div:nth-child(3)",
+      "theme": "Efir",
+      "x": 92,
+      "y": 2057,
+      "w": 328,
+      "h": 23,
+      "art": [
+        0,
+        0,
+        328,
+        23
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "MutantProgress_Indeterminate_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"list\"] > div:nth-child(3) > div:nth-child(4)",
+      "theme": "Efir",
+      "x": 92,
+      "y": 2100,
+      "w": 328,
+      "h": 36,
+      "art": [
+        0,
+        0,
+        328,
+        36
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "MutantProgress_Determinate_Kopiya",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"list\"] > div:nth-child(3) > div:nth-child(3)",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 2057,
+      "w": 328,
+      "h": 23,
+      "art": [
+        0,
+        0,
+        328,
+        23
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "MutantProgress_Indeterminate_Kopiya",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"list\"] > div:nth-child(3) > div:nth-child(4)",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 2100,
+      "w": 328,
+      "h": 36,
+      "art": [
+        0,
+        0,
+        328,
+        36
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
       "stem": "Button_Boil50Body_Efir",
       "page": "mutant-ui Анимационные спеки.dc.html",
       "index": 0,

@@ -180,6 +180,10 @@ export const REFERENCES = [
   // B-26: the list stage's snackbar, whole and bare, both themes; cut 8 px under it, above the progress row.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
     ({ stem: `MutantSnackbar_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'list', type: 'bar', index: 0, theme, below: 8, hideText: bare }))),
+  // B-27: the list stage's progress rows as they stand — the determinate track with its value, the running band with
+  // the reel — both themes; the rows are the stage column's third and fourth children.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [['Determinate', 3], ['Indeterminate', 4]].map(([s, n]) =>
+    ({ stem: `MutantProgress_${s}_${theme}`, page: MVP, el: true, sel: `[data-mu-stage="list"] > div:nth-child(3) > div:nth-child(${n})`, index: 0, theme }))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
