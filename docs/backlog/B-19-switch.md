@@ -1,7 +1,7 @@
 ---
 id: B-19
 title: "Switch: track and thumb, pour and slide"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components

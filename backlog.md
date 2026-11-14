@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-19](docs/backlog/B-19-switch.md) `[ ]` | Switch: track and thumb, pour and slide | P1 | M | B-10, B-11, B-12 |
+| [B-19](docs/backlog/B-19-switch.md) `[~]` | Switch: track and thumb, pour and slide | P1 | M | B-10, B-11, B-12 |
 | [B-20](docs/backlog/B-20-text-field.md) `[ ]` | TextField: 52 dp field, focus brackets, error corruption | P1 | M | B-10, B-11 |
 | [B-21](docs/backlog/B-21-card.md) `[ ]` | Card: dead pixels in the corner | P1 | M | B-10, B-11 |
 | [B-22](docs/backlog/B-22-skeleton-cocoon.md) `[ ]` | Skeleton («Кокон»): mosaic of 16 and 8 dp in the shape of the coming component | P1 | M | B-10, B-07 |
