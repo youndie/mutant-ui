@@ -33,7 +33,9 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `scripts/tokens.mjs` | writes them from `mutant-tokens.json` and the engine's `static K` and `TH`; `--check` in the gate |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/` | `MutantSurface` and the body renderer (`BodyDrawing.kt`): layers, speckle, clean zone, the held instance ([B-10](../backlog/B-10-mutant-surface.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyStates.kt` | the states: boil fill, running mosaic, seek bands, error, brackets, the disabled and clean bodies ([B-11](../backlog/B-11-surface-states.md)) |
-| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the page's eleven resting and state cells |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyTransitions.kt` | pour, slide, melt, the venom's goo and spring ([B-12](../backlog/B-12-transitions.md)) |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the Components page's resting and state cells and the spec page's transition frames, every body of a stage drawn |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/VenomParityTest.kt` | the venom's goo against the engine's filter in Chrome |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal; the locals every body reads ([B-09](../backlog/B-09-theme.md)) |
 | `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/theme/PlatformReduceMotion.*.kt` | the platform's reduce-motion setting per target |
 | `mutant-core/api/` | the committed public API dump |

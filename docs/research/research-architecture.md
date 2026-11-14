@@ -220,6 +220,18 @@ stage coordinates for the noise, the slot count for the tremble — the kit uses
 A size change is visible in the flow lines; whether to accept that is the owner's
 ([B-51](../backlog/B-51-size-change-moves-the-flow-lines.md)).
 
+### 1.11 Transitions
+
+Settled by [B-12](../backlog/B-12-transitions.md).
+
+| Fact | Where verified |
+|---|---|
+| The engine steps every transition at 83.33 ms from the moment of its event and evaluates it on every frame (`meltStep`, `drawItem`'s `fx`), so its first step shows exactly 83 ms in; a kit evaluating only on its global hot tick showed it up to a tick late. The clock exposes its frame as state, and a running transition reads it | `reference/design-system/mutant-engine.js` (`meltStep`, `drawItem`), `SurfaceTransitionsTest` |
+| Under the engine's pause a transition lands at once (`fxTime()` is 10¹²); with the kit's clock standing, a transition would never move, so the theme's pause lands it at once instead | `reference/design-system/mutant-engine.js` (`fxTime`), `MutantSurface`, `mutantMelt` |
+| An SVG pattern clips its content to the tile: the speckle square that starts near a tile's edge is cut there; drawn uncut it showed in the next tile on bright fills (8 pixels on a poured chip) | `BodyDrawing.kt` (`drawSpeckle`), `BodyParityTest` |
+| The spec page's pour (chip, check), slide (switch's thumb over its pouring track) and boil (heat 0.5) frames differ from the kit's on at most 3 pixels each; a cell's floor is stated in pixels, 5 — the outline probes' worst — since on a 76 × 60 cell one pixel is already 0.022 % | `BodyParityTest`, 2026-11-14 |
+| The venom's soft joins drawn by a graphics layer (blur 3.2 dp, alpha `18a − 8.2`) differ from the engine's SVG filter in Chrome on 0.24–0.88 % of pixels, all on the masses' outer edge, half lighter, half darker: the two blurs differ slightly and the threshold turns that into an edge a fraction of a pixel off. Without the goo it is 11.6 %, with the threshold at −6.2 it is 2.9 %, with a blur of σ 2.4 it is 0.95 % — the venom's floor, 0.9 %, sees a blur change of a quarter only just | `VenomParityTest`, 2026-11-14 |
+
 ---
 
 ## 2. Decisions
@@ -372,7 +384,7 @@ width to compare like with like ([B-10](../backlog/B-10-mutant-surface.md)).
 | H1 | **The port does not match on every target.** `sin` in the lattice hash, `exp`/`pow` in the drips, `Float32` storage (§1.4). | *Closed by B-03:* every golden path is byte-identical on the JVM, the iOS simulator and wasm (§1.4); the common test still allows the handoff's 0.1 dp, and a JVM-only test holds exactness. |
 | H2 | **The fonts lack a script or a weight** (§1.6). | *Closed by B-02:* both carry Cyrillic and Latin; four static instances are bundled. |
 | H3 | **The field is too slow on a phone** (D13). | *Desktop half settled by B-06:* instance green, card frame grey (§1.9). The phone is [B-49](../backlog/B-49-frame-cost-on-a-pixel-6a.md); on red, the brief's retreat order and the handoff's two outs, a coarser grid or a shader field. |
-| H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | The handoff allows the geometric fallback on older Android; whether a common-code blur plus colour-matrix layer reproduces `a' = 18·a − 8.2` is checked against the venom references ([B-12](../backlog/B-12-transitions.md)). |
+| H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | *Desktop settled by B-12:* a graphics layer with a blur and a colour matrix reproduces the filter but for its edges (§1.11). Android below 12 draws the geometric shapes, as the handoff allows; not run on a device. |
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | *Closed by B-05:* `data-mu-t` on every stage, with keyframe loss off, renders byte-identically twice; the pause is not needed (§1.8). |
 | R1 | **Shape jumps when a slot is resized** (§1.7). | *Measured by B-10:* the drips stay, the mosaic mostly stays, the flow lines all move (§1.10); the owner decides in [B-51](../backlog/B-51-size-change-moves-the-flow-lines.md). |
 | R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | Measured on the kit at the worst tick; the owner chooses WCAG's exemption or a darker token ([B-38](../backlog/B-38-accessibility.md)). |
