@@ -1,7 +1,7 @@
 ---
 id: B-50
 title: "Build a body's instance and first frame off the frame"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-1-materials
