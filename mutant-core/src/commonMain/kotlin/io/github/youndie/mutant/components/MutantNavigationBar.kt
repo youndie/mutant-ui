@@ -114,7 +114,9 @@ internal fun NavigationBarBody(
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val n = items.size.coerceAtLeast(1)
-            val cell = maxWidth / n
+            // Unbounded (a horizontally scrolling row): each destination takes the design's cell, never Infinity.
+            val bounded = constraints.hasBoundedWidth
+            val cell = if (bounded) maxWidth / n else DESIGN_CELL
             val chosen = selectedIndex in items.indices
             // Captured by the pill's content, so the lambda is not a singleton whose name moves with every edit (ABI).
             val box = DpSize(ICON_BOX_W, ICON_BOX_H)
@@ -144,7 +146,7 @@ internal fun NavigationBarBody(
                 modifier = Modifier.selectableGroup(),
             ) { measurables, constraints ->
                 val h = constraints.maxHeight
-                val w = constraints.maxWidth
+                val w = if (bounded) constraints.maxWidth else DESIGN_CELL.roundToPx() * n
                 val cells = IntArray(n + 1) { (w.toFloat() * it / n).roundToInt() }
                 val pill = if (chosen) measurables.first().measure(Constraints()) else null
                 val placed =
@@ -264,6 +266,9 @@ internal class PillFrom(
 
 /** The bar's height (the page's `height: 68px`). */
 private val BAR = 68.dp
+
+/** The design's bar, 328 dp over four destinations: a cell's width where the bar is given no width of its own. */
+private val DESIGN_CELL = 82.dp
 
 /** The icon's box, the pill's size, and the icon in it (the page's 56 × 30 and 22). */
 private val ICON_BOX_W = 56.dp

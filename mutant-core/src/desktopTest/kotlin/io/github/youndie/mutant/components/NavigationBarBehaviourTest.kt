@@ -1,9 +1,12 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -26,6 +29,7 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -132,6 +136,35 @@ class NavigationBarBehaviourTest {
             val px = onNodeWithText("Настройка", useUnmergedTree = true).captureToImage().toPixelMap()
             val inked = (0 until px.width * px.height).count { near(px[it % px.width, it / px.width], grey, .04f) }
             assertTrue(inked > 10, "the disabled label in its grey: $inked")
+        }
+
+    @Test
+    fun `in a horizontally scrolling row each item takes the design's 82 dp cell`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Row(Modifier.horizontalScroll(rememberScrollState())) {
+                            MutantNavigationBar(
+                                listOf(
+                                    MutantNavigationItem("Эфир", MutantIcons.Home),
+                                    MutantNavigationItem("Поиск", MutantIcons.Search),
+                                ),
+                                1,
+                                {},
+                                Modifier.testTag("n"),
+                                windowInsets = WindowInsets(0),
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(500)
+            onNodeWithTag("n").assertWidthIsEqualTo(164.dp)
+            val second = onNodeWithText("Поиск").getBoundsInRoot()
+            assertEquals(82f, second.left.value, "the second cell starts one design cell in")
+            assertEquals(164f, second.right.value, "and ends at the bar's end")
         }
 
     @Test
