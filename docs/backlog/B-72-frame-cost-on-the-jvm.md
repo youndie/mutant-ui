@@ -1,7 +1,7 @@
 ---
 id: B-72
 title: "The sample's frame cost on the JVM, in a real window, and where it goes"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product

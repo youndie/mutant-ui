@@ -63,7 +63,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10, B-73 |
-| [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[ ]` | The sample's frame cost on the JVM, in a real window, and where it goes | P1 | M | B-41 |
+| [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[~]` | The sample's frame cost on the JVM, in a real window, and where it goes | P1 | M | B-41 |
 | [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[ ]` | The sample's frame cost in the browser (wasm) | P1 | M | B-72 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
