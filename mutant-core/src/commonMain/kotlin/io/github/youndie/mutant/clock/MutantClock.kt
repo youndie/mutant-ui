@@ -48,6 +48,7 @@ internal class MutantClock(
     private var lastNanos: Long = NO_FRAME
     private val rest = mutableLongStateOf(tickOf(startMs, stepMs))
     private val hot = mutableLongStateOf(tickOf(startMs, stepMs / 1.5))
+    private val frames = mutableLongStateOf(0L)
 
     /** Readers of the clock that need frames; with none, the clock asks for none. */
     internal var readers: Int by mutableIntStateOf(0)
@@ -60,6 +61,12 @@ internal class MutantClock(
 
     /** The hot tick's number, `floor(t / (step / 1.5))`. Observable. */
     val hotTick: Long get() = hot.longValue
+
+    /**
+     * The frame's number, observable: a running transition reads it, as the engine steps its transitions on
+     * every frame from the moment of the event (`meltStep`, `drawItem`); a finished one reads nothing.
+     */
+    val frame: Long get() = frames.longValue
 
     /** The engine's `ts`: the time a resting body is drawn at. Observable through [restTick]. */
     fun restTimeMs(): Double = restTick * stepMs
@@ -79,6 +86,7 @@ internal class MutantClock(
         val dt = if (lastNanos == NO_FRAME) FIRST_STEP_MS else min(MAX_STEP_MS, (frameNanos - lastNanos) / 1e6)
         lastNanos = frameNanos
         if (!paused) time += dt * speed
+        frames.longValue++
         publish()
     }
 
