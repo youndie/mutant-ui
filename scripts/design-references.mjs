@@ -56,7 +56,12 @@ const PROBES = [
 export const REFERENCES = [
   ...PROBES.flatMap((p) => Object.keys(THEMES).map((theme) => ({ stem: `Body_${p.name}_${theme}`, probe: p, theme }))),
   // The Button stage's first cell: the resting button, its drips and the stage's background around it.
-  { stem: 'Button_Rest_Efir', page: MVP, stage: 'button', index: 0 },
+  { stem: 'Button_Rest_Efir', page: MVP, stage: 'button', type: 'btn', index: 0 },
+  // B-10: resting bodies with every text on their stage made transparent, so what remains is the body's own
+  // layers. Each reference records the slot as the engine built it, for the fixture to build the same.
+  { stem: 'Button_RestBody_Efir', page: MVP, stage: 'button', type: 'btn', index: 0, hideText: true },
+  { stem: 'Card_RestBody_Efir', page: MVP, stage: 'card', type: 'card', index: 0, hideText: true },
+  { stem: 'Field_RestBody_Efir', page: MVP, stage: 'field', type: 'field', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
 export const probeSize = (p, over) => ({ w: p.w + 40, h: p.h + over + 52 });
@@ -218,14 +223,24 @@ async function pageCells(cdp, page, refs) {
   if (t.errors.length) throw new Error(`${page}: ${t.errors.join('; ')}`);
   const out = new Map();
   for (const ref of refs) {
+    const hide = ref.hideText ? `[data-mu-stage="${ref.stage}"], [data-mu-stage="${ref.stage}"] * { color: transparent !important; }` : '';
+    await t.evaluate(`(() => { const s = document.getElementById('mutant-hide') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'mutant-hide' }));
+      s.textContent = ${JSON.stringify(hide)}; return true; })()`);
+    await t.evaluate(settle);
     const r = await t.evaluate(`(() => {
       const host = document.querySelector('[data-mu-stage="${ref.stage}"]');
-      const n = host && host.querySelectorAll('[data-mu]')[${ref.index}];
-      if (!n) return { error: 'no slot ${ref.stage} #${ref.index}' };
+      const n = host && host.querySelectorAll('[data-mu="${ref.type}"]')[${ref.index}];
+      if (!n) return { error: 'no ${ref.type} slot ${ref.stage} #${ref.index}' };
       const e = window.__muEngines.find(x => x.items.some(it => it.n === n)), it = e.items.find(it => it.n === n), el = it.el;
+      const st = e.stages.find(s => s.host === host);
       const hr = host.getBoundingClientRect();
       // The slot with what the body may draw around it: the field's margins and the drips' overhang.
-      return { x: Math.round(hr.left + scrollX + el.ox - 12), y: Math.round(hr.top + scrollY + el.oy - 15), w: Math.round(el.w + 24), h: Math.round(el.h + el.over + 45) };
+      const x0 = Math.round(el.ox - 12), y0 = Math.round(el.oy - 15);
+      return { x: Math.round(hr.left + scrollX) + x0, y: Math.round(hr.top + scrollY) + y0, w: Math.round(el.w + 24), h: Math.round(el.h + el.over + 45),
+        slot: { key: it.key, stage: st.key, origin: [x0, y0], ox: el.ox, oy: el.oy, w: el.w, h: el.h, r: el.r, over: el.over, cf: el.cf, ow: el.ow,
+          wob: el.wob, round: el.round, calm: el.calm, dead: el.dead, marks: el.marks, edge: el.edge, tz: el.tz, cz: el.cz,
+          fill: el.fill, hl: el.hl, slip: el.slip, shadow: el.shadow, stroke: el.stroke, state: el.state,
+          drawnOutline: +it.H.O.getAttribute('stroke-width'), background: getComputedStyle(host).backgroundColor } };
     })()`);
     if (r.error) throw new Error(`${ref.stem}: ${r.error}`);
     out.set(ref.stem, { png: await t.shot(r), rect: r });
@@ -275,7 +290,7 @@ for (const ref of REFERENCES) {
 }
 const manifest = {
   browser: version, scale: 1, time: T, ...inputs(),
-  references: REFERENCES.map((r) => ({ stem: r.stem, page: r.page, stage: r.stage, index: r.index, probe: r.probe?.name, theme: r.theme, ...shots.get(r.stem).rect })),
+  references: REFERENCES.map((r) => ({ stem: r.stem, page: r.page, stage: r.stage, type: r.type, index: r.index, hideText: r.hideText, probe: r.probe?.name, theme: r.theme, ...shots.get(r.stem).rect })),
 };
 if (check) {
   if (stale.length) { console.error(`design references differ from a fresh render in ${version}: ${stale.join(', ')}`); process.exit(1); }
