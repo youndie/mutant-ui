@@ -20,6 +20,8 @@ class ChipParityTest {
             theme,
             if (disabled) ComponentParity.WEAK_INK else TEXT_INK,
             fit,
+            // The chip's 48 dp target around its 32 dp body.
+            outset = 8,
         ) { m, hidden ->
             // The page's keys: `chip` for all but the selected one, `chip2`; the pressed cell is selected and boiling.
             val selected = cell == "Selected" || cell == "Pressed"

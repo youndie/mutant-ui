@@ -111,6 +111,23 @@ class ChipBehaviourTest {
         }
 
     @Test
+    fun `given no width, a chip is as wide as its label, not its parent`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(
+                            Modifier.width(400.dp),
+                        ) { MutantChip("Избранное", false, {}, Modifier.testTag("c")) }
+                    }
+                }
+            }
+            val w = onNodeWithTag("c").fetchSemanticsNode().boundsInRoot.width
+            assertTrue(w in 100f..110f, "the label (about 72) and 16 dp each side: $w")
+        }
+
+    @Test
     fun `a disabled chip takes no click`() =
         runComposeUiTest {
             mainClock.autoAdvance = false

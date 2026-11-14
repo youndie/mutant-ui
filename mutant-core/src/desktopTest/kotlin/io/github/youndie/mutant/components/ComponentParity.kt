@@ -87,6 +87,7 @@ internal object ComponentParity {
         stem: String,
         theme: String,
         fit: Boolean = false,
+        outset: Int = 0,
         draw: @Composable (Modifier) -> Unit,
     ): DesignParity.Result {
         val s = DesignParity.reference(stem)["slot"]!!.jsonObject
@@ -98,19 +99,11 @@ internal object ComponentParity {
             Fixture(s, theme) {
                 Box(Modifier.fillMaxSize().background(ground)) {
                     val w = s["w"]!!.jsonPrimitive.int.dp
-                    val h = s["h"]!!.jsonPrimitive.int.dp
-                    draw(
-                        if (fit) {
-                            Modifier
-                                .offset(
-                                    x.dp,
-                                    y.dp,
-                                ).widthIn(min = w)
-                                .height(h)
-                        } else {
-                            Modifier.offset(x.dp, y.dp).size(w, h)
-                        },
-                    )
+                    // A component whose touch target is taller than its body ([outset] above and below) is placed by
+                    // its target, so the body lands on the slot only if the component centres it there.
+                    val h = (s["h"]!!.jsonPrimitive.int + 2 * outset).dp
+                    val at = Modifier.offset(x.dp, (y - outset).dp)
+                    draw(if (fit) at.widthIn(min = w).height(h) else at.size(w, h))
                 }
             }
         }
@@ -151,11 +144,12 @@ internal object ComponentParity {
         theme: String,
         threshold: Int = TEXT_INK,
         fit: Boolean = false,
+        outset: Int = 0,
         draw: @Composable (Modifier, Boolean) -> Unit,
     ): Split {
         val stem = "${base}_$theme"
-        val r = cell(stem, theme, fit) { draw(it, false) }
-        val bare = cell("${base}Bare_$theme", theme, fit) { draw(it, true) }
+        val r = cell(stem, theme, fit, outset) { draw(it, false) }
+        val bare = cell("${base}Bare_$theme", theme, fit, outset) { draw(it, true) }
         val s = DesignParity.reference(stem)["slot"]!!.jsonObject
         val origin = (s["origin"] as JsonArray).map { it.jsonPrimitive.int }
         val cz = (s["cz"] as JsonArray).map { it.jsonPrimitive.float }
