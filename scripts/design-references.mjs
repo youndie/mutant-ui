@@ -87,6 +87,8 @@ export const REFERENCES = [
   // the fill over it, the fat shapes through the goo filter (blur 3.2, alpha · 18 − 8.2) — for the three cases of
   // the designer's golden, on a blank page.
   ...['menu', 'segmented', 'drawer'].flatMap((c) => [10, 30, 50, 70].map((n) => ({ stem: `Venom_${c[0].toUpperCase() + c.slice(1)}${n}_Efir`, venom: { case: c, p: n / 100 } }))),
+  // B-13: the Tape over a card, the spec page's drift frames: at rest, the tracking band entering, mid-pass, gone.
+  ...[3000, 7350, 8050, 8900].map((t) => ({ stem: `Tape_Drift${t}_Efir`, page: SPECS, sel: `[data-mu-stage][data-mu-t="${t}"] [data-key="spec-card"]`, hideText: true, tape: true })),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
@@ -269,8 +271,11 @@ async function pageCells(cdp, page, refs) {
   for (let i = 0; i < 300 && !(await t.evaluate(ready)); i++) await sleep(100);
   if (!(await t.evaluate(ready))) throw new Error(`${page}: the engine never finished drawing`);
   await t.evaluate('document.fonts.ready.then(() => true)');
-  // The page measured its slots before the faces loaded: rebuild every stage once they are in.
-  await t.evaluate(`(() => { for (const e of window.__muEngines) e.stages.forEach(s => { s.built = false; }); return true; })()`);
+  // The page measured its slots before the faces loaded: rebuild every stage once they are in. A rebuild
+  // rewrites the Tape (`tapeHtml`: no band, no noise, the grain untranslated), and `stageStep` steps a stage
+  // only when its tick changes, which under a frozen time it never does: forget the tick, or the frozen
+  // stage keeps the bare Tape.
+  await t.evaluate(`(() => { for (const e of window.__muEngines) e.stages.forEach(s => { s.built = false; s.fi = undefined; }); return true; })()`);
   for (let i = 0; i < 300 && !(await t.evaluate(ready)); i++) await sleep(100);
   const height = await t.evaluate('document.documentElement.scrollHeight');
   await t.resize(height);
@@ -305,6 +310,7 @@ async function pageCells(cdp, page, refs) {
       if (clips) { x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(host.offsetWidth, x1); y1 = Math.min(host.offsetHeight, y1); }
       return { x: Math.round(hr.left + scrollX) + x0, y: Math.round(hr.top + scrollY) + y0, w: x1 - x0, h: y1 - y0,
         stageClip: clips ? [host.offsetWidth, host.offsetHeight, parseFloat(cs.borderTopLeftRadius) || 0] : null,
+        tape: (() => { const tp = host.querySelector('[data-mu-tape]'); return tp ? { x: tp.offsetLeft, y: tp.offsetTop, w: st.W, h: st.H, t: +(host.dataset.muT ?? 0) } : null; })(),
         slot: { key: it.key, stage: st.key, origin: [x0, y0], ox: el.ox, oy: el.oy, w: el.w, h: el.h, r: el.r, over: el.over, cf: el.cf, ow: el.ow,
           wob: el.wob, round: el.round, calm: el.calm, dead: el.dead, marks: el.marks, edge: el.edge, tz: el.tz, cz: el.cz,
           fill: el.fill, hl: el.hl, slip: el.slip, shadow: el.shadow, stroke: el.stroke, state: el.state,

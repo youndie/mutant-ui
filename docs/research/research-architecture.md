@@ -170,7 +170,7 @@ Settled by [B-05](../backlog/B-05-pixel-references-and-floor.md); `scripts/desig
 | Fact | Where verified |
 |---|---|
 | The pages render in headless Chrome 157 at device scale 1 with the repository's fonts answered in place of Google's; the runtime comes from unpkg at the versions `support.js` pins | `scripts/design-references.mjs`, `mutant-core/src/desktopTest/snapshots/design/manifest.json` |
-| The engine is frozen without touching it: `window.MutantEngine` is wrapped as the page assigns it, every stage gets `data-mu-t = 5000` before `start()` (the engine's own "every slot still" switch, which the Tape and the stage animations read too) and keyframe loss is forced off. A render waits until every stage is built and every visible slot drawn, rebuilds once after the fonts load, and a second render is byte-identical | `scripts/design-references.mjs` (`FREEZE`, `pageCells`), two runs on 2026-11-14 |
+| The engine is frozen without touching it: `window.MutantEngine` is wrapped as the page assigns it, every stage gets `data-mu-t = 5000` before `start()` (the engine's own "every slot still" switch, which the Tape and the stage animations read too) and keyframe loss is forced off. A render waits until every stage is built and every visible slot drawn, rebuilds once after the fonts load — forgetting each stage's tick, or the frozen stage never steps its Tape again (§1.12) — and a second render is byte-identical | `scripts/design-references.mjs` (`FREEZE`, `pageCells`), two runs on 2026-11-14 |
 | The engine draws only stages within 150 px of the viewport (`IntersectionObserver`); a page is rendered with the viewport as tall as the page | `reference/design-system/mutant-engine.js` (`start`), the same script |
 | The outline's width trembles per frame by `vn(boilPhase · 3.3 + uid · 7.1, 2.5)`, where `uid` is the engine's running count of slots on the page: a host artefact with no counterpart in a kit, which [B-10](../backlog/B-10-mutant-surface.md) replaces by a seed of the instance's own | `reference/design-system/mutant-engine.js` (`drawItem`, `it.uid`) |
 | A page switches to «Копия» only through its Tweaks control (the page component's `theme` prop, which also rewrites its CSS variables); the probes draw both themes, page cells are «Эфир» until a component item needs the other | `reference/design-system/mutant-ui Компоненты.dc.html` (`static FONTS`, the theme handling) |
@@ -231,6 +231,24 @@ Settled by [B-12](../backlog/B-12-transitions.md).
 | An SVG pattern clips its content to the tile: the speckle square that starts near a tile's edge is cut there; drawn uncut it showed in the next tile on bright fills (8 pixels on a poured chip) | `BodyDrawing.kt` (`drawSpeckle`), `BodyParityTest` |
 | The spec page's pour (chip, check), slide (switch's thumb over its pouring track) and boil (heat 0.5) frames differ from the kit's on at most 3 pixels each; a cell's floor is stated in pixels, 5 — the outline probes' worst — since on a 76 × 60 cell one pixel is already 0.022 % | `BodyParityTest`, 2026-11-14 |
 | The venom's soft joins drawn by a graphics layer (blur 3.2 dp, alpha `18a − 8.2`) differ from the engine's SVG filter in Chrome on 0.24–0.88 % of pixels, all on the masses' outer edge, half lighter, half darker: the two blurs differ slightly and the threshold turns that into an edge a fraction of a pixel off. Without the goo it is 11.6 %, with the threshold at −6.2 it is 2.9 %, with a blur of σ 2.4 it is 0.95 % — the venom's floor, 0.9 %, sees a blur change of a quarter only just | `VenomParityTest`, 2026-11-14 |
+
+### 1.12 The Tape
+
+Settled by [B-13](../backlog/B-13-tape.md).
+
+| Fact | Where verified |
+|---|---|
+| The engine's Tape is four layers over the stage, in this order: scanlines (black 7.5 % one dp in three, none in «Копия»); the band, 22 dp of colour between two 1 dp borders (24 in all, content-box), shown for the first 30 % of each 7 s cycle at `round(H − (phase / 0.3) · (H + 30))`; a grain tile of 44 strokes in 90 × 180 seeded `rng('tape', stage)`, translated by (37, 71) per tick; the head's noise, seeded `rng('hd', stage + tick)`, 14 strokes in the band and `round(W / 10)` along the bottom 12 dp. It steps on a fixed 125 ms tick, whatever the genome's rate | `reference/design-system/mutant-engine.js` (`tapeHtml`, `stageStep`) |
+| `stageStep` returns when the stage's tick has not changed, and a rebuild rewrites the Tape bare (no band, no noise, the grain untranslated). Under a frozen time the tick never changes, so a frozen stage rebuilt — after the fonts load, or resized — keeps the bare Tape for good; the reference script forgets the tick when it rebuilds | `reference/design-system/mutant-engine.js` (`stageStep`, `buildStage`), `scripts/design-references.mjs` |
+| The kit's Tape over the spec page's card at 3000, 7350, 8050 and 8900 ms — grain only; the band low; the band halfway; the band leaving past the top — differs from the engine's on 0 pixels in each | `BodyParityTest` (`the Tape over a card…`), 2026-11-14 |
+| Under the band's body the kit keeps every pair of `contrast-after-tape` on the same side of 4.5:1 as the design. Its figures read up to 0.17 from the kit's: they sit up to 0.12 from the exact composite of the engine's own layers, and 8-bit pixels move it up to 0.08 more (Эфир `text / surface-variant` declared 7.3, composite 7.42, drawn 7.46) | `TapeContrastTest`, 2026-11-14 |
+| The design's figures stop at the band's body. Its 1 dp top edge, 30 % phosphor, takes «Эфир» `text / background` to 2.50:1 and `text-disabled / background` to 1.74:1 on one row for 2.1 s of every 7 s; «Копия» `text-disabled / background` reads 3.10:1 there. The head's noise for one tick takes «Эфир» pairs to 1.34–1.69:1 (the tokens' 1.7 for `text`) | `TapeContrastTest` (printed), 2026-11-14 |
+
+**Consequence 12.** The Tape costs nothing in parity, and the design's own contrast claim holds on
+the kit. What the claim leaves out — the band's edge row and the noise strokes, both a single dp —
+falls far under 4.5:1 in «Эфир»; whether a 1 dp line crossing a glyph counts as "after the Tape at
+the worst tick" is the brief's question, and goes to [B-38](../backlog/B-38-accessibility.md) with
+these numbers.
 
 ---
 
@@ -387,7 +405,7 @@ width to compare like with like ([B-10](../backlog/B-10-mutant-surface.md)).
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | *Desktop settled by B-12:* a graphics layer with a blur and a colour matrix reproduces the filter but for its edges (§1.11). Android below 12 draws the geometric shapes, as the handoff allows; not run on a device. |
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | *Closed by B-05:* `data-mu-t` on every stage, with keyframe loss off, renders byte-identically twice; the pause is not needed (§1.8). |
 | R1 | **Shape jumps when a slot is resized** (§1.7). | *Measured by B-10:* the drips stay, the mosaic mostly stays, the flow lines all move (§1.10); the owner decides in [B-51](../backlog/B-51-size-change-moves-the-flow-lines.md). |
-| R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | Measured on the kit at the worst tick; the owner chooses WCAG's exemption or a darker token ([B-38](../backlog/B-38-accessibility.md)). |
+| R2 | **Disabled text under the Tape is 4.4:1 in «Копия»** (§1.5). | *Measured by B-13:* the kit draws 4.43 under the band's body, and its 1 dp edge and noise go far lower in «Эфир» (§1.12). Measured over the demo screens at every tick; the owner chooses WCAG's exemption or a darker token ([B-38](../backlog/B-38-accessibility.md)). |
 | R3 | **What the design does not draw** — appearance and gestures of the v1 set, «Чистый сигнал», hover. | *Closed by B-43:* designed here (D15), each item listing the numbers it chose. |
 | R4 | **Flashes on a real screen** were measured by the designer in a browser, not on a device. | A recording of the demo screens through the flash rule, in [B-38](../backlog/B-38-accessibility.md). |
 

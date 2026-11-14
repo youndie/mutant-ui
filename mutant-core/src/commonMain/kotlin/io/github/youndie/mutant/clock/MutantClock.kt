@@ -49,6 +49,7 @@ internal class MutantClock(
     private val rest = mutableLongStateOf(tickOf(startMs, stepMs))
     private val hot = mutableLongStateOf(tickOf(startMs, stepMs / 1.5))
     private val frames = mutableLongStateOf(0L)
+    private val scene = mutableLongStateOf(tickOf(startMs, SCENE_TICK_MS))
 
     /** Readers of the clock that need frames; with none, the clock asks for none. */
     internal var readers: Int by mutableIntStateOf(0)
@@ -61,6 +62,12 @@ internal class MutantClock(
 
     /** The hot tick's number, `floor(t / (step / 1.5))`. Observable. */
     val hotTick: Long get() = hot.longValue
+
+    /**
+     * The scene's tick, `floor(t / 125)`, observable: the engine's `fi`, on which the Tape and the stage's own
+     * animations step whatever the resting tick's rate (`stageStep`).
+     */
+    val sceneTick: Long get() = scene.longValue
 
     /**
      * The frame's number, observable: a running transition reads it, as the engine steps its transitions on
@@ -100,6 +107,8 @@ internal class MutantClock(
         if (r != rest.longValue) rest.longValue = r
         val h = tickOf(time, stepMs / 1.5)
         if (h != hot.longValue) hot.longValue = h
+        val f = tickOf(time, SCENE_TICK_MS)
+        if (f != scene.longValue) scene.longValue = f
     }
 
     internal companion object {
@@ -107,6 +116,9 @@ internal class MutantClock(
         const val FIRST_STEP_MS: Double = 16.0
         const val MAX_STEP_MS: Double = 1000.0
         const val NO_FRAME: Long = Long.MIN_VALUE
+
+        /** The scene's step, ms: fixed, unlike the resting tick (`stageStep`'s 125). */
+        const val SCENE_TICK_MS: Double = 125.0
 
         fun tickOf(
             ms: Double,

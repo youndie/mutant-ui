@@ -14,5 +14,7 @@ The brief asks for 4.5:1 for glyphs after the Tape at the worst tick, its own fl
 
 - **The decision and its reason.** Measure on the kit, not on the tokens: a contrast sweep over the demo screens at every tick of a Tape cycle; a recording of the demo screens run through the flash rule; a greyscale render of every state; a semantics test that no body adds a node. The 4.4 pair goes to the owner with WCAG's exemption for inactive components as one option.
 
+- Input from [B-13](B-13-tape.md) (research §1.12): under the band's body the kit keeps the design's figures; the band's 1 dp edge and the head's noise, which the figures leave out, read 1.3–2.6:1 in «Эфир».
+
 - AC: a table of measured contrasts, flashes and greyscale differences in the research; every component's semantics equal its Material counterpart's; the owner's answer on the disabled pair recorded.
 - Anchors: `reference/design-system/mutant-tokens.json`, `reference/design-system/brief.md`, `reference/design-system/mutant-ui Демо.dc.html`

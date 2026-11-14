@@ -1,3 +1,7 @@
+public final class io/github/youndie/mutant/surface/MutantTapeKt {
+	public static final fun mutantTape (Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
+}
+
 public final class io/github/youndie/mutant/theme/MutantTheme {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/youndie/mutant/theme/MutantTheme;

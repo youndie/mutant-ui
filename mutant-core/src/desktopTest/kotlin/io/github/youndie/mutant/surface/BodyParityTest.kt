@@ -166,9 +166,19 @@ class BodyParityTest {
             (ref["stageClip"] as? kotlinx.serialization.json.JsonArray)?.map {
                 it.jsonPrimitive.double.toFloat()
             }
+        val tape = ref["tape"] as? JsonObject
+        val scene: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit = {
+            bodies.forEach { it() }
+            if (tape != null) {
+                fun n(k: String) = tape[k]!!.jsonPrimitive.double.toFloat()
+                translate(n("x"), n("y")) {
+                    drawTape(stage, n("t").toDouble(), MutantPalettes.Efir, n("w"), n("h"))
+                }
+            }
+        }
         val draw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit = {
             if (clip == null) {
-                bodies.forEach { it() }
+                scene()
             } else {
                 // The stage clips its content to its rounded box (the spec page's frames).
                 val box =
@@ -184,7 +194,7 @@ class BodyParityTest {
                             ),
                         )
                     }
-                clipPath(box) { bodies.forEach { it() } }
+                clipPath(box) { scene() }
             }
         }
         val origin = s["origin"]!!.jsonArray.map { it.jsonPrimitive.double.toFloat() }
@@ -272,6 +282,10 @@ class BodyParityTest {
                 "Card_DisabledBody_Efir",
             ),
         )
+
+    @Test
+    fun `the Tape over a card matches the spec page's drift frames within the body's measured parity`() =
+        check(listOf("3000", "7350", "8050", "8900").map { "Tape_Drift${it}_Efir" })
 
     private companion object {
         /**
