@@ -66,12 +66,13 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/MutantTapeTest.kt` | the Tape's band cycle, scanlines, clean signal, pause, scene tick and density |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/TapeContrastTest.kt` | contrast under the Tape against the tokens' `contrast-after-tape` |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/VenomParityTest.kt` | the venom's goo against the engine's filter in Chrome |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal; the locals every body reads ([B-09](../backlog/B-09-theme.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal, text styles; the locals every body reads ([B-09](../backlog/B-09-theme.md)) |
 | `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/theme/PlatformReduceMotion.*.kt` | the platform's reduce-motion setting per target |
 | `mutant-core/api/` | the committed public API dump |
 | `mutant-core/src/desktopTest/snapshots/design/` | the Chrome references and their `manifest.json`, rendered by `scripts/design-references.mjs` (`make references`) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/gen/BodyFloorTest.kt` | the floor of the body: Chrome's outline against Compose's |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/type/MutantFonts.kt` | the two bundled families, loaded through compose resources |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/type/MutantTextStyles.kt` | the public type roles, `MutantTheme.textStyles`: display, OSD and text in the bundled faces, each line laid out as Chrome's ([B-55](../backlog/B-55-public-text-styles.md)) |
 | `mutant-core/src/commonMain/composeResources/font/` | Handjet 400/600 and Rubik 400/500, static instances |
 | `mutant-core/src/commonMain/composeResources/files/licences/` | the OFL text of each family |
 | `scripts/fonts.py`, `scripts/fonts.lock` | fetch at a pinned google/fonts commit, check by SHA-256, cut the instances (`make fonts`) |

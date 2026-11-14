@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (31)
+## Open (30)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
-| [B-55](docs/backlog/B-55-public-text-styles.md) `[~]` | Public text styles: a consumer cannot set its own words in Handjet or Rubik | P1 | S | B-37 |
 | [B-57](docs/backlog/B-57-visible-keyboard-focus-everywhere.md) `[ ]` | Keyboard focus: every Tab stop visible, and the dialog's Tab cycle | P1 | M | B-40 |
 | [B-58](docs/backlog/B-58-text-field-target-and-caret.md) `[ ]` | Text field: the whole body takes the pointer, and the caret marks the insertion point | P1 | M | B-40 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
@@ -94,7 +93,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (39)
+## Closed (40)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -142,6 +141,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 - [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[x]` - The three demo screens and the sample kit on desktop and the web
 - [B-38](docs/backlog/B-38-accessibility.md) `[x]` - Accessibility: contrast after the Tape, flashes, greyscale, semantics
+- [B-55](docs/backlog/B-55-public-text-styles.md) `[x]` - Public text styles: a consumer cannot set its own words in Handjet or Rubik
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
