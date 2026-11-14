@@ -154,6 +154,11 @@ export const REFERENCES = [
   ...['Efir', 'Kopiya'].flatMap((theme) =>
     ['Rest', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
       ({ stem: `MutantCard_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'card', type: 'card', index, theme, below: 34, hideText: bare })))),
+  // B-22: the Card stage's two cocoons as they stand — the card's, and the list row's three — both themes.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [
+    { stem: `MutantCocoon_Card_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="card"] [data-mu-cocoon]', index: 0, theme },
+    { stem: `MutantCocoon_ListRow_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="card"] div:has(> [data-mu-cocoon] + div)', index: 0, theme },
+  ]),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.

@@ -307,6 +307,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | The engine records "no text" in a slot as the zone `[-99, -99, 0, 0]` and keeps no clean zone at all; a body given that sentinel as a zone draws its no-signal band elsewhere. Page content (an `<i>`, a switch's echo) is drawn over every body of the stage, a nested body's included (B-19) | `SwitchParityTest`, 2026-11-14 |
 
+| The engine's cocoon is not a function of time: each scene tick repaints a few of its blocks over what earlier ticks left, and a stage rebuilt at a new size lays them out again without re-applying the tick it stands at (`st.fi` outlives the rebuild). The page frozen at `data-mu-t` 5000 draws the layout plus tick 40's repaints, which the kit reproduces exactly; a running kit applies each tick it sees, as the engine does, so two clocks that skip different ticks diverge (B-22) | `CocoonParityTest`, `CocoonBehaviourTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.

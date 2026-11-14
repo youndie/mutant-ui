@@ -55687,6 +55687,102 @@
       ]
     },
     {
+      "stem": "MutantCocoon_Card_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"card\"] [data-mu-cocoon]",
+      "theme": "Efir",
+      "x": 92,
+      "y": 1587,
+      "w": 362,
+      "h": 80,
+      "art": [
+        0,
+        0,
+        362,
+        80
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "MutantCocoon_ListRow_Efir",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"card\"] div:has(> [data-mu-cocoon] + div)",
+      "theme": "Efir",
+      "x": 482,
+      "y": 1587,
+      "w": 362,
+      "h": 80,
+      "art": [
+        0,
+        0,
+        362,
+        80
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "MutantCocoon_Card_Kopiya",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"card\"] [data-mu-cocoon]",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 1587,
+      "w": 362,
+      "h": 80,
+      "art": [
+        0,
+        0,
+        362,
+        80
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
+      "stem": "MutantCocoon_ListRow_Kopiya",
+      "page": "mutant-ui Компоненты.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"card\"] div:has(> [data-mu-cocoon] + div)",
+      "theme": "Kopiya",
+      "x": 482,
+      "y": 1587,
+      "w": 362,
+      "h": 80,
+      "art": [
+        0,
+        0,
+        362,
+        80
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ]
+    },
+    {
       "stem": "Button_Boil50Body_Efir",
       "page": "mutant-ui Анимационные спеки.dc.html",
       "index": 0,
