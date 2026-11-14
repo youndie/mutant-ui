@@ -1,0 +1,43 @@
+public final class io/github/youndie/mutant/tokens/MutantColors {
+	public static final field $stable I
+	public final fun getAmber-0d7_KjU ()J
+	public final fun getBackground-0d7_KjU ()J
+	public final fun getCocoon1-0d7_KjU ()J
+	public final fun getCocoon2-0d7_KjU ()J
+	public final fun getComet-0d7_KjU ()J
+	public final fun getCyan-0d7_KjU ()J
+	public final fun getDanger-0d7_KjU ()J
+	public final fun getDisabledDarken ()F
+	public final fun getDisabledTint-0d7_KjU ()J
+	public final fun getDropout-0d7_KjU ()J
+	public final fun getFocus-0d7_KjU ()J
+	public final fun getHighlightOnDark-0d7_KjU ()J
+	public final fun getInk-0d7_KjU ()J
+	public final fun getMagenta-0d7_KjU ()J
+	public final fun getMisregister-0d7_KjU ()J
+	public final fun getNoSignal-0d7_KjU ()J
+	public final fun getOnNoSignal-0d7_KjU ()J
+	public final fun getOnNoSignalAccent-0d7_KjU ()J
+	public final fun getOnPrimary-0d7_KjU ()J
+	public final fun getPage-0d7_KjU ()J
+	public final fun getPhosphor-0d7_KjU ()J
+	public final fun getPrimary-0d7_KjU ()J
+	public final fun getPrint ()Z
+	public final fun getShadowDeep-0d7_KjU ()J
+	public final fun getSurface-0d7_KjU ()J
+	public final fun getSurfaceVariant-0d7_KjU ()J
+	public final fun getText-0d7_KjU ()J
+	public final fun getTextAccent-0d7_KjU ()J
+	public final fun getTextDisabled-0d7_KjU ()J
+	public final fun getTextError-0d7_KjU ()J
+	public final fun getTextOsd-0d7_KjU ()J
+	public final fun getTextSecondary-0d7_KjU ()J
+}
+
+public final class io/github/youndie/mutant/tokens/MutantPalettes {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/youndie/mutant/tokens/MutantPalettes;
+	public final fun getEfir ()Lio/github/youndie/mutant/tokens/MutantColors;
+	public final fun getKopiya ()Lio/github/youndie/mutant/tokens/MutantColors;
+}
+

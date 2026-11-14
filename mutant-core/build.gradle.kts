@@ -65,6 +65,8 @@ kotlin {
             // that published.
             implementation(compose.desktop.currentOs)
             implementation(wip.compose.ui.test)
+            // The tokens' second reading (B-08) parses mutant-tokens.json on its own.
+            implementation(wip.kotlinx.serialization.json)
         }
     }
 }
