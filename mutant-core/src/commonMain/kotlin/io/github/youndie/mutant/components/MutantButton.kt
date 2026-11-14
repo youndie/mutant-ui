@@ -152,6 +152,7 @@ internal fun TextButtonBody(
     Column(
         modifier
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
+            .defaultMinSize(minWidth = TOUCH)
             .height(TOUCH)
             .width(IntrinsicSize.Max)
             .padding(horizontal = TEXT_PADDING),
