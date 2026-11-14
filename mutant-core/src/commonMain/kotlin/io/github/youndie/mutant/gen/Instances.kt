@@ -109,8 +109,8 @@ internal class MutantGenerator(
         return g
     }
 
-    /** `edgeMos`: up to three rows of 4 and 8 dp blocks along one side of the body. */
-    private fun edgeMosaic(g: Instance) {
+    /** `edgeMos`: up to three rows of 4 and 8 dp blocks along one side of the body. A still body (disabled) draws it too. */
+    internal fun edgeMosaic(g: Instance) {
         val slot = g.slot
         val w = slot.w
         val h = slot.h

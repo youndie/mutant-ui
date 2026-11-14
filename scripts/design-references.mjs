@@ -62,6 +62,17 @@ export const REFERENCES = [
   { stem: 'Button_RestBody_Efir', page: MVP, stage: 'button', type: 'btn', index: 0, hideText: true },
   { stem: 'Card_RestBody_Efir', page: MVP, stage: 'card', type: 'card', index: 0, hideText: true },
   { stem: 'Field_RestBody_Efir', page: MVP, stage: 'field', type: 'field', index: 0, hideText: true },
+  // B-11: the states, each the slot carrying it on its stage, text transparent.
+  ...[
+    ['Button_PressedBody_Efir', 'button', '[data-mu="btn"][data-key="button"][data-heat]'],
+    ['Button_LoadingBody_Efir', 'button', '[data-mu="btn"][data-key="button"][data-state="loading"]'],
+    ['Button_SuccessBody_Efir', 'button', '[data-mu="btn"][data-key="button"][data-state="clean"]'],
+    ['Button_DisabledBody_Efir', 'button', '[data-mu="btn"][data-key="button"][data-state="disabled"]'],
+    ['Field_FocusedBody_Efir', 'field', '[data-mu="field"][data-brackets]'],
+    ['Field_ErrorBody_Efir', 'field', '[data-mu="field"][data-state="error"]'],
+    ['Field_DisabledBody_Efir', 'field', '[data-mu="field"][data-state="disabled"]'],
+    ['Card_DisabledBody_Efir', 'card', '[data-mu="card"][data-state="disabled"]'],
+  ].map(([stem, stage, sel]) => ({ stem, page: MVP, stage, sel, hideText: true })),
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
 export const probeSize = (p, over) => ({ w: p.w + 40, h: p.h + over + 52 });
@@ -223,14 +234,16 @@ async function pageCells(cdp, page, refs) {
   if (t.errors.length) throw new Error(`${page}: ${t.errors.join('; ')}`);
   const out = new Map();
   for (const ref of refs) {
-    const hide = ref.hideText ? `[data-mu-stage="${ref.stage}"], [data-mu-stage="${ref.stage}"] * { color: transparent !important; }` : '';
+    // Text goes transparent; content that paints a box of its own (a field's block caret, kept in the clean
+    // zone by data-keep) is hidden without leaving the layout, so the zone the engine measured stays.
+    const hide = ref.hideText ? `[data-mu-stage="${ref.stage}"], [data-mu-stage="${ref.stage}"] * { color: transparent !important; } [data-mu-stage="${ref.stage}"] [data-keep], [data-mu-stage="${ref.stage}"] [data-mu-anim] { visibility: hidden !important; }` : '';
     await t.evaluate(`(() => { const s = document.getElementById('mutant-hide') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'mutant-hide' }));
       s.textContent = ${JSON.stringify(hide)}; return true; })()`);
     await t.evaluate(settle);
     const r = await t.evaluate(`(() => {
       const host = document.querySelector('[data-mu-stage="${ref.stage}"]');
-      const n = host && host.querySelectorAll('[data-mu="${ref.type}"]')[${ref.index}];
-      if (!n) return { error: 'no ${ref.type} slot ${ref.stage} #${ref.index}' };
+      const n = host && (${JSON.stringify(ref.sel ?? null)} ? host.querySelector(${JSON.stringify(ref.sel ?? '')}) : host.querySelectorAll('[data-mu="${ref.type}"]')[${ref.index}]);
+      if (!n) return { error: 'no slot ${ref.sel ?? ref.type} on ${ref.stage}' };
       const e = window.__muEngines.find(x => x.items.some(it => it.n === n)), it = e.items.find(it => it.n === n), el = it.el;
       const st = e.stages.find(s => s.host === host);
       const hr = host.getBoundingClientRect();
@@ -240,7 +253,8 @@ async function pageCells(cdp, page, refs) {
         slot: { key: it.key, stage: st.key, origin: [x0, y0], ox: el.ox, oy: el.oy, w: el.w, h: el.h, r: el.r, over: el.over, cf: el.cf, ow: el.ow,
           wob: el.wob, round: el.round, calm: el.calm, dead: el.dead, marks: el.marks, edge: el.edge, tz: el.tz, cz: el.cz,
           fill: el.fill, hl: el.hl, slip: el.slip, shadow: el.shadow, stroke: el.stroke, state: el.state,
-          drawnOutline: +it.H.O.getAttribute('stroke-width'), background: getComputedStyle(host).backgroundColor } };
+          drawnOutline: it.H ? +it.H.O.getAttribute('stroke-width') : el.ow, still: !!it.stat, heat: it.heat, brackets: !!el.brackets,
+          background: getComputedStyle(host).backgroundColor } };
     })()`);
     if (r.error) throw new Error(`${ref.stem}: ${r.error}`);
     out.set(ref.stem, { png: await t.shot(r), rect: r });
@@ -290,7 +304,7 @@ for (const ref of REFERENCES) {
 }
 const manifest = {
   browser: version, scale: 1, time: T, ...inputs(),
-  references: REFERENCES.map((r) => ({ stem: r.stem, page: r.page, stage: r.stage, type: r.type, index: r.index, hideText: r.hideText, probe: r.probe?.name, theme: r.theme, ...shots.get(r.stem).rect })),
+  references: REFERENCES.map((r) => ({ stem: r.stem, page: r.page, stage: r.stage, type: r.type, index: r.index, sel: r.sel, hideText: r.hideText, probe: r.probe?.name, theme: r.theme, ...shots.get(r.stem).rect })),
 };
 if (check) {
   if (stale.length) { console.error(`design references differ from a fresh render in ${version}: ${stale.join(', ')}`); process.exit(1); }
