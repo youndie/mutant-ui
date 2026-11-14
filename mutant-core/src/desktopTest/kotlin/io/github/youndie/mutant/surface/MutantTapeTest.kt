@@ -19,6 +19,7 @@ import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -51,6 +52,7 @@ class MutantTapeTest {
 
     private fun pixels(
         density: Float = 1f,
+        ground: Color = MutantPalettes.Efir.background,
         content: @androidx.compose.runtime.Composable (Modifier) -> Unit,
         between: (androidx.compose.ui.test.ComposeUiTest.() -> Unit)? = null,
     ): List<List<Color>> {
@@ -59,7 +61,7 @@ class MutantTapeTest {
             mainClock.autoAdvance = false
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(density)) {
-                    content(Modifier.size(250.dp, 130.dp).testTag("s").background(MutantPalettes.Efir.background))
+                    content(Modifier.size(250.dp, 130.dp).testTag("s").background(ground))
                 }
             }
             mainClock.advanceTimeByFrame()
@@ -129,17 +131,47 @@ class MutantTapeTest {
                     List(px.width * px.height) { px[it % px.width, it / px.width] }
                 }
             // Stand just past a scene tick, then step under 125 ms at a resting tick of 24 a second.
-            while (clock.nowMs % MutantClock.SCENE_TICK_MS > 20) mainClock.advanceTimeByFrame()
+            repeat(10) { if (clock.nowMs % MutantClock.SCENE_TICK_MS > 20) mainClock.advanceTimeByFrame() }
             val tick = clock.sceneTick
             shots += shot()
             repeat(5) { mainClock.advanceTimeByFrame() }
             assertEquals(tick, clock.sceneTick, "still inside the tick at ${clock.nowMs}")
             shots += shot()
-            while (clock.sceneTick == tick) mainClock.advanceTimeByFrame()
+            // Bounded: a tick that never publishes fails here instead of hanging the test JVM.
+            repeat(10) { if (clock.sceneTick == tick) mainClock.advanceTimeByFrame() }
+            assertNotEquals(tick, clock.sceneTick, "the scene's tick moved by ${clock.nowMs}")
             shots += shot()
         }
         assertEquals(shots[0], shots[1], "the 24 fps resting tick passed, the scene's did not")
         assertNotEquals(shots[1], shots[2], "the scene's tick passed")
+    }
+
+    @Test
+    fun `scanlines darken one dp in three by 7·5 percent in Efir and are absent in Kopiya`() {
+        for ((colors, alpha) in listOf(MutantPalettes.Efir to .075f, MutantPalettes.Kopiya to 0f)) {
+            // At 3000 ms the band is away. On white, 7.5 % and 10 % are 6 levels apart; a row's most common colour is the ground under its scanline alone.
+            val clock = MutantClock(startMs = 3000.0, frozen = true)
+            val px =
+                pixels(ground = Color.White, content = { m ->
+                    MutantTheme(colors = colors) { ProvideMutantClock(clock) { Box(m.mutantTape()) } }
+                }).single()
+
+            fun common(row: Int) =
+                (0 until 250)
+                    .map { px[row * 250 + it] }
+                    .groupingBy { it }
+                    .eachCount()
+                    .maxBy { it.value }
+                    .key
+            for (row in 0 until 9) {
+                val a = if (row % 3 == 0) alpha else 0f
+                val expected = 1f - a // a white ground
+                assertTrue(
+                    abs(common(row).red - expected) <= 1.5f / 255,
+                    "row $row: ${common(row).red} against $expected",
+                )
+            }
+        }
     }
 
     @Test
