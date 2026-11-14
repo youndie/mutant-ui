@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-17](docs/backlog/B-17-chip.md) `[ ]` | Chip: unselected with slip, selected by pour | P1 | M | B-10, B-11, B-12 |
+| [B-17](docs/backlog/B-17-chip.md) `[~]` | Chip: unselected with slip, selected by pour | P1 | M | B-10, B-11, B-12 |
 | [B-18](docs/backlog/B-18-checkbox-and-radio-button.md) `[ ]` | Checkbox and RadioButton: 22 dp bodies, pour and melt | P1 | M | B-10, B-11, B-12 |
 | [B-19](docs/backlog/B-19-switch.md) `[ ]` | Switch: track and thumb, pour and slide | P1 | M | B-10, B-11, B-12 |
 | [B-20](docs/backlog/B-20-text-field.md) `[ ]` | TextField: 52 dp field, focus brackets, error corruption | P1 | M | B-10, B-11 |

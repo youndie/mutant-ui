@@ -1,7 +1,7 @@
 ---
 id: B-17
 title: "Chip: unselected with slip, selected by pour"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
