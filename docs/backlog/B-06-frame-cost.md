@@ -1,7 +1,7 @@
 ---
 id: B-06
 title: "The cost of the field on the desktop JVM: an instance and a frame per profile"
-status: wip
+status: done
 priority: P0
 size: M
 stage: stage-0-risks
@@ -61,3 +61,40 @@ frame itself moved between blocks (523–672 µs), so the control measured the d
 every arm once per step, in turn, for all arms and the control alike; nothing else changes — not the
 thresholds, the rounds, the calls or the control's 200 µs. The void run stays in `logs/` and none of its
 numbers is reported as a result.
+
+## Result (2026-11-14)
+
+Run `logs/b-06/2026-11-14-desktop-2.log` (harness `8e52390`, this Mac, JDK 25.0.4.1, one JVM), read by
+`scripts/b06_summary.py` into `logs/b-06/2026-11-14-desktop-2.summary.txt`. Medians of rounds 2–5, µs.
+
+- **Control: valid.** The card's warm frame plus 200 µs read +199.7, +197.7, +199.0, +199.7 µs.
+- **Ruler.** |warm − warm2| is 0.2–17.3 µs per case, under 2.1 % of the frame; the card's 10.3 µs.
+- **Load delivered.** The checksum moves every round; every call's output is folded into it.
+
+| Question | Verdict | Number |
+|---|---|---|
+| Instance (`genItem`) ≤ 0.25 ms for every case | **GREEN** | worst 107.7 µs (`fab-b`, 136 × 56); a 328 × 80 card 53.3 µs |
+| Warm frame of a 328 × 80 card ≤ 0.4 ms green, > 1.6 ms red | **GREY** | 532.5 µs (ruler 10.3): ten cards on one tick 5.3 ms here; at the assumed factor of 4, about 21 ms on a Pixel 6a — decided by [B-49](B-49-frame-cost-on-a-pixel-6a.md) |
+
+Same host, same run: yes, for every number above.
+
+Beyond the thresholds, measured and not judged:
+
+- **The first frame of an instance is ten times its warm frame**: 5.8 ms for the card, 10.2 ms for the
+  160 × 120 blob, 7.6 ms for the 200 × 48 button; it builds the field's static layers (`FieldStatic`).
+  Ten new cards appearing together cost about 58 ms of CPU here. [B-10](B-10-mutant-surface.md) has to
+  build them off the frame, or spread them.
+- **Hot frames cost 10–25 % more than warm ones** (card 614 µs against 533): the bubbles, the boil's
+  noise layer per phase and the hot tick.
+- **The widest frames are the 1.5 dp grid's** (card, blob, field), but the price follows the field's
+  node count and the drips more than the width: the 160 × 120 blob (0.9 dp grid, 28 dp of drips) is the
+  most expensive warm frame, 858.9 µs.
+- A disabled body (`btn-still`) still costs a full frame here because the harness draws it; the engine
+  draws disabled and clean slots without the field at all.
+
+What it does not show: the phone (B-49); the cost of turning paths into Compose `Path`s and drawing
+them; the garbage a frame allocates — about 0.9 MB for the card by the sizes of the field and the march's
+buffers, an estimate, not measured — which a long run and the device will show; several instances computed on one tick in parallel.
+
+The kill criterion did not fire (no red); the components may be built on the CPU field, with the grey
+carried into B-49.

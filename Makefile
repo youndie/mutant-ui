@@ -94,6 +94,8 @@ gate: docs-gate
 	node scripts/gen-goldens.mjs --check
 	# B-05: the Chrome references were rendered from today's pages, scripts and fonts (no Chrome needed here).
 	node scripts/design-references.mjs --manifest
+	# B-06: the reader that turns the field bench's log into its table can fail on a log whose answer is known.
+	python3 scripts/b06_summary.py --control
 
 report: docs-report
 
