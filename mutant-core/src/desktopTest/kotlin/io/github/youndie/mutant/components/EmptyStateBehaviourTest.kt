@@ -28,6 +28,17 @@ import kotlin.test.assertTrue
 /** B-29: the empty state's spacing and centring, its six illustrations, the pause, and what a consumer gives it. */
 @OptIn(ExperimentalTestApi::class)
 class EmptyStateBehaviourTest {
+    private fun ComposeUiTest.captureToImage(node: androidx.compose.ui.semantics.SemanticsNode) =
+        onAllNodesWithText(node.config[SemanticsProperties.Text].first().text, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .indexOfFirst { it.id == node.id }
+            .let {
+                onAllNodesWithText(
+                    node.config[SemanticsProperties.Text].first().text,
+                    useUnmergedTree = true,
+                )[it].captureToImage()
+            }
+
     private fun ComposeUiTest.pixels(tag: String): List<Color> =
         onNodeWithTag(tag).captureToImage().toPixelMap().let { px ->
             List(px.width * px.height) { px[it % px.width, it / px.width] }
@@ -139,6 +150,19 @@ class EmptyStateBehaviourTest {
                 val b = node.boundsInRoot
                 if (b.top < e.top) continue
                 assertTrue(b.left >= e.left - .5f && b.right <= e.right + .5f, "wrapped inside: $b in $e")
+            }
+            // Wrapped, each line stands centred: the ink leaves as much room on the left as on the right.
+            val inside =
+                onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes().filter {
+                    it.boundsInRoot.top >=
+                        e.top
+                }
+            for (node in inside.filter { it.boundsInRoot.width > 0 }) {
+                val px = captureToImage(node).toPixelMap()
+                val inked = (0 until px.width).filter { x -> (0 until px.height).any { y -> px[x, y].alpha > .5f } }
+                val left = inked.first()
+                val right = px.width - 1 - inked.last()
+                assertTrue(abs(left - right) <= 2, "centred lines: $left on the left, $right on the right")
             }
         }
 }
