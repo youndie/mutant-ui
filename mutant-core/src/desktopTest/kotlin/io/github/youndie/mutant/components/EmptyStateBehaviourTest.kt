@@ -159,10 +159,27 @@ class EmptyStateBehaviourTest {
                 }
             for (node in inside.filter { it.boundsInRoot.width > 0 }) {
                 val px = captureToImage(node).toPixelMap()
-                val inked = (0 until px.width).filter { x -> (0 until px.height).any { y -> px[x, y].alpha > .5f } }
-                val left = inked.first()
-                val right = px.width - 1 - inked.last()
-                assertTrue(abs(left - right) <= 2, "centred lines: $left on the left, $right on the right")
+                // Line by line: runs of inked rows, each with its own ink's left and right.
+                val rows = (0 until px.height).filter { y -> (0 until px.width).any { x -> px[x, y].alpha > .5f } }
+                val runs =
+                    rows.fold(mutableListOf<MutableList<Int>>()) { acc, y ->
+                        acc.apply {
+                            if (isEmpty() ||
+                                last().last() + 3 < y
+                            ) {
+                                add(mutableListOf(y))
+                            } else {
+                                last().add(y)
+                            }
+                        }
+                    }
+                assertTrue(runs.size >= 2, "wrapped: ${runs.size} lines")
+                for (run in runs) {
+                    val inked = (0 until px.width).filter { x -> run.any { y -> px[x, y].alpha > .5f } }
+                    val left = inked.first()
+                    val right = px.width - 1 - inked.last()
+                    assertTrue(abs(left - right) <= 3, "a centred line: $left on the left, $right on the right")
+                }
             }
         }
 }
