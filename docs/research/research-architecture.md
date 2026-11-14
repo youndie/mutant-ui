@@ -303,6 +303,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | A label-sized slot is laid out by Chrome at a fraction the engine records whole (the chip's 103.4 dp as 103), and its text zone at a fraction (83.29) where Compose's label rounds up (84): a body generated at the kit's size is another shape, and a flow line starting between the two edges is kept on the page and dropped by the kit. Fixtures give the body the engine's size and text zone (`LocalMutantSlotSize`, `LocalMutantTextZone`), null in the kit (B-17) | `ChipParityTest`, 2026-11-14 |
 
+| A cell's bare twin hides what the page draws in `currentColor` (text, a tick's SVG) or marks `data-keep` (the radio's dot), and keeps what it paints as a background (the checkbox's burnt blocks, the radio's echo): a kit's twin must hide exactly the same, or a mark it keeps differs from the page's twin (B-18). The select stage's layer lands a pixel below its recorded slots, as an illustration column's did (§1.13): component fixtures place each cell within a pixel where its twin matches best | `CheckboxParityTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
