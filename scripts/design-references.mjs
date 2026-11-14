@@ -146,6 +146,10 @@ export const REFERENCES = [
   ...['Efir', 'Kopiya'].flatMap((theme) =>
     ['Off', 'On', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
       ({ stem: `MutantSwitch_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'select', type: 'track', index, theme, below: 8, wide: 140, hideText: bare })))),
+  // B-20: the TextField stage, whole and bare, both themes; cut above the captions, 26 px under the field.
+  ...['Efir', 'Kopiya'].flatMap((theme) =>
+    ['Rest', 'Focused', 'Error', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
+      ({ stem: `MutantField_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'field', type: 'field', index, theme, below: 24, hideText: bare })))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
