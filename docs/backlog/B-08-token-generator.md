@@ -1,7 +1,7 @@
 ---
 id: B-08
 title: "Tokens generated from mutant-tokens.json, read a second time in a test"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-1-materials
