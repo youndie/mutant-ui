@@ -1,7 +1,7 @@
 ---
 id: B-55
 title: "Public text styles: a consumer cannot set its own words in Handjet or Rubik"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-3-screens
