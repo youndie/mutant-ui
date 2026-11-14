@@ -53,12 +53,13 @@ internal data class Extent(
     val left: Int,
     val right: Int,
 ) {
-    /** Every side within [px] of [other]'s. */
+    /** Every side within [px] of [other]'s, the top within [topPx]. */
     fun near(
         other: Extent,
         px: Int = 1,
+        topPx: Int = px,
     ): Boolean =
-        abs(top - other.top) <= px && abs(bottom - other.bottom) <= px && abs(left - other.left) <= px &&
+        abs(top - other.top) <= topPx && abs(bottom - other.bottom) <= px && abs(left - other.left) <= px &&
             abs(right - other.right) <= px
 }
 

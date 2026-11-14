@@ -31,7 +31,16 @@ import kotlin.test.assertTrue
  */
 class TextFloorTest {
     private val stems =
-        listOf("Handjet400_16", "Handjet400_20", "Handjet400_24", "Rubik400_13", "Rubik400_16", "Rubik500_14").map {
+        listOf(
+            "Handjet400_16",
+            "Handjet400_18",
+            "Handjet400_20",
+            "Handjet400_24",
+            "Rubik400_13",
+            "Rubik400_16",
+            "Rubik500_14",
+            "Rubik400_14",
+        ).map {
             "Text_${it}_Efir"
         }
 
@@ -69,7 +78,7 @@ class TextFloorTest {
     }
 
     @Test
-    fun `every label puts its ink where Chrome does, within a pixel`() {
+    fun `every label puts its ink where Chrome does, its top row exactly`() {
         val ground = 0x10142A
         val lines = ArrayList<String>()
         val off = ArrayList<String>()
@@ -78,7 +87,9 @@ class TextFloorTest {
             val kit = extentOf(a.width, a.height) { channelGap(a.actual[it], ground) > TEXT_INK }!!
             val chrome = extentOf(a.width, a.height) { channelGap(a.reference[it], ground) > TEXT_INK }!!
             lines += "$a, ${"%.1f".format(a.inkPercent)} % of the ink; kit $kit, Chrome $chrome"
-            if (!kit.near(chrome)) off += stem
+            // The top row is the baseline's: exact, as on every probe measured. The bottom (a descender's edge) and the
+            // sides (fractional advances, which Compose rounds) may lie a pixel apart.
+            if (!kit.near(chrome, px = 1, topPx = 0)) off += stem
         }
         println(lines.joinToString("\n"))
         assertTrue(off.isEmpty(), "text out of place: $off\n" + lines.joinToString("\n"))

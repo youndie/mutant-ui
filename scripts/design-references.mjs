@@ -60,15 +60,19 @@ const PROBES = [
   { name: 'Card', type: 'card', key: 'card/a', w: 328, h: 80, content: [16, 14, 200, 36] },
   { name: 'Dot', type: 'dot', key: 'dot/a', w: 22, h: 22 },
 ];
-// B-52: a label alone, in each face at sizes the type roles use, at a whole-pixel origin: what is left between
+// B-52: a label alone, in each face at sizes the type roles use (Handjet 18 at line-height 1 and Rubik 14 at
+// 1.2 among them: there Blink's rounding of the face's ascent and descent moves the baseline a pixel), at a whole-pixel origin: what is left between
 // Chrome's text and Compose's when nothing else differs — the text floor. Words from the design's pages.
 const TEXT_PROBES = [
   ['Handjet', 400, 16, 1, 1, 'CH 03 · НАСТРОЙКА 1.44 МБ'],
+  ['Handjet', 400, 18, 1, 1, 'CH 03 · НАСТРОЙКА 1.44 МБ'],
   ['Handjet', 400, 20, 1, 1, 'CH 03 · НАСТРОЙКА 1.44 МБ'],
   ['Handjet', 400, 24, 1, 0, 'Здесь пока пусто'],
   ['Rubik', 400, 13, 1.4, 0, 'Сторона A · 4 записи · без подписи'],
   ['Rubik', 400, 16, 1.4, 0, 'Без подписи №3 · Сторона A'],
   ['Rubik', 500, 14, 1.4, 0, 'Ничего не выбрано · Пульт'],
+  // Two where Blink's rounding of the face's ascent and descent moves the baseline a pixel (B-52).
+  ['Rubik', 400, 14, 1.2, 0, 'Ничего не выбрано · Пульт'],
 ].map(([family, weight, size, line, spacing, text]) => ({ family, weight, size, line, spacing, text }));
 export const REFERENCES = [
   ...TEXT_PROBES.map((p) => ({ stem: `Text_${p.family}${p.weight}_${p.size}_Efir`, text: p })),
