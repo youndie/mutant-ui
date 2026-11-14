@@ -29,20 +29,13 @@ import io.github.youndie.mutant.gen.REST_BOIL
 import io.github.youndie.mutant.gen.REST_ROUGH
 import io.github.youndie.mutant.gen.Slot
 import io.github.youndie.mutant.gen.frame
+import io.github.youndie.mutant.theme.LocalMutantCassette
+import io.github.youndie.mutant.theme.LocalMutantColors
+import io.github.youndie.mutant.theme.LocalMutantStage
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantFill
 import io.github.youndie.mutant.tokens.MutantGrid
-import io.github.youndie.mutant.tokens.MutantPalettes
-
-/** The screen's colours until the theme (B-09) provides them. */
-internal val LocalMutantColors = staticCompositionLocalOf { MutantPalettes.Efir }
-
-/** The cassette seed every instance key is prefixed with (the engine's `props.seed`). */
-internal val LocalMutantCassette = staticCompositionLocalOf { "5" }
-
-/** The stage the speckle is seeded by (the engine's `data-mu-stage`); a screen provides its own. */
-internal val LocalMutantStage = staticCompositionLocalOf { "screen" }
 
 /** Collects the bounds of what a surface's content marks clean, relative to the surface. */
 @Stable
