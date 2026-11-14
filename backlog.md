@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (33)
+## Open (32)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
-| [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[~]` | Text button: its tracking divider is drawn unscaled at a density above 1 | P1 | S | B-15 |
 | [B-54](docs/backlog/B-54-melt-stalls-short-of-its-end.md) `[ ]` | Melt: a mark can stall at 76 % when a frame falls in its last 3 ms | P1 | S | B-18 |
 | [B-55](docs/backlog/B-55-public-text-styles.md) `[ ]` | Public text styles: a consumer cannot set its own words in Handjet or Rubik | P1 | S | B-37 |
 | [B-57](docs/backlog/B-57-visible-keyboard-focus-everywhere.md) `[ ]` | Keyboard focus: every Tab stop visible, and the dialog's Tab cycle | P1 | M | B-40 |
@@ -96,7 +95,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
 
-## Closed (37)
+## Closed (38)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -137,6 +136,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-27](docs/backlog/B-27-progress.md) `[x]` - LinearProgress and CircularProgress
 - [B-28](docs/backlog/B-28-dialog.md) `[x]` - Dialog: a clean window over a paused background
 - [B-29](docs/backlog/B-29-empty-state.md) `[x]` - EmptyState: the six illustrations with a title
+- [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[x]` - Text button: its tracking divider is drawn unscaled at a density above 1
 
 **The three demo screens within the floor in both themes; contrast, flashes and greyscale measured on the kit**
 
