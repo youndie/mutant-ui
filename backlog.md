@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-18](docs/backlog/B-18-checkbox-and-radio-button.md) `[ ]` | Checkbox and RadioButton: 22 dp bodies, pour and melt | P1 | M | B-10, B-11, B-12 |
+| [B-18](docs/backlog/B-18-checkbox-and-radio-button.md) `[~]` | Checkbox and RadioButton: 22 dp bodies, pour and melt | P1 | M | B-10, B-11, B-12 |
 | [B-19](docs/backlog/B-19-switch.md) `[ ]` | Switch: track and thumb, pour and slide | P1 | M | B-10, B-11, B-12 |
 | [B-20](docs/backlog/B-20-text-field.md) `[ ]` | TextField: 52 dp field, focus brackets, error corruption | P1 | M | B-10, B-11 |
 | [B-21](docs/backlog/B-21-card.md) `[ ]` | Card: dead pixels in the corner | P1 | M | B-10, B-11 |

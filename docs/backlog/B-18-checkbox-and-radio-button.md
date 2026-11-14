@@ -1,7 +1,7 @@
 ---
 id: B-18
 title: "Checkbox and RadioButton: 22 dp bodies, pour and melt"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
