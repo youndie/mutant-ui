@@ -1,3 +1,9 @@
+public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSwitchKt {
+	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantSwitchKt;
+	public fun <init> ()V
+	public final fun getLambda$1232773936$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/youndie/mutant/components/MutantButtonKt {
 	public static final fun MutantButton (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLio/github/youndie/mutant/components/MutantButtonState;Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 	public static final fun MutantOutlinedButton (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
@@ -26,6 +32,10 @@ public final class io/github/youndie/mutant/components/MutantIconButtonKt {
 	public static final fun MutantExtendedFab (Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 	public static final fun MutantFab (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 	public static final fun MutantIconButton (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/youndie/mutant/components/MutantSwitchKt {
+	public static final fun MutantSwitch (ZLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/icons/MutantIcons {

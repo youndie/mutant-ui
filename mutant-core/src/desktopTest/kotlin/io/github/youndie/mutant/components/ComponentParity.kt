@@ -48,28 +48,51 @@ import kotlinx.serialization.json.jsonPrimitive
 internal object ComponentParity {
     fun palette(theme: String): MutantColors = if (theme == "Kopiya") MutantPalettes.Kopiya else MutantPalettes.Efir
 
+    /** One body as the engine built it: its key, origin, size, outline and text zone. */
+    private class EngineSlot(
+        val key: String,
+        val origin: Offset,
+        val size: androidx.compose.ui.geometry.Size,
+        val outline: Float,
+        val zone: DoubleArray?,
+    ) {
+        companion object {
+            fun of(o: JsonObject) =
+                EngineSlot(
+                    o["key"]!!.jsonPrimitive.content,
+                    Offset(o["ox"]!!.jsonPrimitive.float, o["oy"]!!.jsonPrimitive.float),
+                    androidx.compose.ui.geometry
+                        .Size(o["w"]!!.jsonPrimitive.float, o["h"]!!.jsonPrimitive.float),
+                    o["drawnOutline"]!!.jsonPrimitive.float,
+                    // The engine records "no text" as [-99, -99, 0, 0] and then keeps no clean zone at all.
+                    (o["tz"] as? JsonArray)?.map { it.jsonPrimitive.double }?.toDoubleArray()?.takeIf { it[2] > 0 },
+                )
+        }
+    }
+
     @Composable
     private fun Fixture(
-        slot: JsonObject,
+        ref: JsonObject,
         theme: String,
         content: @Composable () -> Unit,
     ) {
-        val key = slot["key"]!!.jsonPrimitive.content
-        val outline = slot["drawnOutline"]!!.jsonPrimitive.float
-        val origin = Offset(slot["ox"]!!.jsonPrimitive.float, slot["oy"]!!.jsonPrimitive.float)
-        val engineZone = (slot["tz"] as? JsonArray)?.map { it.jsonPrimitive.double }?.toDoubleArray()
-        val engineSize =
-            androidx.compose.ui.geometry.Size(
-                slot["w"]!!.jsonPrimitive.float,
-                slot["h"]!!.jsonPrimitive.float,
-            )
+        val slot = ref["slot"]!!.jsonObject
+        val own = EngineSlot.of(slot)
+        // The cell's own slot, and the bodies the page nests inside it (a switch's thumb), each by its key: a page may
+        // give several cells one key, so only the slots within this cell's box are taken.
+        val inner =
+            (ref["stageSlots"] as? JsonArray).orEmpty().map { EngineSlot.of(it.jsonObject) }.filter {
+                it.key != own.key &&
+                    it.origin.x >= own.origin.x && it.origin.x + it.size.width <= own.origin.x + own.size.width + 1 &&
+                    it.origin.y >= own.origin.y && it.origin.y + it.size.height <= own.origin.y + own.size.height + 1
+            }
+        val slots = (inner + own).associateBy { it.key }
         MutantTheme(colors = palette(theme)) {
             CompositionLocalProvider(
-                // The cell's own slot: a page may give several cells one key.
-                LocalMutantOutlineOverride provides { if (it == key) outline else null },
-                LocalMutantSlotOrigin provides { if (it == key) origin else null },
-                LocalMutantSlotSize provides { if (it == key) engineSize else null },
-                LocalMutantTextZone provides { if (it == key) engineZone else null },
+                LocalMutantOutlineOverride provides { slots[it]?.outline },
+                LocalMutantSlotOrigin provides { slots[it]?.origin },
+                LocalMutantSlotSize provides { slots[it]?.size },
+                LocalMutantTextZone provides { slots[it]?.zone },
                 LocalMutantTextRaster provides ChromeText,
                 LocalMutantStage provides slot["stage"]!!.jsonPrimitive.content,
             ) {
@@ -98,7 +121,7 @@ internal object ComponentParity {
         val y = s["oy"]!!.jsonPrimitive.int - origin[1] + dy
         val ground = DesignParity.rgb(s["background"]!!.jsonPrimitive.content)
         return DesignParity.compare(stem, ground) {
-            Fixture(s, theme) {
+            Fixture(DesignParity.reference(stem), theme) {
                 Box(Modifier.fillMaxSize().background(ground)) {
                     val w = s["w"]!!.jsonPrimitive.int.dp
                     // A component whose touch target is taller than its body ([outset] above and below) is placed by
@@ -189,13 +212,18 @@ internal object ComponentParity {
         val labelFrom = s["ox"]!!.jsonPrimitive.int - origin[0] + s["w"]!!.jsonPrimitive.int + LABEL_CLEAR
 
         fun label(i: Int): Boolean = labelBeside && i % r.width >= labelFrom
+
+        // Above a component's own row (one placed by its target) lies the row above it, whose drips hang into the crop.
+        val rowTop = s["oy"]!!.jsonPrimitive.int - origin[1] - outset + dy
+
+        fun foreign(i: Int): Boolean = outset > 0 && i / r.width < rowTop
         var body = 0
         var content = 0
         for (i in 0 until r.width * r.height) {
             if (channelGap(r.actual[i], r.reference[i]) <= 16) continue
             if (inside(i)) {
                 content++
-            } else if (!label(i)) {
+            } else if (!label(i) && !foreign(i)) {
                 body++
             }
         }
