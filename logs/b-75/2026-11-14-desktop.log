@@ -1,0 +1,49 @@
+
+# B-72 frame bench
+# commit 0200a62
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 6 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 ComponentsRest: 568 frames
+round 1 ComponentsWheel: 574 frames, scrolled 16260 px
+round 1 ComponentsClean: 603 frames
+round 1 DemoLibrary: 602 frames
+round 1 Control: 422 frames
+round 2 ComponentsWheel: 590 frames, scrolled 16470 px
+round 2 ComponentsClean: 603 frames
+round 2 DemoLibrary: 602 frames
+round 2 Control: 429 frames
+round 2 ComponentsRest: 583 frames
+round 3 ComponentsClean: 601 frames
+round 3 DemoLibrary: 604 frames
+round 3 Control: 433 frames
+round 3 ComponentsRest: 602 frames
+round 3 ComponentsWheel: 590 frames, scrolled 15151 px
+round 4 DemoLibrary: 601 frames
+round 4 Control: 431 frames
+round 4 ComponentsRest: 600 frames
+round 4 ComponentsWheel: 589 frames, scrolled 15092 px
+round 4 ComponentsClean: 606 frames
+round 5 Control: 430 frames
+round 5 ComponentsRest: 594 frames
+round 5 ComponentsWheel: 590 frames, scrolled 15265 px
+round 5 ComponentsClean: 595 frames
+round 5 DemoLibrary: 602 frames
+round 6 ComponentsRest: 599 frames
+round 6 ComponentsWheel: 591 frames, scrolled 15193 px
+round 6 ComponentsClean: 603 frames
+round 6 DemoLibrary: 600 frames
+round 6 Control: 433 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95
+ComponentsRest           59.6       16.63  25.20   42.85  0.47  |   0.07  12.88  16.45  54.82 |   1.14  14.40  GREY
+ComponentsWheel          59.0       16.65  28.07   35.59  1.09  |   0.39  13.83  17.04  21.91 |   1.51  15.09  GREY
+ComponentsClean          60.2       16.66  21.72   37.96  0.10  |   0.08  11.41  14.93  18.16 |   1.07  12.66  GREY
+DemoLibrary              60.2       16.67  22.90   40.08  0.10  |   0.07   2.30   3.10   5.34 |   0.36   2.60  GREY
+Control                  43.1       21.02  35.90  100.00 10.60  |  10.08  23.94  27.25  32.21 |  11.16  25.22  (control)
+
+control: work p50 over ComponentsRest per counted round 10.04, 10.00, 10.00, 10.00, 10.00 ms
+         (busy-wait 10 ms)
+wheel: scrolled per counted round [16470, 15151, 15092, 15265, 15193] px

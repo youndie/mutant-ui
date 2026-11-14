@@ -377,6 +377,7 @@ a notch, resize and the scrim taking a press; it does not see the operating syst
 |---|---|
 | In a real window on this Mac, the sample is red on the Components page (27 % of intervals over 33 ms) and on the Demo page, grey on the Recording and Settings screens alone. A control adding 10 ms inside the frame reads 10.04 ms | `FrameBench`, `logs/b-72/`, 2026-11-14 |
 | The tick frame costs 60–80 ms on the main thread, the frames between ticks 0.1 ms: each body rebuilds its distance field and outline on every tick, in the draw (`gen.frame` 77 % of the event thread's samples) | JFR, `logs/b-72/…-profile-components-rest.txt` (B-75) |
+| A resting tick's frame is a function of its time alone. Built a tick ahead off the main thread, it took the Components page from 31.5 to 59.6 frames a second, and intervals over 33 ms from 26.9 % to 0.47 %. The field cache is shared only once a frame would read it and never write it (`FieldCache.settledFor`) | `TickFramesAheadTest`, `logs/b-75/` (B-75) |
 | Skiko replays the frame's picture on a thread of its own. On the Demo page that thread is the bound (`drawPicture` 898 of 1 050 native samples), and a recorder timing the main thread alone does not see it | JFR, `logs/b-72/…-profile-demo-page.txt` (B-76) |
 
 ## 2. Decisions

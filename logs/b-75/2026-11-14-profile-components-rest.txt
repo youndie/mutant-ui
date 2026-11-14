@@ -1,0 +1,41 @@
+# B-75 profile after the change, commit 0200a62, ComponentsRest 2 x 12 s, JFR settings=profile (the recording is not kept)
+threads: [('AWT-EventQueue-1', 253), ('DefaultDispatcher-worker-1', 75), ('DefaultDispatcher-worker-2', 55), ('DefaultDispatcher-worker-3', 47), ('DefaultDispatcher-worker-4', 44), ('DefaultDispatcher-worker-5', 37), ('DefaultDispatcher-worker-8', 30), ('DefaultDispatcher-worker-7', 30)]
+
+AWT-EventQueue: 253 samples
+-- inclusive, mutant + compose ui/graphics --
+ 37.2%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$7$0
+ 30.8%  io.github.youndie.mutant.sample.bench.TimingQueue.dispatchEvent
+ 30.0%  io.github.youndie.mutant.gen.FrameKt.frame
+ 25.7%  io.github.youndie.mutant.gen.FieldKt.distanceField
+ 20.2%  org.jetbrains.skiko.SkiaLayer.update$skiko
+ 17.4%  io.github.youndie.mutant.sample.bench.FrameBenchKt$main$4$1.onRender
+ 10.3%  io.github.youndie.mutant.surface.MutantTapeKt.mutantTape$lambda$0$1$0
+  8.3%  io.github.youndie.mutant.surface.MutantTapeKt.drawTape
+  6.7%  io.github.youndie.mutant.sample.bench.FrameBenchKt.main$lambda$4
+  5.5%  io.github.youndie.mutant.sample.MutantUiSampleKt.MutantUiSample$lambda$2
+  5.5%  io.github.youndie.mutant.clock.MutantClockKt.ProvideMutantClock
+  5.5%  io.github.youndie.mutant.theme.MutantThemeKt.MutantTheme$lambda$2
+  5.5%  io.github.youndie.mutant.theme.MutantThemeKt.MutantTheme
+  5.5%  io.github.youndie.mutant.sample.MutantUiSampleKt.MutantUiSample
+  5.5%  io.github.youndie.mutant.sample.bench.FrameBenchKt.SceneContent
+  5.5%  io.github.youndie.mutant.sample.bench.FrameBenchKt.main$lambda$4$0
+  5.1%  androidx.compose.ui.graphics.SkiaBackedCanvas.drawRect
+  4.3%  io.github.youndie.mutant.sample.MutantUiSampleKt.Section
+  4.3%  io.github.youndie.mutant.sample.ComponentsPageKt.ComponentsPage
+  4.3%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$7$0$6
+  4.0%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$7$0$9
+  4.0%  androidx.compose.ui.graphics.SkiaBackedPaint.updateAlpha$default
+  4.0%  androidx.compose.ui.graphics.SkiaBackedPaint.setAlphaMultiplier
+  4.0%  androidx.compose.ui.graphics.SkiaBackedCanvas.asSkiaPaintWithAppliedAlphaMultiplier
+  3.2%  io.github.youndie.mutant.surface.HeldInstance.of
+  3.2%  androidx.compose.ui.graphics.SkiaBackedPaint.updateAlpha
+  2.8%  io.github.youndie.mutant.surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$8$0
+  2.8%  io.github.youndie.mutant.gen.FieldKt.march
+  2.8%  io.github.youndie.mutant.surface.FrameAhead.prepare
+  2.4%  io.github.youndie.mutant.surface.BodyDrawingKt.toPath
+  2.4%  io.github.youndie.mutant.surface.BodyDrawingKt.toPath$default
+  2.4%  io.github.youndie.mutant.surface.BodyPaths$Companion.of
+  2.4%  io.github.youndie.mutant.clock.MutantClock.onFrame
+  2.4%  io.github.youndie.mutant.clock.MutantClockKt$ProvideMutantClock$2$1.invokeSuspend$lambda$0
+  2.0%  io.github.youndie.mutant.components.MutantTextFieldKt.TextFieldBody$lambda$18
+  2.0%  io.github.youndie.mutant.components.MutantTextFieldKt.TextFieldBody
