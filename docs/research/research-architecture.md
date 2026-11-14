@@ -299,6 +299,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 | Chrome does not always render the pages byte-identically: under a load average of 22–38 a third of the cells moved between two renders; on a quiet machine the Button stage's disabled and outlined cells still alternate between two renders, 25 pixels apart, 2 of them by more than 16. `make references` now passes a cell within the body's floor of its committed render and names it | `scripts/design-references.mjs` (`apart`), 2026-11-14 |
 | The theme's clock asks for frames for ever, so a Compose UI test with a kit body on screen never goes idle under the test clock's auto-advance: such a test drives the clock by hand (`mainClock.autoAdvance = false`) | `ButtonBehaviourTest` |
 
+| An icon in a component is drawn to the pixel, as the icons were (§1.13): inside an icon button's or a FAB's clean zone 0–3 pixels differ, so icon-only content is held like a body, to the floor, where text is held by its place and colour (B-16) | `IconButtonParityTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
