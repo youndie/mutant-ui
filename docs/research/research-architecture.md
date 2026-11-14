@@ -379,6 +379,7 @@ a notch, resize and the scrim taking a press; it does not see the operating syst
 | A resting tick's frame is a function of its time alone. Built a tick ahead off the main thread, it took the Components page from 31.5 to 59.6 frames a second, and intervals over 33 ms from 26.9 % to 0.47 %. The field cache is shared only once a frame would read it and never write it (`FieldCache.settledFor`) | `TickFramesAheadTest`, `logs/b-75/` (B-75) |
 | Skiko replays the frame's picture on a thread of its own. On the Demo page that thread is the bound (`drawPicture` 898 of 1 050 native samples), and a recorder timing the main thread alone does not see it | JFR, `logs/b-72/…-profile-demo-page.txt` (B-76) |
 | On the Demo page Skia's render thread is the bound, at 87–92 % busy and 19.8 ms of CPU a frame. The Tape is 3.2 ms of that, the screens' rounded clip 0.6 ms, the screens' content 15–16 ms. A fixed load of paths reads the same on a blank page and on the Demo page (3.1–4.5 ms) | `FrameBench` render sampler, `logs/b-76/` (B-76, B-77, B-78) |
+| Of a body's drawing on the render thread (11.07 ms a frame for the Library screen's bodies ×3), leaving out the outline's stroke saves 4.03 ms, the contour clip 2.07, the speckle 1.32, the highlight 0.61, everything else under 0.3. A load of paths adds 3.7 ms on a blank page but 1.5 over the bodies: on this thread costs do not add, and a reading is what a removal saves in its scene | `bodyRenderBench`, `logs/b-78/` (B-78; items B-79, B-80, B-81) |
 
 ## 2. Decisions
 
