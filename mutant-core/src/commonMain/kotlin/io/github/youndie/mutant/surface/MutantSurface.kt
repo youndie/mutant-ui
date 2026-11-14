@@ -30,7 +30,9 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.IntSize
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.gen.BodyFrame
 import io.github.youndie.mutant.gen.FieldCache
+import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.gen.MutantGenerator
 import io.github.youndie.mutant.gen.REST_BOIL
 import io.github.youndie.mutant.gen.REST_ROUGH
@@ -103,6 +105,9 @@ internal val LocalCleanZone = staticCompositionLocalOf<CleanZoneRegistry?> { nul
  * that compares with building it in the frame, as before.
  */
 internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
+
+/** Told, for every body frame a surface draws, whether it was built ahead off the frame (B-75): a test reads it. */
+internal val LocalMutantFrameProbe = staticCompositionLocalOf<((fromAhead: Boolean) -> Unit)?> { null }
 
 /**
  * Marks this element's bounds as part of its surface's clean zone: the text and icons that flow lines,
@@ -199,6 +204,8 @@ internal fun MutantSurface(
     val clock = readMutantClock()
     val registry = remember { CleanZoneRegistry() }
     val held = remember { HeldInstance() }
+    val ahead = remember { FrameAhead() }
+    val frameProbe = LocalMutantFrameProbe.current
     val scope = rememberCoroutineScope()
     // A body's first instance is built off the frame (B-50), unless the clock is frozen (fixtures, references) or an
     // IDE preview draws it: those draw in their first frame, as before.
@@ -344,7 +351,17 @@ internal fun MutantSurface(
                         else -> clock.restTimeMs()
                     }
                 val k = heat ?: boil.at(clock.nowMs)
-                val frame = gen.frame(g, cache, t, k, pressed = boil.on)
+                // A resting tick's frame depends on its time alone, and the next tick's time is known: it is built
+                // ahead on a background thread and taken here (B-75). A pressed or heated body, a frozen clock and a
+                // frame not ready in time build in the frame, as before.
+                val resting = offFrame && !hot && !boil.on && k == 0.0
+                val early = if (resting) ahead.take(g, t) else null
+                val frame = early ?: gen.frame(g, cache, t, k, pressed = boil.on)
+                frameProbe?.invoke(early != null)
+                if (resting && cache.settledFor(g)) {
+                    val next = t + clock.stepMs
+                    ahead.prepare(g, next, scope) { gen.frame(g, cache, next, 0.0, pressed = false) }
+                }
                 val paths = BodyPaths.of(frame)
                 val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, frame.boilPhase, frame.boil)
                 val frameLook =
@@ -448,6 +465,39 @@ internal class HeldInstance {
             of(signature) { done ?: build() }
             arrivals++
         }
+    }
+}
+
+/**
+ * The next resting tick's frame of one body, built on a background thread (B-75): [prepare] starts it for an
+ * instance and a time, once; [take] hands it over only for that very instance and time, and only once it is done.
+ */
+internal class FrameAhead {
+    private var instance: Instance? = null
+    private var at = Double.NaN
+    private var job: Deferred<BodyFrame>? = null
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun take(
+        g: Instance,
+        t: Double,
+    ): BodyFrame? {
+        val j = job ?: return null
+        if (instance !== g || at != t || !j.isCompleted || j.getCompletionExceptionOrNull() != null) return null
+        return j.getCompleted()
+    }
+
+    fun prepare(
+        g: Instance,
+        t: Double,
+        scope: CoroutineScope,
+        build: () -> BodyFrame,
+    ) {
+        if (instance === g && at == t) return
+        job?.cancel()
+        instance = g
+        at = t
+        job = scope.async(Dispatchers.Default) { build() }
     }
 }
 
