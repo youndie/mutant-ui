@@ -62,7 +62,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-23](docs/backlog/B-23-top-app-bar-and-tabs.md) `[ ]` | TopAppBar and Tabs: the 56 dp bar with a tracking divider, the 4 dp indicator with an echo | P1 | M | B-10, B-07 |
 | [B-24](docs/backlog/B-24-navigation-bar.md) `[ ]` | NavigationBar: bar body, the active item a 56 × 30 pill | P1 | M | B-10, B-11 |
 | [B-25](docs/backlog/B-25-list-item-divider-badge.md) `[ ]` | ListItem, Divider and Badge | P1 | M | B-10 |
 | [B-26](docs/backlog/B-26-snackbar.md) `[ ]` | Snackbar: a blue bar with a shadow | P1 | M | B-10, B-11 |
@@ -75,6 +74,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
 | [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[ ]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
+| [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[ ]` | Text button: its tracking divider is drawn unscaled at a density above 1 | P1 | S | B-15 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
@@ -90,7 +90,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (25)
+## Closed (26)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -123,6 +123,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-20](docs/backlog/B-20-text-field.md) `[x]` - TextField: 52 dp field, focus brackets, error corruption
 - [B-21](docs/backlog/B-21-card.md) `[x]` - Card: dead pixels in the corner
 - [B-22](docs/backlog/B-22-skeleton-cocoon.md) `[x]` - Skeleton («Кокон»): mosaic of 16 and 8 dp in the shape of the coming component
+- [B-23](docs/backlog/B-23-top-app-bar-and-tabs.md) `[x]` - TopAppBar and Tabs: the 56 dp bar with a tracking divider, the 4 dp indicator with an echo
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 

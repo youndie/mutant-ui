@@ -309,6 +309,9 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | The engine's cocoon is not a function of time: each scene tick repaints a few of its blocks over what earlier ticks left, and a stage rebuilt at a new size lays them out again without re-applying the tick it stands at (`st.fi` outlives the rebuild). The page frozen at `data-mu-t` 5000 draws the layout plus tick 40's repaints, which the kit reproduces exactly; a running kit applies each tick it sees, as the engine does, so two clocks that skip different ticks diverge (B-22) | `CocoonParityTest`, `CocoonBehaviourTest`, 2026-11-14 |
 
+| Compose lays Rubik 14/500 out in whole-pixel advances (the tabs' labels 65, 60 and 44 wide) where Chrome's are fractional, so labels in a row drift apart by up to 2 px by the third; the page's tab bar is a literal 62 dp under a label the kit lays out 65 wide — the kit follows its label, the fixture gives the page's width (B-23) | `BarTabsParityTest` (`SIDE_RESIDUAL`, `LocalTabBarWidth`), 2026-11-14 |
+| A fixture's child taller or wider than the cell it is drawn in is centred on it by Compose (the tabs' 48 dp target in the page's 46 dp cell stood a pixel high): such a child is laid out unbounded, `wrapContentSize(TopStart, unbounded = true)` (B-23) | `BarTabsParityTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.

@@ -1,0 +1,353 @@
+package io.github.youndie.mutant.components
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertWidthIsAtLeast
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.requestFocus
+import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.tokens.MutantPalettes
+import kotlin.math.abs
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+/** B-23: the tabs choose, their bar runs and lands, and the bar keeps its row; what a consumer does to them. */
+@OptIn(ExperimentalTestApi::class)
+class BarTabsBehaviourTest {
+    private val three = listOf(MutantTab("Дорожки"), MutantTab("Заметки"), MutantTab("Копии"))
+
+    private fun ComposeUiTest.pixels(tag: String): List<Color> =
+        onNodeWithTag(tag).captureToImage().toPixelMap().let { px ->
+            List(px.width * px.height) { px[it % px.width, it / px.width] }
+        }
+
+    /** The acid's first and last column in row [y] of the tabs, or null; [from] to read only from a column on. */
+    private fun ComposeUiTest.acid(
+        y: Int,
+        from: Int = 0,
+    ): IntRange? {
+        val acid = MutantPalettes.Efir.primary
+        val px = onNodeWithTag("t").captureToImage().toPixelMap()
+        val xs =
+            (from until px.width).filter { x ->
+                val p = px[x, y]
+                abs(p.red - acid.red) + abs(p.green - acid.green) + abs(p.blue - acid.blue) < .05f
+            }
+        return if (xs.isEmpty()) null else xs.first()..xs.last()
+    }
+
+    /** Whether any pixel of row [y] left of column [x] is lit by the acid's echo (the acid at any opacity). */
+    private fun ComposeUiTest.echoLeftOf(
+        x: Int,
+        y: Int,
+    ): Boolean {
+        val px = onNodeWithTag("t").captureToImage().toPixelMap()
+        val ground = px[0, 0]
+        return (0 until x).any { px[it, y].green - ground.green > .05f }
+    }
+
+    private fun ComposeUiTest.tabs(
+        selected: () -> Int,
+        reduceMotion: Boolean = false,
+        onSelect: (Int) -> Unit = {},
+    ) = setContent {
+        CompositionLocalProvider(LocalDensity provides Density(1f)) {
+            MutantTheme(reduceMotion = reduceMotion) {
+                Box { MutantTabs(three, selected(), onSelect, Modifier.testTag("t")) }
+            }
+        }
+    }
+
+    @Test
+    fun `a click selects a tab, the semantics say so, and a disabled tab takes none`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var at by mutableIntStateOf(0)
+            setContent {
+                MutantTheme {
+                    MutantTabs(
+                        listOf(MutantTab("Дорожки"), MutantTab("Заметки"), MutantTab("Копии", enabled = false)),
+                        at,
+                        { at = it },
+                    )
+                }
+            }
+            onNodeWithText(
+                "Дорожки",
+            ).assertIsSelected().assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
+            onNodeWithText("Заметки").assertIsNotSelected().performClick()
+            mainClock.advanceTimeByFrame()
+            assertEquals(1, at)
+            onNodeWithText("Заметки").assertIsSelected()
+            onNodeWithText("Копии").assertIsNotEnabled().performClick()
+            assertEquals(1, at)
+            // A disabled label greys; a live one stands in the secondary colour, the selected in the accent.
+            val c = MutantPalettes.Efir
+            for ((label, colour) in listOf(
+                "Копии" to c.textDisabled,
+                "Дорожки" to c.textSecondary,
+                "Заметки" to c.textAccent,
+            )) {
+                val px = onNodeWithText(label, useUnmergedTree = true).captureToImage().toPixelMap()
+                val inked =
+                    (0 until px.width * px.height).count {
+                        val q = px[it % px.width, it / px.width]
+                        abs(q.red - colour.red) + abs(q.green - colour.green) + abs(q.blue - colour.blue) < .04f
+                    }
+                assertTrue(inked > 10, "$label in its colour: $inked")
+            }
+        }
+
+    @Test
+    fun `each tab is a target 48 tall and at least 48 wide, reaching 12 dp past its label`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme { MutantTabs(listOf(MutantTab("Да"), MutantTab("Дорожки")), 0, {}) }
+                }
+            }
+            for (label in listOf("Да", "Дорожки")) {
+                onNodeWithText(label).assertHeightIsEqualTo(48.dp).assertWidthIsAtLeast(48.dp)
+            }
+            val tab = onNodeWithText("Дорожки").fetchSemanticsNode().boundsInRoot
+            val text = onNodeWithText("Дорожки", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertEquals(12f, text.left - tab.left, "from the target's left")
+            assertEquals(12f, tab.right - text.right, "to the target's right")
+        }
+
+    @Test
+    fun `the bar stands 43 dp down under the selected label, as wide as it, and none for no selection`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var at by mutableIntStateOf(1)
+            tabs({ at })
+            mainClock.advanceTimeByFrame()
+            val label = onNodeWithText("Заметки", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val bar = acid(43)
+            assertEquals(label.left.toInt()..(label.right.toInt() - 1), bar, "under the label, as wide")
+            assertEquals(bar, acid(46), "4 dp tall")
+            assertNull(acid(42), "nothing above it")
+            assertNull(acid(47), "nothing under it")
+            at = -1
+            mainClock.advanceTimeByFrame()
+            assertNull(acid(43), "no selection, no bar")
+        }
+
+    @Test
+    fun `a new selection runs the bar across in 330 ms with its echo trailing, and lands at once when paused`() {
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var at by mutableIntStateOf(0)
+            tabs({ at })
+            mainClock.advanceTimeByFrame()
+            val start = acid(43)!!
+            val end = onNodeWithText("Копии", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertTrue(!echoLeftOf(start.first, 45), "at rest the echo is to the right")
+            at = 2
+            mainClock.advanceTimeBy(160)
+            val mid = acid(43)!!
+            // 160 ms is one 83 ms step of 330 in: eased out by the cube, 1 - (1 - p)^3, from the first label to the third.
+            val p =
+                io.github.youndie.mutant.surface
+                    .stepped(160.0, 330.0)
+            val e = 1 - Math.pow(1 - p, 3.0)
+            val expected = start.first + (end.left - start.first) * e
+            assertTrue(abs(mid.first - expected) <= 1.0, "at 160 ms the bar at ${mid.first}, eased to $expected")
+            // Two columns clear of the bar's own edge, which stands at a fraction mid-run.
+            assertTrue(echoLeftOf(mid.first - 2, 45), "running right, the echo trails on the left")
+            mainClock.advanceTimeBy(200)
+            assertEquals(end.left.toInt(), acid(43)!!.first, "landed")
+            assertTrue(!echoLeftOf(end.left.toInt(), 45), "landed, the echo back to the right")
+        }
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var at by mutableIntStateOf(0)
+            tabs({ at }, reduceMotion = true)
+            mainClock.advanceTimeByFrame()
+            at = 2
+            mainClock.advanceTimeByFrame()
+            val end = onNodeWithText("Копии", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertEquals(end.left.toInt(), acid(43)!!.first, "paused: at once")
+        }
+    }
+
+    @Test
+    fun `the bar's ring is the page's black in both themes`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(
+                        colors = MutantPalettes.Kopiya,
+                    ) { Box { MutantTabs(three, 0, {}, Modifier.testTag("t")) } }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val bar = acid(44)!!
+            // The ring's whole row 1.5 dp above the bar: row 41 of 43 is half covered, row 42 whole.
+            val ring = onNodeWithTag("t").captureToImage().toPixelMap()[bar.first + 10, 42]
+            val black = Color(0xFF05060C)
+            assertTrue(
+                abs(ring.red - black.red) + abs(ring.green - black.green) + abs(ring.blue - black.blue) < .02f,
+                "$ring",
+            )
+        }
+
+    @Test
+    fun `keyboard focus draws the brackets around a tab`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box {
+                            MutantTabs(
+                                listOf(MutantTab("Дорожки"), MutantTab("Заметки")),
+                                -1,
+                                {},
+                                Modifier.testTag("t"),
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val rest = pixels("t")
+            onNodeWithText("Заметки").requestFocus()
+            mainClock.advanceTimeByFrame()
+            val focused = pixels("t")
+            assertNotEquals(rest, focused, "focused under keyboard input")
+            // The brackets are the focus colour, at the target's corner.
+            val px = onNodeWithTag("t").captureToImage().toPixelMap()
+            val tab = onNodeWithText("Заметки").fetchSemanticsNode().boundsInRoot
+            val corner = px[tab.left.toInt() + 4, 1]
+            val f = MutantPalettes.Efir.focus
+            assertTrue(
+                abs(corner.red - f.red) + abs(corner.green - f.green) + abs(corner.blue - f.blue) < .05f,
+                "$corner",
+            )
+        }
+
+    @Test
+    fun `the bar stands under its insets, 58 dp of row and divider, the title cut and the status kept`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            val long = "Эфир с начала первой стороны без подписи и до конца второй"
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = 2f)) {
+                    MutantTheme {
+                        Column(Modifier.testTag("all")) {
+                            MutantTopAppBar("Эфир", Modifier.testTag("bar"), windowInsets = WindowInsets(top = 24))
+                            MutantTopAppBar(
+                                long,
+                                Modifier.width(240.dp).testTag("long"),
+                                status = "CH 03",
+                                windowInsets = WindowInsets(0),
+                            )
+                            MutantTopAppBar(
+                                long,
+                                Modifier.width(0.dp),
+                                status = "CH 03",
+                                windowInsets = WindowInsets(0),
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            onNodeWithTag("bar").assertHeightIsEqualTo(82.dp)
+            onNodeWithTag("long").assertIsDisplayed().assertHeightIsEqualTo(58.dp)
+            pixels("all")
+            val bar = onNodeWithTag("long").fetchSemanticsNode().boundsInRoot
+            val status = onAllNodesWithText("CH 03", useUnmergedTree = true).fetchSemanticsNodes().first().boundsInRoot
+            assertTrue(status.right <= bar.right + .5f && status.width > 0, "the status kept whole: $status in $bar")
+            val title = onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes().first().boundsInRoot
+            assertTrue(title.right <= status.left, "the title cut before the status: $title")
+            val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            onAllNodesWithText(long, useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .first()
+                .config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult]
+                .action
+                ?.invoke(layouts)
+            assertEquals(
+                androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                layouts.single().layoutInput.overflow,
+                "with an ellipsis",
+            )
+            // The divider: the two rows under the 56 dp row carry the tracking strokes.
+            val px = onNodeWithTag("bar").captureToImage().toPixelMap()
+            val ground = px[px.width - 1, 0]
+            assertTrue((0 until px.width).any { px[it, 80] != ground }, "the divider drawn under the row")
+        }
+
+    @Test
+    fun `tabs given no width, long labels and a doubled font neither throw nor leave their targets`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            val long = "Дорожки первой стороны без подписи"
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = 2f)) {
+                    MutantTheme {
+                        Column(Modifier.testTag("all")) {
+                            MutantTabs(listOf(MutantTab(long), MutantTab(long)), 0, {}, Modifier.width(0.dp))
+                            MutantTabs(
+                                listOf(MutantTab(long), MutantTab(long)),
+                                1,
+                                {},
+                                Modifier.width(200.dp).testTag("t"),
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            pixels("all")
+            onNodeWithTag("t").assertHeightIsEqualTo(48.dp)
+            val row = onNodeWithTag("t").fetchSemanticsNode().boundsInRoot
+            for (node in onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes()) {
+                val b = node.boundsInRoot
+                if (b.top < row.top) continue
+                assertTrue(b.right <= row.right + .5f && b.bottom <= row.bottom, "label $b inside $row")
+                val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                node.config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+                assertEquals(
+                    androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    layouts.single().layoutInput.overflow,
+                )
+            }
+        }
+}
