@@ -317,21 +317,9 @@ private class Art(
         body(MutantBody.Blob, "remote", 0, 0, 92, 176, c.surfaceVariant, shell) {
             body(MutantBody.Dot, "rm-p", 36, 14, 20, 20, c.danger)
             for (i in 0 until 9) {
-                body(
-                    MutantBody.Dot,
-                    "rm-${i + 1}",
-                    14 + 24 * (i % 3),
-                    48 + 26 * (i / 3),
-                    16,
-                    16,
-                    if (i ==
-                        4
-                    ) {
-                        c.amber
-                    } else {
-                        c.phosphor
-                    },
-                )
+                // The keypad's middle key is amber, the other eight phosphor.
+                val key = if (i == MIDDLE_KEY) c.amber else c.phosphor
+                body(MutantBody.Dot, "rm-${i + 1}", 14 + 24 * (i % 3), 48 + 26 * (i / 3), 16, 16, key)
             }
             body(MutantBody.Pill, "rm-ok", 18, 132, 56, 20)
         }
@@ -396,6 +384,9 @@ private val ANTENNA = listOf(Arm("ant-a", 22, 18, 156, 16), Arm("ant-b", 44, 52,
 
 /** The reel's three holes, their top-left corners in the 26 dp reel. */
 private val REEL_HOLES = listOf(10f to 2f, 3f to 15f, 17f to 15f)
+
+/** The remote's amber key, of nine. */
+private const val MIDDLE_KEY = 4
 
 /** The page's `rotate((fi * 30) % 360)` for a reel. */
 private const val REEL_STEP = 30L
