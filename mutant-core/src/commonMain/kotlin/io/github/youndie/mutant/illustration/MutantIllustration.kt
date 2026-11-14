@@ -16,7 +16,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -31,6 +30,9 @@ import io.github.youndie.mutant.theme.LocalMutantStage
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantProfile
+import io.github.youndie.mutant.type.LocalMutantTextRaster
+import io.github.youndie.mutant.type.MutantFaceMetrics
+import io.github.youndie.mutant.type.cssLine
 import kotlin.math.ceil
 
 /** The six empty-state illustrations of the Icons page, each built from the kit's own bodies. */
@@ -163,13 +165,11 @@ private class Art(
                 TextStyle(
                     fontFamily = LocalMutantFonts.current?.display,
                     fontSize = size.sp,
-                    lineHeight = (size * lineHeight).sp,
-                    // CSS centres the glyphs' box in its line box, half the leading above and below, untrimmed.
-                    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
                     letterSpacing = (spacing / size).em,
                     color = if (parts.text) color else Color.Transparent,
                     textAlign = TextAlign.Center,
-                ),
+                    platformStyle = LocalMutantTextRaster.current,
+                ).cssLine(MutantFaceMetrics.Handjet, lineHeight.toFloat()),
         )
     }
 
