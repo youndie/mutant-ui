@@ -83,10 +83,16 @@ class CheckboxBehaviourTest {
             onNodeWithTag("sp").assertIsSelected()
         }
 
-    private fun melt(reduceMotion: Boolean): Triple<List<Color>, List<Color>, List<Color>> {
-        lateinit var start: List<Color>
-        lateinit var mid: List<Color>
-        lateinit var end: List<Color>
+    /** The tick's dark pixels inside the box (rows 17–31 of the 48 dp row, columns 4–18): the pour is never this dark. */
+    private fun ComposeUiTest.tick(): Int =
+        onNodeWithTag("c").captureToImage().toPixelMap().let { px ->
+            (4 until 18).sumOf { x -> (17 until 31).count { y -> px[x, y].let { it.red + it.green + it.blue < .25f } } }
+        }
+
+    private fun melt(reduceMotion: Boolean): Triple<Int, Int, Int> {
+        var start = 0
+        var mid = 0
+        var end = 0
         runComposeUiTest {
             mainClock.autoAdvance = false
             var on by mutableStateOf(false)
@@ -96,13 +102,14 @@ class CheckboxBehaviourTest {
                 }
             }
             mainClock.advanceTimeByFrame()
-            start = pixels("c")
+            start = tick()
             on = true
+            // The melt reveals from the top in 83 ms steps; the tick's top is a third of the way down the box.
             mainClock.advanceTimeByFrame()
-            mainClock.advanceTimeBy(160)
-            mid = pixels("c")
+            mainClock.advanceTimeBy(240)
+            mid = tick()
             mainClock.advanceTimeBy(400)
-            end = pixels("c")
+            end = tick()
         }
         return Triple(start, mid, end)
     }
@@ -110,11 +117,10 @@ class CheckboxBehaviourTest {
     @Test
     fun `the mark melts in over 330 ms, and lands at once when paused`() {
         val (start, mid, end) = melt(reduceMotion = false)
-        assertNotEquals(start, mid, "under way at 176 ms")
-        assertNotEquals(mid, end, "not yet whole at 176 ms")
-        val (pStart, pMid, pEnd) = melt(reduceMotion = true)
-        assertNotEquals(pStart, pMid, "paused: there at once")
-        assertEquals(pMid, pEnd, "paused: and still")
+        assertEquals(0, start, "no tick unchecked")
+        assertTrue(mid in 1 until end, "partly revealed at 256 ms: $mid of $end")
+        val (_, pMid, pEnd) = melt(reduceMotion = true)
+        assertTrue(pMid > 0 && pMid == pEnd, "paused: whole at once: $pMid, $pEnd")
     }
 
     @Test

@@ -60,11 +60,10 @@ class CheckboxParityTest {
                 val stem = "Mutant${cell}_$theme"
                 val c = split(cell, label, key, theme)
                 lines += "$stem: $c"
-                if (c.body > (RESIDUAL[stem] ?: ComponentParity.FLOOR_PIXELS) || !c.contentHolds ||
-                    !c.labelHolds
-                ) {
-                    off += stem
-                }
+                // Inside the control's clean zone are only drawn marks — tick, blocks, dots — held like a body.
+                val marksOver = c.content > ComponentParity.FLOOR_PIXELS
+                val bodyOver = c.body > (RESIDUAL[stem] ?: ComponentParity.FLOOR_PIXELS)
+                if (bodyOver || marksOver || !c.contentHolds || !c.labelHolds) off += stem
             }
         }
         println(lines.joinToString("\n"))
