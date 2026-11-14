@@ -1,7 +1,7 @@
 ---
 id: B-54
 title: "Melt: a mark can stall at 76 % when a frame falls in its last 3 ms"
-status: wip
+status: done
 priority: P1
 size: S
 stage: stage-2-components
@@ -15,3 +15,10 @@ Found in B-26, where the snackbar had the same defect and its test caught it. `M
 
 - AC: the melt asks for frames while its stepped progress is under 1; a test on a hand-driven clock that lands a frame at 331 ms of a melt and then advances fails without the fix and sees the mark land.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyTransitions.kt`
+
+## Result (2026-11-14)
+
+`mutantMelt` asks for frames while its stepped progress is under 1. `SurfaceTransitionsTest` sets the clock so a
+frame lands 331 ms into a melt, then advances 30 frames: before the fix the indicator stood at 340 of its 400 white
+pixels, now it lands. A mutant restoring the time-based guard fails it. Every reader of the clock's frame in the kit
+now asks by progress (the melt, the surface's pour and slide, the tabs' bar, the dialog, the snackbar).
