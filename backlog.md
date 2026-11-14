@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10, B-73 |
 | [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[ ]` | The sample's frame cost in the browser (wasm) | P1 | M | B-72, B-75, B-76 |
-| [B-75](docs/backlog/B-75-tick-frames-off-the-main-thread.md) `[ ]` | The generator's tick frame runs on the main thread, 60–80 ms per tick on the Components page | P1 | M | B-72 |
+| [B-75](docs/backlog/B-75-tick-frames-off-the-main-thread.md) `[~]` | The generator's tick frame runs on the main thread, 60–80 ms per tick on the Components page | P1 | M | B-72 |
 | [B-76](docs/backlog/B-76-render-thread-replay-on-the-demo-page.md) `[ ]` | Skia's replay on the render thread bounds the Demo page | P1 | M | B-72 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |

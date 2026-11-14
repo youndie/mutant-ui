@@ -1,7 +1,7 @@
 ---
 id: B-75
 title: "The generator's tick frame runs on the main thread, 60–80 ms per tick on the Components page"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
