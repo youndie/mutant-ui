@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (28)
+## Open (27)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-22](docs/backlog/B-22-skeleton-cocoon.md) `[~]` | Skeleton («Кокон»): mosaic of 16 and 8 dp in the shape of the coming component | P1 | M | B-10, B-07 |
 | [B-23](docs/backlog/B-23-top-app-bar-and-tabs.md) `[ ]` | TopAppBar and Tabs: the 56 dp bar with a tracking divider, the 4 dp indicator with an echo | P1 | M | B-10, B-07 |
 | [B-24](docs/backlog/B-24-navigation-bar.md) `[ ]` | NavigationBar: bar body, the active item a 56 × 30 pill | P1 | M | B-10, B-11 |
 | [B-25](docs/backlog/B-25-list-item-divider-badge.md) `[ ]` | ListItem, Divider and Badge | P1 | M | B-10 |
@@ -91,7 +90,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (24)
+## Closed (25)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -123,6 +122,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-19](docs/backlog/B-19-switch.md) `[x]` - Switch: track and thumb, pour and slide
 - [B-20](docs/backlog/B-20-text-field.md) `[x]` - TextField: 52 dp field, focus brackets, error corruption
 - [B-21](docs/backlog/B-21-card.md) `[x]` - Card: dead pixels in the corner
+- [B-22](docs/backlog/B-22-skeleton-cocoon.md) `[x]` - Skeleton («Кокон»): mosaic of 16 and 8 dp in the shape of the coming component
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
