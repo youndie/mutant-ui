@@ -29,6 +29,10 @@ class MutantClockTest {
                 MutantClock(fps = 24.0, startMs = t, frozen = true).restTimeMs(),
                 "24 fps tick at $t",
             )
+            // The same ticks reached by moving a running clock, the path every frame takes.
+            val moved = MutantClock().apply { setTime(t) }
+            assertEquals(rows[i + 3], moved.restTimeMs(), "resting tick of a moved clock at $t")
+            assertEquals(rows[i + 4], moved.hotTimeMs(), "hot tick of a moved clock at $t")
         }
     }
 
