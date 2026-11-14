@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-11](docs/backlog/B-11-surface-states.md) `[ ]` | Body states: boil-over, loading, success, disabled, error, focus | P1 | M | B-10, B-04 |
+| [B-11](docs/backlog/B-11-surface-states.md) `[~]` | Body states: boil-over, loading, success, disabled, error, focus | P1 | M | B-10, B-04 |
 | [B-12](docs/backlog/B-12-transitions.md) `[ ]` | Transitions: pour, melt, slide, and the venom with its soft joins | P1 | M | B-04, B-11 |
 | [B-13](docs/backlog/B-13-tape.md) `[ ]` | The Tape («Лента»): one overlay over the screen | P1 | M | B-07, B-09 |
 | [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[ ]` | Icons, the six illustrations and the four patterns | P1 | S | B-10 |
