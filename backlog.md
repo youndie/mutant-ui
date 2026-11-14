@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-27](docs/backlog/B-27-progress.md) `[ ]` | LinearProgress and CircularProgress | P1 | M | B-07, B-08 |
+| [B-27](docs/backlog/B-27-progress.md) `[~]` | LinearProgress and CircularProgress | P1 | M | B-07, B-08 |
 | [B-28](docs/backlog/B-28-dialog.md) `[ ]` | Dialog: a clean window over a paused background | P1 | M | B-10, B-11 |
 | [B-29](docs/backlog/B-29-empty-state.md) `[ ]` | EmptyState: the six illustrations with a title | P1 | M | B-14 |
 | [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[ ]` | The three demo screens and the sample kit on desktop and the web | P1 | M | B-15, B-16, B-17, B-18, B-19, B-20, B-21, B-22, B-23, B-24, B-25, B-26, B-27, B-28, B-29 |
