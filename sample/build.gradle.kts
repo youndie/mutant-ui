@@ -57,6 +57,9 @@ tasks.register<JavaExec>("frameBench") {
     classpath = test.output.allOutputs + test.runtimeDependencyFiles!!
     dependsOn(test.compileAllTaskName)
     notCompatibleWithConfigurationCache("a measurement, run by hand")
+    // `-Pjfr=<file>`: a sampling profile of the run. The recording holds the process's environment, so it stays out of
+    // the repository; only the samples' aggregate is kept.
+    providers.gradleProperty("jfr").orNull?.let { jvmArgs("-XX:StartFlightRecording=filename=$it,settings=profile") }
 }
 
 // B-71: a test task is never taken from the build cache. Under `allTests` and `check`, Kotlin lets a test task

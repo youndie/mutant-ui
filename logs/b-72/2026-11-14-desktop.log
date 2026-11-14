@@ -1,0 +1,77 @@
+
+# B-72 frame bench
+# commit 7dc98a6
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 6 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 ComponentsRest: 273 frames
+round 1 ComponentsWheel: 269 frames, scrolled 9912 px
+round 1 DemoPage: 325 frames
+round 1 DemoLibrary: 530 frames
+round 1 DemoRecording: 590 frames
+round 1 DemoSettings: 594 frames
+round 1 ComponentsClean: 359 frames
+round 1 ComponentsReduce: 0 frames
+round 1 Control: 217 frames
+round 2 ComponentsWheel: 330 frames, scrolled 10744 px
+round 2 DemoPage: 351 frames
+round 2 DemoLibrary: 541 frames
+round 2 DemoRecording: 590 frames
+round 2 DemoSettings: 594 frames
+round 2 ComponentsClean: 352 frames
+round 2 ComponentsReduce: 0 frames
+round 2 Control: 212 frames
+round 2 ComponentsRest: 337 frames
+round 3 DemoPage: 361 frames
+round 3 DemoLibrary: 522 frames
+round 3 DemoRecording: 590 frames
+round 3 DemoSettings: 599 frames
+round 3 ComponentsClean: 346 frames
+round 3 ComponentsReduce: 0 frames
+round 3 Control: 213 frames
+round 3 ComponentsRest: 303 frames
+round 3 ComponentsWheel: 281 frames, scrolled 9408 px
+round 4 DemoLibrary: 536 frames
+round 4 DemoRecording: 592 frames
+round 4 DemoSettings: 594 frames
+round 4 ComponentsClean: 335 frames
+round 4 ComponentsReduce: 0 frames
+round 4 Control: 181 frames
+round 4 ComponentsRest: 328 frames
+round 4 ComponentsWheel: 286 frames, scrolled 9676 px
+round 4 DemoPage: 332 frames
+round 5 DemoRecording: 590 frames
+round 5 DemoSettings: 594 frames
+round 5 ComponentsClean: 319 frames
+round 5 ComponentsReduce: 0 frames
+round 5 Control: 196 frames
+round 5 ComponentsRest: 319 frames
+round 5 ComponentsWheel: 287 frames, scrolled 9370 px
+round 5 DemoPage: 347 frames
+round 5 DemoLibrary: 537 frames
+round 6 DemoSettings: 599 frames
+round 6 ComponentsClean: 317 frames
+round 6 ComponentsReduce: 1 frames
+round 6 Control: 165 frames
+round 6 ComponentsRest: 289 frames
+round 6 ComponentsWheel: 276 frames, scrolled 9996 px
+round 6 DemoPage: 334 frames
+round 6 DemoLibrary: 520 frames
+round 6 DemoRecording: 587 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95
+ComponentsRest           31.5       16.63  85.02   47.87 26.86  |   0.08  66.83  86.98 153.11 |   1.72  68.54  RED
+ComponentsWheel          29.2       16.99  89.00   52.99 28.93  |   0.55  67.43  95.03 144.75 |   2.19  69.02  RED
+DemoPage                 34.5       27.41  44.62  100.00 12.44  |   0.09   1.90   2.25   8.43 |   1.15   2.98  RED
+DemoLibrary              53.1       16.63  35.42   44.02  8.75  |   0.08  14.03  18.03  42.86 |   0.44  14.35  RED
+DemoRecording            59.0       16.67  22.65   43.10  1.12  |   0.08  10.21  13.43  54.79 |   0.40  10.51  GREY
+DemoSettings             59.6       16.67  19.96   39.97  0.61  |   0.08   1.70   2.14  29.98 |   0.40   1.99  GREY
+ComponentsClean          33.4       16.65  84.21   47.00 24.82  |   0.09  69.18  95.91 185.85 |   1.51  70.48  RED
+ComponentsReduce          0.0         NaN    NaN     NaN   NaN  |  57.42  57.42  57.42  57.42 |  62.62  62.62  RED
+Control                  19.3       27.51 107.21  100.00 44.70  |  10.13  84.65 111.28 205.04 |  11.96  86.74  (control)
+
+control: work p50 over ComponentsRest per counted round 10.04, 10.04, 10.05, 10.04, 10.23 ms (busy-wait 10 ms)
+wheel: scrolled per counted round [10744, 9408, 9676, 9370, 9996] px
+exit 0

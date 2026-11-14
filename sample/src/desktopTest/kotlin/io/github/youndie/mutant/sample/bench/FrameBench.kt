@@ -45,7 +45,7 @@ import kotlin.system.exitProcess
  * of every frame, and the recorder must read it. A scene that asks for no frame (reduce motion stops the clock) is
  * reported as idle.
  *
- * `./gradlew :sample:frameBench --args="<commit> <out-dir> [rounds] [scene-ms]"`: the summary on stdout, every frame into
+ * `./gradlew :sample:frameBench --args="<commit> <out-dir> [rounds] [scene-ms] [Scene,Scene]"`: the summary on stdout, every frame into
  * `<out-dir>/frames.csv`. Not part of `check`; it opens a window on top for about ten minutes.
  */
 private var rounds = 6
@@ -196,6 +196,7 @@ fun main(args: Array<String>) {
     val out = File(args.getOrNull(1) ?: "build/b-72").apply { mkdirs() }
     args.getOrNull(2)?.let { rounds = it.toInt() }
     args.getOrNull(3)?.let { sceneMs = it.toLong() }
+    val only = args.getOrNull(4)?.split(',')?.map { Scene.valueOf(it) }
     Toolkit.getDefaultToolkit().systemEventQueue.push(TimingQueue())
 
     val sceneState = AtomicReference<(Scene) -> Unit>()
@@ -279,7 +280,7 @@ fun main(args: Array<String>) {
         val scrolled: Int,
     )
     val rows = ArrayList<Row>()
-    val scenes = Scene.entries
+    val scenes = only ?: Scene.entries
     for (round in 1..rounds) {
         for (i in scenes.indices) {
             val scene = scenes[(i + round - 1) % scenes.size]
@@ -392,30 +393,17 @@ fun main(args: Array<String>) {
     // The control: its work over the resting page's, per counted round, must read the busy-wait.
     val rest = counted.filter { it.scene == Scene.ComponentsRest }
     val control = counted.filter { it.scene == Scene.Control }
+
+    fun p50(r: Row) = pct(r.frames.map { ms(it.workNs) }.sorted(), .5)
     val deltas =
-        (2..rounds).map { r ->
-            val a =
-                rest
-                    .first { it.round == r }
-                    .frames
-                    .map { ms(it.workNs) }
-                    .sorted()
-            val b =
-                control
-                    .first { it.round == r }
-                    .frames
-                    .map { ms(it.workNs) }
-                    .sorted()
-            pct(b, .5) - pct(a, .5)
+        (2..rounds).mapNotNull { r ->
+            val a = rest.firstOrNull { it.round == r } ?: return@mapNotNull null
+            val b = control.firstOrNull { it.round == r } ?: return@mapNotNull null
+            p50(b) - p50(a)
         }
     println()
-    println(
-        "control: work p50 over ComponentsRest per counted round ${deltas.joinToString {
-            f1(
-                it,
-            )
-        }} ms (busy-wait $CONTROL_MS ms)",
-    )
+    println("control: work p50 over ComponentsRest per counted round ${deltas.joinToString { f1(it) }} ms")
+    println("         (busy-wait $CONTROL_MS ms)")
     val wheel = counted.filter { it.scene == Scene.ComponentsWheel }.map { it.scrolled }
     println("wheel: scrolled per counted round $wheel px")
     SwingUtilities.invokeAndWait { window.dispose() }
