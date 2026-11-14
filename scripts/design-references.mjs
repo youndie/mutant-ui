@@ -177,6 +177,9 @@ export const REFERENCES = [
   // both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [['Time', 0], ['Badge', 1]].flatMap(([s, index]) => [false, true].map((bare) =>
     ({ stem: `MutantListItem_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'list', type: 'icon', index, theme, wide: 288, below: 14, hideText: bare })))),
+  // B-26: the list stage's snackbar, whole and bare, both themes; cut 8 px under it, above the progress row.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
+    ({ stem: `MutantSnackbar_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'list', type: 'bar', index: 0, theme, below: 8, hideText: bare }))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.

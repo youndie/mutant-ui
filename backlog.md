@@ -62,7 +62,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-26](docs/backlog/B-26-snackbar.md) `[ ]` | Snackbar: a blue bar with a shadow | P1 | M | B-10, B-11 |
 | [B-27](docs/backlog/B-27-progress.md) `[ ]` | LinearProgress and CircularProgress | P1 | M | B-07, B-08 |
 | [B-28](docs/backlog/B-28-dialog.md) `[ ]` | Dialog: a clean window over a paused background | P1 | M | B-10, B-11 |
 | [B-29](docs/backlog/B-29-empty-state.md) `[ ]` | EmptyState: the six illustrations with a title | P1 | M | B-14 |
@@ -73,6 +72,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
 | [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[ ]` | Build a body's instance and first frame off the frame | P1 | M | B-10 |
 | [B-53](docs/backlog/B-53-text-button-divider-at-density.md) `[ ]` | Text button: its tracking divider is drawn unscaled at a density above 1 | P1 | S | B-15 |
+| [B-54](docs/backlog/B-54-melt-stalls-short-of-its-end.md) `[ ]` | Melt: a mark can stall at 76 % when a frame falls in its last 3 ms | P1 | S | B-18 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
@@ -88,7 +88,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (28)
+## Closed (29)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -124,6 +124,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-23](docs/backlog/B-23-top-app-bar-and-tabs.md) `[x]` - TopAppBar and Tabs: the 56 dp bar with a tracking divider, the 4 dp indicator with an echo
 - [B-24](docs/backlog/B-24-navigation-bar.md) `[x]` - NavigationBar: bar body, the active item a 56 × 30 pill
 - [B-25](docs/backlog/B-25-list-item-divider-badge.md) `[x]` - ListItem, Divider and Badge
+- [B-26](docs/backlog/B-26-snackbar.md) `[x]` - Snackbar: a blue bar with a shadow
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
