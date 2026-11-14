@@ -171,7 +171,7 @@ class LongContentSweepTest {
                 boundsOf("Стереть", exact = true).width >= 48f,
                 "the primary action: ${boundsOf("Стереть", exact = true)}",
             )
-            assertEquals(0f, scrollRange(), "a text that fits does not scroll, and is not clipped")
+            assertEquals(0f, scrollRange(), "a text that fits has nothing to scroll")
         }
 
     @Ignore("F08: tabs past the row's width get zero width, yet stay focusable and selectable; no scroll, no bar")

@@ -8,7 +8,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -64,9 +63,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -289,36 +286,19 @@ private fun DialogScene(
                             ).cssLine(MutantFaceMetrics.Handjet),
                     )
                     if (text != null) {
-                        // Measured after the title and the actions, which keep their size: a text taller than the
-                        // room left scrolls inside the window, and is clipped only then (B-59). A clip moves glyph
-                        // edges, so a text that fits is drawn exactly as before.
-                        val textStyle =
+                        // Measured after the title and the actions, which keep their size: a text taller than the room
+                        // left scrolls inside the window (B-59). A text that fits draws exactly as without the scroll.
+                        CssParagraph(
+                            text,
                             TextStyle(
                                 fontFamily = fonts?.text,
                                 fontSize = TEXT_SIZE.sp,
                                 color = if (hidden) Color.Transparent else colors.textSecondary,
                                 platformStyle = raster,
-                            ).cssLine(MutantFaceMetrics.Rubik, TEXT_LINE)
-                        val measurer = rememberTextMeasurer()
-                        BoxWithConstraints(Modifier.weight(1f, fill = false)) {
-                            val lines =
-                                remember(text, textStyle, constraints.maxWidth) {
-                                    measurer
-                                        .measure(
-                                            text,
-                                            textStyle,
-                                            constraints = Constraints(maxWidth = constraints.maxWidth),
-                                        ).lineCount
-                                }
-                            val scrolls =
-                                constraints.hasBoundedHeight && lines * TEXT_SIZE * TEXT_LINE > maxHeight.value
-                            CssParagraph(
-                                text,
-                                textStyle,
-                                TEXT_SIZE * TEXT_LINE,
-                                if (scrolls) Modifier.verticalScroll(rememberScrollState()) else Modifier,
-                            )
-                        }
+                            ).cssLine(MutantFaceMetrics.Rubik, TEXT_LINE),
+                            TEXT_SIZE * TEXT_LINE,
+                            Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                        )
                     }
                     androidx.compose.runtime.CompositionLocalProvider(
                         LocalDialogHidden provides hidden,
