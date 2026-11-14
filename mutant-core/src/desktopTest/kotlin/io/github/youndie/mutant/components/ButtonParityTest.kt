@@ -105,36 +105,53 @@ class ButtonParityTest {
                     val m = Modifier.offset(x.dp, y.dp).width(w.dp)
                     val outlined = name.startsWith("Outlined")
                     val enabled = !name.endsWith("Disabled")
-                    ButtonBody(
-                        text =
-                            when (name) {
-                                "Loading" -> "Перемотка…"
-                                "Success" -> "Готово"
-                                "OutlinedRest", "OutlinedDisabled" -> "В очередь"
-                                else -> "Воспроизвести"
-                            },
-                        onClick = {},
-                        modifier = m,
-                        enabled = enabled,
-                        state =
-                            when (name) {
-                                "Loading" -> MutantButtonState.Loading
-                                "Success" -> MutantButtonState.Success
-                                else -> MutantButtonState.Idle
-                            },
-                        icon = if (name == "Success") io.github.youndie.mutant.icons.MutantIcons.Done else null,
-                        key = if (outlined) "button-o" else "button",
-                        interactionSource = null,
-                        label =
-                            when {
-                                hideLabel -> androidx.compose.ui.graphics.Color.Transparent
-                                !outlined -> colors.onPrimary
-                                enabled -> colors.textAccent
-                                else -> colors.textDisabled
-                            },
-                        outlined = outlined,
-                        heat = if (name == "Pressed") 1.0 else null,
-                    )
+                    val text =
+                        when (name) {
+                            "Loading" -> "Перемотка…"
+                            "Success" -> "Готово"
+                            "OutlinedRest", "OutlinedDisabled" -> "В очередь"
+                            else -> "Воспроизвести"
+                        }
+                    val state =
+                        when (name) {
+                            "Loading" -> MutantButtonState.Loading
+                            "Success" -> MutantButtonState.Success
+                            else -> MutantButtonState.Idle
+                        }
+                    val key = if (outlined) "button-o" else "button"
+                    when {
+                        // Through the public buttons, so their own colours and icons are what is held.
+                        !hideLabel && name != "Pressed" && !outlined -> {
+                            MutantButton(text, {}, m, enabled = enabled, state = state, key = key)
+                        }
+
+                        !hideLabel && name != "Pressed" -> {
+                            MutantOutlinedButton(text, {}, m, enabled = enabled, key = key)
+                        }
+
+                        // A held boil (the page's `data-heat`) and the bare twins need the body itself.
+                        else -> {
+                            ButtonBody(
+                                text = text,
+                                onClick = {},
+                                modifier = m,
+                                enabled = enabled,
+                                state = state,
+                                icon = if (name == "Success") io.github.youndie.mutant.icons.MutantIcons.Done else null,
+                                key = key,
+                                interactionSource = null,
+                                label =
+                                    when {
+                                        hideLabel -> androidx.compose.ui.graphics.Color.Transparent
+                                        !outlined -> colors.onPrimary
+                                        enabled -> colors.textAccent
+                                        else -> colors.textDisabled
+                                    },
+                                outlined = outlined,
+                                heat = if (name == "Pressed") 1.0 else null,
+                            )
+                        }
+                    }
                 }
             }
         }
