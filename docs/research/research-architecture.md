@@ -318,6 +318,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 | A body's `overhang` bounds its hanging drips, not the drops that tear off them and fall: under a list tile with `over` 6 drops reach 9–11 dp over a 30 s run. The list tile draws the same at 6 and at 8 (frozen and over 30 s); 10 moves its frozen frame (B-25) | `ListItemParityTest`, 2026-11-14 |
 | `captureToImage` keeps what a node draws past its bounds (a layer is not clipped to its node): a badge's ring, drawn 1.5 dp outside its plate, is in the plate's capture, and a colour read over the whole capture reads the ring (B-25) | `ListItemBehaviourTest`, 2026-11-14 |
 
+| A play stepped at 83.33 ms lands a step after its duration when the duration is not a multiple of the step (200 ms at 250, 330 at 333.3): a composition that asks for frames while the time is under the duration, not while the progress is under 1, stops short and stands there — the snackbar at 83 % for ever (found by its test), the melt at 76 % when a frame falls in its last 3 ms ([B-54](../backlog/B-54-melt-stalls-short-of-its-end.md)) (B-26) | `SnackbarBehaviourTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.
