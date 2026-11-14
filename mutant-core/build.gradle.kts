@@ -110,3 +110,19 @@ tasks
             false,
         )
     }
+
+// B-06: the field's cost on the desktop JVM, run by hand into logs/b-06/; measures nothing in `check`.
+// `./gradlew :mutant-core:fieldBench --args="$(git rev-parse --short HEAD)" > logs/b-06/<date>-desktop.log`
+tasks.register<JavaExec>("fieldBench") {
+    group = "verification"
+    description = "Measures the generator's instance and frame cost; not part of check."
+    mainClass = "io.github.youndie.mutant.bench.FieldBenchKt"
+    val test =
+        kotlin.targets
+            .getByName("desktop")
+            .compilations
+            .getByName("test")
+    classpath = test.output.allOutputs + test.runtimeDependencyFiles!!
+    dependsOn(test.compileAllTaskName)
+    notCompatibleWithConfigurationCache("a measurement, run by hand")
+}

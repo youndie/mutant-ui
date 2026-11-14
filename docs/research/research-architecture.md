@@ -176,6 +176,24 @@ beyond the floor belongs to its other layers and its text. A wrong instance pass
 by a wide margin only because it is so far off; a 20 % thicker outline (2.6 %) would pass it, so body
 parity is read against 0.02 %, not 5 %.
 
+### 1.9 The cost of the field on the desktop JVM
+
+Settled by [B-06](../backlog/B-06-frame-cost.md), pre-registered in the item before its first number;
+raw runs in `logs/b-06/`.
+
+| Fact | Where verified |
+|---|---|
+| On this M1 (JDK 25), generating an instance costs at most 107.7 µs over all 27 golden cases: **green** against 0.25 ms | `logs/b-06/2026-11-14-desktop-2.log`, `scripts/b06_summary.py` |
+| A warm frame of a 328 × 80 card costs 532.5 µs (ruler 10.3 µs): **grey** between 0.4 and 1.6 ms; the blob 858.9 µs, a 22 dp dot 46.8 µs | the same |
+| The first frame of an instance costs about ten times a warm one (card 5.8 ms, blob 10.2 ms): it builds the static layers | the same |
+| A first run was void: its control read 136–207 µs for 200, because two arms timed in separate blocks saw the machine drift between them; arms are now interleaved per call and the control reads 197.7–199.7 µs | `logs/b-06/2026-11-14-desktop.log`, amendment 1 in the item |
+
+**Consequence 8.** The CPU field survives the screen: ten cards on one tick fit a desktop frame
+three times over, so the components are built on it. Whether they fit a phone is grey and is the
+first thing measured after the first body ([B-49](../backlog/B-49-frame-cost-on-a-pixel-6a.md)). The
+first frame is the expensive one, so [B-10](../backlog/B-10-mutant-surface.md) must not build ten
+instances' static layers inside one frame.
+
 ---
 
 ## 2. Decisions
@@ -289,7 +307,7 @@ The handoff names it the main risk: the field is recomputed on the CPU every tic
 instance. The cost of `genItem` and of one frame is measured on the desktop JVM as soon as the port
 exists, and on a Pixel 6a as soon as one body is drawn, against the brief's target (60 fps, ten
 cards with the Tape, a 100-item list, an instance in ≤ 1 ms) and its declared retreat order
-([B-06](../backlog/B-06-frame-cost.md)). Rejected: measuring last, as plakat-ui did — there the
+([B-06](../backlog/B-06-frame-cost.md); the phone half is [B-49](../backlog/B-49-frame-cost-on-a-pixel-6a.md)). Rejected: measuring last, as plakat-ui did — there the
 architecture did not depend on the answer; here it does.
 
 ### D14. MIT licence
@@ -318,7 +336,7 @@ wait for review of what is designed here.
 |---|---|---|
 | H1 | **The port does not match on every target.** `sin` in the lattice hash, `exp`/`pow` in the drips, `Float32` storage (§1.4). | *Closed by B-03:* every golden path is byte-identical on the JVM, the iOS simulator and wasm (§1.4); the common test still allows the handoff's 0.1 dp, and a JVM-only test holds exactness. |
 | H2 | **The fonts lack a script or a weight** (§1.6). | *Closed by B-02:* both carry Cyrillic and Latin; four static instances are bundled. |
-| H3 | **The field is too slow on a phone** (D13). | Measured with a control that proves the harness can see a known cost; then the brief's retreat order and the handoff's two outs, a coarser grid or a shader field ([B-06](../backlog/B-06-frame-cost.md)). |
+| H3 | **The field is too slow on a phone** (D13). | *Desktop half settled by B-06:* instance green, card frame grey (§1.9). The phone is [B-49](../backlog/B-49-frame-cost-on-a-pixel-6a.md); on red, the brief's retreat order and the handoff's two outs, a coarser grid or a shader field. |
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | The handoff allows the geometric fallback on older Android; whether a common-code blur plus colour-matrix layer reproduces `a' = 18·a − 8.2` is checked against the venom references ([B-12](../backlog/B-12-transitions.md)). |
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | *Closed by B-05:* `data-mu-t` on every stage, with keyframe loss off, renders byte-identically twice; the pause is not needed (§1.8). |
 | R1 | **Shape jumps when a slot is resized** (§1.7): a text field growing with its content rebuilds its drips. | Measured on the field and the card; if it is visible, the owner chooses between a size bucket and the jump ([B-10](../backlog/B-10-mutant-surface.md)). |
