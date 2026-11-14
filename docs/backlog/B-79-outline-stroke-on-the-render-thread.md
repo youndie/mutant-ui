@@ -1,7 +1,7 @@
 ---
 id: B-79
 title: "The outline's round-joined stroke is the dearest part of a body on the render thread"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
