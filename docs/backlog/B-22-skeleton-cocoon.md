@@ -1,7 +1,7 @@
 ---
 id: B-22
 title: "Skeleton («Кокон»): mosaic of 16 and 8 dp in the shape of the coming component"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components
