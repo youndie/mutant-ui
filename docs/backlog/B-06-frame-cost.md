@@ -1,14 +1,14 @@
 ---
 id: B-06
-title: "The cost of the field: genItem and one frame on the desktop JVM, then a body on a Pixel 6a"
-status: open
+title: "The cost of the field on the desktop JVM: an instance and a frame per profile"
+status: wip
 priority: P0
 size: M
 stage: stage-0-risks
 blocked_by: [B-03]
 ---
 
-# B-06 — The cost of the field: genItem and one frame on the desktop JVM, then a body on a Pixel 6a
+# B-06 — The cost of the field on the desktop JVM: an instance and a frame per profile
 
 The handoff names this the main risk: the signed-distance field is recomputed on the CPU each tick for every visible instance, and the speed on a device was never measured. The brief's target is 60 fps on a Pixel 6a with ten cards and the Tape, a 100-item list scrolling, and an instance generated in ≤ 1 ms (research D13, H3).
 
@@ -18,3 +18,36 @@ The handoff names this the main risk: the signed-distance field is recomputed on
 
 - AC: a verdict per target in the research with raw numbers and the control's reading; the instance budget (≤ 1 ms) and the frame budget each green, red or not measured.
 - Anchors: `reference/design-system/mutant-generator.js`, `reference/design-system/brief.md`, `reference/design-system/mutant-engine.js`
+
+## Pre-registration (2026-11-14, before the first number)
+
+The device half moves to [B-49](B-49-frame-cost-on-a-pixel-6a.md): on a phone there is nothing to draw
+until the first body exists (B-10), and no device is attached to this Mac today. This item measures the
+desktop JVM, which screens the architecture: a frame too slow here is red everywhere.
+
+- **Subject.** The port at this branch's base: `MutantGenerator.instance` (`genItem`) and `frame`
+  (primitives, field, two marches, the outline, the highlight and the flow lines), for every case of
+  `scripts/gen-goldens.mjs` (27 instances, 13 profiles), at rest (t = 5000) and hot (heat 1). A frame is
+  measured with the instance's field cache warm, as a running kit has it, and separately cold (first
+  frame of an instance).
+- **Unit.** µs per call, the median of a round of ≥ 200 calls; the round's spread beside it. Not
+  fps: a frame's share of the 16.7 ms budget is computed from it.
+- **Host.** This Mac (MacBookAir10,1, Apple M1, 8 cores, macOS 27.0.1), the Gradle toolchain's JDK 25,
+  one JVM, nothing else running that the run starts. `gen=local` does not apply: there is no generator.
+- **Protocol.** Warm-up of 3 s per case before counting; cases interleaved; 5 rounds, round 1
+  discarded; every run's output into `logs/b-06/` with a header (host, JDK, commit).
+- **Ruler.** The same measurement twice in one run (arms A and A'); a case's difference between them is
+  its noise, and a later difference smaller than twice it is *below resolution*.
+- **Positive control.** An arm that runs the card's warm frame plus a busy-wait of exactly 200 µs; it must
+  read the card's frame + 200 µs ± 20 %, or the run is void.
+- **Load delivered.** Every call's output is folded into a checksum printed with the round (the contour's
+  point count and the field's sum), so nothing is optimised away.
+- **Thresholds**, for the desktop, sized from the brief's phone targets with a factor of 4 between this
+  M1 and a Pixel 6a (an assumption B-49 checks):
+  - instance (`genItem`): **green** ≤ 0.25 ms for every case, **red** > 1 ms for any (the brief's phone
+    budget, already missed on the desktop);
+  - warm frame of a 328 × 80 card: **green** ≤ 0.4 ms (ten cards on one tick ≤ 4 ms here, ≤ 16 ms on the
+    phone), **red** > 1.6 ms (ten cards ≥ 16 ms here: the frame is missed before the phone);
+  - anything between is **grey**, decided by B-49.
+- **Kill.** Red on the card frame stops the components built on the CPU field: the retreat order of the
+  brief and the handoff's two outs (a coarser grid, a shader field) become the next items before B-10.

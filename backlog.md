@@ -58,11 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (41)
+## Open (42)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-06](docs/backlog/B-06-frame-cost.md) `[ ]` | The cost of the field: genItem and one frame on the desktop JVM, then a body on a Pixel 6a | P0 | M | B-03 |
+| [B-06](docs/backlog/B-06-frame-cost.md) `[~]` | The cost of the field on the desktop JVM: an instance and a frame per profile | P0 | M | B-03 |
 | [B-10](docs/backlog/B-10-mutant-surface.md) `[ ]` | MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds | P0 | L | B-03, B-05, B-07, B-08 |
 | [B-07](docs/backlog/B-07-kit-clock.md) `[ ]` | The kit clock: one per screen, in ms, ticks of 125 and 83 ms, pausable | P1 | S | B-01 |
 | [B-08](docs/backlog/B-08-token-generator.md) `[ ]` | Tokens generated from mutant-tokens.json, read a second time in a test | P1 | S | B-01 |
@@ -90,6 +90,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-38](docs/backlog/B-38-accessibility.md) `[ ]` | Accessibility: contrast after the Tape, flashes, greyscale, semantics | P1 | M | B-13, B-37 |
 | [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[ ]` | A QA pass over the finished MVP and a real window driven by AWT events | P1 | M | B-37 |
 | [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[ ]` | Public repository, publishing every main to Reposilite, the site on Pages | P1 | M | B-39, B-40 |
+| [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
