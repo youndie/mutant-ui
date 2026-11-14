@@ -1,6 +1,6 @@
 // The library: everything a consumer of mutant-ui depends on (research D1). One module; the generator
 // lives in `io.github.youndie.mutant.gen` and imports nothing from Compose, so a split stays a move.
-// No Material artefact, no sample and no design references here; publishing arrives with B-41.
+// No Material artefact, no sample and no design references here.
 plugins {
     alias(wip.plugins.kotlinMultiplatform)
     alias(wip.plugins.composeMultiplatform)
@@ -8,6 +8,8 @@ plugins {
     alias(wip.plugins.androidKotlinMultiplatformLibrary)
     id("io.github.youndie.sborka.kmp")
     id("io.github.youndie.sborka.lint")
+    // Every push to `main` publishes `<version>.<run>` to the Reposilite (B-41).
+    id("io.github.youndie.sborka.publish")
 }
 
 // Desktop, Android, iOS and wasm. Desktop is where the screenshot and parity gate runs, so a green

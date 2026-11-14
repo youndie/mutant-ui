@@ -24,12 +24,15 @@ component library. The design is a Claude Design project with an executable gene
 
 ## Workflow
 
-The repository is local, with no remote, until [B-41](docs/backlog/B-41-public-repository-and-publishing.md).
-The loop over the backlog works one item per branch and merges its own:
+The repository is public, [youndie/mutant-ui](https://github.com/youndie/mutant-ui), since
+[B-41](docs/backlog/B-41-public-repository-and-publishing.md); every push to `main` publishes a snapshot
+and deploys the site. The loop over the backlog works one item per branch and pull request and merges
+its own:
 
 1. `feat/b-NN-<slug>` (`fix/b-NN-<slug>` for a defect) from `main`, never a commit on `main`.
-2. Implement, with the item's status and documents in the same branch. Both gates green.
-3. `git merge --no-ff` into `main`, then delete the branch. `Refs: B-NN` in the commits.
+2. Implement, with the item's status and documents in the same branch. Both gates green on the Mac.
+3. Push the branch, open a pull request, and merge it once every check on its head commit has passed
+   (squash, the subject in Conventional Commits, `Refs: B-NN` in the body); delete the branch.
 
 Red is never merged, and a check is never loosened to get green. An item whose status is
 `question` stops the loop with the question instead.
