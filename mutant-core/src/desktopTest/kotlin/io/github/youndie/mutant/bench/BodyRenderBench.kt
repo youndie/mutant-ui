@@ -34,7 +34,6 @@ import io.github.youndie.mutant.components.MutantCardTitle
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.surface.BodyPart
-import io.github.youndie.mutant.surface.LocalMutantOutlineAsFill
 import io.github.youndie.mutant.surface.LocalMutantSkipBodyParts
 import io.github.youndie.mutant.theme.MutantTheme
 import java.lang.management.ManagementFactory
@@ -49,7 +48,7 @@ import kotlin.system.exitProcess
  * load of tessellated paths must add the same on a blank page and over the bodies. Scenes rotate each round; round 1
  * and each scene's first second are not counted.
  *
- * `./gradlew :mutant-core:bodyRenderBench --args="<commit> [rounds] [scene-ms] [Scene,Scene]"`, stdout into `logs/b-78/`.
+ * `./gradlew :mutant-core:bodyRenderBench --args="<commit> [rounds] [scene-ms]"`, stdout into `logs/b-78/`.
  */
 private var rounds = 6
 private var sceneMs = 8_000L
@@ -58,24 +57,19 @@ private const val RENDER_THREAD = "skiko-dispatcher-to-block-on"
 private const val LOAD_PATHS = 1_200
 private const val LOAD_POINTS = 120
 
-private var scenes: List<Scene> = emptyList()
-
 private class Scene(
     val name: String,
     val bodies: Boolean,
     val load: Boolean = false,
     val skip: Set<BodyPart> = emptySet(),
-    val stroked: Boolean = false,
 )
 
-private val allScenes: List<Scene> =
+private val scenes: List<Scene> =
     listOf(
         Scene("Blank", bodies = false),
         Scene("BlankLoad", bodies = false, load = true),
         Scene("Bodies", bodies = true),
         Scene("BodiesLoad", bodies = true, load = true),
-        // B-79: the outline stroked on the render thread every frame, as before.
-        Scene("BodiesStroked", bodies = true, stroked = true),
     ) + BodyPart.entries.map { Scene("No$it", bodies = true, skip = setOf(it)) }
 
 /** The CPU time of every render thread seen, a finished one at its last reading; sampled every 5 ms. */
@@ -179,10 +173,7 @@ private fun LibraryBodies(column: Int) {
 @Composable
 private fun SceneContent(scene: Scene) {
     MutantTheme {
-        CompositionLocalProvider(
-            LocalMutantSkipBodyParts provides scene.skip,
-            LocalMutantOutlineAsFill provides !scene.stroked,
-        ) {
+        CompositionLocalProvider(LocalMutantSkipBodyParts provides scene.skip) {
             Box(Modifier.fillMaxSize().background(MutantTheme.colors.page)) {
                 if (scene.bodies) {
                     Row(Modifier.padding(24.dp), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
@@ -202,8 +193,6 @@ fun main(args: Array<String>) {
     val commit = args.getOrNull(0) ?: "unknown"
     args.getOrNull(1)?.let { rounds = it.toInt() }
     args.getOrNull(2)?.let { sceneMs = it.toLong() }
-    val only = args.getOrNull(3)?.split(',')
-    scenes = allScenes.filter { only == null || it.name in only }
     RenderThread.start()
     var show: (Int) -> Unit = {}
     lateinit var window: ComposeWindow
