@@ -150,6 +150,10 @@ export const REFERENCES = [
   ...['Efir', 'Kopiya'].flatMap((theme) =>
     ['Rest', 'Focused', 'Error', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
       ({ stem: `MutantField_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'field', type: 'field', index, theme, below: 24, hideText: bare })))),
+  // B-21: the Card stage's card at rest and disabled, whole and bare, both themes; cut above the captions.
+  ...['Efir', 'Kopiya'].flatMap((theme) =>
+    ['Rest', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
+      ({ stem: `MutantCard_${s}${bare ? 'Bare' : ''}_${theme}`, page: MVP, stage: 'card', type: 'card', index, theme, below: 34, hideText: bare })))),
   { stem: 'Button_Boil50Body_Efir', page: SPECS, sel: '[data-key="spec-btn"][data-heat-k="0.5"]', index: 0, hideText: true },
 ];
 // A probe's canvas: the slot at (20, 20) with room for the drips below and the field's margins.
