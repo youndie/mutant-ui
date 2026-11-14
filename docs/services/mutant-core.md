@@ -40,6 +40,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantChip.kt` | `MutantChip` ([B-17](../backlog/B-17-chip.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantCheckbox.kt` | `MutantCheckbox`, `MutantRadioButton`, the control row ([B-18](../backlog/B-18-checkbox-and-radio-button.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSwitch.kt` | `MutantSwitch` ([B-19](../backlog/B-19-switch.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTextField.kt` | `MutantTextField` and its block caret ([B-20](../backlog/B-20-text-field.md)) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/ComponentParity.kt` | the shared fixture holding a component's page cells: body outside the clean zone, content by its bare twin |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantDivider.kt` | the tracking divider |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/ButtonParityTest.kt` | every button cell against the page, body and label, both themes |

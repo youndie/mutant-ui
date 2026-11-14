@@ -38,6 +38,10 @@ public final class io/github/youndie/mutant/components/MutantSwitchKt {
 	public static final fun MutantSwitch (ZLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantTextFieldKt {
+	public static final fun MutantTextField (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;ZZLandroidx/compose/foundation/text/KeyboardOptions;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/icons/MutantIcons {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/youndie/mutant/icons/MutantIcons;
