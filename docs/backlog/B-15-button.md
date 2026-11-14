@@ -1,7 +1,7 @@
 ---
 id: B-15
 title: "Button: filled, outlined, text; pressed, loading, success, disabled"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-2-components

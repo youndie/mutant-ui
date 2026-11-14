@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-15](docs/backlog/B-15-button.md) `[ ]` | Button: filled, outlined, text; pressed, loading, success, disabled | P1 | M | B-10, B-11 |
+| [B-15](docs/backlog/B-15-button.md) `[~]` | Button: filled, outlined, text; pressed, loading, success, disabled | P1 | M | B-10, B-11 |
 | [B-16](docs/backlog/B-16-icon-button-and-fab.md) `[ ]` | IconButton and FAB: 48 and 56 dp bodies, the extended FAB | P1 | M | B-10, B-11 |
 | [B-17](docs/backlog/B-17-chip.md) `[ ]` | Chip: unselected with slip, selected by pour | P1 | M | B-10, B-11, B-12 |
 | [B-18](docs/backlog/B-18-checkbox-and-radio-button.md) `[ ]` | Checkbox and RadioButton: 22 dp bodies, pour and melt | P1 | M | B-10, B-11, B-12 |
