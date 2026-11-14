@@ -305,6 +305,8 @@ Settled by [B-15](../backlog/B-15-button.md); references `MutantButton_<cell>[Ba
 
 | A cell's bare twin hides what the page draws in `currentColor` (text, a tick's SVG) or marks `data-keep` (the radio's dot), and keeps what it paints as a background (the checkbox's burnt blocks, the radio's echo): a kit's twin must hide exactly the same, or a mark it keeps differs from the page's twin (B-18). The select stage's layer lands a pixel below its recorded slots, as an illustration column's did (§1.13): component fixtures place each cell within a pixel where its twin matches best | `CheckboxParityTest`, 2026-11-14 |
 
+| The engine records "no text" in a slot as the zone `[-99, -99, 0, 0]` and keeps no clean zone at all; a body given that sentinel as a zone draws its no-signal band elsewhere. Page content (an `<i>`, a switch's echo) is drawn over every body of the stage, a nested body's included (B-19) | `SwitchParityTest`, 2026-11-14 |
+
 **Consequence 15.** A component is held to its page as the button is: drawn through its public
 function, each body from its own recorded slot, bodies outside the clean zone to the floor or a
 listed residual, labels by what they add over the bare twin.

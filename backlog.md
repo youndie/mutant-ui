@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (31)
+## Open (30)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-19](docs/backlog/B-19-switch.md) `[~]` | Switch: track and thumb, pour and slide | P1 | M | B-10, B-11, B-12 |
 | [B-20](docs/backlog/B-20-text-field.md) `[ ]` | TextField: 52 dp field, focus brackets, error corruption | P1 | M | B-10, B-11 |
 | [B-21](docs/backlog/B-21-card.md) `[ ]` | Card: dead pixels in the corner | P1 | M | B-10, B-11 |
 | [B-22](docs/backlog/B-22-skeleton-cocoon.md) `[ ]` | Skeleton («Кокон»): mosaic of 16 and 8 dp in the shape of the coming component | P1 | M | B-10, B-07 |
@@ -94,7 +93,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (21)
+## Closed (22)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -123,6 +122,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-16](docs/backlog/B-16-icon-button-and-fab.md) `[x]` - IconButton and FAB: 48 and 56 dp bodies, the extended FAB
 - [B-17](docs/backlog/B-17-chip.md) `[x]` - Chip: unselected with slip, selected by pour
 - [B-18](docs/backlog/B-18-checkbox-and-radio-button.md) `[x]` - Checkbox and RadioButton: 22 dp bodies, pour and melt
+- [B-19](docs/backlog/B-19-switch.md) `[x]` - Switch: track and thumb, pour and slide
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
