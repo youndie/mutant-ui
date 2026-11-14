@@ -72,18 +72,17 @@ internal val LocalMutantOutlineOverride = staticCompositionLocalOf<((String) -> 
 internal val LocalMutantSlotOrigin = staticCompositionLocalOf<((String) -> Offset?)?> { null }
 
 /**
- * A parity fixture's way to generate a body at the size the engine generated it: Chrome lays a label-sized slot out
- * at a fraction (103.4 dp) the engine records whole (103), where Compose rounds the label up (104). The body is
- * generated at that size and drawn in its own box. Null in the kit.
- */
-
-/**
  * A parity fixture's way to give a body the engine's text zone (`textZone`): Chrome measures a label's box at a
  * fraction (83.29 dp) where Compose rounds it up (84), and a flow line starting between the two is kept by one and
  * dropped by the other. Null in the kit, which measures its own content.
  */
 internal val LocalMutantTextZone = staticCompositionLocalOf<((String) -> DoubleArray?)?> { null }
 
+/**
+ * A parity fixture's way to generate a body at the size the engine generated it: Chrome lays a label-sized slot out
+ * at a fraction (103.4 dp) the engine records whole (103), where Compose rounds the label up (104). The body is
+ * generated at that size and drawn in its own box. Null in the kit.
+ */
 internal val LocalMutantSlotSize = staticCompositionLocalOf<((String) -> androidx.compose.ui.geometry.Size?)?> { null }
 
 internal val LocalCleanZone = staticCompositionLocalOf<CleanZoneRegistry?> { null }
