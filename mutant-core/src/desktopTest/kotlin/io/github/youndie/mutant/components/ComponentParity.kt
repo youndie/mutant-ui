@@ -70,6 +70,30 @@ internal object ComponentParity {
         }
     }
 
+    /** Every body the engine built on [stem]'s stage, by key: the cell's own and the stage's others. */
+    fun stageSlots(stem: String): Map<String, Any> {
+        val ref = DesignParity.reference(stem)
+        val all = listOf(ref["slot"]!!.jsonObject) + (ref["stageSlots"] as? JsonArray).orEmpty().map { it.jsonObject }
+        return all.map { EngineSlot.of(it) }.associateBy { it.key }
+    }
+
+    /** Draws [content]'s bodies where the engine built them: [slots] from [stageSlots]. */
+    @Composable
+    fun ProvideSlots(
+        slots: Map<String, Any>,
+        content: @Composable () -> Unit,
+    ) {
+        @Suppress("UNCHECKED_CAST")
+        val s = slots as Map<String, EngineSlot>
+        CompositionLocalProvider(
+            LocalMutantOutlineOverride provides { s[it]?.outline },
+            LocalMutantSlotOrigin provides { s[it]?.origin },
+            LocalMutantSlotSize provides { s[it]?.size },
+            LocalMutantTextZone provides { s[it]?.zone },
+            content = content,
+        )
+    }
+
     @Composable
     private fun Fixture(
         ref: JsonObject,
