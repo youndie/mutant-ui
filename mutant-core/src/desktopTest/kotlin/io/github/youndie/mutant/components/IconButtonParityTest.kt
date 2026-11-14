@@ -90,7 +90,14 @@ class IconButtonParityTest {
                 val stem = "Mutant${cell}_$theme"
                 val c = split(cell, theme)
                 lines += "$stem: $c"
-                if (c.body > (RESIDUAL[stem] ?: ComponentParity.FLOOR_PIXELS) || !c.contentHolds) off += stem
+                // An icon is drawn to the pixel (B-14): an icon-only cell's content is held like a body, to the floor.
+                val iconOnly = cell != "Fab_Extended"
+                val contentOver = iconOnly && c.content > ComponentParity.FLOOR_PIXELS
+                if (c.body > (RESIDUAL[stem] ?: ComponentParity.FLOOR_PIXELS) || !c.contentHolds ||
+                    contentOver
+                ) {
+                    off += stem
+                }
             }
         }
         println(lines.joinToString("\n"))

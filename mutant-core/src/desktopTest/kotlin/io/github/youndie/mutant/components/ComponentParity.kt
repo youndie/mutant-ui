@@ -93,6 +93,8 @@ internal object ComponentParity {
         val page: Extent?,
         val kitInk: Int,
         val pageInk: Int,
+        /** Pixels differing inside the clean zone: the content's, for content that is not text (an icon). */
+        val content: Int = 0,
     ) {
         /** The content stands where the page's does — its top row exactly — and is the page's colour. */
         val contentHolds: Boolean
@@ -104,7 +106,7 @@ internal object ComponentParity {
                     )
 
         override fun toString(): String =
-            "$result; body $body px; content kit $kit, page $page; ink kit #${kitInk.toString(
+            "$result; body $body px; content $content px, kit $kit, page $page; ink kit #${kitInk.toString(
                 16,
             )}, page #${pageInk.toString(16)}"
     }
@@ -134,7 +136,11 @@ internal object ComponentParity {
             return x >= x0 && x < x0 + cz[2] && y >= y0 && y < y0 + cz[3]
         }
         var body = 0
-        for (i in 0 until r.width * r.height) if (!inside(i) && channelGap(r.actual[i], r.reference[i]) > 16) body++
+        var content = 0
+        for (i in 0 until r.width * r.height) {
+            if (channelGap(r.actual[i], r.reference[i]) <= 16) continue
+            if (inside(i)) content++ else body++
+        }
         val kit = extentOf(r.width, r.height) { inside(it) && channelGap(r.actual[it], bare.actual[it]) > threshold }
         val page =
             extentOf(r.width, r.height) {
@@ -144,7 +150,7 @@ internal object ComponentParity {
         val zone = (0 until r.width * r.height).filter(::inside)
         val kitInk = r.actual[zone.maxBy { channelGap(r.actual[it], bare.actual[it]) }]
         val pageInk = r.reference[zone.maxBy { channelGap(r.reference[it], bare.reference[it]) }]
-        return Split(r, body, kit, page, kitInk, pageInk)
+        return Split(r, body, kit, page, kitInk, pageInk, content)
     }
 
     /** The body's floor in pixels (research §1.8). */
