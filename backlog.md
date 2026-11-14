@@ -58,12 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (41)
+## Open (40)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-10](docs/backlog/B-10-mutant-surface.md) `[ ]` | MutantSurface: the body behind the content, the layers, the clean zone, drips outside the bounds | P0 | L | B-03, B-05, B-07, B-08 |
-| [B-07](docs/backlog/B-07-kit-clock.md) `[~]` | The kit clock: one per screen, in ms, ticks of 125 and 83 ms, pausable | P1 | S | B-01 |
 | [B-08](docs/backlog/B-08-token-generator.md) `[ ]` | Tokens generated from mutant-tokens.json, read a second time in a test | P1 | S | B-01 |
 | [B-09](docs/backlog/B-09-theme.md) `[ ]` | MutantTheme: «Эфир» and «Копия», the cassette seed, reduce motion as pause, «Чистый сигнал» | P1 | S | B-07, B-08 |
 | [B-11](docs/backlog/B-11-surface-states.md) `[ ]` | Body states: boil-over, loading, success, disabled, error, focus | P1 | M | B-10, B-04 |
@@ -104,7 +103,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 
-## Closed (8)
+## Closed (9)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -114,6 +113,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-04](docs/backlog/B-04-transition-geometry.md) `[x]` - Transition geometry: venom, pour and error blocks ported and held to goldens
 - [B-05](docs/backlog/B-05-pixel-references-and-floor.md) `[x]` - Pixel references rendered here from the pages at a fixed engine time, and the parity floor
 - [B-06](docs/backlog/B-06-frame-cost.md) `[x]` - The cost of the field on the desktop JVM: an instance and a frame per profile
+
+**Tokens generated and checked; a body in every state and transition matches its references; the Tape matches the demo**
+
+- [B-07](docs/backlog/B-07-kit-clock.md) `[x]` - The kit clock: one per screen, in ms, ticks of 125 and 83 ms, pausable
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
