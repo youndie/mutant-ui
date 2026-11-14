@@ -136,6 +136,47 @@ class SurfaceTransitionsTest {
         }
 
     @Test
+    fun `a melt whose frame lands in its last 3 ms still lands`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            val clock =
+                io.github.youndie.mutant.clock
+                    .MutantClock()
+            var on by mutableStateOf(false)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        io.github.youndie.mutant.clock.ProvideMutantClock(clock) {
+                            Box(Modifier.size(40.dp).background(Color.Black).testTag("f")) {
+                                Box(
+                                    Modifier
+                                        .padding(10.dp)
+                                        .size(20.dp)
+                                        .mutantMelt(on)
+                                        .background(Color.White),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            frames(5)
+            on = true
+            frames(1)
+            val since = clock.nowMs
+            // The next frame steps 16 ms: it lands 331 ms into the 330 ms melt, before its last step at 333.3.
+            clock.setTime(since + 315)
+            frames(1)
+            assertTrue(clock.nowMs - since in 330.0..333.3, "a frame in the last 3 ms: ${clock.nowMs - since}")
+            frames(30)
+            val white =
+                onNodeWithTag("f").captureToImage().toPixelMap().let { px ->
+                    (0 until 40).sumOf { y -> (0 until 40).count { x -> px[x, y] == Color.White } }
+                }
+            assertEquals(400, white, "melted in")
+        }
+
+    @Test
     fun `a melt reveals its indicator step by step and at once when paused`() {
         for (paused in listOf(false, true)) {
             runComposeUiTest {
