@@ -1,7 +1,7 @@
 ---
 id: B-87
 title: "In the browser the bodies' ticks have one thread, and the Components page needs more than it"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
