@@ -26,7 +26,6 @@ import io.github.youndie.mutant.components.MutantLinearProgress
 import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
