@@ -84,6 +84,31 @@ class NavigationBarBehaviourTest {
         return if (xs.isEmpty()) null else xs.first()..xs.last()
     }
 
+    @Test
+    fun `B-66 with twelve destinations in 360 dp the pill stays inside its 30 dp cell`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        MutantNavigationBar(
+                            List(12) { MutantNavigationItem("П$it", MutantIcons.Home) },
+                            5,
+                            {},
+                            Modifier.width(360.dp).testTag("n"),
+                            windowInsets = WindowInsets(0),
+                        )
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(300)
+            val lime = MutantPalettes.Efir.primary
+            val px = onNodeWithTag("n").captureToImage().toPixelMap()
+            val xs = (0 until px.width).filter { x -> (0 until px.height).any { y -> near(px[x, y], lime) } }
+            assertTrue(xs.isNotEmpty(), "no pill")
+            assertTrue(xs.first() >= 150 && xs.last() < 180, "pill's lime ${xs.first()}..${xs.last()}, cell 150..179")
+        }
+
     private fun ComposeUiTest.bar(
         selected: () -> Int,
         reduceMotion: Boolean = false,
