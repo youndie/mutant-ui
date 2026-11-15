@@ -32,6 +32,7 @@ import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
 import io.github.youndie.mutant.components.MutantSwitch
 import io.github.youndie.mutant.components.MutantTab
@@ -71,6 +72,11 @@ class KeyboardFocusSweepTest {
             Control("Checkbox") { f -> MutantCheckbox(false, { f() }, label = "Галка") },
             Control("RadioButton") { f -> MutantRadioButton(false, f, label = "Радио") },
             Control("Switch") { f -> MutantSwitch(false, { f() }, label = "Тумблер") },
+            // Arrows step a slider; Enter and Space do nothing there (SliderBehaviourTest).
+            Control(
+                "Slider",
+                activates = false,
+            ) { _ -> MutantSlider(0, {}, Modifier.width(240.dp), label = "Трекинг") },
             Control("TextField", activates = false) { _ -> MutantTextField("abc", {}, Modifier.width(240.dp)) },
             Control(
                 "Card.Clickable",
