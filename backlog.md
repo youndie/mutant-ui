@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-33](docs/backlog/B-33-menu.md) `[?]` | Menu: 36 dp items, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[?]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
-| [B-63](docs/backlog/B-63-hover-and-hand-cursor.md) `[ ]` | Desktop: the hand cursor and a hover look | P2 | M | B-40 |
+| [B-63](docs/backlog/B-63-hover-and-hand-cursor.md) `[~]` | Desktop: the hand cursor and a hover look | P2 | M | B-40 |
 | [B-84](docs/backlog/B-84-drip-webs-flip-every-tick.md) `[ ]` | Neighbouring drips' webs zip open and shut every tick at rest | P2 | M | - |
 | [B-85](docs/backlog/B-85-aliased-text-on-macos-26.md) `[ ]` | On macOS 26 the slider's disabled value is drawn without antialiasing | P2 | S | B-30 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |

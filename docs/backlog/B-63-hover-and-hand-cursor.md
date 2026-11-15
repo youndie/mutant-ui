@@ -1,7 +1,7 @@
 ---
 id: B-63
 title: "Desktop: the hand cursor and a hover look"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-5-product
