@@ -1,7 +1,7 @@
 ---
 id: B-30
 title: "Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside"
-status: question
+status: done
 priority: P2
 size: M
 stage: stage-4-v1
@@ -73,3 +73,5 @@ Choices, for the owner:
 1. **Find the trigger on the runner first.** A scratch fixture pushed through CI draws `−4` and `+3` over each body, with the fixture's settings and the platform's. About two CI runs. If the kit itself draws jagged text on macOS 26, that is a defect of its own.
 2. **Allow it on macOS 26 for the disabled value only**, as B-74 allows its row, and file the investigation as an item. The value's place and colour stay exact on this Mac.
 3. **Leave the merge** until the runner matches this Mac (a newer runner image).
+
+**Answered 2026-11-15:** "Допуск на macOS 26". On macOS 26 alone, the disabled value is held by where its ink lies, every side within 2 px and the top row exactly, and not by its colour (`ALIASED_DISABLED_VALUE`). On this Mac it is held exactly, as before. Why the runner drops the antialiasing is [B-85](B-85-aliased-text-on-macos-26.md).
