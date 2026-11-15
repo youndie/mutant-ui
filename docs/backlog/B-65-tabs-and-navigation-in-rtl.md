@@ -1,7 +1,7 @@
 ---
 id: B-65
 title: "Tabs and the navigation bar mirror in a right-to-left layout"
-status: open
+status: wip
 priority: P3
 size: S
 stage: stage-5-product
