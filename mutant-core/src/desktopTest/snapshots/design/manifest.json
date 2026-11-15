@@ -7,6 +7,7 @@
     "mutant-ui Анимационные спеки.dc.html": "ada677a51242dc96c34b584fe0d41e437139fce2374c13fb822baea461daf1dd",
     "mutant-ui Иконки и заготовки.dc.html": "484de95b472c565fe2548d9df90ab1724902f5663cb8279d70498e2217fb6450",
     "mutant-ui Компоненты v1.dc.html": "73de68bf4e4b583a5cd3fe322ff63a28b302c82153bb38a7d54df25168ace1c5",
+    "mutant-ui Компоненты позже.dc.html": "5c00d264b15b29f822b44c1708f2d361d14369c8ce07b370e9312dacf5539797",
     "mutant-ui Демо.dc.html": "9db912932852a8fe1dfa30d4e05a251adb7f69f7892807e0082ea4b73be7c471"
   },
   "scripts": {
@@ -61217,6 +61218,686 @@
           "still": true,
           "heat": 0,
           "drawnOutline": 2.5
+        }
+      ]
+    },
+    {
+      "stem": "MutantSearchBar_Focused_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-search\"] > div:has(> [data-mu=\"field\"])",
+      "theme": "Efir",
+      "x": 92,
+      "y": 323,
+      "w": 328,
+      "h": 254,
+      "art": [
+        0,
+        0,
+        328,
+        254
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "search",
+          "ox": 28,
+          "oy": 76,
+          "w": 328,
+          "h": 52,
+          "r": 6,
+          "over": 9.280000000000001,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 0.3,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8,
+            12,
+            312,
+            28
+          ],
+          "cz": [
+            6,
+            10,
+            316,
+            32
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "sg1",
+          "ox": 28,
+          "oy": 152,
+          "w": 133,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            7.95246458260157,
+            6.471139210865239,
+            117.09507083479687,
+            18.94906919564454
+          ],
+          "cz": [
+            5.95246458260157,
+            4.471139210865239,
+            121.09507083479687,
+            22.94906919564454
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.59
+        },
+        {
+          "key": "sg2",
+          "ox": 167,
+          "oy": 152,
+          "w": 112,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.04310103554436,
+            6.526168485866219,
+            95.91379792891128,
+            19.046179680940384
+          ],
+          "cz": [
+            6.04310103554436,
+            4.526168485866219,
+            99.91379792891128,
+            23.046179680940384
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.67
+        },
+        {
+          "key": "sr1",
+          "ox": 28,
+          "oy": 218,
+          "w": 40,
+          "h": 40,
+          "r": 14,
+          "over": 6,
+          "cf": 0.4,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            3,
+            7,
+            34,
+            26
+          ],
+          "cz": [
+            1,
+            5,
+            38,
+            30
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.61
+        }
+      ]
+    },
+    {
+      "stem": "MutantSearchBar_FocusedBare_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-search\"] > div:has(> [data-mu=\"field\"])",
+      "theme": "Efir",
+      "x": 92,
+      "y": 323,
+      "w": 328,
+      "h": 254,
+      "art": [
+        0,
+        0,
+        328,
+        254
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "search",
+          "ox": 28,
+          "oy": 76,
+          "w": 328,
+          "h": 52,
+          "r": 6,
+          "over": 9.280000000000001,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 0.3,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8,
+            12,
+            312,
+            28
+          ],
+          "cz": [
+            6,
+            10,
+            316,
+            32
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "sg1",
+          "ox": 28,
+          "oy": 152,
+          "w": 133,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            7.95246458260157,
+            6.471139210865239,
+            117.09507083479687,
+            18.94906919564454
+          ],
+          "cz": [
+            5.95246458260157,
+            4.471139210865239,
+            121.09507083479687,
+            22.94906919564454
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.59
+        },
+        {
+          "key": "sg2",
+          "ox": 167,
+          "oy": 152,
+          "w": 112,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.04310103554436,
+            6.526168485866219,
+            95.91379792891128,
+            19.046179680940384
+          ],
+          "cz": [
+            6.04310103554436,
+            4.526168485866219,
+            99.91379792891128,
+            23.046179680940384
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.67
+        },
+        {
+          "key": "sr1",
+          "ox": 28,
+          "oy": 218,
+          "w": 40,
+          "h": 40,
+          "r": 14,
+          "over": 6,
+          "cf": 0.4,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            3,
+            7,
+            34,
+            26
+          ],
+          "cz": [
+            1,
+            5,
+            38,
+            30
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.61
+        }
+      ]
+    },
+    {
+      "stem": "MutantSearchBar_Focused_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-search\"] > div:has(> [data-mu=\"field\"])",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 323,
+      "w": 328,
+      "h": 254,
+      "art": [
+        0,
+        0,
+        328,
+        254
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "search",
+          "ox": 28,
+          "oy": 76,
+          "w": 328,
+          "h": 52,
+          "r": 6,
+          "over": 9.280000000000001,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 0.3,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8,
+            12,
+            312,
+            28
+          ],
+          "cz": [
+            6,
+            10,
+            316,
+            32
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "sg1",
+          "ox": 28,
+          "oy": 152,
+          "w": 133,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            7.95246458260157,
+            6.471139210865239,
+            117.09507083479687,
+            18.94906919564454
+          ],
+          "cz": [
+            5.95246458260157,
+            4.471139210865239,
+            121.09507083479687,
+            22.94906919564454
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.59
+        },
+        {
+          "key": "sg2",
+          "ox": 167,
+          "oy": 152,
+          "w": 112,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.04310103554436,
+            6.526168485866219,
+            95.91379792891128,
+            19.046179680940384
+          ],
+          "cz": [
+            6.04310103554436,
+            4.526168485866219,
+            99.91379792891128,
+            23.046179680940384
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.67
+        },
+        {
+          "key": "sr1",
+          "ox": 28,
+          "oy": 218,
+          "w": 40,
+          "h": 40,
+          "r": 14,
+          "over": 6,
+          "cf": 0.4,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            3,
+            7,
+            34,
+            26
+          ],
+          "cz": [
+            1,
+            5,
+            38,
+            30
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.61
+        }
+      ]
+    },
+    {
+      "stem": "MutantSearchBar_FocusedBare_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-search\"] > div:has(> [data-mu=\"field\"])",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 323,
+      "w": 328,
+      "h": 254,
+      "art": [
+        0,
+        0,
+        328,
+        254
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "search",
+          "ox": 28,
+          "oy": 76,
+          "w": 328,
+          "h": 52,
+          "r": 6,
+          "over": 9.280000000000001,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 0.3,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8,
+            12,
+            312,
+            28
+          ],
+          "cz": [
+            6,
+            10,
+            316,
+            32
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "sg1",
+          "ox": 28,
+          "oy": 152,
+          "w": 133,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            7.95246458260157,
+            6.471139210865239,
+            117.09507083479687,
+            18.94906919564454
+          ],
+          "cz": [
+            5.95246458260157,
+            4.471139210865239,
+            121.09507083479687,
+            22.94906919564454
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.59
+        },
+        {
+          "key": "sg2",
+          "ox": 167,
+          "oy": 152,
+          "w": 112,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.04310103554436,
+            6.526168485866219,
+            95.91379792891128,
+            19.046179680940384
+          ],
+          "cz": [
+            6.04310103554436,
+            4.526168485866219,
+            99.91379792891128,
+            23.046179680940384
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.67
+        },
+        {
+          "key": "sr1",
+          "ox": 28,
+          "oy": 218,
+          "w": 40,
+          "h": 40,
+          "r": 14,
+          "over": 6,
+          "cf": 0.4,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            3,
+            7,
+            34,
+            26
+          ],
+          "cz": [
+            1,
+            5,
+            38,
+            30
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.61
         }
       ]
     },

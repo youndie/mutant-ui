@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -107,6 +108,9 @@ internal fun TextFieldBody(
     interactionSource: MutableInteractionSource?,
     focusedAs: Boolean? = null,
     hidden: Boolean = false,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    trailing: (@Composable () -> Unit)? = null,
+    focusRequester: FocusRequester? = null,
 ) {
     val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
@@ -139,7 +143,8 @@ internal fun TextFieldBody(
     // it at the end. Focus by Tab finds it at the end too.
     var held by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
     val field = if (held.text == value) held else TextFieldValue(value, TextRange(value.length))
-    val requester = remember { FocusRequester() }
+    val own = remember { FocusRequester() }
+    val requester = focusRequester ?: own
     var textBox by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var body by remember { mutableStateOf<LayoutCoordinates?>(null) }
     MutantSurface(
@@ -221,6 +226,7 @@ internal fun TextFieldBody(
                     enabled = enabled,
                     textStyle = valueStyle.copy(textDirection = TextDirection.Content),
                     keyboardOptions = keyboardOptions,
+                    keyboardActions = keyboardActions,
                     singleLine = true,
                     interactionSource = source,
                     // The design's caret is a block after the text, drawn below; the field's own is hidden.
@@ -229,6 +235,7 @@ internal fun TextFieldBody(
                 )
                 if (focused && enabled) Caret(layout, value, field.selection.start, tint(colors.text))
             }
+            trailing?.invoke()
         }
     }
 }

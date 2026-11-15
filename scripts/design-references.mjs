@@ -43,6 +43,7 @@ const DEMO = 'mutant-ui Демо.dc.html';
 const SPECS = 'mutant-ui Анимационные спеки.dc.html';
 const ICONS = 'mutant-ui Иконки и заготовки.dc.html';
 const V1 = 'mutant-ui Компоненты v1.dc.html';
+const LATER = 'mutant-ui Компоненты позже.dc.html';
 // B-14: the Icons page's icons (in its order), patterns and illustrations, named as the kit names them.
 const ICON_NAMES = ['Menu', 'Back', 'Close', 'Search', 'Home', 'Add', 'Delete', 'Edit', 'Share', 'Refresh', 'Settings', 'Done', 'Error', 'Warning', 'Info', 'Schedule'];
 const PATTERNS = [['Lines', 'lines'], ['Snow', 'snow'], ['Raster', 'raster'], ['Mosaic', 'mosaic']];
@@ -205,6 +206,15 @@ export const REFERENCES = [
     sel: `[data-mu-stage="v1-ptr-${k}"]`,
     hide: bare ? `[data-mu-stage="v1-ptr-${k}"], [data-mu-stage="v1-ptr-${k}"] * { color: transparent !important; }` : '',
   })))),
+  // B-44: the later page's search bar as it stands — the focused field with its caret and clear icon, the two
+  // suggestion chips, the result row with its tile, the divider and the cocoon row — whole and with every word and
+  // currentColor icon hidden — the caret too, as the MVP field's bare twin — both themes, with the bodies the engine
+  // built on it.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) => ({
+    stem: `MutantSearchBar_Focused${bare ? 'Bare' : ''}_${theme}`, page: LATER, el: true, slots: true, index: 0, theme,
+    sel: '[data-mu-stage="l-search"] > div:has(> [data-mu="field"])',
+    hide: bare ? '[data-mu-stage="l-search"], [data-mu-stage="l-search"] * { color: transparent !important; } [data-mu-stage="l-search"] [data-mu-anim="blink"] { visibility: hidden !important; }' : '',
+  }))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>

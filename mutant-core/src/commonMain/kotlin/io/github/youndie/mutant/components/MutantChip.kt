@@ -61,6 +61,7 @@ internal fun ChipBody(
     interactionSource: MutableInteractionSource?,
     heat: Double? = null,
     hidden: Boolean = false,
+    padding: androidx.compose.ui.unit.Dp = PADDING,
 ) {
     val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
@@ -113,7 +114,7 @@ internal fun ChipBody(
             heat = heat,
         ) {
             // The label starts 16 dp in, wherever the chip is wider than it (the page's flex row, no justify).
-            Box(Modifier.padding(horizontal = PADDING), contentAlignment = Alignment.CenterStart) {
+            Box(Modifier.padding(horizontal = padding), contentAlignment = Alignment.CenterStart) {
                 ButtonLabel(text, label, Modifier, size = LABEL_SIZE)
             }
         }

@@ -275,19 +275,26 @@ internal fun ButtonLabel(
     BasicText(
         text,
         modifier.mutantCleanZone(),
-        style =
-            TextStyle(
-                fontFamily = LocalMutantFonts.current?.text,
-                fontWeight = FontWeight.Medium,
-                fontSize = size.sp,
-                color = color,
-                platformStyle = LocalMutantTextRaster.current,
-            ).cssLine(MutantFaceMetrics.Rubik),
+        style = buttonLabelStyle(size, color),
         maxLines = 1,
         softWrap = false,
         overflow = TextOverflow.Ellipsis,
     )
 }
+
+/** A button's or a chip's label: Rubik [size]/500 on Blink's line. */
+@Composable
+internal fun buttonLabelStyle(
+    size: Int,
+    color: Color,
+): TextStyle =
+    TextStyle(
+        fontFamily = LocalMutantFonts.current?.text,
+        fontWeight = FontWeight.Medium,
+        fontSize = size.sp,
+        color = color,
+        platformStyle = LocalMutantTextRaster.current,
+    ).cssLine(MutantFaceMetrics.Rubik)
 
 /** The touch target and the body's height. */
 private val TOUCH = 48.dp

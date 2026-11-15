@@ -32,6 +32,9 @@ import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSearchBar
+import io.github.youndie.mutant.components.MutantSearchResult
+import io.github.youndie.mutant.components.MutantSearchSuggestions
 import io.github.youndie.mutant.components.MutantSegmentedButton
 import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
@@ -80,6 +83,12 @@ class KeyboardFocusSweepTest {
             // One focus stop; the arrows choose (SegmentedBehaviourTest).
             Control("SegmentedButton", activates = false) { _ -> MutantSegmentedButton(listOf("SP", "LP"), 0, {}) },
             Control("TextField", activates = false) { _ -> MutantTextField("abc", {}, Modifier.width(240.dp)) },
+            // The first stop is the field; its clear icon is the second (SearchBarBehaviourTest).
+            Control("SearchBar", activates = false) { _ -> MutantSearchBar("ночь", {}, Modifier.width(300.dp)) },
+            Control("SearchSuggestions") { f -> MutantSearchSuggestions(listOf("ночь"), { f() }) },
+            Control(
+                "SearchResult",
+            ) { f -> MutantSearchResult("Эфир, ночь", "ночь", Modifier.width(300.dp), onClick = f) },
             Control(
                 "Card.Clickable",
             ) { f -> MutantCard(Modifier.width(240.dp), onClick = f) { MutantCardTitle("Карта") } },

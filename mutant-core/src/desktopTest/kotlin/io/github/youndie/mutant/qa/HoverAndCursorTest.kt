@@ -35,6 +35,9 @@ import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSearchBar
+import io.github.youndie.mutant.components.MutantSearchResult
+import io.github.youndie.mutant.components.MutantSearchSuggestions
 import io.github.youndie.mutant.components.MutantSegmentedButton
 import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
@@ -81,6 +84,9 @@ class HoverAndCursorTest {
             },
             "SegmentedButton" to { e -> MutantSegmentedButton(listOf("SP", "LP"), 0, {}, enabled = e) },
             "Slider" to { e -> MutantSlider(0, {}, Modifier.width(240.dp), enabled = e) },
+            "SearchBar" to { e -> MutantSearchBar("ночь", {}, Modifier.width(300.dp), enabled = e) },
+            "SearchSuggestions" to { e -> MutantSearchSuggestions(listOf("ночь"), {}, enabled = e) },
+            "SearchResult" to { e -> MutantSearchResult("Эфир, ночь", "ночь", onClick = {}, enabled = e) },
         )
 
     private fun hands(

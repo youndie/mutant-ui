@@ -232,7 +232,20 @@ class ListItemBehaviourTest {
                     MutantTheme {
                         val icon = MutantIcons.Home
                         val keep = { it: io.github.youndie.mutant.gen.Instance -> tile = it }
-                        ListItemBody("А", Modifier, null, icon, null, null, null, true, "tile1", null, probe = keep)
+                        ListItemBody(
+                            androidx.compose.ui.text
+                                .AnnotatedString("А"),
+                            Modifier,
+                            null,
+                            icon,
+                            null,
+                            null,
+                            null,
+                            true,
+                            "tile1",
+                            null,
+                            probe = keep,
+                        )
                     }
                 }
             }
