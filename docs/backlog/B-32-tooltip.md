@@ -1,7 +1,7 @@
 ---
 id: B-32
 title: "Tooltip: a blob plate of 30 or 44 dp"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-4-v1
