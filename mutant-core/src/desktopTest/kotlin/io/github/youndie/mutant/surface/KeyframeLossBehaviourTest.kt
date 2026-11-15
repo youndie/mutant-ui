@@ -1,13 +1,18 @@
 package io.github.youndie.mutant.surface
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toPixelMap
@@ -169,6 +174,98 @@ class KeyframeLossBehaviourTest {
                 "; flashing past 3 a second: $flashing px²",
         )
         assertTrue(flashing <= FLASH_AREA, "flashing past 3 a second over $flashing px²")
+    }
+
+    /** The scene's pixels with one body under it, [shown] or not, frozen at [p] of loss [n] of seed 5 or with none. */
+    private fun throughHole(
+        n: Int,
+        p: Double?,
+        shown: Boolean,
+    ): IntArray {
+        var px = IntArray(0)
+        runComposeUiTest {
+            var show by mutableStateOf(true)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        ProvideMutantClock(MutantClock(startMs = 1_000.0, frozen = true)) {
+                            KeyframeLossBody(
+                                Modifier.size(250.dp, 212.dp).background(MutantTheme.colors.page).testTag("s"),
+                                MutantTheme.colors.page,
+                                p,
+                                {
+                                    if (show) {
+                                        MutantSurface(
+                                            MutantBody.Card,
+                                            "spec-card",
+                                            Modifier.fillMaxSize().padding(8.dp),
+                                        ) {}
+                                    }
+                                },
+                                first = n,
+                            )
+                        }
+                    }
+                }
+            }
+            waitForIdle()
+            // The loss froze over the body; now the body goes, as a screen's content may, with the band standing.
+            show = shown
+            waitForIdle()
+            val m = onNodeWithTag("s").captureToImage().toPixelMap()
+            px =
+                IntArray(m.width * m.height) { i ->
+                    val c = m[i % m.width, i / m.width]
+                    ((c.red * 255).toInt() shl 16) or ((c.green * 255).toInt() shl 8) or (c.blue * 255).toInt()
+                }
+        }
+        return px
+    }
+
+    private fun near(
+        a: Int,
+        b: Int,
+    ) = (0..2).all { abs((a shr (8 * it) and 255) - (b shr (8 * it) and 255)) <= 2 }
+
+    /**
+     * The engine clears half the blocks of the band's first and last rows (`gone`) on its canvas, which lies over the
+     * bodies: through such a block the screen shows as it is — the body while it stands, what is under it once it goes.
+     * Read on a cleared block's first row, which no block's drag reaches (every pull is at least 1 dp down).
+     */
+    @Test
+    fun `through a cleared block the screen shows as it is`() {
+        val (n, hole) =
+            (1..40)
+                .asSequence()
+                .map { it to moshPlan("5", it, 250, 212) }
+                .mapNotNull { (n, plan) ->
+                    plan.runs
+                        .firstOrNull {
+                            it.gone && it.y == plan.y0 && plan.y0 >= 24 && it.w >= 32 && it.x >= 24 &&
+                                it.x + it.w <= 226
+                        }?.let { n to it }
+                }.first()
+        val xs = hole.x + 4 until hole.x + hole.w - 4
+        val at = { px: IntArray -> xs.map { px[hole.y * 250 + it] } }
+        val body = at(throughHole(n, null, shown = true))
+        val bare = at(throughHole(n, null, shown = false))
+        val bodyShows = body.indices.count { !near(body[it], bare[it]) }
+        assertTrue(bodyShows * 2 > body.size, "the body is under the block on $bodyShows of ${body.size} px")
+        val p = 2 * 125.0 / moshPlan("5", n, 250, 212).durationMs
+        val standing = at(throughHole(n, p, shown = true))
+        val gone = at(throughHole(n, p, shown = false))
+        assertEquals(
+            0,
+            body.indices.count { !near(standing[it], body[it]) },
+            "px off the body through block $hole of loss $n",
+        )
+        assertEquals(
+            0,
+            body.indices.count {
+                !near(gone[it], bare[it])
+            },
+            "px off the bare screen through block $hole of loss $n",
+        )
     }
 
     private companion object {

@@ -152,10 +152,40 @@ class KeyframeLossParityTest {
                     .channelGap(r.actual[i], r.reference[i]) > 16
         }
 
+    /**
+     * Pixels more than 2 apart in any channel inside the loss's cleared blocks (`gone`): the engine's canvas is clear
+     * there, so the bodies show through it, under what the blocks' drag has drawn in since. A body's edge there is a
+     * few levels off the ground, under the 16 the other count reads.
+     */
+    private fun holePixels(
+        r: DesignParity.Result,
+        loss: Int,
+    ): Int {
+        val holes = moshPlan("5", loss, 250, 212).runs.filter { it.gone }
+        return (0 until r.width * r.height).count { i ->
+            val x = i % r.width
+            val y = i / r.width
+            holes.any { x in it.x until it.x + it.w && y in it.y until it.y + it.h } &&
+                io.github.youndie.mutant
+                    .channelGap(r.actual[i], r.reference[i]) > 2
+        }
+    }
+
     @Test
     fun `the four frames of the loss as the specs page freezes them, the words untouched`() {
         val results = frames.map { (name, p) -> name to frame(name, p) }
-        val report = results.map { (name, r) -> "$name: $r; outside the words ${bodyPixels(r)} px" }
+        val inHoles =
+            frames.drop(1).associate { (name, _) ->
+                name to
+                    holePixels(
+                        results.first { it.first == name }.second,
+                        lossOf(DesignParity.reference("MutantKeyframeLoss_${name}_Efir")),
+                    )
+            }
+        val report =
+            results.map { (name, r) ->
+                "$name: $r; outside the words ${bodyPixels(r)} px; in the cleared blocks ${inHoles[name] ?: 0} px"
+            }
         println(report.joinToString("\n"))
         val off = results.filter { (name, r) -> bodyPixels(r) > RESIDUAL.getValue(name) }.map { it.first }
         assertTrue(off.isEmpty(), "off: $off\n" + report.joinToString("\n"))

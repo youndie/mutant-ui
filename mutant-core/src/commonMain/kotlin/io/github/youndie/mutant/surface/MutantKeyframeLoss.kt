@@ -17,14 +17,18 @@ import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.DrawResult
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
@@ -125,7 +129,8 @@ internal fun rememberMoshBody(scene: MoshScene?): MoshBody {
 
 /**
  * A body's drawing: given to the scene for its snapshot, and drawn with the band cut out while a loss runs — the
- * engine's canvas covers the bodies there.
+ * engine's canvas covers the bodies there, but for its cleared blocks: through them the body shows, under whatever a
+ * block's drag has drawn into them since.
  */
 internal fun CacheDrawScope.moshBehind(
     scene: MoshScene?,
@@ -135,11 +140,12 @@ internal fun CacheDrawScope.moshBehind(
     onDrawBehind {
         if (scene == null) return@onDrawBehind block()
         body.draw = block
-        val band = scene.bandIn(body.coords)
-        if (band == null) {
+        val cut = scene.cutIn(body.coords)
+        if (cut == null) {
             block()
         } else {
-            clipRect(-HUGE, band.first, HUGE, band.second, ClipOp.Difference) { block() }
+            clipPath(cut, ClipOp.Difference) { block() }
+            scene.drawHolesOver(this, body.coords)
         }
     }
 
@@ -168,21 +174,55 @@ internal class MoshScene(
     private var plan: MoshPlan? = null
     private var picture: ImageBitmap? = null
     private var clean: ImageBitmap? = null
+
+    // The blocks cut out of the snapshot (`gone`), in scene pixels.
+    private var holes: List<Rect> = emptyList()
+
+    // Bumped at each step of the blocks, for the bodies that draw the band over themselves.
+    private var drawn by mutableIntStateOf(0)
     private var t0 = 0.0
     private var steps = -1
     private var frozen = false
     private var tries = 0
     private val tinted = HashSet<MoshRun>()
 
-    /** The band in [coords]'s own pixels, top and bottom, or null while no loss runs. */
-    fun bandIn(of: LayoutCoordinates?): Pair<Float, Float>? {
+    /**
+     * What the band covers in [of]'s own pixels — the band less its cleared blocks, which the engine's canvas leaves
+     * transparent over the bodies — or null while no loss runs.
+     */
+    fun cutIn(of: LayoutCoordinates?): Path? {
         val top = bandTop
         val bottom = bandBottom
         if (top.isNaN() || of == null) return null
         val me = coords ?: return null
         if (!me.isAttached || !of.isAttached) return null
-        val dy = me.localPositionOf(of, Offset.Zero).y
-        return (top - dy) to (bottom - dy)
+        val at = me.localPositionOf(of, Offset.Zero)
+        val band = Path().apply { addRect(Rect(-HUGE, top - at.y, HUGE, bottom - at.y)) }
+        if (holes.isEmpty()) return band
+        val cut = Path().apply { for (h in holes) addRect(h.translate(-at.x, -at.y)) }
+        return Path.combine(PathOperation.Difference, band, cut)
+    }
+
+    /**
+     * Over a body drawn through the cleared blocks, what the band holds there: nothing, where the body shows as it is, or
+     * what a block's drag has drawn into them, over the body as on the engine's canvas.
+     */
+    fun drawHolesOver(
+        scope: DrawScope,
+        of: LayoutCoordinates?,
+    ) {
+        val pic = picture ?: return
+        val top = bandTop
+        if (holes.isEmpty() || top.isNaN() || of == null) return
+        val me = coords ?: return
+        if (!me.isAttached || !of.isAttached) return
+        // Read so a step's drag into a block shows over the bodies too, not only under them.
+        drawn
+        val at = me.localPositionOf(of, Offset.Zero)
+        val open = holes.filter { it.top >= top }
+        if (open.isEmpty()) return
+        val path = Path().apply { for (h in open) addRect(h.translate(-at.x, -at.y)) }
+        scope.clipPath(path) { translate(-at.x, -at.y) { drawImage(pic) } }
     }
 
     /** Under the content: the band's picture while a loss runs; starts, steps and ends the loss by the clock. */
@@ -270,6 +310,7 @@ internal class MoshScene(
         this.plan = plan
         picture = pic
         clean = ref
+        holes = plan.runs.filter { it.gone }.map { Rect(it.x * d, it.y * d, (it.x + it.w) * d, (it.y + it.h) * d) }
         t0 = now
         steps = -1
         tinted.clear()
@@ -334,6 +375,7 @@ internal class MoshScene(
                 }
             }
             restoreCleanZones(canvas, ref, d, plan)
+            drawn++
         } else {
             val k = ceil(plan.rows * min(1.0, (el - plan.durationMs + 1) / RECOVER_MS)).toInt()
             if (k >= plan.rows) {
@@ -387,6 +429,7 @@ internal class MoshScene(
         plan = null
         picture = null
         clean = null
+        holes = emptyList()
         bandTop = Float.NaN
         bandBottom = Float.NaN
     }
@@ -410,4 +453,4 @@ private const val TINT_ALPHA = .3f
 private const val MAX_TRIES = 8
 
 /** Far enough to cut the band across any body. */
-private const val HUGE = 1e6f
+private const val HUGE = 1e5f
