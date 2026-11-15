@@ -66,6 +66,7 @@ class KeyframeLossParityTest {
             MutantTheme(colors = ComponentParity.palette("Efir")) {
                 val colors = MutantTheme.colors
                 val fonts = LocalMutantFonts.current
+                val secondary = if (hidden) Color.Transparent else colors.textSecondary
                 CompositionLocalProvider(LocalMutantTextRaster provides ChromeText, LocalMutantStage provides stage) {
                     ProvideMutantClock(MutantClock(startMs = STILL_MS, frozen = true)) {
                         ComponentParity.ProvideSlots(slots) {
@@ -102,7 +103,7 @@ class KeyframeLossParityTest {
                                                         TextStyle(
                                                             fontFamily = fonts?.text,
                                                             fontSize = 12.sp,
-                                                            color = if (hidden) Color.Transparent else colors.textSecondary,
+                                                            color = secondary,
                                                             platformStyle = ChromeText,
                                                         ).cssLine(MutantFaceMetrics.Rubik),
                                                 )
@@ -187,7 +188,9 @@ class KeyframeLossParityTest {
                 "$name: $r; outside the words ${bodyPixels(r)} px; in the cleared blocks ${inHoles[name] ?: 0} px"
             }
         println(report.joinToString("\n"))
-        val off = results.filter { (name, r) -> bodyPixels(r) > RESIDUAL.getValue(name) }.map { it.first }
+        val off =
+            results.filter { (name, r) -> bodyPixels(r) > RESIDUAL.getValue(name) }.map { it.first } +
+                inHoles.filter { (name, n) -> n > HOLES.getValue(name) }.map { "${it.key} in the cleared blocks" }
         assertTrue(off.isEmpty(), "off: $off\n" + report.joinToString("\n"))
         // The words are not the loss's: in every frame of it they stand as the kit drew them before it.
         val before = results.first().second
@@ -209,13 +212,22 @@ class KeyframeLossParityTest {
         }
     }
 
-    /**
-     * Over the floor of the frame before the loss, measured on 2026-11-15 and never to be raised: the bodies' own
-     * residual (75 px before the loss, glyph-free) copied along by the blocks, each a few steps, as the page copies its
-     * own.
-     */
-    private val RESIDUAL = mapOf("Before" to 75, "At45" to 300, "At95" to 205, "Recovering" to 181)
+    private companion object {
+        /**
+         * Over the floor of the frame before the loss, measured on 2026-11-15 and never to be raised: the bodies' own
+         * residual (75 px before the loss, glyph-free) copied along by the blocks, each a few steps, as the page copies
+         * its own.
+         */
+        val RESIDUAL = mapOf("Before" to 75, "At45" to 300, "At95" to 205, "Recovering" to 181)
 
-    /** A glyph pixel moved further than this has been smeared. */
-    private val GLYPH_GAP = 48
+        /**
+         * In the cleared blocks, measured on 2026-11-15 and never to be raised: the bodies' own edges, more than 2
+         * levels off Chrome's. The ground there instead of the bodies read 114 at 45 %; the bodies without what the
+         * drag drew over them, 58.
+         */
+        val HOLES = mapOf("At45" to 37, "At95" to 31, "Recovering" to 15)
+
+        /** A glyph pixel moved further than this has been smeared. */
+        const val GLYPH_GAP = 48
+    }
 }
