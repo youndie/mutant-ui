@@ -63542,6 +63542,546 @@
       ]
     },
     {
+      "stem": "MutantMenu_Open_Efir",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-menu\"] div:has(> [data-mu=\"btn\"][data-key=\"menu\"])",
+      "theme": "Efir",
+      "x": 924,
+      "y": 630,
+      "w": 240,
+      "h": 232,
+      "art": [
+        0,
+        0,
+        240,
+        232
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        108
+      ],
+      "stageSlots": [
+        {
+          "key": "menu-anchor",
+          "ox": 28,
+          "oy": 108,
+          "w": 120,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.01825293350717,
+            6.010430247718384,
+            103.96349413298566,
+            20.020860495436768
+          ],
+          "cz": [
+            6.018252933507171,
+            4.010430247718384,
+            107.96349413298566,
+            24.020860495436768
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.54
+        },
+        {
+          "key": "menu",
+          "ox": 28,
+          "oy": 158,
+          "w": 216,
+          "h": 156,
+          "r": 8,
+          "over": 18,
+          "cf": 0.5,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            0,
+            4,
+            216,
+            141
+          ],
+          "cz": [
+            -2,
+            2,
+            220,
+            145
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "menu-pill",
+          "ox": 34,
+          "oy": 164,
+          "w": 204,
+          "h": 36,
+          "r": 6,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            2,
+            9,
+            26,
+            18
+          ],
+          "cz": [
+            0,
+            7,
+            30,
+            22
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
+      "stem": "MutantMenu_OpenBare_Efir",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-menu\"] div:has(> [data-mu=\"btn\"][data-key=\"menu\"])",
+      "theme": "Efir",
+      "x": 924,
+      "y": 630,
+      "w": 240,
+      "h": 232,
+      "art": [
+        0,
+        0,
+        240,
+        232
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        108
+      ],
+      "stageSlots": [
+        {
+          "key": "menu-anchor",
+          "ox": 28,
+          "oy": 108,
+          "w": 120,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.01825293350717,
+            6.010430247718384,
+            103.96349413298566,
+            20.020860495436768
+          ],
+          "cz": [
+            6.018252933507171,
+            4.010430247718384,
+            107.96349413298566,
+            24.020860495436768
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.54
+        },
+        {
+          "key": "menu",
+          "ox": 28,
+          "oy": 158,
+          "w": 216,
+          "h": 156,
+          "r": 8,
+          "over": 18,
+          "cf": 0.5,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            0,
+            4,
+            216,
+            141
+          ],
+          "cz": [
+            -2,
+            2,
+            220,
+            145
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "menu-pill",
+          "ox": 34,
+          "oy": 164,
+          "w": 204,
+          "h": 36,
+          "r": 6,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            2,
+            9,
+            26,
+            18
+          ],
+          "cz": [
+            0,
+            7,
+            30,
+            22
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
+      "stem": "MutantMenu_Open_Kopiya",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-menu\"] div:has(> [data-mu=\"btn\"][data-key=\"menu\"])",
+      "theme": "Kopiya",
+      "x": 924,
+      "y": 630,
+      "w": 240,
+      "h": 232,
+      "art": [
+        0,
+        0,
+        240,
+        232
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        108
+      ],
+      "stageSlots": [
+        {
+          "key": "menu-anchor",
+          "ox": 28,
+          "oy": 108,
+          "w": 120,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.01825293350717,
+            6.010430247718384,
+            103.96349413298566,
+            20.020860495436768
+          ],
+          "cz": [
+            6.018252933507171,
+            4.010430247718384,
+            107.96349413298566,
+            24.020860495436768
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.54
+        },
+        {
+          "key": "menu",
+          "ox": 28,
+          "oy": 158,
+          "w": 216,
+          "h": 156,
+          "r": 8,
+          "over": 18,
+          "cf": 0.5,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            0,
+            4,
+            216,
+            141
+          ],
+          "cz": [
+            -2,
+            2,
+            220,
+            145
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "menu-pill",
+          "ox": 34,
+          "oy": 164,
+          "w": 204,
+          "h": 36,
+          "r": 6,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            2,
+            9,
+            26,
+            18
+          ],
+          "cz": [
+            0,
+            7,
+            30,
+            22
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
+      "stem": "MutantMenu_OpenBare_Kopiya",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-menu\"] div:has(> [data-mu=\"btn\"][data-key=\"menu\"])",
+      "theme": "Kopiya",
+      "x": 924,
+      "y": 630,
+      "w": 240,
+      "h": 232,
+      "art": [
+        0,
+        0,
+        240,
+        232
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        108
+      ],
+      "stageSlots": [
+        {
+          "key": "menu-anchor",
+          "ox": 28,
+          "oy": 108,
+          "w": 120,
+          "h": 32,
+          "r": 16,
+          "over": 16,
+          "cf": 0.45,
+          "ow": 2.5,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            8.01825293350717,
+            6.010430247718384,
+            103.96349413298566,
+            20.020860495436768
+          ],
+          "cz": [
+            6.018252933507171,
+            4.010430247718384,
+            107.96349413298566,
+            24.020860495436768
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.54
+        },
+        {
+          "key": "menu",
+          "ox": 28,
+          "oy": 158,
+          "w": 216,
+          "h": 156,
+          "r": 8,
+          "over": 18,
+          "cf": 0.5,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            0,
+            4,
+            216,
+            141
+          ],
+          "cz": [
+            -2,
+            2,
+            220,
+            145
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "menu-pill",
+          "ox": 34,
+          "oy": 164,
+          "w": 204,
+          "h": 36,
+          "r": 6,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            2,
+            9,
+            26,
+            18
+          ],
+          "cz": [
+            0,
+            7,
+            30,
+            22
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
       "stem": "MutantNavigationBar_Rest_Efir",
       "page": "mutant-ui Компоненты.dc.html",
       "stage": "nav",

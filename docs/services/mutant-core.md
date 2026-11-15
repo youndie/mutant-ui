@@ -44,7 +44,9 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantCarousel.kt` | `MutantCarousel`, `MutantCarouselItem` ([B-47](../backlog/B-47-carousel.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDataTable.kt` | `MutantDataTable`, `MutantTableColumn`, `MutantTableCellStyle` ([B-46](../backlog/B-46-data-table.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSearchBar.kt` | `MutantSearchBar`, `MutantSearchSuggestions`, `MutantSearchResult`, `MutantSearchResultLoading` ([B-44](../backlog/B-44-search-bar.md)) |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSegmentedButton.kt` | `MutantSegmentedButton` and the venom window's run ([B-31](../backlog/B-31-segmented-button.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSegmentedButton.kt` | `MutantSegmentedButton` ([B-31](../backlog/B-31-segmented-button.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/VenomRun.kt` | the venom window's run, shared by the segmented button and the menu ([B-31](../backlog/B-31-segmented-button.md), [B-33](../backlog/B-33-menu.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantMenu.kt` | `MutantMenu`, `MutantDropdown` ([B-33](../backlog/B-33-menu.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTooltip.kt` | `MutantTooltipBox` and its plate ([B-32](../backlog/B-32-tooltip.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantBottomSheet.kt` | `MutantBottomSheet`, its window and tear line ([B-35](../backlog/B-35-bottom-sheet.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantPullToRefresh.kt` | `MutantPullToRefresh`, its tongue, pill and pull ([B-36](../backlog/B-36-pull-to-refresh.md)) |

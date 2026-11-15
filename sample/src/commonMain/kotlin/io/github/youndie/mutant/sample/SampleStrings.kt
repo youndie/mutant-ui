@@ -31,6 +31,10 @@ class SampleStrings(
     val sectionChips = t("Chips", "Чипы")
     val sectionSelection = t("Checkbox · Radio · Switch", "Чекбокс · Радио · Переключатель")
     val sectionSlider = t("Slider", "Слайдер")
+    val sectionMenu = t("Menu", "Меню")
+    val setting = t("Setting", "Настройка")
+    val menuItems =
+        listOf(t("TRACKING", "ТРЕКИНГ"), t("CHROMA", "ЦВЕТНОСТЬ"), t("SHARPNESS", "ЧЁТКОСТЬ"), t("RESET", "СБРОС"))
     val sectionSearch = t("Search bar", "Строка поиска")
     val sectionTable = t("Data table", "Таблица")
     val sectionCarousel = t("Carousel", "Карусель")

@@ -104,6 +104,11 @@ public final class io/github/youndie/mutant/components/MutantListItemKt {
 	public static final fun MutantListItem (Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function0;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantMenuKt {
+	public static final fun MutantDropdown (Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun MutantMenu-y952VWQ (ZLkotlin/jvm/functions/Function0;Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;JLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/components/MutantNavigationBarKt {
 	public static final fun MutantNavigationBar (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/foundation/layout/WindowInsets;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }

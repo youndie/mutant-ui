@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (11)
+## Open (10)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-33](docs/backlog/B-33-menu.md) `[ ]` | Menu: 36 dp items, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[ ]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[ ]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
@@ -74,7 +73,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 | [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[ ]` | A tall body rasterises its whole height every tick | P3 | M | B-69 |
 
-## Closed (75)
+## Closed (76)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -130,6 +129,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-30](docs/backlog/B-30-slider.md) `[x]` - Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside
 - [B-31](docs/backlog/B-31-segmented-button.md) `[x]` - SegmentedButton: the selection moves by venom
 - [B-32](docs/backlog/B-32-tooltip.md) `[x]` - Tooltip: a blob plate of 30 or 44 dp
+- [B-33](docs/backlog/B-33-menu.md) `[x]` - Menu: 36 dp items, the selection by venom
 - [B-35](docs/backlog/B-35-bottom-sheet.md) `[x]` - BottomSheet: a blob of r 22 with a divider above
 - [B-36](docs/backlog/B-36-pull-to-refresh.md) `[x]` - PullToRefresh: the tongue, refreshing by boil, done by a clean pill
 

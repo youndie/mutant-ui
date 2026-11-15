@@ -113,10 +113,12 @@ internal fun SegmentedBody(
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val chosen = enabled && selectedIndex in options.indices
-    val run = remember { VenomRun(selectedIndex) }
+    val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
+    val geo = remember { SegmentGeometry() }
     run.key = pillKey
     run.cassette = cassette
-    run.inset = if (enabled) INSET else 0f
+    run.slot = geo::slot
+    geo.inset = if (enabled) INSET else 0f
     // A clock that does not move (a still, reduce motion, a held screen) moves the window at once.
     run.follow(selectedIndex, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
     val select by rememberUpdatedState(onSelect)
@@ -244,7 +246,7 @@ internal fun SegmentedBody(
                                 onClick = { if (!on) select(i) },
                             ),
                     ) {
-                        SegmentLabel(text, label, run, i, enabled) {
+                        SegmentLabel(text, label, geo, i, enabled) {
                             when {
                                 hidden -> Color.Transparent
                                 !enabled -> colors.textDisabled
@@ -259,21 +261,21 @@ internal fun SegmentedBody(
             val w = c.maxWidth
             val h = c.maxHeight
             val d = density
-            run.cell = if (n > 0) (w / d - 2 * run.inset) / n else 0f
-            run.height = h / d
+            geo.cell = if (n > 0) (w / d - 2 * geo.inset) / n else 0f
+            geo.height = h / d
             val ink = measurables[0].measure(Constraints.fixed(w, h))
             val fill = measurables[2].measure(Constraints.fixed(w, h))
             // The window as the engine places it: the chosen segment's box, in whole pixels.
-            val (pillX, pillW) = run.box(selectedIndex, d)
-            val pillTop = (run.inset * d).roundToInt()
+            val (pillX, pillW) = geo.box(selectedIndex, d)
+            val pillTop = (geo.inset * d).roundToInt()
             val pill =
                 measurables[1].measure(
                     Constraints.fixed(pillW.coerceAtLeast(0), (h - 2 * pillTop).coerceAtLeast(0)),
                 )
             val labels =
                 measurables.drop(3).mapIndexed { i, m ->
-                    val l = ((run.inset + i * run.cell) * d).roundToInt()
-                    val r = ((run.inset + (i + 1) * run.cell) * d).roundToInt()
+                    val l = ((geo.inset + i * geo.cell) * d).roundToInt()
+                    val r = ((geo.inset + (i + 1) * geo.cell) * d).roundToInt()
                     m.measure(Constraints.fixed((r - l).coerceAtLeast(0), h)) to l
                 }
             layout(w, h) {
@@ -295,7 +297,7 @@ internal fun SegmentedBody(
 private fun SegmentLabel(
     text: String,
     style: TextStyle,
-    run: VenomRun,
+    run: SegmentGeometry,
     index: Int,
     enabled: Boolean,
     color: () -> Color,
@@ -329,98 +331,11 @@ private fun SegmentLabel(
     )
 }
 
-/**
- * The window's run: where it came from and when, the press that chose it, and the segments it moves between, in dp.
- * Read from draw, layer and colour lambdas; the clock's frame is read only while a run lasts, so a still button asks
- * for no frames.
- */
-private class VenomRun(
-    private var at: Int,
-) {
-    var key = ""
-    var cassette = ""
+/** The segments' geometry the window moves over, in dp: the inset from the body and the width of a segment. */
+private class SegmentGeometry {
     var inset = 0f
     var cell = 0f
     var height = 0f
-    private var from = -1
-    private var t0 = Double.NaN
-    private var px = 0f
-    private var py = 0f
-    private var cachedP = Double.NaN
-    private var cached: VenomShapes? = null
-
-    /** The press that chose the segment, dp from its middle: the mass goes there. */
-    fun pressAt(
-        x: Float,
-        y: Float,
-    ) {
-        px = x
-        py = y
-    }
-
-    /** From composition: a new index starts a run from the old one, unless the clock stands. */
-    fun follow(
-        to: Int,
-        nowMs: Double,
-        still: Boolean,
-    ) {
-        if (to == at) return
-        from = if (still || at < 0) -1 else at
-        t0 = nowMs
-        at = to
-        cachedP = Double.NaN
-    }
-
-    private fun elapsed(clock: MutantClock): Double? {
-        if (from < 0) return null
-        clock.frame
-        return clock.nowMs - t0
-    }
-
-    /**
-     * The run's progress, stepped at 24 frames a second, with its shapes; null outside a run. [to] is the index the
-     * caller was composed for: a lambda that captures it is made anew when a run starts, so it reads the clock again.
-     */
-    fun now(
-        clock: MutantClock,
-        to: Int,
-    ): Pair<Double, VenomShapes>? {
-        if (to != at) return null
-        val e = elapsed(clock) ?: return null
-        val p = min(1.0, floor(maxOf(0.0, e) / VENOM_STEP_MS) * VENOM_STEP_MS / MutantMotion.VENOM_MS)
-        if (p >= 1) {
-            from = -1
-            return null
-        }
-        if (p != cachedP || cached == null) {
-            val top = inset.roundToInt().toDouble()
-            val ox = (inset + at * cell).roundToInt().toDouble()
-            val old = (inset + from * cell).roundToInt().toDouble()
-            cached =
-                MutantGenerator(cassette).venomShapes(
-                    ox,
-                    top,
-                    cell.roundToInt().toDouble(),
-                    height - 2 * top,
-                    PILL_RADIUS,
-                    key,
-                    VenomFrom(old - ox, 0.0, px.toDouble(), py.toDouble()),
-                    p,
-                )
-            cachedP = p
-        }
-        return p to cached!!
-    }
-
-    /** Whether segment [i]'s label is black: the chosen one, from 340 ms into a run, the old one before. */
-    fun labelOn(
-        i: Int,
-        clock: MutantClock,
-        to: Int,
-    ): Boolean {
-        val e = elapsed(clock)
-        return if (e != null && e < LABEL_SWITCH_MS) i == from else i == to
-    }
 
     /** The window's left and width in pixels for segment [i]: the engine's whole-pixel `offsetLeft`/`offsetWidth`. */
     fun box(
@@ -429,6 +344,17 @@ private class VenomRun(
     ): Pair<Int, Int> {
         val l = ((inset + i * cell) * density).roundToInt()
         return l to (cell * density).roundToInt()
+    }
+
+    /** Segment [i]'s slot as the venom reads it: the engine's whole-dp box. */
+    fun slot(i: Int): DoubleArray {
+        val top = inset.roundToInt().toDouble()
+        return doubleArrayOf(
+            (inset + i * cell).roundToInt().toDouble(),
+            top,
+            cell.roundToInt().toDouble(),
+            height - 2 * top,
+        )
     }
 }
 
@@ -451,9 +377,3 @@ private const val DRIP_SHARE = .4
 /** The window: `data-r="9" data-calm=".2"`. */
 private const val PILL_RADIUS = 9.0
 private const val PILL_CALM = .2
-
-/** The venom steps at 24 frames a second (the engine's 41.67 ms). */
-private const val VENOM_STEP_MS = 41.67
-
-/** The labels change colour 340 ms into a run (`setTimeout(…, 340)`). */
-private const val LABEL_SWITCH_MS = 340.0
