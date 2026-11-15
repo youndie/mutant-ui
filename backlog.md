@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-33](docs/backlog/B-33-menu.md) `[ ]` | Menu: 36 dp items, the selection by venom | P2 | M | B-10, B-12, B-43 |
+| [B-33](docs/backlog/B-33-menu.md) `[~]` | Menu: 36 dp items, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[ ]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[ ]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
