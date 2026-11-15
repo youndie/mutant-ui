@@ -28,7 +28,10 @@ const WIDTH = 1280;
 const HEIGHT = 814;
 const SCALE = 2;
 const ALL = ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'DemoRecording', 'DemoSettings',
-  'ComponentsClean', 'ComponentsReduce', 'Control'];
+  'ComponentsClean', 'ComponentsReduce', 'Control', 'ControlRest'];
+// The control is the idle page (reduce motion stops the clock) with the busy-wait; ControlRest is the resting page with
+// it, reported beside, as the first smoke run found the resting page saturated (B-73's amendment).
+const HOST = { Control: 'ComponentsReduce', ControlRest: 'ComponentsRest' };
 const SCENES = scenesArg ? scenesArg.split(',') : ALL;
 const DIST = 'sample/build/dist/wasmJs/productionExecutable';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -105,7 +108,12 @@ await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
 })();` });
 
 const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
-const gpu = (await send('SystemInfo.getInfo')).gpu;
+// The GPU is the browser target's to report, not the page's.
+const gpu = await new Promise((res, rej) => {
+  const b = new WebSocket(version.webSocketDebuggerUrl);
+  b.onopen = () => b.send(JSON.stringify({ id: 1, method: 'SystemInfo.getInfo' }));
+  b.onmessage = e => { const m = JSON.parse(e.data); b.close(); m.error ? rej(new Error(m.error.message)) : res(m.result.gpu); };
+});
 const digest = readdirSync(DIST).filter(f => f.endsWith('.wasm')).sort()
   .map(f => `${f} ${createHash('sha256').update(readFileSync(join(DIST, f))).digest('hex').slice(0, 16)}`).join(', ');
 const header = [
@@ -120,6 +128,7 @@ const header = [
 ];
 console.log(header.join('\n'));
 const csv = ['round,scene,ts,interval,work'];
+const raw = {}; // scene -> counted rounds' intervals and work, unrounded
 const results = {};
 
 const q = (a, p) => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
@@ -127,7 +136,7 @@ let load = 0;
 for (let round = 1; round <= ROUNDS; round++) {
   const order = SCENES.map((_, i) => SCENES[(i + round - 1) % SCENES.length]);
   for (const scene of order) {
-    const url = `${origin}/?scene=${scene === 'Control' ? 'ComponentsRest' : scene}${scene === 'Control' ? '&control=1' : ''}&load=${++load}`;
+    const url = `${origin}/?scene=${HOST[scene] ?? scene}${HOST[scene] ? '&control=1' : ''}&load=${++load}`;
     const loaded = event('Page.loadEventFired');
     await send('Page.navigate', { url });
     await loaded;
@@ -160,6 +169,12 @@ for (let round = 1; round <= ROUNDS; round++) {
       if (!Number.isNaN(w)) work.push(w);
       csv.push(`${round},${scene},${f[i].ts.toFixed(2)},${iv.toFixed(2)},${Number.isNaN(w) ? '' : w.toFixed(2)}`);
     }
+    if (round > 1) {
+      const into = (raw[scene] ??= { iv: [], w: [], frames: 0 });
+      into.iv.push(...intervals);
+      into.w.push(...work);
+      into.frames += f.length;
+    }
     const r = {
       frames: f.length, fps: f.length / (SCENE_MS / 1000), ivP95: q(intervals, .95),
       over17: intervals.filter(x => x > 16.7).length / Math.max(1, intervals.length),
@@ -174,24 +189,22 @@ writeFileSync(join(out, 'frames.csv'), csv.join('\n') + '\n');
 
 // The verdict, pre-registered in B-73, over the counted rounds pooled per scene.
 console.log('\n# counted rounds 2..' + ROUNDS + ', pooled');
-const counted = new Set(Array.from({ length: ROUNDS - 1 }, (_, i) => String(i + 2)));
-const rows = csv.slice(1).map(l => l.split(',')).filter(c => counted.has(c[0]));
 for (const scene of SCENES) {
-  const mine = rows.filter(c => c[1] === scene);
-  const iv = mine.map(c => +c[3]);
-  const w = mine.filter(c => c[4] !== '').map(c => +c[4]);
+  const { iv, w, frames } = raw[scene] ?? { iv: [], w: [], frames: 0 };
   const o17 = iv.filter(x => x > 16.7).length / iv.length;
   const o33 = iv.filter(x => x > 33).length / iv.length;
   const p50 = q(w, .5), p95 = q(w, .95);
   const verdict = p95 <= 8 && o17 < .01 ? 'GREEN' : p50 > 16.7 || o33 > .05 ? 'RED' : 'GREY';
-  const fps = mine.length / ((ROUNDS - 1) * SCENE_MS / 1000);
+  const fps = frames / ((ROUNDS - 1) * SCENE_MS / 1000);
   console.log(`${scene.padEnd(17)} ${fps.toFixed(1).padStart(5)} f/s  interval p95 ${q(iv, .95).toFixed(1).padStart(6)}  >16.7 ${(100 * o17).toFixed(2).padStart(6)} %  >33 ${(100 * o33).toFixed(2).padStart(6)} %  work p50 ${p50.toFixed(2).padStart(6)} p95 ${p95.toFixed(2).padStart(6)}  ${verdict}`);
 }
-const ctl = (results.Control ?? []).filter(r => r.round > 1);
-const rest = (results.ComponentsRest ?? []).filter(r => r.round > 1);
-if (ctl.length && rest.length) {
-  console.log('# control: work p50 over the resting page, per counted round: ' +
-    ctl.map((c, i) => (c.workP50 - (rest[i]?.workP50 ?? NaN)).toFixed(2)).join(', ') + ` ms against ${CONTROL_MS} ms`);
+for (const [ctl, base] of [['Control', 'ComponentsReduce'], ['ControlRest', 'ComponentsRest']]) {
+  const c = (results[ctl] ?? []).filter(r => r.round > 1);
+  const b = (results[base] ?? []).filter(r => r.round > 1);
+  if (!c.length || !b.length) continue;
+  const by = new Map(b.map(r => [r.round, r.workP50]));
+  console.log(`# ${ctl}: work p50 over ${base}'s, per counted round: ` +
+    c.map(r => (r.workP50 - by.get(r.round)).toFixed(2)).join(', ') + ` ms against ${CONTROL_MS} ms`);
 }
 ws.close();
 chrome.kill();
