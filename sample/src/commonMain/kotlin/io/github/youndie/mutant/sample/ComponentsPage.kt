@@ -49,6 +49,10 @@ import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantPullToRefresh
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSearchBar
+import io.github.youndie.mutant.components.MutantSearchResult
+import io.github.youndie.mutant.components.MutantSearchResultLoading
+import io.github.youndie.mutant.components.MutantSearchSuggestions
 import io.github.youndie.mutant.components.MutantSegmentedButton
 import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
@@ -78,6 +82,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionSegmented) { Segmented() }
         Section(strings.sectionTooltip) { Tooltips(strings) }
         Section(strings.sectionField) { Field(strings) }
+        Section(strings.sectionSearch) { Search(strings) }
         Section(strings.sectionCard) { Cards(strings) }
         Section(strings.sectionNav) { Navigation(strings) }
         Section(strings.sectionList) { ListRows(strings) }
@@ -192,6 +197,26 @@ private fun Field(s: SampleStrings) {
         MutantTextField(value, { value = it }, Modifier.width(328.dp), prefix = s.search, placeholder = s.findRecording)
         MutantTextField(s.untitled, {}, Modifier.width(328.dp), isError = true, key = "field-error")
         MutantTextField("", {}, Modifier.width(328.dp), placeholder = s.disabled, enabled = false, key = "field-off")
+    }
+}
+
+/** Type to filter, press a suggestion to take it; the row of cocoons stands for results still coming. */
+@Composable
+private fun Search(s: SampleStrings) {
+    var query by remember(s) { mutableStateOf(s.night) }
+    MutantSearchBar(query, { query = it }, Modifier.width(328.dp), prefix = s.search, clearLabel = s.clear) {
+        MutantSearchSuggestions(listOf(s.nightToTuesday, s.nightAir), { query = it }, selected = query)
+        Column {
+            MutantSearchResult(
+                s.nightTuesday,
+                query,
+                supporting = s.recordedOver,
+                leadingIcon = MutantIcons.Schedule,
+                onClick = {},
+            )
+            MutantDivider(key = "search")
+            MutantSearchResultLoading(key = "search")
+        }
     }
 }
 
