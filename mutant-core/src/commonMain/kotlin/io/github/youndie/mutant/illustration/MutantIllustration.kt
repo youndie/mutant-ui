@@ -156,6 +156,26 @@ private class Art(
         x: Int = 0,
         y: Int = 0,
     ) {
+        // The words are part of the picture: drawn at the art's scale, in dp, whatever the user's font scale (B-61).
+        val d = androidx.compose.ui.platform.LocalDensity.current
+        androidx.compose.runtime.CompositionLocalProvider(
+            androidx.compose.ui.platform.LocalDensity provides
+                androidx.compose.ui.unit
+                    .Density(d.density, 1f),
+        ) { wordsInDp(text, size, color, spacing, lineHeight, alignment, x, y) }
+    }
+
+    @Composable
+    private fun wordsInDp(
+        text: String,
+        size: Int,
+        color: Color,
+        spacing: Double,
+        lineHeight: Double,
+        alignment: Alignment,
+        x: Int,
+        y: Int,
+    ) {
         BasicText(
             text,
             // Wrapped to the text, as the engine's `textZone` measures the text's own box, not the label's.

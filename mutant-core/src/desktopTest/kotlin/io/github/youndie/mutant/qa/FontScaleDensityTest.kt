@@ -19,7 +19,6 @@ import io.github.youndie.mutant.components.MutantTopAppBar
 import io.github.youndie.mutant.illustration.MutantIllustration
 import io.github.youndie.mutant.illustration.MutantIllustrationKind
 import kotlin.math.abs
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -90,9 +89,15 @@ class FontScaleDensityTest {
                 val get = n.config.getOrElseNullable(SemanticsActions.GetTextLayoutResult) { null } ?: continue
                 val results = mutableListOf<TextLayoutResult>()
                 get.action?.invoke(results)
-                results.filter { it.didOverflowHeight }.forEach {
-                    out += "'${it.layoutInput.text.take(12)}' ${it.multiParagraph.height.toInt()} in ${it.size.height}"
-                }
+                // Cut top or bottom: a box shorter than its text. Compose's own flag counts a line ended by an ellipsis
+                // too, which is the kit's rule for a word that does not fit its width; an empty text has nothing to cut
+                // (an empty single-line field's box can be a pixel under its empty line) (B-61).
+                results
+                    .filter { it.layoutInput.text.isNotEmpty() && it.size.height < it.multiParagraph.height }
+                    .forEach {
+                        out +=
+                            "'${it.layoutInput.text.take(12)}' ${it.multiParagraph.height.toInt()} in ${it.size.height}"
+                    }
             }
         }
         return out
@@ -107,21 +112,16 @@ class FontScaleDensityTest {
         assertEquals(emptyList(), cut)
     }
 
-    @Ignore("F10: the top app bar's 26 sp title is cut by its 56 dp row already at font scale 2")
     @Test
     fun `F10 at font scale 2 the top app bar keeps its title whole`() =
         assertEquals(emptyList(), clipped(2f) { MutantTopAppBar("Кассеты", status = "CH 03") {} })
 
-    @Ignore(
-        "F09: at font scale 3 every fixed-height component cuts its text (buttons, chips, controls, field, tabs, snackbar, navigation)",
-    )
     @Test
     fun `F09 at font scale 3 no component cuts its text`() {
         val cut = subjects.flatMap { s -> clipped(3f) { s.content(Modifier, "Пуск") }.map { "${s.name}: $it" } }
         assertEquals(emptyList(), cut)
     }
 
-    @Ignore("F17: the illustrations' own labels scale with the font and break out of the art")
     @Test
     fun `F17 at font scale 2 an illustration's label stays inside the art`() =
         runComposeUiTest {

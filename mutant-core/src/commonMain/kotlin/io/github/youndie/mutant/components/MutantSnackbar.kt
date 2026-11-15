@@ -5,10 +5,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
@@ -113,7 +115,7 @@ internal fun SnackbarBody(
         key,
         modifier
             .fillMaxWidth()
-            .height(HEIGHT)
+            .heightIn(min = HEIGHT)
             .graphicsLayer { translationY = (out * (size.height + RIDE_BELOW.toPx())).toFloat() }
             .semantics { liveRegion = LiveRegionMode.Polite },
         fill = colors.noSignal,
@@ -123,7 +125,17 @@ internal fun SnackbarBody(
         probe = probe,
     ) {
         Row(
-            Modifier.fillMaxWidth().height(HEIGHT).padding(start = SIDE, end = if (actionLabel == null) SIDE else 0.dp),
+            Modifier.fillMaxWidth().height(IntrinsicSize.Min).heightIn(min = HEIGHT).padding(
+                start = SIDE,
+                end =
+                    if (actionLabel ==
+                        null
+                    ) {
+                        SIDE
+                    } else {
+                        0.dp
+                    },
+            ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {

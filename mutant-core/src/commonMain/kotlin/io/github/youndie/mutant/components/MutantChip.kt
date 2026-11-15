@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
@@ -86,7 +87,7 @@ internal fun ChipBody(
     Box(
         modifier
             .defaultMinSize(minWidth = TOUCH)
-            .height(TOUCH)
+            .heightIn(min = TOUCH)
             // As wide as the label and its padding, or the width the caller gives; the body fills it.
             .width(IntrinsicSize.Max)
             .selectable(
@@ -102,7 +103,7 @@ internal fun ChipBody(
         MutantSurface(
             MutantBody.Chip,
             key,
-            Modifier.fillMaxWidth().height(HEIGHT),
+            Modifier.fillMaxWidth().heightIn(min = HEIGHT),
             fill = if (selected) colors.primary else null,
             slip = if (selected) null else UNSELECTED_SLIP,
             state = if (enabled) BodyState.Rest else BodyState.Disabled,

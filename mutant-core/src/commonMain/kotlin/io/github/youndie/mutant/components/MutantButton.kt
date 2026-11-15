@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
@@ -167,7 +168,7 @@ internal fun TextButtonBody(
                     }
                 }
             }.defaultMinSize(minWidth = TOUCH)
-            .height(TOUCH)
+            .heightIn(min = TOUCH)
             .width(IntrinsicSize.Max)
             .padding(horizontal = TEXT_PADDING),
         verticalArrangement = Arrangement.spacedBy(TEXT_GAP, Alignment.CenterVertically),
@@ -229,7 +230,7 @@ internal fun ButtonBody(
         key,
         modifier
             .defaultMinSize(minWidth = TOUCH, minHeight = TOUCH)
-            .height(TOUCH)
+            .heightIn(min = TOUCH)
             .semantics { if (loading) progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate }
             .clickable(source, indication = null, enabled = enabled && !loading, role = Role.Button, onClick = onClick),
         fill = if (outlined) colors.background else null,
