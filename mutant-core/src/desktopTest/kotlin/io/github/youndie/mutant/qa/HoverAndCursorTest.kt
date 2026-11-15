@@ -26,6 +26,7 @@ import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardTitle
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
+import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantDialogAction
 import io.github.youndie.mutant.components.MutantFab
 import io.github.youndie.mutant.components.MutantHandCursor
@@ -43,6 +44,7 @@ import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
 import io.github.youndie.mutant.components.MutantSwitch
 import io.github.youndie.mutant.components.MutantTab
+import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.icons.MutantIcons
@@ -85,6 +87,20 @@ class HoverAndCursorTest {
             "SegmentedButton" to { e -> MutantSegmentedButton(listOf("SP", "LP"), 0, {}, enabled = e) },
             "Slider" to { e -> MutantSlider(0, {}, Modifier.width(240.dp), enabled = e) },
             "SearchBar" to { e -> MutantSearchBar("ночь", {}, Modifier.width(300.dp), enabled = e) },
+            "DataTable" to { e ->
+                MutantDataTable(
+                    listOf("а"),
+                    listOf(
+                        MutantTableColumn<String>("ЗАПИСЬ") {
+                            it
+                        },
+                    ),
+                    Modifier.width(300.dp),
+                    emptySet(),
+                    { _, _ -> },
+                    enabled = e,
+                )
+            },
             "SearchSuggestions" to { e -> MutantSearchSuggestions(listOf("ночь"), {}, enabled = e) },
             "SearchResult" to { e -> MutantSearchResult("Эфир, ночь", "ночь", onClick = {}, enabled = e) },
         )

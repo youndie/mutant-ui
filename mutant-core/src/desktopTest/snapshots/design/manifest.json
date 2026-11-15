@@ -61902,6 +61902,686 @@
       ]
     },
     {
+      "stem": "MutantDataTable_Selected_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-table\"] > div:has(> [data-mu-divider])",
+      "theme": "Efir",
+      "x": 92,
+      "y": 758,
+      "w": 560,
+      "h": 238,
+      "art": [
+        0,
+        0,
+        560,
+        238
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        72
+      ],
+      "stageSlots": [
+        {
+          "key": "trow0",
+          "ox": 28,
+          "oy": 123,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.92
+        },
+        {
+          "key": "trow1",
+          "ox": 28,
+          "oy": 173,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -4,
+            0,
+            30,
+            22
+          ],
+          "cz": [
+            -6,
+            -2,
+            34,
+            26
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.98
+        },
+        {
+          "key": "trow2",
+          "ox": 28,
+          "oy": 223,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.04
+        },
+        {
+          "key": "trow3",
+          "ox": 28,
+          "oy": 273,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.03
+        }
+      ]
+    },
+    {
+      "stem": "MutantDataTable_SelectedBare_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-table\"] > div:has(> [data-mu-divider])",
+      "theme": "Efir",
+      "x": 92,
+      "y": 758,
+      "w": 560,
+      "h": 238,
+      "art": [
+        0,
+        0,
+        560,
+        238
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        72
+      ],
+      "stageSlots": [
+        {
+          "key": "trow0",
+          "ox": 28,
+          "oy": 123,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.92
+        },
+        {
+          "key": "trow1",
+          "ox": 28,
+          "oy": 173,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -4,
+            0,
+            30,
+            22
+          ],
+          "cz": [
+            -6,
+            -2,
+            34,
+            26
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.98
+        },
+        {
+          "key": "trow2",
+          "ox": 28,
+          "oy": 223,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.04
+        },
+        {
+          "key": "trow3",
+          "ox": 28,
+          "oy": 273,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#2f3960",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.03
+        }
+      ]
+    },
+    {
+      "stem": "MutantDataTable_Selected_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-table\"] > div:has(> [data-mu-divider])",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 758,
+      "w": 560,
+      "h": 238,
+      "art": [
+        0,
+        0,
+        560,
+        238
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        72
+      ],
+      "stageSlots": [
+        {
+          "key": "trow0",
+          "ox": 28,
+          "oy": 123,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.92
+        },
+        {
+          "key": "trow1",
+          "ox": 28,
+          "oy": 173,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -4,
+            0,
+            30,
+            22
+          ],
+          "cz": [
+            -6,
+            -2,
+            34,
+            26
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.98
+        },
+        {
+          "key": "trow2",
+          "ox": 28,
+          "oy": 223,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.04
+        },
+        {
+          "key": "trow3",
+          "ox": 28,
+          "oy": 273,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.03
+        }
+      ]
+    },
+    {
+      "stem": "MutantDataTable_SelectedBare_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-table\"] > div:has(> [data-mu-divider])",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 758,
+      "w": 560,
+      "h": 238,
+      "art": [
+        0,
+        0,
+        560,
+        238
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        72
+      ],
+      "stageSlots": [
+        {
+          "key": "trow0",
+          "ox": 28,
+          "oy": 123,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.92
+        },
+        {
+          "key": "trow1",
+          "ox": 28,
+          "oy": 173,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -4,
+            0,
+            30,
+            22
+          ],
+          "cz": [
+            -6,
+            -2,
+            34,
+            26
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 1.98
+        },
+        {
+          "key": "trow2",
+          "ox": 28,
+          "oy": 223,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.04
+        },
+        {
+          "key": "trow3",
+          "ox": 28,
+          "oy": 273,
+          "w": 22,
+          "h": 22,
+          "r": 5,
+          "over": 0,
+          "cf": 0,
+          "ow": 2,
+          "wob": 0.45,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#d6ccb2",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.03
+        }
+      ]
+    },
+    {
       "stem": "MutantNavigationBar_Rest_Efir",
       "page": "mutant-ui Компоненты.dc.html",
       "stage": "nav",
