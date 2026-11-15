@@ -62,7 +62,8 @@ import kotlin.math.roundToInt
  * A text field: a line of the on-screen menu (body `field`, 52 dp tall). [prefix] is the OSD label before the
  * value (Handjet, the OSD colour), [placeholder] stands in while the value is empty. Focused, the damage drops to 30 %,
  * the corner brackets lock on and a block caret blinks after the text, or a thin one stands before the insertion point
- * inside it; [isError] corrupts the body (the red offset outline and blocks); disabled, it loses its signal and both
+ * inside it; [isError] corrupts the body (the red offset outline and blocks) and tells a screen reader what is wrong,
+ * [errorDescription] (the generic `Ошибка` when the caller says nothing); disabled, it loses its signal and both
  * texts grey. A press anywhere on the body focuses it and puts the cursor at the nearest place in the text. The text
  * and the caret are never moved by the body. One line; its direction is the text's.
  */
@@ -78,6 +79,7 @@ public fun MutantTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     key: String = prefix ?: placeholder ?: "field",
     interactionSource: MutableInteractionSource? = null,
+    errorDescription: String = ERROR_WORD,
 ) {
     TextFieldBody(
         value,
@@ -90,6 +92,7 @@ public fun MutantTextField(
         keyboardOptions,
         key,
         interactionSource,
+        errorDescription = errorDescription,
     )
 }
 
@@ -111,6 +114,7 @@ internal fun TextFieldBody(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     trailing: (@Composable () -> Unit)? = null,
     focusRequester: FocusRequester? = null,
+    errorDescription: String = ERROR_WORD,
 ) {
     val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
@@ -169,7 +173,7 @@ internal fun TextFieldBody(
                     val offset = l.getOffsetForPosition(Offset(local.x, l.size.height / 2f)).coerceIn(0, n)
                     held = field.copy(selection = TextRange(offset))
                 }
-            }.semantics { if (isError) error("") },
+            }.semantics { if (isError) error(errorDescription) },
         state =
             when {
                 !enabled -> BodyState.Disabled
@@ -302,6 +306,10 @@ private fun Caret(
 }
 
 /** The field's height (the page's `height: 52px`) and the width it takes given none (research D15). */
+
+/** What a screen reader says of an error the caller did not describe (B-67). */
+private const val ERROR_WORD = "Ошибка"
+
 private val HEIGHT = 52.dp
 private val MIN_WIDTH = 200.dp
 
