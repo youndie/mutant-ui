@@ -115,12 +115,16 @@ class SheetBehaviourTest {
     @Test
     fun `it rises from below in 330 ms, and under reduce motion is there at once`() {
         var rising = 0f to 0f
+        var mid = 0f
         var at = 0f
         runComposeUiTest {
             sheet(start = false).show(true)
             mainClock.advanceTimeByFrame()
             mainClock.advanceTimeByFrame()
             val early = titleTop()
+            // Two of the kit's 83 ms steps in: risen part of the way, not yet there.
+            mainClock.advanceTimeBy(140)
+            mid = titleTop()
             mainClock.advanceTimeBy(500)
             rising = early to titleTop()
         }
@@ -132,6 +136,10 @@ class SheetBehaviourTest {
         }
         val (early, settled) = rising
         assertTrue(early > settled + 40, "rising: ${early - settled} dp below where it settles")
+        assertTrue(
+            mid < early - 20 && mid > settled + 20,
+            "halfway: ${mid - settled} dp below, from ${early - settled}",
+        )
         assertEquals(settled, at, 1f, "reduce motion: at once")
     }
 
