@@ -1,5 +1,6 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -48,7 +49,8 @@ class PullToRefreshBehaviourTest {
                     Box(Modifier.size(320.dp, 400.dp)) {
                         MutantPullToRefresh(refreshing, { refreshes++ }, Modifier.testTag("ptr")) {
                             Column(Modifier.verticalScroll(rememberScrollState()).testTag("list")) {
-                                MutantButton("Первая", { clicks++ }, Modifier.testTag("first"))
+                                // Tall enough that the pull never leaves it: only the pull's own consuming can cancel its click.
+                                Box(Modifier.size(300.dp, 300.dp).clickable { clicks++ }.testTag("first"))
                                 repeat(20) { BasicText("Строка $it", Modifier.size(300.dp, 40.dp)) }
                             }
                         }
@@ -92,7 +94,8 @@ class PullToRefreshBehaviourTest {
         runComposeUiTest {
             val s = screen()
             onNodeWithTag("first").performMouseInput {
-                moveTo(center)
+                // Near its top: the 200 px of the pull stay inside it.
+                moveTo(Offset(centerX, 20f))
                 press()
                 moveBy(Offset(0f, 100f))
                 moveBy(Offset(0f, 100f))
