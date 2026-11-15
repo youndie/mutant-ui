@@ -1,0 +1,199 @@
+#!/usr/bin/env node
+// B-73: what a frame of the sample costs in the browser, per scene — the production wasm build in headless Chrome,
+// driven over CDP, as B-72 measured the JVM. Per frame: the interval between two frames' starts (`requestAnimationFrame`'s
+// timestamp) and the main thread's frame span, *work*: from the frame's start to the first task after its rendering
+// update (a message posted from the frame's callback). Long animation frames (≥ 50 ms) are counted from the page's own
+// observer. Scenes rotate each round; round 1 and each scene's first second are not counted. The control is the resting
+// page with 10 ms of busy-waiting inside every frame, and the recorder must read it.
+//
+//   node scripts/frame-bench-browser.mjs <out-dir> [rounds] [scene-ms] [Scene,Scene]
+//
+// Needs `./gradlew :sample:wasmJsBrowserDistribution` first and Google Chrome. Not part of `make check`.
+import { spawn, execSync } from 'node:child_process';
+import { createServer } from 'node:http';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync, statSync, mkdtempSync } from 'node:fs';
+import { join, extname } from 'node:path';
+import { tmpdir } from 'node:os';
+
+const [out, roundsArg, sceneMsArg, scenesArg] = process.argv.slice(2);
+if (!out) throw new Error('usage: frame-bench-browser.mjs <out-dir> [rounds] [scene-ms] [Scene,Scene]');
+const ROUNDS = +(roundsArg ?? 6);
+const SCENE_MS = +(sceneMsArg ?? 10_000);
+const SETTLE_MS = 1_000;
+const CONTROL_MS = 10;
+const WHEEL_EVERY_MS = 32;
+const WHEEL_FLIP_MS = 2_500;
+const WIDTH = 1280;
+const HEIGHT = 814;
+const SCALE = 2;
+const ALL = ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'DemoRecording', 'DemoSettings',
+  'ComponentsClean', 'ComponentsReduce', 'Control'];
+const SCENES = scenesArg ? scenesArg.split(',') : ALL;
+const DIST = 'sample/build/dist/wasmJs/productionExecutable';
+const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+
+if (!existsSync(join(DIST, 'index.html'))) throw new Error(`no build at ${DIST}: run :sample:wasmJsBrowserDistribution`);
+mkdirSync(out, { recursive: true });
+
+// The build, served as the site serves it.
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
+  '.css': 'text/css', '.ttf': 'font/ttf', '.png': 'image/png', '.json': 'application/json', '.map': 'application/json' };
+const server = createServer((req, res) => {
+  const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  const file = join(DIST, path === '/' ? 'index.html' : path);
+  if (!file.startsWith(DIST) || !existsSync(file) || statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
+  res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
+  res.end(readFileSync(file));
+});
+await new Promise(r => server.listen(0, '127.0.0.1', r));
+const origin = `http://127.0.0.1:${server.address().port}`;
+
+const profile = mkdtempSync(join(tmpdir(), 'b73-'));
+const chrome = spawn(CHROME, ['--headless=new', `--window-size=${WIDTH},${HEIGHT}`, `--force-device-scale-factor=${SCALE}`,
+  '--remote-debugging-port=9335', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
+  '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
+  'about:blank'], { stdio: 'ignore' });
+let version;
+for (let i = 0; i < 50 && !version; i++) {
+  await new Promise(r => setTimeout(r, 200));
+  version = await fetch('http://127.0.0.1:9335/json/version').then(r => r.json()).catch(() => null);
+}
+const page = (await fetch('http://127.0.0.1:9335/json/list').then(r => r.json())).find(t => t.type === 'page');
+const ws = new WebSocket(page.webSocketDebuggerUrl);
+await new Promise(r => { ws.onopen = r; });
+let seq = 0;
+const pending = new Map();
+const waiters = [];
+ws.onmessage = e => {
+  const m = JSON.parse(e.data);
+  if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); return; }
+  for (const w of waiters.splice(0)) if (!w(m)) waiters.push(w);
+};
+const send = (method, params = {}) => new Promise((res, rej) => {
+  const id = ++seq;
+  pending.set(id, m => (m.error ? rej(new Error(`${method}: ${m.error.message}`)) : res(m.result)));
+  ws.send(JSON.stringify({ id, method, params }));
+});
+const event = (name, ms = 30_000) => new Promise((res, rej) => {
+  const t = setTimeout(() => rej(new Error(`no ${name}`)), ms);
+  waiters.push(m => { if (m.method !== name) return false; clearTimeout(t); res(m.params); return true; });
+});
+const evaluate = async expr => (await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true })).result.value;
+
+await send('Page.enable');
+await send('Runtime.enable');
+await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: false });
+// The recorder, in the page before the sample's own script.
+await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
+  const control = new URLSearchParams(location.search).get('control') === '1';
+  const frames = []; const long = [];
+  window.__bench = { frames, long, recording: false };
+  const mc = new MessageChannel();
+  let open = null;
+  mc.port1.onmessage = () => { if (open) { open.end = performance.now(); if (window.__bench.recording) frames.push(open); open = null; } };
+  function tick(ts) {
+    if (open && window.__bench.recording) frames.push(open);
+    if (control) { const until = performance.now() + ${CONTROL_MS}; while (performance.now() < until) {} }
+    open = { ts, end: -1 };
+    mc.port2.postMessage(0);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  new PerformanceObserver(l => { if (window.__bench.recording) for (const e of l.getEntries()) long.push([e.startTime, e.duration, e.blockingDuration]); })
+    .observe({ type: 'long-animation-frame' });
+})();` });
+
+const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
+const gpu = (await send('SystemInfo.getInfo')).gpu;
+const digest = readdirSync(DIST).filter(f => f.endsWith('.wasm')).sort()
+  .map(f => `${f} ${createHash('sha256').update(readFileSync(join(DIST, f))).digest('hex').slice(0, 16)}`).join(', ');
+const header = [
+  `# B-73 browser frame bench, ${new Date().toISOString()}`,
+  `# host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
+  `# power: ${sh("pmset -g batt | tail -1 | sed 's/\\t/ /g'")}`,
+  `# browser: ${version.Browser}, headless=new, ${WIDTH}x${HEIGHT} at ${SCALE}x`,
+  `# gpu: ${gpu.devices.map(d => d.deviceString).join('; ')}; webgl ${gpu.featureStatus.webgl}, gpu_compositing ${gpu.featureStatus.gpu_compositing}`,
+  `# commit: ${sh('git rev-parse --short HEAD')}${sh('git status --porcelain -- sample mutant-core') ? ' (dirty)' : ''}`,
+  `# build: ${digest}`,
+  `# rounds ${ROUNDS} (round 1 not counted), ${SCENE_MS} ms a scene, first ${SETTLE_MS} ms not counted; scenes ${SCENES.join(',')}`,
+];
+console.log(header.join('\n'));
+const csv = ['round,scene,ts,interval,work'];
+const results = {};
+
+const q = (a, p) => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
+let load = 0;
+for (let round = 1; round <= ROUNDS; round++) {
+  const order = SCENES.map((_, i) => SCENES[(i + round - 1) % SCENES.length]);
+  for (const scene of order) {
+    const url = `${origin}/?scene=${scene === 'Control' ? 'ComponentsRest' : scene}${scene === 'Control' ? '&control=1' : ''}&load=${++load}`;
+    const loaded = event('Page.loadEventFired');
+    await send('Page.navigate', { url });
+    await loaded;
+    // The sample is up once its canvas has drawn: wait for the wasm to start, then settle.
+    for (let i = 0; i < 100 && !(await evaluate('!!document.querySelector("canvas")')); i++) await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, SETTLE_MS));
+    await evaluate('window.__bench.recording = true; 0');
+    const until = Date.now() + SCENE_MS;
+    let down = true;
+    let flipAt = Date.now() + WHEEL_FLIP_MS;
+    let wheels = 0;
+    while (Date.now() < until) {
+      if (scene === 'ComponentsWheel') {
+        if (Date.now() > flipAt) { down = !down; flipAt += WHEEL_FLIP_MS; }
+        await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 450, deltaX: 0, deltaY: down ? 100 : -100 });
+        wheels++;
+        await new Promise(r => setTimeout(r, WHEEL_EVERY_MS));
+      } else {
+        await new Promise(r => setTimeout(r, 100));
+      }
+    }
+    const got = await evaluate('window.__bench.recording = false; JSON.stringify({ f: window.__bench.frames, l: window.__bench.long, s: window.__scrolled ?? -1 })');
+    const { f, l, s } = JSON.parse(got);
+    const intervals = [];
+    const work = [];
+    for (let i = 1; i < f.length; i++) {
+      const iv = f[i].ts - f[i - 1].ts;
+      const w = f[i].end < 0 ? NaN : f[i].end - f[i].ts;
+      intervals.push(iv);
+      if (!Number.isNaN(w)) work.push(w);
+      csv.push(`${round},${scene},${f[i].ts.toFixed(2)},${iv.toFixed(2)},${Number.isNaN(w) ? '' : w.toFixed(2)}`);
+    }
+    const r = {
+      frames: f.length, fps: f.length / (SCENE_MS / 1000), ivP95: q(intervals, .95),
+      over17: intervals.filter(x => x > 16.7).length / Math.max(1, intervals.length),
+      over33: intervals.filter(x => x > 33).length / Math.max(1, intervals.length),
+      workP50: q(work, .5), workP95: q(work, .95), loaf: l.length, loafMs: l.reduce((a, e) => a + e[1], 0), wheels, scrolled: s,
+    };
+    (results[scene] ??= []).push({ round, ...r });
+    console.log(`round ${round} ${scene.padEnd(17)} ${r.fps.toFixed(1).padStart(5)} f/s  interval p95 ${r.ivP95.toFixed(1).padStart(6)}  >16.7 ${(100 * r.over17).toFixed(2).padStart(6)} %  >33 ${(100 * r.over33).toFixed(2).padStart(6)} %  work p50 ${r.workP50.toFixed(2).padStart(6)} p95 ${r.workP95.toFixed(2).padStart(6)}  LoAF ${r.loaf} (${r.loafMs.toFixed(0)} ms)${scene === 'ComponentsWheel' ? `  wheel ${wheels} events, scrolled ${s} px` : ''}`);
+  }
+}
+writeFileSync(join(out, 'frames.csv'), csv.join('\n') + '\n');
+
+// The verdict, pre-registered in B-73, over the counted rounds pooled per scene.
+console.log('\n# counted rounds 2..' + ROUNDS + ', pooled');
+const counted = new Set(Array.from({ length: ROUNDS - 1 }, (_, i) => String(i + 2)));
+const rows = csv.slice(1).map(l => l.split(',')).filter(c => counted.has(c[0]));
+for (const scene of SCENES) {
+  const mine = rows.filter(c => c[1] === scene);
+  const iv = mine.map(c => +c[3]);
+  const w = mine.filter(c => c[4] !== '').map(c => +c[4]);
+  const o17 = iv.filter(x => x > 16.7).length / iv.length;
+  const o33 = iv.filter(x => x > 33).length / iv.length;
+  const p50 = q(w, .5), p95 = q(w, .95);
+  const verdict = p95 <= 8 && o17 < .01 ? 'GREEN' : p50 > 16.7 || o33 > .05 ? 'RED' : 'GREY';
+  const fps = mine.length / ((ROUNDS - 1) * SCENE_MS / 1000);
+  console.log(`${scene.padEnd(17)} ${fps.toFixed(1).padStart(5)} f/s  interval p95 ${q(iv, .95).toFixed(1).padStart(6)}  >16.7 ${(100 * o17).toFixed(2).padStart(6)} %  >33 ${(100 * o33).toFixed(2).padStart(6)} %  work p50 ${p50.toFixed(2).padStart(6)} p95 ${p95.toFixed(2).padStart(6)}  ${verdict}`);
+}
+const ctl = (results.Control ?? []).filter(r => r.round > 1);
+const rest = (results.ComponentsRest ?? []).filter(r => r.round > 1);
+if (ctl.length && rest.length) {
+  console.log('# control: work p50 over the resting page, per counted round: ' +
+    ctl.map((c, i) => (c.workP50 - (rest[i]?.workP50 ?? NaN)).toFixed(2)).join(', ') + ` ms against ${CONTROL_MS} ms`);
+}
+ws.close();
+chrome.kill();
+server.close();
+process.exit(0);
