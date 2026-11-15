@@ -1,7 +1,7 @@
 ---
 id: B-44
 title: "SearchBar: a focused field with suggestion chips and result rows"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-6-later
