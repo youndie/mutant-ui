@@ -158,6 +158,8 @@ internal fun SliderBody(
         } else {
             colors.textDisabled
         }
+    // The platform's raster even in a parity fixture: ChromePlacedText already places the line at Chrome's fraction,
+    // and the fixture's subpixel positioning would shift it a second time (B-85).
     val header = styles.osd(HEADER_SIZE.sp).copy(color = words)
     val valueStyle =
         styles

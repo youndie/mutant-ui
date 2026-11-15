@@ -1,0 +1,32 @@
+# B-85 raster probe on the hosted macos-latest runner
+# host macOS 26.7.2 (GitHub Actions run 43721249682, PR #29, commit 6015481, ZzB85ProbeTest)
+# the value "−4" (Handjet 18, ink #05060C) against its transparent twin: pixels that differ, those within 2 levels of the ink, the rest
+B85 aa-none-sub disabled-body differ=52 fullInk=43 partial=9
+B85 aa-none-sub plain-amber differ=52 fullInk=43 partial=9
+B85 aa-none-sub plain-grey differ=52 fullInk=43 partial=9
+B85 aa-none-sub rest-body differ=52 fullInk=43 partial=9
+B85 aa-normal-nosub disabled-body differ=56 fullInk=49 partial=7
+B85 aa-normal-nosub plain-amber differ=56 fullInk=49 partial=7
+B85 aa-normal-nosub plain-grey differ=56 fullInk=49 partial=7
+B85 aa-normal-nosub rest-body differ=56 fullInk=49 partial=7
+B85 aa-slight-nosub disabled-body differ=56 fullInk=49 partial=7
+B85 aa-slight-nosub plain-amber differ=56 fullInk=49 partial=7
+B85 aa-slight-nosub plain-grey differ=56 fullInk=49 partial=7
+B85 aa-slight-nosub rest-body differ=56 fullInk=49 partial=7
+B85 default disabled-body differ=60 fullInk=49 partial=11
+B85 default plain-amber differ=60 fullInk=49 partial=11
+B85 default plain-grey differ=60 fullInk=49 partial=11
+B85 default rest-body differ=60 fullInk=49 partial=11
+B85 lcd-none-nosub disabled-body differ=53 fullInk=46 partial=7
+B85 lcd-none-nosub plain-amber differ=53 fullInk=46 partial=7
+B85 lcd-none-nosub plain-grey differ=53 fullInk=46 partial=7
+B85 lcd-none-nosub rest-body differ=53 fullInk=46 partial=7
+B85 lcd-slight-nosub disabled-body differ=56 fullInk=49 partial=7
+B85 lcd-slight-nosub plain-amber differ=56 fullInk=49 partial=7
+B85 lcd-slight-nosub plain-grey differ=56 fullInk=49 partial=7
+B85 lcd-slight-nosub rest-body differ=56 fullInk=49 partial=7
+B85 os 26.7.2
+B85 slider enabled=false '+3' differ=76 fullInk=65 partial=11
+B85 slider enabled=false '−4' differ=54 fullInk=49 partial=5
+B85 slider enabled=true '+3' differ=76 fullInk=65 partial=11
+B85 slider enabled=true '−4' differ=54 fullInk=49 partial=5
