@@ -70,7 +70,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: "**/build/reports/**"
+          # The parity checks' _ACTUAL and _DIFF images: a cell red on the runner alone is read from them.
+          path: |
+            **/build/reports/**
+            **/build/parity/**
           retention-days: 7
           if-no-files-found: ignore
 
