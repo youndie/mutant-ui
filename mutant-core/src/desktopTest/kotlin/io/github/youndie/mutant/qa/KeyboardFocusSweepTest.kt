@@ -27,6 +27,7 @@ import io.github.youndie.mutant.components.MutantCarouselItem
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantDataTable
+import io.github.youndie.mutant.components.MutantDatePicker
 import io.github.youndie.mutant.components.MutantDropdown
 import io.github.youndie.mutant.components.MutantExtendedFab
 import io.github.youndie.mutant.components.MutantFab
@@ -48,6 +49,7 @@ import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
+import io.github.youndie.mutant.components.MutantTimePicker
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.tokens.MutantPalettes
 import kotlin.test.Test
@@ -90,6 +92,9 @@ class KeyboardFocusSweepTest {
             Control("TextField", activates = false) { _ -> MutantTextField("abc", {}, Modifier.width(240.dp)) },
             // The first stop is the field; its clear icon is the second (SearchBarBehaviourTest).
             Control("SearchBar", activates = false) { _ -> MutantSearchBar("ночь", {}, Modifier.width(300.dp)) },
+            // The first stop is the back arrow; the days and the fields have tests of their own (DateTimePickerBehaviourTest).
+            Control("DatePicker", activates = false) { _ -> MutantDatePicker(2026, 11, 13, {}, { _, _ -> }) },
+            Control("TimePicker", activates = false) { _ -> MutantTimePicker(21, 30, { _, _ -> }) },
             // Enter opens the menu (MenuBehaviourTest).
             Control("Dropdown", activates = false) { _ -> MutantDropdown("Настройка", listOf("ТРЕКИНГ"), 0, {}) },
             // The first stop is the card before the current one; Enter brings it in (CarouselBehaviourTest).

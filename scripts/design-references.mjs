@@ -246,6 +246,18 @@ export const REFERENCES = [
     sel: '[data-mu-stage="v1-drawer-bg"]',
     hide: bare ? '[data-mu-stage="v1-drawer-bg"], [data-mu-stage="v1-drawer-bg"] * { color: transparent !important; }' : '',
   }))),
+  // B-45: the later page's calendar (the bar with its month, weekdays and days, the 13th in its drop) and its time
+  // picker (two fields and the colon), each as it stands, whole and with every word hidden, both themes, with the
+  // bodies the engine built on the stage.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].flatMap((bare) => {
+    const hide = bare ? '[data-mu-stage="l-date"], [data-mu-stage="l-date"] * { color: transparent !important; }' : '';
+    return [
+      { stem: `MutantDatePicker_Rest${bare ? 'Bare' : ''}_${theme}`, page: LATER, el: true, slots: true, index: 0, theme, hide,
+        sel: '[data-mu-stage="l-date"] [data-mu="bar"][data-key="cal"]' },
+      { stem: `MutantTimePicker_Hours${bare ? 'Bare' : ''}_${theme}`, page: LATER, el: true, slots: true, index: 0, theme, hide,
+        sel: '[data-mu-stage="l-date"] div:has(> [data-mu="field"][data-key="tp-h"])' },
+    ];
+  })),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>

@@ -64762,6 +64762,806 @@
       ]
     },
     {
+      "stem": "MutantDatePicker_Rest_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] [data-mu=\"bar\"][data-key=\"cal\"]",
+      "theme": "Efir",
+      "x": 924,
+      "y": 323,
+      "w": 284,
+      "h": 307,
+      "art": [
+        0,
+        0,
+        284,
+        307
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "cal",
+          "ox": 28,
+          "oy": 76,
+          "w": 284,
+          "h": 307,
+          "r": 12,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            10,
+            12.5,
+            264,
+            268.5
+          ],
+          "cz": [
+            8,
+            10.5,
+            268,
+            272.5
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.98
+        },
+        {
+          "key": "cal-day",
+          "ox": 188,
+          "oy": 221,
+          "w": 36,
+          "h": 36,
+          "r": 18,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.53
+        }
+      ]
+    },
+    {
+      "stem": "MutantTimePicker_Hours_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] div:has(> [data-mu=\"field\"][data-key=\"tp-h\"])",
+      "theme": "Efir",
+      "x": 1248,
+      "y": 323,
+      "w": 181,
+      "h": 72,
+      "art": [
+        0,
+        0,
+        181,
+        72
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        352,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "tp-h",
+          "ox": 352,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "tp-m",
+          "ox": 457,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        }
+      ]
+    },
+    {
+      "stem": "MutantDatePicker_RestBare_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] [data-mu=\"bar\"][data-key=\"cal\"]",
+      "theme": "Efir",
+      "x": 924,
+      "y": 323,
+      "w": 284,
+      "h": 307,
+      "art": [
+        0,
+        0,
+        284,
+        307
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "cal",
+          "ox": 28,
+          "oy": 76,
+          "w": 284,
+          "h": 307,
+          "r": 12,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            10,
+            12.5,
+            264,
+            268.5
+          ],
+          "cz": [
+            8,
+            10.5,
+            268,
+            272.5
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.98
+        },
+        {
+          "key": "cal-day",
+          "ox": 188,
+          "oy": 221,
+          "w": 36,
+          "h": 36,
+          "r": 18,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.53
+        }
+      ]
+    },
+    {
+      "stem": "MutantTimePicker_HoursBare_Efir",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] div:has(> [data-mu=\"field\"][data-key=\"tp-h\"])",
+      "theme": "Efir",
+      "x": 1248,
+      "y": 323,
+      "w": 181,
+      "h": 72,
+      "art": [
+        0,
+        0,
+        181,
+        72
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        352,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "tp-h",
+          "ox": 352,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "tp-m",
+          "ox": 457,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        }
+      ]
+    },
+    {
+      "stem": "MutantDatePicker_Rest_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] [data-mu=\"bar\"][data-key=\"cal\"]",
+      "theme": "Kopiya",
+      "x": 924,
+      "y": 323,
+      "w": 284,
+      "h": 307,
+      "art": [
+        0,
+        0,
+        284,
+        307
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "cal",
+          "ox": 28,
+          "oy": 76,
+          "w": 284,
+          "h": 307,
+          "r": 12,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            10,
+            12.5,
+            264,
+            268.5
+          ],
+          "cz": [
+            8,
+            10.5,
+            268,
+            272.5
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.98
+        },
+        {
+          "key": "cal-day",
+          "ox": 188,
+          "oy": 221,
+          "w": 36,
+          "h": 36,
+          "r": 18,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.53
+        }
+      ]
+    },
+    {
+      "stem": "MutantTimePicker_Hours_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] div:has(> [data-mu=\"field\"][data-key=\"tp-h\"])",
+      "theme": "Kopiya",
+      "x": 1248,
+      "y": 323,
+      "w": 181,
+      "h": 72,
+      "art": [
+        0,
+        0,
+        181,
+        72
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        352,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "tp-h",
+          "ox": 352,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "tp-m",
+          "ox": 457,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        }
+      ]
+    },
+    {
+      "stem": "MutantDatePicker_RestBare_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] [data-mu=\"bar\"][data-key=\"cal\"]",
+      "theme": "Kopiya",
+      "x": 924,
+      "y": 323,
+      "w": 284,
+      "h": 307,
+      "art": [
+        0,
+        0,
+        284,
+        307
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        28,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "cal",
+          "ox": 28,
+          "oy": 76,
+          "w": 284,
+          "h": 307,
+          "r": 12,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 1,
+          "tz": [
+            10,
+            12.5,
+            264,
+            268.5
+          ],
+          "cz": [
+            8,
+            10.5,
+            268,
+            272.5
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.98
+        },
+        {
+          "key": "cal-day",
+          "ox": 188,
+          "oy": 221,
+          "w": 36,
+          "h": 36,
+          "r": 18,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.53
+        }
+      ]
+    },
+    {
+      "stem": "MutantTimePicker_HoursBare_Kopiya",
+      "page": "mutant-ui Компоненты позже.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"l-date\"] div:has(> [data-mu=\"field\"][data-key=\"tp-h\"])",
+      "theme": "Kopiya",
+      "x": 1248,
+      "y": 323,
+      "w": 181,
+      "h": 72,
+      "art": [
+        0,
+        0,
+        181,
+        72
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 0,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        352,
+        76
+      ],
+      "stageSlots": [
+        {
+          "key": "tp-h",
+          "ox": 352,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.93
+        },
+        {
+          "key": "tp-m",
+          "ox": 457,
+          "oy": 76,
+          "w": 76,
+          "h": 72,
+          "r": 6,
+          "over": 14,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10.578125,
+            5,
+            54.828125,
+            62
+          ],
+          "cz": [
+            8.578125,
+            3,
+            58.828125,
+            66
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        }
+      ]
+    },
+    {
       "stem": "MutantNavigationBar_Rest_Efir",
       "page": "mutant-ui Компоненты.dc.html",
       "stage": "nav",
