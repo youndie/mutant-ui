@@ -1,3 +1,9 @@
+public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSegmentedButtonKt {
+	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantSegmentedButtonKt;
+	public fun <init> ()V
+	public final fun getLambda$-1612509469$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSwitchKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantSwitchKt;
 	public fun <init> ()V
@@ -89,6 +95,10 @@ public final class io/github/youndie/mutant/components/MutantProgressKt {
 	public static final fun MutantCircularProgress (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public static final fun MutantLinearProgress (FLandroidx/compose/ui/Modifier;ZLandroidx/compose/runtime/Composer;II)V
 	public static final fun MutantLinearProgress (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/youndie/mutant/components/MutantSegmentedButtonKt {
+	public static final fun MutantSegmentedButton (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/components/MutantSliderKt {

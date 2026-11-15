@@ -178,6 +178,10 @@ export const REFERENCES = [
     sel: '[data-mu-stage="v1-slider"] div:has(> div > [data-mu="fab"])',
     hide: bare ? '[data-mu-stage="v1-slider"], [data-mu-stage="v1-slider"] * { color: transparent !important; }' : '',
   })))),
+  // B-31: the v1 page's segmented buttons, the one to pick in (its pill on the first segment) and the disabled one,
+  // whole and with the text hidden, both themes; cut above the captions, 26 px under the body.
+  ...['Efir', 'Kopiya'].flatMap((theme) => ['Rest', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
+    ({ stem: `MutantSegmented_${s}${bare ? 'Bare' : ''}_${theme}`, page: V1, stage: 'v1-seg', type: 'btn', index, theme, below: 26, hideText: bare })))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
