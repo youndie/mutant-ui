@@ -1,7 +1,7 @@
 ---
 id: B-30
 title: "Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside"
-status: done
+status: question
 priority: P2
 size: M
 stage: stage-4-v1
@@ -62,3 +62,14 @@ The slider is also in the QA subjects (density 2, font scale 2) and in the keybo
 Survived as equivalent: the fill's end moved by 2 dp. It always ends under the handle, which covers it from 0.5 to 33.5 dp across at the fill's rows.
 
 **Found on the way.** Compose's `TextLayoutResult.didOverflowWidth` compares the box with the paragraph, which is as wide as the constraint, so a short line in a wide box reads as overflowing. The slider's test compares the text's own width with its box instead.
+
+## Question (2026-11-15): the disabled value on the macOS 26 runner
+
+PR #18 is green on this Mac (macOS 27) and red on the runner (`macos-latest`, macOS 26), on `SliderParityTest`'s two disabled cells only. The runner's images (now uploaded with the test reports) show why. There the fixture draws the disabled handle's value `−4` **without antialiasing**: every pixel of the glyphs is either the ink itself (`#060606`-ish) or the body behind it, with nothing in between. On this Mac the same frame is smoothed and lies on the page's pixels. The words in the header (B-74's one row higher there, allowed) and `+3` on the amber handle stay smooth on the runner too.
+
+Not established: whether the trigger is the glyphs (`−4` against `+3`) or the disabled body under them. Nor whether the kit outside a fixture (platform text settings, not the fixture's `ChromeText`) does the same on macOS 26. If it does, a consumer on macOS 26 sees jagged digits there.
+
+Choices, for the owner:
+1. **Find the trigger on the runner first.** A scratch fixture pushed through CI draws `−4` and `+3` over each body, with the fixture's settings and the platform's. About two CI runs. If the kit itself draws jagged text on macOS 26, that is a defect of its own.
+2. **Allow it on macOS 26 for the disabled value only**, as B-74 allows its row, and file the investigation as an item. The value's place and colour stay exact on this Mac.
+3. **Leave the merge** until the runner matches this Mac (a newer runner image).
