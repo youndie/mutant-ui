@@ -540,6 +540,15 @@ The owner's choice of 2026-11-14 ([B-51](../backlog/B-51-size-change-moves-the-f
 
 Both are departures from the generator, for a jump the engine itself makes.
 
+### D18. A running body's webs between drips are steadied
+
+The owner's remark of 2026-11-15 ([B-84](../backlog/B-84-drip-webs-flip-every-tick.md)): two drips close together stick and come apart at every step, as the engine draws them too. Between two drips the smooth union leaves a flat saddle, and the boil's 0.8 dp tremble there moved the web's edge several dp at every boil phase. On a running clock a point keeps `(1 − h)²` of the tremble, h the blend weight of the strongest merge it lies in. Between drips standing still, the web jumps 3 dp or more on 444 of 61 963 ticks, against 6 450 as the engine draws it and 246 with no boil at all. A resting frame costs 3.6 % more. A frozen clock draws the engine's field, so no parity cell or golden moves. Rejected:
+
+- damping by the field's slope: the saddle is not flat enough; 4 623 jumps at a threshold that keeps the edge;
+- spacing the drips apart, which changes every body's shape and the generator's goldens;
+- a plain `min` between drips, which cuts the webs to creases;
+- smoothing the field between ticks, where the design steps on purpose.
+
 ---
 
 ## 3. Risks and open questions

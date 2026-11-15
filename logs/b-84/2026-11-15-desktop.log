@@ -1,0 +1,150 @@
+# B-06 field bench
+# commit d7a10da
+# host Mac OS X 27.0.1 aarch64, cpus 8
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79, max heap 4096 MiB
+# calls 200 per arm per round, arms interleaved per call, rounds 5 (round 1 discarded), warm-up 3 s per case
+round 1 btn-a instance=57.3 warm=716.0 warm2=709.2 hot=825.8 cold=7678.2 steady=738.8
+round 1 btn-b instance=10.0 warm=406.8 warm2=404.3 hot=458.0 cold=3931.8 steady=422.1
+round 1 btn-still instance=1.7 warm=757.7 warm2=754.8 hot=874.7 cold=7699.7 steady=787.8
+round 1 fab-a instance=25.3 warm=215.8 warm2=214.3 hot=249.4 cold=2619.8 steady=224.7
+round 1 fab-b instance=110.3 warm=547.4 warm2=544.5 hot=618.0 cold=5713.9 steady=566.4
+round 1 icon-a instance=0.8 warm=166.3 warm2=165.7 hot=192.4 cold=1827.7 steady=173.0
+round 1 icon-b instance=0.6 warm=117.4 warm2=117.0 hot=144.7 cold=1408.3 steady=121.8
+round 1 chip-a instance=55.8 warm=275.0 warm2=272.2 hot=300.5 cold=2707.5 steady=283.5
+round 1 chip-b instance=59.5 warm=432.8 warm2=425.1 hot=482.5 cold=3769.6 steady=451.4
+round 1 card-a instance=55.8 warm=536.0 warm2=528.1 hot=617.4 cold=5858.2 steady=561.1
+round 1 card-b instance=14.3 warm=383.2 warm2=378.5 hot=423.9 cold=4654.5 steady=402.4
+round 1 field-a instance=64.1 warm=395.1 warm2=390.6 hot=452.2 cold=3571.8 steady=419.2
+round 1 field-b instance=49.0 warm=487.4 warm2=478.8 hot=562.1 cold=4334.2 steady=512.5
+round 1 track-a instance=9.2 warm=148.0 warm2=147.1 hot=173.8 cold=1641.5 steady=153.0
+round 1 track-b instance=36.8 warm=203.5 warm2=202.3 hot=224.3 cold=1970.9 steady=212.1
+round 1 thumb-a instance=0.3 warm=61.0 warm2=60.8 hot=81.0 cold=755.6 steady=63.1
+round 1 thumb-b instance=0.4 warm=85.8 warm2=85.5 hot=111.3 cold=934.4 steady=88.5
+round 1 box-a instance=0.1 warm=46.4 warm2=45.9 hot=64.9 cold=626.3 steady=46.5
+round 1 box-b instance=0.1 warm=62.3 warm2=62.5 hot=84.2 cold=890.1 steady=62.9
+round 1 dot-a instance=0.1 warm=46.3 warm2=46.5 hot=64.1 cold=631.1 steady=47.2
+round 1 dot-b instance=0.2 warm=63.3 warm2=63.9 hot=82.6 cold=888.9 steady=64.5
+round 1 bar-a instance=62.1 warm=228.5 warm2=228.0 hot=287.3 cold=3621.9 steady=231.0
+round 1 bar-b instance=9.0 warm=121.8 warm2=122.1 hot=150.1 cold=1829.2 steady=122.9
+round 1 pill-a instance=0.2 warm=96.7 warm2=96.8 hot=118.7 cold=1398.2 steady=97.3
+round 1 pill-b instance=0.2 warm=141.5 warm2=142.1 hot=175.2 cold=2170.3 steady=142.3
+round 1 blob-a instance=20.3 warm=864.1 warm2=853.9 hot=937.9 cold=10268.2 steady=886.8
+round 1 blob-b instance=44.9 warm=412.6 warm2=403.1 hot=468.0 cold=4007.9 steady=432.6
+round 1 control card-a warm=523.3 warm+200us=722.6 delta=199.3
+round 1 checksum -15126226442042
+round 2 btn-a instance=57.0 warm=714.9 warm2=708.7 hot=824.9 cold=7675.6 steady=735.6
+round 2 btn-b instance=10.0 warm=407.3 warm2=405.6 hot=458.5 cold=3934.8 steady=422.3
+round 2 btn-still instance=1.5 warm=756.4 warm2=753.4 hot=875.5 cold=7700.9 steady=784.2
+round 2 fab-a instance=25.0 warm=215.8 warm2=214.2 hot=248.6 cold=2618.9 steady=224.7
+round 2 fab-b instance=109.5 warm=546.9 warm2=543.9 hot=618.2 cold=5711.9 steady=566.5
+round 2 icon-a instance=0.7 warm=166.7 warm2=165.8 hot=192.4 cold=1828.2 steady=172.9
+round 2 icon-b instance=0.5 warm=117.9 warm2=117.3 hot=145.3 cold=1410.1 steady=121.8
+round 2 chip-a instance=55.3 warm=274.8 warm2=271.3 hot=303.8 cold=2705.8 steady=280.8
+round 2 chip-b instance=59.1 warm=432.8 warm2=424.9 hot=482.7 cold=3771.3 steady=450.8
+round 2 card-a instance=55.2 warm=535.6 warm2=528.3 hot=616.5 cold=5859.6 steady=559.7
+round 2 card-b instance=13.8 warm=379.8 warm2=377.0 hot=422.0 cold=4650.3 steady=398.0
+round 2 field-a instance=63.2 warm=393.6 warm2=389.8 hot=452.3 cold=3568.8 steady=417.7
+round 2 field-b instance=48.4 warm=486.0 warm2=477.2 hot=562.3 cold=4333.2 steady=511.1
+round 2 track-a instance=9.0 warm=148.3 warm2=147.4 hot=172.8 cold=1641.1 steady=153.3
+round 2 track-b instance=36.3 warm=203.5 warm2=202.7 hot=224.3 cold=1970.1 steady=211.7
+round 2 thumb-a instance=0.3 warm=61.1 warm2=60.9 hot=81.2 cold=756.0 steady=63.2
+round 2 thumb-b instance=0.4 warm=86.0 warm2=85.7 hot=111.4 cold=935.7 steady=88.6
+round 2 box-a instance=0.1 warm=46.5 warm2=45.8 hot=64.8 cold=627.5 steady=46.6
+round 2 box-b instance=0.1 warm=62.6 warm2=62.8 hot=84.1 cold=892.0 steady=63.3
+round 2 dot-a instance=0.1 warm=46.1 warm2=46.3 hot=63.6 cold=636.0 steady=47.1
+round 2 dot-b instance=0.1 warm=63.3 warm2=64.0 hot=84.7 cold=902.9 steady=64.6
+round 2 bar-a instance=61.8 warm=229.0 warm2=227.8 hot=287.3 cold=3620.0 steady=231.3
+round 2 bar-b instance=8.9 warm=122.3 warm2=122.7 hot=150.9 cold=1832.9 steady=123.2
+round 2 pill-a instance=0.1 warm=96.7 warm2=97.1 hot=118.5 cold=1399.5 steady=97.6
+round 2 pill-b instance=0.1 warm=141.5 warm2=141.8 hot=175.0 cold=2169.8 steady=142.5
+round 2 blob-a instance=20.0 warm=867.7 warm2=858.3 hot=934.6 cold=10268.5 steady=887.9
+round 2 blob-b instance=44.0 warm=412.5 warm2=402.3 hot=466.7 cold=4010.1 steady=433.2
+round 2 control card-a warm=525.1 warm+200us=724.2 delta=199.1
+round 2 checksum -20427027529042
+round 3 btn-a instance=56.2 warm=714.7 warm2=709.0 hot=821.5 cold=7675.5 steady=737.6
+round 3 btn-b instance=9.7 warm=407.0 warm2=404.6 hot=459.2 cold=3932.8 steady=423.5
+round 3 btn-still instance=1.5 warm=755.4 warm2=753.5 hot=875.5 cold=7701.8 steady=783.8
+round 3 fab-a instance=24.7 warm=216.0 warm2=214.8 hot=249.2 cold=2619.8 steady=225.4
+round 3 fab-b instance=109.6 warm=545.9 warm2=543.2 hot=618.0 cold=5714.8 steady=567.2
+round 3 icon-a instance=0.7 warm=166.4 warm2=166.0 hot=192.3 cold=1827.8 steady=173.0
+round 3 icon-b instance=0.5 warm=117.6 warm2=116.9 hot=145.0 cold=1410.0 steady=121.7
+round 3 chip-a instance=55.1 warm=275.2 warm2=271.8 hot=298.0 cold=2707.4 steady=282.5
+round 3 chip-b instance=59.1 warm=432.4 warm2=424.8 hot=481.7 cold=3768.9 steady=450.0
+round 3 card-a instance=55.4 warm=536.3 warm2=528.0 hot=618.4 cold=5859.5 steady=561.0
+round 3 card-b instance=13.8 warm=381.0 warm2=377.0 hot=421.4 cold=4648.9 steady=399.7
+round 3 field-a instance=63.1 warm=396.2 warm2=389.6 hot=454.6 cold=3568.5 steady=418.1
+round 3 field-b instance=48.7 warm=487.9 warm2=478.5 hot=562.0 cold=4334.1 steady=511.8
+round 3 track-a instance=8.9 warm=148.5 warm2=147.6 hot=173.8 cold=1641.0 steady=153.6
+round 3 track-b instance=36.4 warm=203.3 warm2=202.3 hot=224.7 cold=1971.2 steady=211.8
+round 3 thumb-a instance=0.3 warm=61.4 warm2=61.3 hot=82.2 cold=757.0 steady=63.6
+round 3 thumb-b instance=0.4 warm=85.9 warm2=85.5 hot=111.0 cold=934.5 steady=88.6
+round 3 box-a instance=0.1 warm=46.6 warm2=46.1 hot=65.0 cold=627.4 steady=46.8
+round 3 box-b instance=0.1 warm=62.7 warm2=63.0 hot=84.3 cold=891.9 steady=63.5
+round 3 dot-a instance=0.1 warm=45.5 warm2=45.8 hot=61.1 cold=627.7 steady=46.4
+round 3 dot-b instance=0.1 warm=63.2 warm2=63.7 hot=84.2 cold=888.9 steady=64.4
+round 3 bar-a instance=61.5 warm=228.4 warm2=227.8 hot=287.5 cold=3618.9 steady=230.9
+round 3 bar-b instance=8.7 warm=121.6 warm2=122.2 hot=150.2 cold=1829.4 steady=122.9
+round 3 pill-a instance=0.1 warm=96.8 warm2=97.1 hot=118.3 cold=1401.2 steady=97.6
+round 3 pill-b instance=0.1 warm=141.7 warm2=142.0 hot=175.3 cold=2170.9 steady=142.7
+round 3 blob-a instance=20.0 warm=867.0 warm2=859.3 hot=938.1 cold=10266.8 steady=888.9
+round 3 blob-b instance=44.5 warm=412.2 warm2=402.0 hot=468.3 cold=4010.3 steady=433.9
+round 3 control card-a warm=525.3 warm+200us=723.4 delta=198.1
+round 3 checksum -25727828620438
+round 4 btn-a instance=56.4 warm=715.3 warm2=707.4 hot=822.3 cold=7674.5 steady=737.5
+round 4 btn-b instance=9.7 warm=408.5 warm2=404.6 hot=457.6 cold=3933.7 steady=422.6
+round 4 btn-still instance=1.5 warm=753.2 warm2=751.8 hot=874.6 cold=7699.9 steady=785.1
+round 4 fab-a instance=24.8 warm=216.4 warm2=214.7 hot=249.5 cold=2621.3 steady=225.5
+round 4 fab-b instance=109.7 warm=545.3 warm2=543.0 hot=618.1 cold=5713.9 steady=564.2
+round 4 icon-a instance=0.7 warm=166.9 warm2=166.1 hot=193.3 cold=1828.4 steady=173.6
+round 4 icon-b instance=0.5 warm=117.5 warm2=117.0 hot=144.7 cold=1409.6 steady=121.8
+round 4 chip-a instance=55.6 warm=276.5 warm2=273.0 hot=308.5 cold=2709.9 steady=284.6
+round 4 chip-b instance=61.5 warm=442.8 warm2=432.8 hot=489.6 cold=3801.1 steady=461.8
+round 4 card-a instance=60.0 warm=549.1 warm2=539.8 hot=626.8 cold=5917.3 steady=584.8
+round 4 card-b instance=14.8 warm=384.1 warm2=379.1 hot=424.6 cold=4658.3 steady=402.3
+round 4 field-a instance=64.4 warm=397.3 warm2=391.2 hot=457.1 cold=3576.5 steady=420.6
+round 4 field-b instance=50.0 warm=490.0 warm2=479.8 hot=565.1 cold=4343.0 steady=516.0
+round 4 track-a instance=9.0 warm=147.9 warm2=146.7 hot=172.5 cold=1640.1 steady=152.8
+round 4 track-b instance=36.7 warm=203.4 warm2=202.1 hot=225.3 cold=1972.4 steady=212.5
+round 4 thumb-a instance=0.3 warm=60.8 warm2=60.5 hot=81.0 cold=756.1 steady=62.9
+round 4 thumb-b instance=0.4 warm=85.4 warm2=85.2 hot=111.1 cold=934.8 steady=88.2
+round 4 box-a instance=0.1 warm=45.9 warm2=45.4 hot=64.1 cold=626.0 steady=46.1
+round 4 box-b instance=0.1 warm=61.7 warm2=62.1 hot=83.5 cold=890.6 steady=62.4
+round 4 dot-a instance=0.1 warm=45.9 warm2=46.0 hot=63.6 cold=630.5 steady=46.8
+round 4 dot-b instance=0.1 warm=62.5 warm2=62.9 hot=82.4 cold=888.7 steady=63.7
+round 4 bar-a instance=63.0 warm=229.8 warm2=229.4 hot=290.8 cold=3627.3 steady=231.8
+round 4 bar-b instance=8.8 warm=121.9 warm2=122.2 hot=150.5 cold=1830.8 steady=122.8
+round 4 pill-a instance=0.1 warm=96.7 warm2=96.8 hot=118.2 cold=1400.4 steady=97.3
+round 4 pill-b instance=0.1 warm=142.5 warm2=142.8 hot=177.5 cold=2175.0 steady=143.3
+round 4 blob-a instance=20.1 warm=868.3 warm2=856.5 hot=938.7 cold=10268.3 steady=887.5
+round 4 blob-b instance=44.1 warm=411.8 warm2=403.1 hot=466.9 cold=4007.7 steady=432.6
+round 4 control card-a warm=521.9 warm+200us=721.1 delta=199.2
+round 4 checksum -31028629707839
+round 5 btn-a instance=56.4 warm=715.0 warm2=708.1 hot=820.8 cold=7675.8 steady=739.1
+round 5 btn-b instance=9.8 warm=409.8 warm2=406.5 hot=459.8 cold=3937.4 steady=424.7
+round 5 btn-still instance=1.5 warm=755.9 warm2=752.8 hot=878.7 cold=7702.2 steady=789.1
+round 5 fab-a instance=25.0 warm=216.1 warm2=214.5 hot=249.9 cold=2620.2 steady=225.2
+round 5 fab-b instance=109.9 warm=546.8 warm2=543.8 hot=617.9 cold=5712.8 steady=567.8
+round 5 icon-a instance=0.7 warm=166.4 warm2=165.9 hot=192.3 cold=1827.8 steady=173.0
+round 5 icon-b instance=0.5 warm=117.7 warm2=117.0 hot=145.2 cold=1410.1 steady=121.8
+round 5 chip-a instance=55.3 warm=275.5 warm2=271.8 hot=299.5 cold=2707.8 steady=282.5
+round 5 chip-b instance=59.2 warm=433.2 warm2=425.8 hot=482.6 cold=3769.1 steady=450.4
+round 5 card-a instance=55.4 warm=536.3 warm2=528.5 hot=617.7 cold=5858.7 steady=561.1
+round 5 card-b instance=13.9 warm=379.8 warm2=377.3 hot=421.1 cold=4646.9 steady=398.3
+round 5 field-a instance=64.7 warm=394.3 warm2=390.0 hot=453.2 cold=3567.5 steady=418.2
+round 5 field-b instance=48.7 warm=488.0 warm2=477.7 hot=562.6 cold=4334.1 steady=512.5
+round 5 track-a instance=9.0 warm=148.0 warm2=146.8 hot=173.9 cold=1641.6 steady=153.2
+round 5 track-b instance=36.4 warm=203.5 warm2=202.5 hot=223.7 cold=1970.0 steady=211.7
+round 5 thumb-a instance=0.3 warm=60.9 warm2=60.7 hot=81.6 cold=756.9 steady=63.1
+round 5 thumb-b instance=0.4 warm=86.0 warm2=85.5 hot=111.7 cold=935.7 steady=88.7
+round 5 box-a instance=0.1 warm=45.8 warm2=45.2 hot=64.1 cold=625.5 steady=45.8
+round 5 box-b instance=0.1 warm=62.1 warm2=62.3 hot=83.8 cold=892.0 steady=62.8
+round 5 dot-a instance=0.1 warm=45.7 warm2=45.8 hot=63.2 cold=629.2 steady=46.4
+round 5 dot-b instance=0.1 warm=62.6 warm2=63.1 hot=83.3 cold=889.1 steady=63.8
+round 5 bar-a instance=62.0 warm=228.0 warm2=227.5 hot=287.1 cold=3618.6 steady=230.3
+round 5 bar-b instance=8.6 warm=121.6 warm2=122.1 hot=150.1 cold=1829.1 steady=123.0
+round 5 pill-a instance=0.1 warm=96.8 warm2=96.9 hot=118.5 cold=1400.6 steady=97.4
+round 5 pill-b instance=0.1 warm=141.7 warm2=142.0 hot=175.8 cold=2171.0 steady=142.4
+round 5 blob-a instance=19.9 warm=863.4 warm2=855.9 hot=935.3 cold=10266.3 steady=888.7
+round 5 blob-b instance=44.1 warm=410.6 warm2=402.0 hot=466.9 cold=4009.5 steady=431.8
+round 5 control card-a warm=522.9 warm+200us=722.4 delta=199.5
+round 5 checksum -36329430798429
