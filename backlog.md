@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (24)
+## Open (23)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-33](docs/backlog/B-33-menu.md) `[?]` | Menu: 36 dp items, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[?]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
-| [B-62](docs/backlog/B-62-focus-through-loading.md) `[ ]` | Button: keyboard focus survives Loading and Success | P2 | S | B-40 |
 | [B-63](docs/backlog/B-63-hover-and-hand-cursor.md) `[ ]` | Desktop: the hand cursor and a hover look | P2 | M | B-40 |
 | [B-84](docs/backlog/B-84-drip-webs-flip-every-tick.md) `[ ]` | Neighbouring drips' webs zip open and shut every tick at rest | P2 | M | - |
 | [B-85](docs/backlog/B-85-aliased-text-on-macos-26.md) `[ ]` | On macOS 26 the slider's disabled value is drawn without antialiasing | P2 | S | B-30 |
@@ -87,7 +86,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 
-## Closed (61)
+## Closed (62)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -158,6 +157,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-59](docs/backlog/B-59-dialog-actions-always-reachable.md) `[x]` - Dialog: its actions stay reachable under long text and long labels
 - [B-60](docs/backlog/B-60-tabs-that-do-not-fit.md) `[x]` - Tabs: tabs past the row's width are invisible yet focusable
 - [B-61](docs/backlog/B-61-text-under-font-scale.md) `[x]` - Font scale: fixed heights cut text, and illustration labels leave the art
+- [B-62](docs/backlog/B-62-focus-through-loading.md) `[x]` - Button: keyboard focus survives Loading and Success
 - [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[x]` - The code gate replayed failed tests from the build cache as a pass
 - [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[x]` - The sample's frame cost on the JVM, in a real window, and where it goes
 - [B-74](docs/backlog/B-74-handjet-a-row-higher-on-macos-26.md) `[x]` - Handjet's ink a row higher on the CI's macOS 26 than on macOS 27 and in Chrome

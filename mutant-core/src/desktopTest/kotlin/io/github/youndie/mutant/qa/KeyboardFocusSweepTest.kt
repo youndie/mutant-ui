@@ -42,7 +42,6 @@ import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.tokens.MutantPalettes
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -190,7 +189,6 @@ class KeyboardFocusSweepTest {
             assertEquals(listOf(onNodeWithTag("next").fetchSemanticsNode().boundsInRoot), focusedBounds())
         }
 
-    @Ignore("F11: a focused button that turns to Loading drops focus; the next Tab starts from the window's top")
     @Test
     fun `F11 a button keeps keyboard focus through Loading and Success`() =
         runComposeUiTest {
