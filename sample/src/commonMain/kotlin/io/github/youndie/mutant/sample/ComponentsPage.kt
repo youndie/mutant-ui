@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -51,6 +52,7 @@ import io.github.youndie.mutant.components.MutantTab
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
+import io.github.youndie.mutant.components.MutantTooltipBox
 import io.github.youndie.mutant.components.MutantTopAppBar
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
@@ -69,6 +71,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionSelection) { Selection(strings) }
         Section(strings.sectionSlider) { Sliders(strings) }
         Section(strings.sectionSegmented) { Segmented() }
+        Section(strings.sectionTooltip) { Tooltips(strings) }
         Section(strings.sectionField) { Field(strings) }
         Section(strings.sectionCard) { Cards(strings) }
         Section(strings.sectionNav) { Navigation(strings) }
@@ -163,6 +166,15 @@ private fun Segmented() {
             enabled = false,
             key = "seg-off",
         )
+    }
+}
+
+/** Hover, focus or long-press the anchors: the design draws the plates shown, not appearing. */
+@Composable
+private fun Tooltips(s: SampleStrings) {
+    Row(horizontalArrangement = Arrangement.spacedBy(56.dp), modifier = Modifier.padding(top = 72.dp)) {
+        MutantTooltipBox(s.share) { MutantIconButton(MutantIcons.Share, s.share, {}) }
+        MutantTooltipBox("REC · 0:42:17", supportingText = s.recLeft) { MutantFab(MutantIcons.Add, null, {}) }
     }
 }
 

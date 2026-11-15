@@ -182,6 +182,10 @@ export const REFERENCES = [
   // whole and with the text hidden, both themes; cut above the captions, 26 px under the body.
   ...['Efir', 'Kopiya'].flatMap((theme) => ['Rest', 'Disabled'].flatMap((s, index) => [false, true].map((bare) =>
     ({ stem: `MutantSegmented_${s}${bare ? 'Bare' : ''}_${theme}`, page: V1, stage: 'v1-seg', type: 'btn', index, theme, below: 26, hideText: bare })))),
+  // B-32: the v1 page's two tooltip plates, the plain one and the one with two lines, whole and with the text hidden,
+  // both themes; cut 16 px under the plate, above the two-line plate's FAB, whose outline rises to 6 px over its slot.
+  ...['Efir', 'Kopiya'].flatMap((theme) => ['Plain', 'Rich'].flatMap((s, index) => [false, true].map((bare) =>
+    ({ stem: `MutantTooltip_${s}${bare ? 'Bare' : ''}_${theme}`, page: V1, stage: 'v1-tip', type: 'blob', index, theme, below: 16, hideText: bare })))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>

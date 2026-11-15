@@ -61,6 +61,7 @@ import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.components.MutantTopAppBar
+import io.github.youndie.mutant.components.TooltipPlate
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.illustration.MutantIllustration
@@ -106,6 +107,8 @@ internal val subjects: List<Subject> =
         Subject("Switch") { m, t -> MutantSwitch(true, {}, m, label = t) },
         Subject("Slider") { m, t -> MutantSlider(3, {}, m, label = t) },
         Subject("SegmentedButton") { m, t -> MutantSegmentedButton(listOf(t, "LP", "EP"), 0, {}, m) },
+        Subject("Tooltip") { m, t -> TooltipPlate(t, null, "tip", m) },
+        Subject("Tooltip.Rich") { m, t -> TooltipPlate(t, "ОСТАЛОСЬ 3 МИН", "tip-rich", m) },
         Subject("TextField") { m, t -> MutantTextField(t, {}, m, prefix = "CH", placeholder = "Название") },
         Subject("TextField.Placeholder") { m, t -> MutantTextField("", {}, m, prefix = t, placeholder = t) },
         Subject("TextField.Error") { m, t -> MutantTextField(t, {}, m, isError = true) },
