@@ -8,3 +8,4 @@ named as void in its item, and no number of it is reported.
 | Directory | Item | Reader |
 |---|---|---|
 | `b-06/` | [B-06](../docs/backlog/B-06-frame-cost.md) — the field's cost on the desktop JVM | `scripts/b06_summary.py` |
+| `b-84/` | [B-84](../docs/backlog/B-84-drip-webs-flip-every-tick.md) — steady webs against the engine's frame, the `steady` arm of the field bench | by hand: medians of rounds 2–5, `steady` against `warm` |

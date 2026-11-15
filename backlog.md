@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (22)
+## Open (21)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-33](docs/backlog/B-33-menu.md) `[?]` | Menu: 36 dp items, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[?]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
-| [B-84](docs/backlog/B-84-drip-webs-flip-every-tick.md) `[ ]` | Neighbouring drips' webs zip open and shut every tick at rest | P2 | M | - |
 | [B-85](docs/backlog/B-85-aliased-text-on-macos-26.md) `[ ]` | On macOS 26 the slider's disabled value is drawn without antialiasing | P2 | S | B-30 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-44](docs/backlog/B-44-search-bar.md) `[ ]` | SearchBar: a focused field with suggestion chips and result rows | P3 | M | B-20, B-17 |
@@ -85,7 +84,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 
-## Closed (63)
+## Closed (64)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -167,5 +166,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-79](docs/backlog/B-79-outline-stroke-on-the-render-thread.md) `[-]` - The outline's round-joined stroke is the dearest part of a body on the render thread
 - [B-82](docs/backlog/B-82-rasterise-a-body-once-per-tick.md) `[x]` - Rasterise a body once per tick, and draw the image between ticks
 - [B-83](docs/backlog/B-83-a-held-clock-draws-vectors.md) `[x]` - Bodies under a held or paused clock keep drawing vectors on the render thread
+- [B-84](docs/backlog/B-84-drip-webs-flip-every-tick.md) `[x]` - Neighbouring drips' webs zip open and shut every tick at rest
 
 <!-- END INDEX -->

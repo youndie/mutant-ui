@@ -41,7 +41,7 @@ class StandingClockImageTest {
                 MutantTheme {
                     ProvideMutantClock(clock) {
                         Box(Modifier.size(360.dp, 400.dp)) {
-                            CompositionLocalProvider(LocalMutantFrameProbe provides { _, image -> drawn += image }) {
+                            CompositionLocalProvider(LocalMutantFrameProbe provides { _, image, _ -> drawn += image }) {
                                 MutantSurface(MutantBody.Card, "card/b83", Modifier.size(328.dp, 80.dp)) {
                                     BasicText("Кассета 07", Modifier.padding(16.dp).mutantCleanZone())
                                 }

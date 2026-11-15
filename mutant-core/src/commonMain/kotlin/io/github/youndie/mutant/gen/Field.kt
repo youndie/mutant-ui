@@ -1,10 +1,12 @@
 package io.github.youndie.mutant.gen
 
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sin
 
 /**
@@ -79,6 +81,7 @@ internal fun distanceField(
     boil: Double,
     heat: Double,
     boil0: Double,
+    steadyWebs: Boolean = false,
 ): DistanceField {
     val el = g.slot
     val s = gridStep(g)
@@ -149,10 +152,15 @@ internal fun distanceField(
                         st.warpY[idx].toDouble() - tyx * clamp01(1 - (y - el.oy) / hh2),
                     )
                 }
+            // B-84: where two shapes merge (a drip into the body, a web between two drips), the blend weight of the
+            // merge, 0 outside it and 1 where both are equally near.
+            var web = 0.0
             for (p in c) {
                 val rr = max(p[4], p[5]) + p[6] + 1
                 if (y < min(p[1], p[3]) - rr || y > max(p[1], p[3]) + rr) continue
-                d = smoothMin(d, unequalCapsule(x, y, p[0], p[1], p[2], p[3], p[4], p[5]), p[6])
+                val cap = unequalCapsule(x, y, p[0], p[1], p[2], p[3], p[4], p[5])
+                if (steadyWebs) web = max(web, max(p[6] - abs(d - cap), 0.0) / p[6])
+                d = smoothMin(d, cap, p[6])
             }
             val tremble =
                 if (bk != null) {
@@ -161,7 +169,10 @@ internal fun distanceField(
                 } else {
                     0.0
                 }
-            f[idx] = (d + rough * st.noise[idx].toDouble() + tremble).toFloat()
+            // A web's saddle is flat, so the boil's tremble opened and shut it at every phase; damped there, it
+            // follows its drips (B-84).
+            val kept = if (web > 0) (1 - web).pow(STEADY_POWER) else 1.0
+            f[idx] = (d + rough * st.noise[idx].toDouble() + tremble * kept).toFloat()
         }
     }
     val q = st.quantPairs
@@ -171,6 +182,13 @@ internal fun distanceField(
     }
     return DistanceField(f, nx, ny, x0, y0, s)
 }
+
+/**
+ * How much of the boil's tremble a web keeps (B-84): `(1 − h)²`, h the blend weight of the merge it lies in. Measured
+ * over 60 s of every golden body with drips, between drips standing still: the web's depth jumped 3 dp or more at 6 450
+ * of 61 963 ticks as the engine draws it, at 246 with no boil at all, and at 444 with this; a power of 1 left 730.
+ */
+private const val STEADY_POWER: Double = 2.0
 
 private fun fieldStatic(
     g: Instance,

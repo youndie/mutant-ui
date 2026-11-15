@@ -25,7 +25,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 |---|---|
 | `mutant-core/build.gradle.kts` | targets, dependencies, ABI validation, the test inputs, the iOS metadata exception |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/` | the library's root package |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/` | the generator, Compose-free: `Instances.kt` (instance, drips, flow lines, mosaic, dead pixels), `Field.kt` (field, marching squares, outline), `Frame.kt` (a frame as the engine draws it) ([B-03](../backlog/B-03-generator-port.md)), `Transitions.kt` (venom, pour, error blocks, [B-04](../backlog/B-04-transition-geometry.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/` | the generator, Compose-free: `Instances.kt` (instance, drips, flow lines, mosaic, dead pixels), `Field.kt` (field, marching squares, outline), `Frame.kt` (a frame as the engine draws it) ([B-03](../backlog/B-03-generator-port.md); on a running clock the webs between drips are steadied, [B-84](../backlog/B-84-drip-webs-flip-every-tick.md)), `Transitions.kt` (venom, pour, error blocks, [B-04](../backlog/B-04-transition-geometry.md)) |
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/goldens/` | the generator's goldens, written by `scripts/gen-goldens.mjs` |
 | `mutant-core/src/commonTest/kotlin/io/github/youndie/mutant/gen/GeneratorGoldenTest.kt` | the port held to the goldens on every target |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/clock/MutantClock.kt` | the kit clock, its provider and its readers ([B-07](../backlog/B-07-kit-clock.md)) |

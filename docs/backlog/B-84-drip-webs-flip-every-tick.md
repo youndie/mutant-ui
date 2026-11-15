@@ -1,7 +1,7 @@
 ---
 id: B-84
 title: "Neighbouring drips' webs zip open and shut every tick at rest"
-status: open
+status: done
 priority: P2
 size: M
 stage: stage-5-product
@@ -33,3 +33,34 @@ A scratch test measured, for every adjacent pair of drips, the web's depth: how 
   - A mutant that drops the slope factor fails the test.
   - The field's cost per tick before and after on `fieldBench`.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/Field.kt`, `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/gen/Random.kt`
+
+## Findings (2026-11-15, built)
+
+**The slope factor was refuted, and the merge weight replaced it.** Built as decided, `min(1, |∇| / g₀)` brought the jumps between still drips only from 6 450 to 4 623 of 61 963 at g₀ = 0.5. It did no better (4 808) with the slope taken before the edge's roughness. The saddle's slope is 0.5–2, not near 0: sweeping g₀ took 1, 2, 4 and 8 to 1 939, 933, 609 and 365 jumps. A g₀ of 4 or more damps the tremble on every true edge (slope 1) to a quarter, and the whole body would stop boiling.
+
+**Built instead: damping by the merge.** In `distanceField` each `smoothMin` already knows how much its two shapes blend, `h = max(k − |a − b|, 0) / k`. A point keeps `(1 − h)²` of the tremble, h its strongest merge. That is a drip into the body, or a web between two drips. A point outside every merge, the body's edge and a lone drip's sides, trembles as the engine draws it.
+
+| | jumps ≥ 3 dp between still drips, 60 s, 18 bodies |
+|---|---|
+| the engine | 6 450 of 61 963 |
+| no boil at all (control) | 246 |
+| the same boil phase every tick (control) | 252 |
+| merge weight, power 1 | 730 |
+| **merge weight, power 2 (built)** | **444** |
+| merge weight, power 4 | 312 |
+
+Power 2 moves 18 % of the field's points near the edge (|f| < 1) by more than 0.2, against 14 % at power 1 and 20 % at power 4. A contact sheet of three bodies over six ticks showed the same drips and the same boiling top edge.
+
+**Only a running body.** `MutantSurface` passes `steadyWebs = !clock.frozen` to every frame it builds, in the frame and ahead of it (B-75). A frozen clock (fixtures, references, the generator's goldens) draws the engine's field. With `steadyWebs` off the field is bit for bit the engine's: the tremble is multiplied by exactly 1.0. **No parity cell and no golden moves**, so the departures registry stays empty: this departure is of behaviour, recorded as research D18. The AC's "cells it moves" are none, and nothing was re-recorded.
+
+**Cost** (`fieldBench`, `logs/b-84/2026-11-15-desktop.log`, rounds 2–5, Mac, same run): a resting frame costs 3.6 % more summed over the 27 cases (8 308 µs against 8 017), 0.3–5.8 % per body (card-a 536 → 561 µs). The warm/warm2 ruler of the same run is 1.0 %. The extra cost is the blend weight per capsule test.
+
+**Tests.**
+- `SteadyWebsTest` (generator): the web-depth measure. It asserts that the engine's webs do jump (more than 1 in 20 still ticks) and that steady ones jump at fewer than 1 in 100.
+- `SteadyWebsSurfaceTest`: a running clock's frames are all steady and a frozen clock's none, read through the frame probe, which now also reports the frame's `steadyWebs`.
+
+**Mutants.** All four killed:
+- no damping (`kept = 1`): `SteadyWebsTest`;
+- the frame built in the tick passing `false`: `SteadyWebsSurfaceTest`;
+- the frame built ahead passing `false`: `SteadyWebsSurfaceTest`;
+- steady under a frozen clock as well: `SteadyWebsSurfaceTest`.
