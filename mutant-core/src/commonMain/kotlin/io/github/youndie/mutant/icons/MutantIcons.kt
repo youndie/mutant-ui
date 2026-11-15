@@ -67,7 +67,8 @@ public object MutantIcons {
         icon: ImageVector,
         width: Float,
     ): ImageVector {
-        val name = icon.name.removePrefix(PREFIX)
+        // Found by the instance, not the name: a consumer's own `Home` or `Add` is drawn as given (B-68).
+        val name = all.firstOrNull { it.second === icon }?.first ?: return icon
         val path = MutantIconPaths.all.firstOrNull { it.first == name }?.second ?: return icon
         return icon(name, path, width)
     }

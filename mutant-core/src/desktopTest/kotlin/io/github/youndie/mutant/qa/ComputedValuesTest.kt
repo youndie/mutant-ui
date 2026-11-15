@@ -26,7 +26,6 @@ import io.github.youndie.mutant.components.MutantLinearProgress
 import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -132,7 +131,6 @@ class ComputedValuesTest {
         return px
     }
 
-    @Ignore("F19: the FAB swaps a consumer's icon for the kit's when its name equals a kit icon's (\"Home\", \"Add\")")
     @Test
     fun `F19 the FAB draws the consumer's icon, whatever it is named`() =
         assertNotEquals(fab(MutantIcons.Home), fab(square))
