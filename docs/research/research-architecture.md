@@ -557,7 +557,7 @@ The owner's choice of 2026-11-15 ([B-33](../backlog/B-33-menu.md), [B-34](../bac
 - the navigation drawer's 42 dp rows;
 - the calendar's 36 × 36 day cells.
 
-In each, a row or cell is the whole target, and the targets tile their column or grid with no gap, so every press inside lands on one. An accessibility test pins each exception, and a sweep fails on a target under 48 dp that is not on this list.
+In each, a row or cell is the whole target. The menu's rows and the calendar's cells tile their column or grid with no gap, so every press inside lands on one; the drawer's rows stand 4 dp apart, as the page's do (B-34). An accessibility test pins each exception, and a sweep fails on a target under 48 dp that is not on this list.
 
 Rejected:
 - 48 dp rows with the 36 or 42 dp drawing inside: it departs from the page's spacing;
