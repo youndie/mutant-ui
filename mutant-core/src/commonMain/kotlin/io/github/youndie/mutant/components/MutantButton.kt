@@ -29,6 +29,7 @@ import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -231,8 +232,16 @@ internal fun ButtonBody(
         modifier
             .defaultMinSize(minWidth = TOUCH, minHeight = TOUCH)
             .heightIn(min = TOUCH)
-            .semantics { if (loading) progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate }
-            .clickable(source, indication = null, enabled = enabled && !loading, role = Role.Button, onClick = onClick),
+            .semantics {
+                if (loading) {
+                    progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate
+                    // Busy: a reader is told it cannot be pressed now, while focus stays on it.
+                    disabled()
+                }
+            }
+            // Loading keeps the button enabled, so keyboard focus stays on it through the work and its end (B-62); it
+            // takes no click while it lasts, and its semantics say it is busy.
+            .clickable(source, indication = null, enabled = enabled, role = Role.Button) { if (!loading) onClick() },
         fill = if (outlined) colors.background else null,
         shadow = if (outlined && enabled) colors.misregister else null,
         state = body,
