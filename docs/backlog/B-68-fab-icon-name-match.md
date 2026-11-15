@@ -1,7 +1,7 @@
 ---
 id: B-68
 title: "FAB: a consumer's icon is swapped for the kit's on a name match"
-status: open
+status: wip
 priority: P3
 size: S
 stage: stage-5-product
