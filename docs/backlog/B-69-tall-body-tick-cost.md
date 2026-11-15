@@ -1,7 +1,7 @@
 ---
 id: B-69
 title: "Measure what a tall body costs per tick"
-status: open
+status: wip
 priority: P3
 size: S
 stage: stage-5-product
