@@ -64,6 +64,10 @@ public final class io/github/youndie/mutant/components/MutantCocoonKt {
 	public static final fun MutantCocoon (Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantDataTableKt {
+	public static final fun MutantDataTable (Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/util/Set;Lkotlin/jvm/functions/Function2;ZLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/components/MutantDialogKt {
 	public static final fun MutantDialog (ZLjava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/ui/focus/FocusRequester;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 	public static final fun MutantDialogAction (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
@@ -140,6 +144,25 @@ public final class io/github/youndie/mutant/components/MutantTab {
 	public synthetic fun <init> (Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getEnabled ()Z
 	public final fun getLabel ()Ljava/lang/String;
+}
+
+public final class io/github/youndie/mutant/components/MutantTableCellStyle : java/lang/Enum {
+	public static final field Osd Lio/github/youndie/mutant/components/MutantTableCellStyle;
+	public static final field OsdSecondary Lio/github/youndie/mutant/components/MutantTableCellStyle;
+	public static final field Text Lio/github/youndie/mutant/components/MutantTableCellStyle;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/youndie/mutant/components/MutantTableCellStyle;
+	public static fun values ()[Lio/github/youndie/mutant/components/MutantTableCellStyle;
+}
+
+public final class io/github/youndie/mutant/components/MutantTableColumn {
+	public static final field $stable I
+	public synthetic fun <init> (Ljava/lang/String;Landroidx/compose/ui/unit/Dp;Lio/github/youndie/mutant/components/MutantTableCellStyle;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Landroidx/compose/ui/unit/Dp;Lio/github/youndie/mutant/components/MutantTableCellStyle;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCell ()Lkotlin/jvm/functions/Function1;
+	public final fun getHeader ()Ljava/lang/String;
+	public final fun getStyle ()Lio/github/youndie/mutant/components/MutantTableCellStyle;
+	public final fun getWidth-lTKBWiU ()Landroidx/compose/ui/unit/Dp;
 }
 
 public final class io/github/youndie/mutant/components/MutantTabsKt {

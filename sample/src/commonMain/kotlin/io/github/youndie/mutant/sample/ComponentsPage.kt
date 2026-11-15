@@ -49,7 +49,10 @@ import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantPullToRefresh
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantSearchBar
+import io.github.youndie.mutant.components.MutantTableCellStyle
+import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantSearchResult
 import io.github.youndie.mutant.components.MutantSearchResultLoading
 import io.github.youndie.mutant.components.MutantSearchSuggestions
@@ -83,6 +86,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionTooltip) { Tooltips(strings) }
         Section(strings.sectionField) { Field(strings) }
         Section(strings.sectionSearch) { Search(strings) }
+        Section(strings.sectionTable) { Table(strings) }
         Section(strings.sectionCard) { Cards(strings) }
         Section(strings.sectionNav) { Navigation(strings) }
         Section(strings.sectionList) { ListRows(strings) }
@@ -218,6 +222,30 @@ private fun Search(s: SampleStrings) {
             MutantSearchResultLoading(key = "search")
         }
     }
+}
+
+/** Press a row to select it: the row is the target, the box shows it. */
+@Composable
+private fun Table(s: SampleStrings) {
+    var selected by remember { mutableStateOf(setOf(1)) }
+    val rows =
+        listOf(
+            Triple(s.untitled, "46:00", "CH 03"),
+            Triple(s.nightTuesday, "12:04", "CH 03"),
+            Triple(s.testCard, "02:10", "CH 01"),
+            Triple(s.noSignal, "00:42", "CH 99"),
+        )
+    MutantDataTable(
+        rows,
+        listOf(
+            MutantTableColumn(s.columnRecord) { it.first },
+            MutantTableColumn(s.columnLength, 90.dp, MutantTableCellStyle.Osd) { it.second },
+            MutantTableColumn(s.columnChannel, 80.dp, MutantTableCellStyle.OsdSecondary) { it.third },
+        ),
+        Modifier.width(560.dp),
+        selected,
+        { i, on -> selected = if (on) selected + i else selected - i },
+    )
 }
 
 @Composable
