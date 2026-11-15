@@ -1,7 +1,7 @@
 ---
 id: B-67
 title: "Text field: the error has no words for a screen reader"
-status: open
+status: wip
 priority: P3
 size: S
 stage: stage-5-product
