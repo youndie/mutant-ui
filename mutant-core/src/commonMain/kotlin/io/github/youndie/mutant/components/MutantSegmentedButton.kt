@@ -234,7 +234,8 @@ internal fun SegmentedBody(
                                         }
                                     }
                                 }
-                            }.selectable(
+                            }.mutantHand(enabled)
+                            .selectable(
                                 on,
                                 interactionSource = null,
                                 indication = null,

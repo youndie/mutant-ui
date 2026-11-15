@@ -110,7 +110,10 @@ internal fun ListItemBody(
         if (onClick == null) {
             Modifier
         } else {
-            Modifier.clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
+            Modifier
+                .mutantHand(
+                    enabled,
+                ).clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
         }
     Row(
         modifier

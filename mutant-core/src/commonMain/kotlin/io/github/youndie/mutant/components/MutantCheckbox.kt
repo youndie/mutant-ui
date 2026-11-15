@@ -95,7 +95,7 @@ internal fun CheckboxBody(
     val tick = if (hidden) Color.Transparent else colors.onPrimary
     val ink = colors.onPrimary
     ControlRow(
-        modifier.toggleable(
+        modifier.mutantHand(enabled).toggleable(
             checked,
             source,
             indication = null,
@@ -163,7 +163,7 @@ internal fun RadioBody(
     // A bare twin hides the dot (kept clean, `data-keep`, on the page) and keeps its echo.
     val red = if (hidden) Color.Transparent else RECORD
     ControlRow(
-        modifier.selectable(
+        modifier.mutantHand(enabled).selectable(
             selected,
             source,
             indication = null,

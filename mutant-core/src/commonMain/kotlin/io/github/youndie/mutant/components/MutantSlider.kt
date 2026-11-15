@@ -243,6 +243,7 @@ internal fun SliderBody(
                 Modifier
                     .fillMaxWidth()
                     .height(ROW_HEIGHT.dp)
+                    .mutantHand(enabled)
                     .drawBehind {
                         val d = density
                         val handle = handleW.toFloat()

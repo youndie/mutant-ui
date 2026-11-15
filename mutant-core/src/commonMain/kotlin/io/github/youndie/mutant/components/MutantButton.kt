@@ -159,6 +159,7 @@ internal fun TextButtonBody(
     val seed = "${LocalMutantCassette.current}/${LocalMutantStage.current}/div$key"
     Column(
         modifier
+            .mutantHand(enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
             // It has no body to draw them on: the brackets stand at the corners of its 48 dp target (B-57).
             .drawWithContent {
@@ -241,6 +242,7 @@ internal fun ButtonBody(
             }
             // Loading keeps the button enabled, so keyboard focus stays on it through the work and its end (B-62); it
             // takes no click while it lasts, and its semantics say it is busy.
+            .mutantHand(enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button) { if (!loading) onClick() },
         fill = if (outlined) colors.background else null,
         shadow = if (outlined && enabled) colors.misregister else null,

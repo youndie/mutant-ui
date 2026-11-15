@@ -231,7 +231,13 @@ internal fun MutantSurface(
             interactionSource.interactions.collect {
                 when (it) {
                     is PressInteraction.Press -> boil.press(clock.nowMs)
+
                     is PressInteraction.Release, is PressInteraction.Cancel -> boil.release(clock.nowMs)
+
+                    // A mouse only: Compose's clickable reports no hover for a finger (B-63).
+                    is androidx.compose.foundation.interaction.HoverInteraction.Enter -> boil.hover(clock.nowMs)
+
+                    is androidx.compose.foundation.interaction.HoverInteraction.Exit -> boil.leave(clock.nowMs)
                 }
             }
         }
@@ -462,7 +468,7 @@ internal fun MutantSurface(
                         }
                     }
                 }
-                val hot = heat?.let { it > 0 } ?: (boil.on || boil.at(clock.nowMs) > 0)
+                val hot = heat?.let { it > 0 } ?: (boil.on || boil.hovered || boil.at(clock.nowMs) > 0)
                 val t =
                     when {
                         clock.frozen -> clock.nowMs
@@ -743,18 +749,31 @@ private const val FOCUS_CALM: Double = .3
 internal class HeatMachine {
     var on: Boolean by mutableStateOf(false)
         private set
+
+    /** A mouse over the body (B-63): it simmers at [HOVER_HEAT], under a press's full boil. */
+    var hovered: Boolean by mutableStateOf(false)
+        private set
     private var from = 0.0
     private var since = 0.0
 
-    fun at(now: Double): Double =
+    private val target: Double get() =
         if (on) {
-            minOf(1.0, from + (now - since) / MutantMotion.BOIL_OVER_IN_MS)
+            1.0
+        } else if (hovered) {
+            HOVER_HEAT
         } else {
-            maxOf(
-                0.0,
-                from - (now - since) / MutantMotion.BOIL_OVER_OUT_MS,
-            )
+            0.0
         }
+
+    /** The heat at [now]: rising towards the target at the press's rate, cooling towards it at the release's. */
+    fun at(now: Double): Double {
+        val t = target
+        return if (from <= t) {
+            minOf(t, from + (now - since) / MutantMotion.BOIL_OVER_IN_MS)
+        } else {
+            maxOf(t, from - (now - since) / MutantMotion.BOIL_OVER_OUT_MS)
+        }
+    }
 
     fun press(now: Double) {
         if (on) return
@@ -769,7 +788,24 @@ internal class HeatMachine {
         since = now
         on = false
     }
+
+    fun hover(now: Double) {
+        if (hovered) return
+        from = at(now)
+        since = now
+        hovered = true
+    }
+
+    fun leave(now: Double) {
+        if (!hovered) return
+        from = at(now)
+        since = now
+        hovered = false
+    }
 }
+
+/** A hovered body's heat (designed here, B-63): a simmer the eye catches, a third of a press's boil. */
+internal const val HOVER_HEAT: Double = .3
 
 /** A request to slide a body home from [dx] dp; a new [id] starts a new slide. */
 internal class SlideRequest(

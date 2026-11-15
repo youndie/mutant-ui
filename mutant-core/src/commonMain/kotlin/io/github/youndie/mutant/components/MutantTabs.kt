@@ -180,6 +180,7 @@ private fun TabItem(
         }
     Box(
         Modifier
+            .mutantHand(tab.enabled)
             .selectable(selected, source, indication = null, enabled = tab.enabled, role = Role.Tab, onClick = onClick)
             .widthIn(min = TOUCH)
             .heightIn(min = TAB_HEIGHT)
