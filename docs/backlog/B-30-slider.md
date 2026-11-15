@@ -1,7 +1,7 @@
 ---
 id: B-30
 title: "Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-4-v1
