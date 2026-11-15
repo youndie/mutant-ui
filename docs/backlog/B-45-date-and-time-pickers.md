@@ -1,7 +1,7 @@
 ---
 id: B-45
 title: "DatePicker and TimePicker"
-status: question
+status: open
 priority: P3
 size: M
 stage: stage-6-later
@@ -31,3 +31,5 @@ The time picker's two fields (76 × 72) and the month arrows (which the kit woul
 - The selected day is the pill `cal-day` (r 18) with its number in `#05060c`, 700.
 
 Who decides: the owner. The answer to B-33/B-34 likely settles this too.
+
+**Answered 2026-11-15 by the owner: choice 1.** The calendar's 36 dp day cells stay, as an owner-named exception to the 48 dp rule (research D19). An accessibility test pins it: every day's target is its whole cell, 36 × 36, the cells tile the grid with no gap, and the month arrows and the time fields are 48 dp targets at least.

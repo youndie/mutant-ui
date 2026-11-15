@@ -1,7 +1,7 @@
 ---
 id: B-34
 title: "NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom"
-status: question
+status: open
 priority: P2
 size: M
 stage: stage-4-v1
@@ -24,3 +24,5 @@ Choices, for the owner:
 1. **Keep the design's rows** (42 dp) as an owner-named exception to the 48 dp rule, pinned by an accessibility test, as plakat-ui's 44 dp menu item.
 2. **Rows of 48 dp**, the drawing kept at 42 dp inside with the space between rows grown. This departs from the page's spacing, and the parity of the column moves.
 3. **Rows of 42 dp, each target reaching half into its neighbours' bands.** The column is one target and a press goes to the nearest row: every row's target is still 42 dp tall, so this is choice 1 under another name.
+
+**Answered 2026-11-15 by the owner: choice 1.** The design's 42 dp rows stay, as an owner-named exception to the 48 dp rule (research D19). An accessibility test pins it: every row's target is the whole row, 42 dp tall and as wide as the drawer, the rows tile the column with no gap, and nothing else in the kit is under 48 dp without being on D19's list.

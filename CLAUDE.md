@@ -80,7 +80,7 @@ taken on a branch of its own, never by overwriting, and only when the owner star
 - **Drips hang outside the slot and never affect layout**; flow lines, mosaic and dead pixels never
   enter the clean zone (D5).
 - **Glyphs, icons, the slot and the touch target never depend on the seed or an animation.** Text
-  is never damaged (brief, «Порча смысла»). Touch target ≥ 48 dp by the slot.
+  is never damaged (brief, «Порча смысла»). Touch target ≥ 48 dp by the slot, but for the three owner-named exceptions of research D19 (menu and drawer rows, calendar days).
 - **Reduce motion is the pause** (D7): the clock stops, damage stays, toggles are instant.
   «Чистый сигнал» is a separate switch.
 - **The red never flashes**: the error state and the radio dot are static (tokens, `flash.red`).
