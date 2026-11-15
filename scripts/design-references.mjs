@@ -186,6 +186,17 @@ export const REFERENCES = [
   // both themes; cut 16 px under the plate, above the two-line plate's FAB, whose outline rises to 6 px over its slot.
   ...['Efir', 'Kopiya'].flatMap((theme) => ['Plain', 'Rich'].flatMap((s, index) => [false, true].map((bare) =>
     ({ stem: `MutantTooltip_${s}${bare ? 'Bare' : ''}_${theme}`, page: V1, stage: 'v1-tip', type: 'blob', index, theme, below: 16, hideText: bare })))),
+  // B-35: the v1 page's bottom sheet screen — the still card under the scrim, the tear line and the sheet with its
+  // grabber, words and button — as it stands, whole and with every word hidden, both themes; and the two stages'
+  // cells, whose records carry where the engine stood each body (the card on `v1-sheet-bg`, the sheet and its button
+  // on `v1-sheet-win`).
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
+    ({ stem: `MutantSheet_Open${bare ? 'Bare' : ''}_${theme}`, page: V1, el: true, sel: '[data-mu-stage="v1-sheet-bg"]', index: 0, theme,
+      hide: bare ? '[data-mu-stage="v1-sheet-bg"], [data-mu-stage="v1-sheet-bg"] * { color: transparent !important; }' : '' }))),
+  ...['Efir', 'Kopiya'].flatMap((theme) => [
+    { stem: `MutantSheet_Window_${theme}`, page: V1, stage: 'v1-sheet-win', type: 'blob', index: 0, theme, below: 0 },
+    { stem: `MutantSheet_Card_${theme}`, page: V1, stage: 'v1-sheet-bg', type: 'card', index: 0, theme, below: 20 },
+  ]),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
