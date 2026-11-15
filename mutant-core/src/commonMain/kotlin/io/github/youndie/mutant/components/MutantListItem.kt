@@ -121,6 +121,7 @@ internal fun ListItemBody(
     Row(
         modifier
             .then(click)
+            .ownWidthWhenUnbounded()
             .fillMaxWidth()
             .heightIn(min = rowHeight)
             .drawWithContent {
