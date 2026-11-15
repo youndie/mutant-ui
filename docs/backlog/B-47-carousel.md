@@ -1,7 +1,7 @@
 ---
 id: B-47
 title: "Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-6-later
