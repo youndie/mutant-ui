@@ -2,7 +2,7 @@
 id: B-80
 title: "Clipping a body's layers to its contour costs the render thread 2.7 ms a frame"
 status: open
-priority: P1
+priority: P3
 size: M
 stage: stage-5-product
 blocked_by: [B-78, B-82]
@@ -12,6 +12,7 @@ blocked_by: [B-78, B-82]
 
 Found by [B-78](B-78-the-bodies-on-the-render-thread.md). Every body draws two groups under a path clip: its fill, speckle, mosaic, dead pixels and flow lines under the contour; its highlight under two rectangles. Leaving the contour clip out saves 2.07 ms a frame, and leaving the highlight out (its clip and two fills) saves 0.61 ms. With the fill left out, the draws under the clip cost 37 ms more, which points at the anti-aliased path clip as the mechanism.
 
+- **Lowered to P3 by the owner on 2026-11-15**, after [B-82](B-82-rasterise-a-body-once-per-tick.md): a resting body is now drawn from an image rasterised off the render thread, so the clip's cost on the render thread is left only to bodies drawn as vectors (pressed, in a transition, the first ticks, and under a held clock until [B-83](B-83-a-held-clock-draws-vectors.md)). Re-measure on the present code before choosing a form.
 - **The decision and its reason.** Measure first which form of the same picture is cheapest on the render thread, each read on B-78's bench with its control:
   - the clip as it is;
   - the group drawn into a layer and masked by the filled contour;

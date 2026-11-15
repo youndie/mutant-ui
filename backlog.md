@@ -58,14 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (30)
+## Open (29)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P1 | M | B-06, B-10, B-73 |
 | [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[ ]` | The sample's frame cost in the browser (wasm) | P1 | M | B-72, B-75, B-76, B-78, B-82, B-83 |
-| [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P1 | M | B-78, B-82 |
-| [B-83](docs/backlog/B-83-a-held-clock-draws-vectors.md) `[ ]` | Bodies under a held or paused clock keep drawing vectors on the render thread | P1 | M | B-82 |
 | [B-30](docs/backlog/B-30-slider.md) `[ ]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
@@ -78,7 +76,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-62](docs/backlog/B-62-focus-through-loading.md) `[ ]` | Button: keyboard focus survives Loading and Success | P2 | S | B-40 |
 | [B-63](docs/backlog/B-63-hover-and-hand-cursor.md) `[ ]` | Desktop: the hand cursor and a hover look | P2 | M | B-40 |
 | [B-77](docs/backlog/B-77-the-tape-on-the-render-thread.md) `[ ]` | The Tape costs 3.2 ms a frame on the render thread of the Demo page | P2 | S | B-76 |
-| [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P2 | S | B-78, B-80, B-82 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-44](docs/backlog/B-44-search-bar.md) `[ ]` | SearchBar: a focused field with suggestion chips and result rows | P3 | M | B-20, B-17 |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[ ]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
@@ -92,8 +89,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-68](docs/backlog/B-68-fab-icon-name-match.md) `[ ]` | FAB: a consumer's icon is swapped for the kit's on a name match | P3 | S | B-40 |
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |
 | [B-70](docs/backlog/B-70-snackbar-long-action.md) `[ ]` | Snackbar: a long action pushes the message out | P3 | S | B-40 |
+| [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
+| [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 
-## Closed (53)
+## Closed (54)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -162,5 +161,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-78](docs/backlog/B-78-the-bodies-on-the-render-thread.md) `[x]` - The bodies' drawing is most of the render thread's frame on the Demo page
 - [B-79](docs/backlog/B-79-outline-stroke-on-the-render-thread.md) `[-]` - The outline's round-joined stroke is the dearest part of a body on the render thread
 - [B-82](docs/backlog/B-82-rasterise-a-body-once-per-tick.md) `[x]` - Rasterise a body once per tick, and draw the image between ticks
+- [B-83](docs/backlog/B-83-a-held-clock-draws-vectors.md) `[x]` - Bodies under a held or paused clock keep drawing vectors on the render thread
 
 <!-- END INDEX -->

@@ -48,6 +48,7 @@ import io.github.youndie.mutant.tokens.MutantFill
 import io.github.youndie.mutant.tokens.MutantGrid
 import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.tokens.MutantProfile
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
@@ -316,12 +317,117 @@ internal fun MutantSurface(
                             key,
                         ).let { Triple(it, FieldCache(), if (slot.dead) gen.deadPixels(it) else null) }
                 }
+                val speckle = Speckle.of(cassette, stage, REST_ROUGH * wear)
+
+                // What a body's picture is drawn with at time [tt] and heat [kk], from its frame.
+                fun pictureOf(
+                    g: Instance,
+                    f: BodyFrame,
+                    tt: Double,
+                    kk: Double,
+                ): BodyPicture {
+                    val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, f.boilPhase, f.boil)
+                    val frameLook =
+                        BodyLook(
+                            boilFill(look.fill, colors, kk, tt),
+                            look.highlight,
+                            look.ink,
+                            outline,
+                            look.slip,
+                            look.shadow,
+                            p.outline.toFloat(),
+                        )
+                    return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
+                }
+
+                // B-82: everything the image of a resting body depends on besides its frame. An image built ahead is
+                // used only if these are still what they were when it was prepared.
+                fun imageInputsOf(dead: io.github.youndie.mutant.gen.DeadPixels?): List<Any?>? =
+                    if (bodyAsImage) {
+                        listOf(
+                            look.fill,
+                            look.highlight,
+                            look.ink,
+                            look.outline,
+                            look.slip,
+                            look.shadow,
+                            colors,
+                            state,
+                            focused,
+                            d,
+                            layoutDirection,
+                            skipParts,
+                            cassette,
+                            stage,
+                            wear,
+                            dead,
+                        )
+                    } else {
+                        null
+                    }
+
+                // A resting frame at [next], built off the frame, with its image when the body is drawn as one (B-75, B-82).
+                fun buildAhead(
+                    g: Instance,
+                    cache: FieldCache,
+                    dead: io.github.youndie.mutant.gen.DeadPixels?,
+                    next: Double,
+                ): Ahead {
+                    val f = gen.frame(g, cache, next, 0.0, pressed = false)
+                    val inputs = imageInputsOf(dead)
+                    val image =
+                        inputs?.let {
+                            val t0 =
+                                kotlin.time.TimeSource.Monotonic
+                                    .markNow()
+                            val pic = pictureOf(g, f, next, 0.0)
+                            rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection) {
+                                drawBody(
+                                    g,
+                                    pic.paths,
+                                    pic.look,
+                                    colors,
+                                    speckle,
+                                    Offset.Zero,
+                                    dead,
+                                    pic.decor,
+                                    null,
+                                    skipParts,
+                                )
+                            }.also {
+                                rasterProbe?.invoke(
+                                    t0.elapsedNow().inWholeNanoseconds,
+                                    it.image.width * it.image.height * 4L,
+                                )
+                            }
+                        }
+                    return Ahead(f, image, inputs)
+                }
                 if (offFrame && held.isEmpty) {
                     // The static layers are what makes a first frame ten times a warm one: build them with the
                     // instance on a background thread, and draw the body from the next frame.
                     val warmAt = clock.nowMs
-                    held.buildOffFrame(signature, scope) {
-                        build().also { (g, cache, _) -> if (!still) gen.frame(g, cache, warmAt, 0.0, pressed = false) }
+                    // B-83: a clock that stands (held by a dialog, paused) has no next tick, so a body under it would
+                    // never be given an image and would draw its vectors on every frame something else asks for. Its
+                    // first build also rasterises it for the time it stands at, and the body draws that image from its
+                    // first frame: nothing switches under the stopped clock.
+                    val firstAt = clock.restTimeMs()
+                    val firstImage =
+                        bodyAsImage && !still && heat == null && !boil.on && (clock.paused || clock.holds > 0)
+                    held.buildOffFrame(
+                        signature,
+                        scope,
+                        taken = { built, first: Ahead? -> first?.let { ahead.preset(built.first, firstAt, it) } },
+                    ) {
+                        val built = build()
+                        val (g, cache, dead) = built
+                        val first =
+                            when {
+                                firstImage -> buildAhead(g, cache, dead, firstAt)
+                                !still -> null.also { gen.frame(g, cache, warmAt, 0.0, pressed = false) }
+                                else -> null
+                            }
+                        built to first
                     }
                     return@drawWithCache onDrawBehind {}
                 }
@@ -356,7 +462,6 @@ internal fun MutantSurface(
                         }
                     }
                 }
-                val speckle = Speckle.of(cassette, stage, REST_ROUGH * wear)
                 val hot = heat?.let { it > 0 } ?: (boil.on || boil.at(clock.nowMs) > 0)
                 val t =
                     when {
@@ -370,84 +475,11 @@ internal fun MutantSurface(
                 // frame not ready in time build in the frame, as before.
                 val resting = offFrame && !hot && !boil.on && k == 0.0
                 val early = if (resting) ahead.take(g, t) else null
-                val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on)
 
-                // What a body's picture is drawn with at time [tt] and heat [kk], from its frame.
-                fun pictureOf(
-                    f: BodyFrame,
-                    tt: Double,
-                    kk: Double,
-                ): BodyPicture {
-                    val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, f.boilPhase, f.boil)
-                    val frameLook =
-                        BodyLook(
-                            boilFill(look.fill, colors, kk, tt),
-                            look.highlight,
-                            look.ink,
-                            outline,
-                            look.slip,
-                            look.shadow,
-                            p.outline.toFloat(),
-                        )
-                    return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
-                }
-                // B-82: everything the image of a resting body depends on besides its frame. An image built ahead is
-                // used only if these are still what they were when it was prepared.
-                val imageInputs =
-                    if (bodyAsImage) {
-                        listOf(
-                            look.fill,
-                            look.highlight,
-                            look.ink,
-                            look.outline,
-                            look.slip,
-                            look.shadow,
-                            colors,
-                            state,
-                            focused,
-                            d,
-                            layoutDirection,
-                            skipParts,
-                            cassette,
-                            stage,
-                            wear,
-                            dead,
-                        )
-                    } else {
-                        null
-                    }
+                val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on)
                 if (resting && cache.settledFor(g)) {
                     val next = t + clock.stepMs
-                    ahead.prepare(g, next, scope) {
-                        val f = gen.frame(g, cache, next, 0.0, pressed = false)
-                        val image =
-                            imageInputs?.let {
-                                val t0 =
-                                    kotlin.time.TimeSource.Monotonic
-                                        .markNow()
-                                val pic = pictureOf(f, next, 0.0)
-                                rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection) {
-                                    drawBody(
-                                        g,
-                                        pic.paths,
-                                        pic.look,
-                                        colors,
-                                        speckle,
-                                        Offset.Zero,
-                                        dead,
-                                        pic.decor,
-                                        null,
-                                        skipParts,
-                                    )
-                                }.also {
-                                    rasterProbe?.invoke(
-                                        t0.elapsedNow().inWholeNanoseconds,
-                                        it.image.width * it.image.height * 4L,
-                                    )
-                                }
-                            }
-                        Ahead(f, image, imageInputs)
-                    }
+                    ahead.prepare(g, next, scope) { buildAhead(g, cache, dead, next) }
                 }
                 val now = clock.nowMs
                 val pourP = pourAt?.first ?: if (instant) 1.0 else stepped(now - moves.pourSince, pourDuration(slot.h))
@@ -461,6 +493,7 @@ internal fun MutantSurface(
                 // B-82: a resting body's picture changes only at a tick. Rasterised ahead with its frame, the image is
                 // drawn until the next tick; a pouring, sliding or heated body, or one whose inputs moved since, draws
                 // as vectors.
+                val imageInputs = imageInputsOf(dead)
                 val image =
                     early?.image?.takeIf {
                         imageInputs != null && early.inputs == imageInputs && pour == null &&
@@ -479,7 +512,7 @@ internal fun MutantSurface(
                         )
                     }
                 }
-                val (paths, frameLook, decor) = pictureOf(frame, t, k)
+                val (paths, frameLook, decor) = pictureOf(g, frame, t, k)
                 onDrawBehind {
                     scale(d, Offset.Zero) {
                         translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
@@ -555,23 +588,28 @@ internal class HeldInstance {
         return build().also { held = it }
     }
 
-    /** Starts [build] on a background thread for [signature], once, and takes its result in the next frame. */
+    /**
+     * Starts [build] on a background thread for [signature], once, and takes its result in the next frame, built there
+     * if the thread is late. What the build made beside the instance goes to [taken] with it, whichever built it.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun buildOffFrame(
+    fun <X> buildOffFrame(
         signature: List<Any?>,
         scope: CoroutineScope,
-        build: () -> Built,
+        taken: (Built, X) -> Unit,
+        build: () -> Pair<Built, X>,
     ) {
         if (signature == pending) return
         pending = signature
-        val off: Deferred<Built> = scope.async(Dispatchers.Default) { build() }
+        val off: Deferred<Pair<Built, X>> = scope.async(Dispatchers.Default) { build() }
         // Undispatched: the wait for the next frame is registered in this one, so the result is taken in the next.
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             withFrameNanos { }
             if (pending != signature) return@launch off.cancel()
             val done = if (off.isCompleted && off.getCompletionExceptionOrNull() == null) off.getCompleted() else null
             if (done == null) off.cancel()
-            of(signature) { done ?: build() }
+            val made = done ?: build()
+            if (of(signature) { made.first } === made.first) taken(made.first, made.second)
             arrivals++
         }
     }
@@ -679,6 +717,18 @@ internal class FrameAhead {
         instance = g
         at = t
         job = scope.async(Dispatchers.Default) { build() }
+    }
+
+    /** Hands over a frame built with the body's first instance, for [t] (B-83). */
+    fun preset(
+        g: Instance,
+        t: Double,
+        built: Ahead,
+    ) {
+        job?.cancel()
+        instance = g
+        at = t
+        job = CompletableDeferred(built)
     }
 }
 
