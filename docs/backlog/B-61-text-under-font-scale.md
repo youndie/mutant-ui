@@ -1,7 +1,7 @@
 ---
 id: B-61
 title: "Font scale: fixed heights cut text, and illustration labels leave the art"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-5-product
