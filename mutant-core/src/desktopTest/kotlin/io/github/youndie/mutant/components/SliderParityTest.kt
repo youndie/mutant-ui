@@ -91,7 +91,7 @@ class SliderParityTest {
         x: IntRange,
         y: IntRange,
         above: Int,
-        aliased: Boolean = false,
+        bolder: Boolean = false,
     ): Pair<Boolean, String> {
         fun inked(
             px: IntArray,
@@ -111,12 +111,12 @@ class SliderParityTest {
         val kit = inked(r.actual, b.actual)
         val page = inked(r.reference, b.reference)
         val colour = channelGap(ink(r.actual, b.actual), ink(r.reference, b.reference))
-        // Drawn without antialiasing (ALIASED_DISABLED_VALUE), a glyph's partial pixels go whole: its sides reach a
-        // pixel further and its inkiest pixel is the ink itself, so the colour says nothing.
-        val side = if (aliased) 2 else 1
+        // Drawn heavier (BOLDER_DISABLED_VALUE), a glyph's partial pixels go whole: its sides reach a pixel further and
+        // its inkiest pixel is the ink itself, so the colour says nothing.
+        val side = if (bolder) 2 else 1
         val ok =
             kit != null && page != null && kit.near(page, px = side, topPx = 0, above = above) &&
-                (aliased || colour <= ComponentParity.INK_COLOUR)
+                (bolder || colour <= ComponentParity.INK_COLOUR)
         return ok to
             "kit $kit page $page colour $colour (#${ink(
                 r.actual,
@@ -157,7 +157,7 @@ class SliderParityTest {
                                 (cell.left - 2) until (cell.left + 36),
                                 HEADER until r.height,
                                 HANDJET_ROWS_ABOVE,
-                                aliased = !cell.enabled && ALIASED_DISABLED_VALUE,
+                                bolder = !cell.enabled && BOLDER_DISABLED_VALUE,
                             ),
                     )
                 lines +=
@@ -175,13 +175,14 @@ class SliderParityTest {
         const val HEADER = 25
 
         /**
-         * On macOS 26 (the hosted `macos-latest`, the host [HANDJET_ROWS_ABOVE] names) the fixture draws the disabled
-         * handle's value without antialiasing — every glyph pixel the ink or the body, seen on PR #18's runner images
-         * on 2026-11-15 — while the header and `+3` on the amber handle stay smooth. Allowed for that value on that host
-         * alone, by the owner's decision on 2026-11-15; the exact form runs on this Mac before every merge, and why
-         * the runner drops the antialiasing is B-85's.
+         * On macOS 26 (the hosted `macos-latest`, the host [HANDJET_ROWS_ABOVE] names) CoreText draws Handjet's strokes
+         * heavier, whatever the raster settings: of the value's 54 glyph pixels 49 reach the full ink there, against 3
+         * here (B-85, `logs/b-85/`). Every Handjet word on that host is drawn so. This cell alone notices, because the
+         * page's own ink for «−4» over the disabled body never reaches the full colour. Its sides are allowed 2 px and its
+         * colour is not compared, on that host alone, by the owner's decision on 2026-11-15. The exact form runs on this
+         * Mac before every merge.
          */
-        val ALIASED_DISABLED_VALUE = HANDJET_ROWS_ABOVE > 0
+        val BOLDER_DISABLED_VALUE = HANDJET_ROWS_ABOVE > 0
 
         /**
          * Over the floor, measured on 2026-11-15 and never to be raised: the disabled handle in «Копия», the print

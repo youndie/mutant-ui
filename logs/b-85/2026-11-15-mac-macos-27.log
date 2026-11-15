@@ -1,0 +1,31 @@
+# B-85 raster probe on this Mac
+# host macOS 27.0.1 aarch64, commit 6015481, ZzB85ProbeTest
+B85 aa-none-sub disabled-body differ=52 fullInk=0 partial=52
+B85 aa-none-sub plain-amber differ=52 fullInk=0 partial=52
+B85 aa-none-sub plain-grey differ=52 fullInk=0 partial=52
+B85 aa-none-sub rest-body differ=52 fullInk=0 partial=52
+B85 aa-normal-nosub disabled-body differ=56 fullInk=2 partial=54
+B85 aa-normal-nosub plain-amber differ=56 fullInk=2 partial=54
+B85 aa-normal-nosub plain-grey differ=56 fullInk=2 partial=54
+B85 aa-normal-nosub rest-body differ=56 fullInk=2 partial=54
+B85 aa-slight-nosub disabled-body differ=56 fullInk=2 partial=54
+B85 aa-slight-nosub plain-amber differ=56 fullInk=2 partial=54
+B85 aa-slight-nosub plain-grey differ=56 fullInk=2 partial=54
+B85 aa-slight-nosub rest-body differ=56 fullInk=2 partial=54
+B85 default disabled-body differ=60 fullInk=3 partial=57
+B85 default plain-amber differ=60 fullInk=3 partial=57
+B85 default plain-grey differ=60 fullInk=3 partial=57
+B85 default rest-body differ=60 fullInk=3 partial=57
+B85 lcd-none-nosub disabled-body differ=53 fullInk=0 partial=53
+B85 lcd-none-nosub plain-amber differ=53 fullInk=0 partial=53
+B85 lcd-none-nosub plain-grey differ=53 fullInk=0 partial=53
+B85 lcd-none-nosub rest-body differ=53 fullInk=0 partial=53
+B85 lcd-slight-nosub disabled-body differ=56 fullInk=2 partial=54
+B85 lcd-slight-nosub plain-amber differ=56 fullInk=2 partial=54
+B85 lcd-slight-nosub plain-grey differ=56 fullInk=2 partial=54
+B85 lcd-slight-nosub rest-body differ=56 fullInk=2 partial=54
+B85 os 27.0.1
+B85 slider enabled=false '+3' differ=76 fullInk=9 partial=67
+B85 slider enabled=false '−4' differ=54 fullInk=3 partial=51
+B85 slider enabled=true '+3' differ=76 fullInk=8 partial=68
+B85 slider enabled=true '−4' differ=54 fullInk=2 partial=52
