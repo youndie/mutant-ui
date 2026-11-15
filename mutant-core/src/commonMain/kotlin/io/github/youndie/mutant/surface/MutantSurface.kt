@@ -253,6 +253,9 @@ internal fun MutantSurface(
     val origin = LocalMutantSlotOrigin.current?.invoke(key)
     val engineSize = LocalMutantSlotSize.current?.invoke(key)
     val engineZone = LocalMutantTextZone.current?.invoke(key)
+    // B-48: the screen's keyframe loss takes this body's picture and cuts its band out of it.
+    val moshScene = LocalMutantMoshScene.current
+    val moshBody = rememberMoshBody(moshScene)
     val bodyFill = fill ?: colors.fillOf(p.fill)
     moves.follow(bodyFill, slide, clock.nowMs)
     val look =
@@ -266,8 +269,10 @@ internal fun MutantSurface(
         )
     Box(
         modifier
-            .onGloballyPositioned { registry.surface = it }
-            .drawWithCache {
+            .onGloballyPositioned {
+                registry.surface = it
+                moshBody.coords = it
+            }.drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
                 val d = density
@@ -285,6 +290,7 @@ internal fun MutantSurface(
                             it.height + 2 * MutantGrid.CLEAN_ZONE_VERTICAL,
                         )
                     }
+                moshBody.zone = tz
                 val slot =
                     Slot(
                         ox = origin?.x?.toDouble() ?: 0.0,
@@ -466,7 +472,7 @@ internal fun MutantSurface(
                         gen.edgeMosaic(g)
                     }
                     val patterns = StagePatterns.of(cassette, stage)
-                    return@drawWithCache onDrawBehind {
+                    return@drawWithCache moshBehind(moshScene, moshBody) {
                         scale(d, Offset.Zero) {
                             translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
                                 if (state == BodyState.Disabled) {
@@ -527,7 +533,7 @@ internal fun MutantSurface(
                     }
                 frameProbe?.invoke(early != null, image != null, frame.steadyWebs)
                 if (image != null) {
-                    return@drawWithCache onDrawBehind {
+                    return@drawWithCache moshBehind(moshScene, moshBody) {
                         drawImage(
                             image.image,
                             dstOffset = image.offset,
@@ -539,7 +545,7 @@ internal fun MutantSurface(
                     }
                 }
                 val (paths, frameLook, decor) = pictureOf(g, frame, t, k)
-                onDrawBehind {
+                moshBehind(moshScene, moshBody) {
                     scale(d, Offset.Zero) {
                         translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
                             slid(

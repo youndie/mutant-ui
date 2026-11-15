@@ -258,6 +258,13 @@ export const REFERENCES = [
         sel: '[data-mu-stage="l-date"] div:has(> [data-mu="field"][data-key="tp-h"])' },
     ];
   })),
+  // B-48: the specs page's keyframe loss, its four frames — before it, at 45 % and 95 % of the loss, and recovering
+  // (`data-mu-mosh-p` 0.45, 0.95, 1.2) — each stage whole, with its bodies, its name and the loss's plan as the engine
+  // holds it (`st.m`), so a fixture finds which loss of the page it was.
+  ...[['Before', null], ['At45', '0.45'], ['At95', '0.95'], ['Recovering', '1.2']].map(([s, p]) => ({
+    stem: `MutantKeyframeLoss_${s}_Efir`, page: SPECS, el: true, slots: true, index: 0, theme: 'Efir',
+    sel: p === null ? '[data-mu-stage][data-mu-mosh]:not([data-mu-mosh-p])' : `[data-mu-stage][data-mu-mosh-p="${p}"]`,
+  })),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
@@ -613,6 +620,9 @@ async function elementCell(t, ref) {
       const sh = n.closest('[data-mu-stage]'), e = window.__muEngines.find(x => x.stages.some(s => s.host === sh)), st = e.stages.find(s => s.host === sh);
       const hr = sh.getBoundingClientRect();
       out.origin = [Math.round(b.left - hr.left), Math.round(b.top - hr.top)];
+      // B-48: the stage's name (it seeds the bodies) and its keyframe loss, when one stands frozen on it.
+      out.stage = sh.dataset.muStage;
+      if (st.m && !st.m.loading) out.mosh = { y0: st.m.y0, rows: st.m.rows, dur: st.m.dur };
       // B-47: and the bodies of the stages nested in the element (a carousel's clipped view), each slot in its own
       // stage's frame, as the kit seeds that view's bodies on a stage of their own.
       const nested = window.__muEngines.flatMap((x) => x.stages).filter((o) => o !== st && n.contains(o.host));
