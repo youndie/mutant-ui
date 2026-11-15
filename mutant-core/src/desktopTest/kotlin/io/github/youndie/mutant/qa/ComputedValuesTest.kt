@@ -132,7 +132,6 @@ class ComputedValuesTest {
         return px
     }
 
-    @Ignore("F19: the FAB swaps a consumer's icon for the kit's when its name equals a kit icon's (\"Home\", \"Add\")")
     @Test
     fun `F19 the FAB draws the consumer's icon, whatever it is named`() =
         assertNotEquals(fab(MutantIcons.Home), fab(square))
