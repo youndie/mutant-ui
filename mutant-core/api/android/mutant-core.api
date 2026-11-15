@@ -129,6 +129,10 @@ public final class io/github/youndie/mutant/components/MutantTextFieldKt {
 	public static final fun MutantTextField (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;ZZLandroidx/compose/foundation/text/KeyboardOptions;Ljava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantTooltipKt {
+	public static final fun MutantTooltipBox (Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/components/MutantTopAppBarKt {
 	public static final fun MutantTopAppBar (Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Landroidx/compose/foundation/layout/WindowInsets;Ljava/lang/String;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 }
