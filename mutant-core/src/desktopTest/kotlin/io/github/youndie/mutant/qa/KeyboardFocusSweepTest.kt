@@ -27,6 +27,7 @@ import io.github.youndie.mutant.components.MutantCarouselItem
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantDataTable
+import io.github.youndie.mutant.components.MutantDropdown
 import io.github.youndie.mutant.components.MutantExtendedFab
 import io.github.youndie.mutant.components.MutantFab
 import io.github.youndie.mutant.components.MutantIconButton
@@ -89,6 +90,8 @@ class KeyboardFocusSweepTest {
             Control("TextField", activates = false) { _ -> MutantTextField("abc", {}, Modifier.width(240.dp)) },
             // The first stop is the field; its clear icon is the second (SearchBarBehaviourTest).
             Control("SearchBar", activates = false) { _ -> MutantSearchBar("ночь", {}, Modifier.width(300.dp)) },
+            // Enter opens the menu (MenuBehaviourTest).
+            Control("Dropdown", activates = false) { _ -> MutantDropdown("Настройка", listOf("ТРЕКИНГ"), 0, {}) },
             // The first stop is the card before the current one; Enter brings it in (CarouselBehaviourTest).
             Control("Carousel", activates = false) { _ ->
                 MutantCarousel(listOf(MutantCarouselItem("Эфир"), MutantCarouselItem("Копия")), Modifier.width(300.dp))

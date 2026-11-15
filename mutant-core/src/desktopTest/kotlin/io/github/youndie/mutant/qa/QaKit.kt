@@ -31,6 +31,7 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import io.github.youndie.mutant.components.MenuBody
 import io.github.youndie.mutant.components.MutantBadge
 import io.github.youndie.mutant.components.MutantButton
 import io.github.youndie.mutant.components.MutantButtonState
@@ -45,6 +46,7 @@ import io.github.youndie.mutant.components.MutantCircularProgress
 import io.github.youndie.mutant.components.MutantCocoon
 import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantDivider
+import io.github.youndie.mutant.components.MutantDropdown
 import io.github.youndie.mutant.components.MutantEmptyState
 import io.github.youndie.mutant.components.MutantExtendedFab
 import io.github.youndie.mutant.components.MutantFab
@@ -128,6 +130,8 @@ internal val subjects: List<Subject> =
             "SearchResult",
         ) { m, t -> MutantSearchResult(t, "ночь", m, supporting = t, leadingIcon = MutantIcons.Search) },
         Subject("SearchResultLoading") { m, _ -> MutantSearchResultLoading(m) },
+        Subject("Dropdown") { m, t -> MutantDropdown(t, listOf(t, "СБРОС"), 0, {}, m) },
+        Subject("Menu") { m, t -> MenuBody(listOf(t, "ЦВЕТНОСТЬ", "СБРОС"), 0, {}, m, "menu", "menu-pill") },
         Subject("Carousel") { m, t ->
             MutantCarousel(listOf(MutantCarouselItem(t, t, t), MutantCarouselItem(t, t), MutantCarouselItem("Эфир")), m)
         },

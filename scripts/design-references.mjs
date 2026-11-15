@@ -231,6 +231,13 @@ export const REFERENCES = [
     sel: '[data-mu-stage="l-carousel"] > div:has(> [data-mu-stage="l-carousel-view"])',
     hide: bare ? '[data-mu-stage="l-carousel"], [data-mu-stage="l-carousel"] * { color: transparent !important; }' : '',
   }))),
+  // B-33: the v1 page's menu as it stands — the anchor chip and the menu under it with its window on the first item —
+  // whole and with every word and currentColor icon hidden, both themes, with the bodies the engine built on it.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) => ({
+    stem: `MutantMenu_Open${bare ? 'Bare' : ''}_${theme}`, page: V1, el: true, slots: true, index: 0, theme,
+    sel: '[data-mu-stage="v1-menu"] div:has(> [data-mu="btn"][data-key="menu"])',
+    hide: bare ? '[data-mu-stage="v1-menu"], [data-mu-stage="v1-menu"] * { color: transparent !important; }' : '',
+  }))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
