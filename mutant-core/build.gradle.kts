@@ -164,6 +164,22 @@ tasks.register<JavaExec>("bodyRenderBench") {
     notCompatibleWithConfigurationCache("a measurement, run by hand")
 }
 
+// B-69: `./gradlew :mutant-core:tallBodyBench --args="$(git rev-parse --short HEAD)" > logs/b-69/<date>-desktop.log`.
+// Opens a window on top for about three minutes; not part of check.
+tasks.register<JavaExec>("tallBodyBench") {
+    group = "verification"
+    description = "Measures what a tall body costs per tick in a real window; not part of check."
+    mainClass = "io.github.youndie.mutant.bench.TallBodyBenchKt"
+    val test =
+        kotlin.targets
+            .getByName("desktop")
+            .compilations
+            .getByName("test")
+    classpath = test.output.allOutputs + test.runtimeDependencyFiles!!
+    dependsOn(test.compileAllTaskName)
+    notCompatibleWithConfigurationCache("a measurement, run by hand")
+}
+
 // B-71: a test task is never taken from the build cache. Under `allTests` and `check`, Kotlin lets a test task
 // with failing tests succeed and fails the aggregate after it, so the failed run is stored like any other; a
 // fresh checkout (every CI run) then loads it and the build passes without a single test having run.
