@@ -20,7 +20,6 @@ import io.github.youndie.mutant.components.MutantTab
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -102,7 +101,6 @@ class LongContentSweepTest {
             assertTrue(boundsOf("Сохранено").width > 40f, "the message: ${boundsOf("Сохранено")}")
         }
 
-    @Ignore("F21: a snackbar's action is never cut, so a long one pushes the message out of the bar")
     @Test
     fun `F21 a snackbar keeps its message and cuts a 300-character action`() =
         runComposeUiTest {
