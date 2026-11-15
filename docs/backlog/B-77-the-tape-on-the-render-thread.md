@@ -2,13 +2,15 @@
 id: B-77
 title: "The Tape costs 3.2 ms a frame on the render thread of the Demo page"
 status: open
-priority: P2
+priority: P3
 size: S
 stage: stage-5-product
 blocked_by: [B-76]
 ---
 
 # B-77 — The Tape costs 3.2 ms a frame on the render thread
+
+**Lowered to P3 on 2026-11-15**: the owner judged the JVM's frame cost acceptable after B-75, B-82 and B-83, and the components come first.
 
 Found by [B-76](B-76-render-thread-replay-on-the-demo-page.md). On the Demo page the Tape is drawn four times, over the page and over each screen. It costs the render thread 3.2 ms a frame of 19.8 (19.79 ms with it, 16.62 ms under «Чистый сигнал»), on a thread that is 91 % busy.
 

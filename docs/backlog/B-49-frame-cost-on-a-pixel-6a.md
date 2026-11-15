@@ -2,13 +2,15 @@
 id: B-49
 title: "The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance"
 status: open
-priority: P1
+priority: P3
 size: M
 stage: stage-1-materials
 blocked_by: [B-06, B-10, B-73]
 ---
 
 # B-49 — The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance
+
+**Moved to the end by the owner on 2026-11-15**, with [B-73](B-73-frame-cost-in-the-browser.md): after the kit's components are built.
 
 The brief's target is set on a Pixel 6a: 60 fps with ten cards and the Tape at the kit's tick, a
 100-item list scrolling, an instance generated in ≤ 1 ms. [B-06](B-06-frame-cost.md) measured the field
