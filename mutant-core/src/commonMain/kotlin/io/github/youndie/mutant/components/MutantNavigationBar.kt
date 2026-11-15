@@ -161,7 +161,15 @@ internal fun NavigationBarBody(
                     }
                         ?: 0
                 val h = maxOf(constraints.minHeight, BAR.roundToPx(), tallest)
-                val pill = if (chosen) measurables.first().measure(Constraints()) else null
+                // The pill is never wider than its cell: twelve destinations in 360 dp leave 30 dp a cell (B-66).
+                val pill =
+                    if (chosen) {
+                        measurables.first().measure(
+                            Constraints(maxWidth = (cells[selectedIndex + 1] - cells[selectedIndex]).coerceAtLeast(0)),
+                        )
+                    } else {
+                        null
+                    }
                 val placed =
                     items.mapIndexed { i, m ->
                         m.measure(Constraints.fixed((cells[i + 1] - cells[i]).coerceAtLeast(0), h))
