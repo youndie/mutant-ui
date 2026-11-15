@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantButton
 import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardTitle
+import io.github.youndie.mutant.components.MutantCarousel
+import io.github.youndie.mutant.components.MutantCarouselItem
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantDataTable
@@ -87,6 +89,7 @@ class HoverAndCursorTest {
             "SegmentedButton" to { e -> MutantSegmentedButton(listOf("SP", "LP"), 0, {}, enabled = e) },
             "Slider" to { e -> MutantSlider(0, {}, Modifier.width(240.dp), enabled = e) },
             "SearchBar" to { e -> MutantSearchBar("ночь", {}, Modifier.width(300.dp), enabled = e) },
+            "Carousel" to { _ -> MutantCarousel(listOf(MutantCarouselItem("Эфир")), Modifier.width(300.dp)) },
             "DataTable" to { e ->
                 MutantDataTable(
                     listOf("а"),
@@ -122,8 +125,12 @@ class HoverAndCursorTest {
     @Test
     fun `every live control shows the hand, and a disabled one the arrow`() {
         val missing = controls.filter { (_, c) -> hands(true, c) == 0 }.map { it.first }
-        // The FAB has no disabled state; the dialog's action is held with the dialog open.
-        val disabledWithHand = controls.filter { (n, c) -> n != "Fab" && hands(false, c) > 0 }.map { it.first }
+        // The FAB and the carousel have no disabled state; the dialog's action is held with the dialog open.
+        val disabledWithHand =
+            controls
+                .filter { (n, c) ->
+                    n !in setOf("Fab", "Carousel") && hands(false, c) > 0
+                }.map { it.first }
         assertEquals(emptyList(), missing, "no hand")
         assertEquals(emptyList(), disabledWithHand, "a hand over a disabled control")
     }
