@@ -1,0 +1,86 @@
+# B-73 profile of DemoLibrary, 2026-11-15T23:07:14.339Z, 8000 ms sampled every 100 µs
+# sampled 8002 ms, idle 4617 ms, busy 3385 ms (42.3 %)
+
+## self time, top 40 (share of busy)
+    233.2 ms   6.9 %  wasm-function[5363]
+    178.0 ms   5.3 %  wasm-function[2550]
+    177.1 ms   5.2 %  wasm-function[10802]
+    175.0 ms   5.2 %  wasm-function[5131]
+    143.5 ms   4.2 %  texSubImage2D
+    128.3 ms   3.8 %  wasm-function[1381]
+     77.2 ms   2.3 %  wasm-function[5133]
+     72.1 ms   2.1 %  wasm-function[5134]
+     70.3 ms   2.1 %  wasm-function[10794]
+     70.1 ms   2.1 %  wasm-function[5128]
+     65.9 ms   1.9 %  (program)
+     59.6 ms   1.8 %  wasm-function[3598]
+     53.9 ms   1.6 %  wasm-function[4155]
+     53.1 ms   1.6 %  wasm-function[1375]
+     52.1 ms   1.5 %  wasm-function[14129]
+     51.9 ms   1.5 %  wasm-function[5129]
+     40.5 ms   1.2 %  wasm-function[3109]
+     39.7 ms   1.2 %  wasm-function[3110]
+     38.9 ms   1.2 %  wasm-function[1371]
+     32.1 ms   0.9 %  wasm-function[14255]
+     30.0 ms   0.9 %  wasm-function[1374]
+     29.1 ms   0.9 %  wasm-to-js
+     28.8 ms   0.9 %  wasm-function[5107]
+     28.8 ms   0.9 %  wasm-function[5102]
+     28.6 ms   0.8 %  wasm-function[686]
+     28.1 ms   0.8 %  wasm-function[1419]
+     25.5 ms   0.8 %  wasm-function[14126]
+     23.9 ms   0.7 %  wasm-function[728]
+     23.6 ms   0.7 %  wasm-function[10940]
+     19.0 ms   0.6 %  wasm-function[5124]
+     18.1 ms   0.5 %  wasm-function[3144]
+     17.3 ms   0.5 %  wasm-function[5350]
+     17.0 ms   0.5 %  wasm-function[2622]
+     16.8 ms   0.5 %  wasm-function[2621]
+     16.4 ms   0.5 %  wasm-function[5115]
+     16.3 ms   0.5 %  (garbage collector)
+     15.6 ms   0.5 %  wasm-function[14256]
+     15.4 ms   0.5 %  wasm-function[3076]
+     15.1 ms   0.4 %  wasm-function[5338]
+     14.9 ms   0.4 %  wasm-function[1312]
+
+## total time, top 40 (share of busy)
+   3384.9 ms 100.0 %  (root)
+   3139.0 ms  92.7 %  (sample.js)
+   3131.1 ms  92.5 %  js-to-wasm:nn:n
+   2317.3 ms  68.5 %  wasm-to-js
+   2091.2 ms  61.8 %  wasm-function[2540]
+   1857.8 ms  54.9 %  wasm-function[1488]
+   1857.5 ms  54.9 %  wasm-function[2511]
+   1857.2 ms  54.9 %  wasm-function[2505]
+   1855.8 ms  54.8 %  wasm-function[2395]
+   1854.4 ms  54.8 %  wasm-function[1590]
+   1851.0 ms  54.7 %  wasm-function[1596]
+   1850.2 ms  54.7 %  wasm-function[1594]
+   1831.9 ms  54.1 %  wasm-function[11032]
+   1828.2 ms  54.0 %  wasm-function[1844]
+   1828.1 ms  54.0 %  wasm-function[11019]
+   1827.7 ms  54.0 %  wasm-function[11035]
+   1272.3 ms  37.6 %  wasm-function[2571]
+   1271.8 ms  37.6 %  wasm-function[1092]
+   1271.1 ms  37.6 %  wasm-function[4212]
+   1131.5 ms  33.4 %  wasm-function[7645]
+   1118.3 ms  33.0 %  wasm-function[10939]
+   1100.5 ms  32.5 %  wasm-function[7356]
+   1088.7 ms  32.2 %  wasm-function[6722]
+   1045.4 ms  30.9 %  wasm-function[6457]
+   1045.1 ms  30.9 %  wasm-function[6721]
+   1044.1 ms  30.8 %  wasm-function[6400]
+   1043.8 ms  30.8 %  wasm-function[6357]
+    857.6 ms  25.3 %  js-to-wasm:iii:
+    747.1 ms  22.1 %  wasm-function[5146]
+    746.7 ms  22.1 %  wasm-function[5130]
+    744.8 ms  22.0 %  wasm-function[5131]
+    742.5 ms  21.9 %  wasm-function[4473]
+    742.3 ms  21.9 %  wasm-function[4447]
+    740.2 ms  21.9 %  wasm-function[4580]
+    740.0 ms  21.9 %  wasm-function[2658]
+    733.0 ms  21.7 %  wasm-function[2377]
+    733.0 ms  21.7 %  wasm-function[670]
+    733.0 ms  21.7 %  ae
+    732.7 ms  21.6 %  wasm-function[2399]
+    732.0 ms  21.6 %  wasm-function[2467]
