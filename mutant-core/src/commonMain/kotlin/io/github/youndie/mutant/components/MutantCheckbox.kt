@@ -89,11 +89,7 @@ internal fun CheckboxBody(
     interactionSource: MutableInteractionSource?,
     hidden: Boolean = false,
 ) {
-    val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
-    // A bare twin hides the tick (drawn in the text's `currentColor` on the page) and keeps the blocks (a background).
-    val tick = if (hidden) Color.Transparent else colors.onPrimary
-    val ink = colors.onPrimary
     ControlRow(
         modifier.mutantHand(enabled).toggleable(
             checked,
@@ -107,22 +103,42 @@ internal fun CheckboxBody(
         enabled,
         hidden,
     ) {
-        Control(MutantBody.Box, key, if (checked) colors.primary else null, enabled, source) {
-            // A disabled box draws its mark as it stands (the page's disabled cell); a live one melts it.
-            val melt = if (enabled) Modifier.mutantMelt(checked) else Modifier
-            val shown = checked
-            MutantIcon(
-                remember { MutantIcons.stroked(MutantIcons.Done, MARK_LINE) },
-                null,
-                melt.then(if (shown) Modifier.mutantCleanZone() else Modifier),
-                tint = if (shown) tick else Color.Transparent,
-                size = MARK,
-            )
-            if (enabled) {
-                // Two burnt blocks in the corner (the page's `right: 2px` and `6px`, `bottom: 2px`, 4 dp each in 22).
-                Block(16, 16, .5f, ink, if (enabled) Modifier.mutantMelt(checked) else Modifier, shown)
-                Block(12, 16, .25f, ink, if (enabled) Modifier.mutantMelt(checked) else Modifier, shown)
-            }
+        CheckBoxControl(checked, enabled, key, source, hidden)
+    }
+}
+
+/**
+ * The checkbox's body and mark: checked, the acid fill and the tick (melting in on a live box) and, with [blocks],
+ * the two burnt blocks in its corner. A data table's row draws the tick alone, as its page does (B-46).
+ */
+@Composable
+internal fun CheckBoxControl(
+    checked: Boolean,
+    enabled: Boolean,
+    key: String,
+    source: MutableInteractionSource,
+    hidden: Boolean,
+    blocks: Boolean = true,
+) {
+    val colors = MutantTheme.colors
+    // A bare twin hides the tick (drawn in the text's `currentColor` on the page) and keeps the blocks (a background).
+    val tick = if (hidden) Color.Transparent else colors.onPrimary
+    val ink = colors.onPrimary
+    Control(MutantBody.Box, key, if (checked) colors.primary else null, enabled, source) {
+        // A disabled box draws its mark as it stands (the page's disabled cell); a live one melts it.
+        val melt = if (enabled) Modifier.mutantMelt(checked) else Modifier
+        val shown = checked
+        MutantIcon(
+            remember { MutantIcons.stroked(MutantIcons.Done, MARK_LINE) },
+            null,
+            melt.then(if (shown) Modifier.mutantCleanZone() else Modifier),
+            tint = if (shown) tick else Color.Transparent,
+            size = MARK,
+        )
+        if (enabled && blocks) {
+            // Two burnt blocks in the corner (the page's `right: 2px` and `6px`, `bottom: 2px`, 4 dp each in 22).
+            Block(16, 16, .5f, ink, Modifier.mutantMelt(checked), shown)
+            Block(12, 16, .25f, ink, Modifier.mutantMelt(checked), shown)
         }
     }
 }

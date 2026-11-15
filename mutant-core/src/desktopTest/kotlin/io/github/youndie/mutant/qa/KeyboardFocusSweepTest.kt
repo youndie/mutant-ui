@@ -24,6 +24,7 @@ import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardTitle
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
+import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantExtendedFab
 import io.github.youndie.mutant.components.MutantFab
 import io.github.youndie.mutant.components.MutantIconButton
@@ -40,6 +41,7 @@ import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
 import io.github.youndie.mutant.components.MutantSwitch
 import io.github.youndie.mutant.components.MutantTab
+import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
@@ -85,6 +87,19 @@ class KeyboardFocusSweepTest {
             Control("TextField", activates = false) { _ -> MutantTextField("abc", {}, Modifier.width(240.dp)) },
             // The first stop is the field; its clear icon is the second (SearchBarBehaviourTest).
             Control("SearchBar", activates = false) { _ -> MutantSearchBar("ночь", {}, Modifier.width(300.dp)) },
+            Control("DataTable") { f ->
+                MutantDataTable(
+                    listOf("Нет сигнала"),
+                    listOf(
+                        MutantTableColumn<String>("ЗАПИСЬ") {
+                            it
+                        },
+                    ),
+                    Modifier.width(300.dp),
+                    emptySet(),
+                    { _, _ -> f() },
+                )
+            },
             Control("SearchSuggestions") { f -> MutantSearchSuggestions(listOf("ночь"), { f() }) },
             Control(
                 "SearchResult",

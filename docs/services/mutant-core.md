@@ -41,6 +41,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantCheckbox.kt` | `MutantCheckbox`, `MutantRadioButton`, the control row ([B-18](../backlog/B-18-checkbox-and-radio-button.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSwitch.kt` | `MutantSwitch` ([B-19](../backlog/B-19-switch.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSlider.kt` | `MutantSlider`, the v1 slider ([B-30](../backlog/B-30-slider.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDataTable.kt` | `MutantDataTable`, `MutantTableColumn`, `MutantTableCellStyle` ([B-46](../backlog/B-46-data-table.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSearchBar.kt` | `MutantSearchBar`, `MutantSearchSuggestions`, `MutantSearchResult`, `MutantSearchResultLoading` ([B-44](../backlog/B-44-search-bar.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSegmentedButton.kt` | `MutantSegmentedButton` and the venom window's run ([B-31](../backlog/B-31-segmented-button.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTooltip.kt` | `MutantTooltipBox` and its plate ([B-32](../backlog/B-32-tooltip.md)) |

@@ -215,6 +215,14 @@ export const REFERENCES = [
     sel: '[data-mu-stage="l-search"] > div:has(> [data-mu="field"])',
     hide: bare ? '[data-mu-stage="l-search"], [data-mu-stage="l-search"] * { color: transparent !important; } [data-mu-stage="l-search"] [data-mu-anim="blink"] { visibility: hidden !important; }' : '',
   }))),
+  // B-46: the later page's data table as it stands — the OSD header, the tracking dividers and four rows, the second
+  // selected (its box filled and ticked) — whole and with every word and tick hidden, both themes, with the bodies
+  // the engine built on it.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) => ({
+    stem: `MutantDataTable_Selected${bare ? 'Bare' : ''}_${theme}`, page: LATER, el: true, slots: true, index: 0, theme,
+    sel: '[data-mu-stage="l-table"] > div:has(> [data-mu-divider])',
+    hide: bare ? '[data-mu-stage="l-table"], [data-mu-stage="l-table"] * { color: transparent !important; }' : '',
+  }))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>

@@ -41,6 +41,7 @@ import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantCircularProgress
 import io.github.youndie.mutant.components.MutantCocoon
+import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantDivider
 import io.github.youndie.mutant.components.MutantEmptyState
 import io.github.youndie.mutant.components.MutantExtendedFab
@@ -62,6 +63,8 @@ import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
 import io.github.youndie.mutant.components.MutantSwitch
 import io.github.youndie.mutant.components.MutantTab
+import io.github.youndie.mutant.components.MutantTableCellStyle
+import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
@@ -123,6 +126,19 @@ internal val subjects: List<Subject> =
             "SearchResult",
         ) { m, t -> MutantSearchResult(t, "ночь", m, supporting = t, leadingIcon = MutantIcons.Search) },
         Subject("SearchResultLoading") { m, _ -> MutantSearchResultLoading(m) },
+        Subject("DataTable") { m, t ->
+            MutantDataTable(
+                listOf(t, "Нет сигнала"),
+                listOf(
+                    MutantTableColumn<String>(t) { it },
+                    MutantTableColumn(t, 90.dp, MutantTableCellStyle.Osd) { it },
+                    MutantTableColumn("КАНАЛ", 80.dp, MutantTableCellStyle.OsdSecondary) { it },
+                ),
+                m,
+                setOf(0),
+                { _, _ -> },
+            )
+        },
         Subject("SegmentedButton") { m, t -> MutantSegmentedButton(listOf(t, "LP", "EP"), 0, {}, m) },
         Subject("Tooltip") { m, t -> TooltipPlate(t, null, "tip", m) },
         Subject("Tooltip.Rich") { m, t -> TooltipPlate(t, "ОСТАЛОСЬ 3 МИН", "tip-rich", m) },
