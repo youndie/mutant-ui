@@ -197,6 +197,14 @@ export const REFERENCES = [
     { stem: `MutantSheet_Window_${theme}`, page: V1, stage: 'v1-sheet-win', type: 'blob', index: 0, theme, below: 0 },
     { stem: `MutantSheet_Card_${theme}`, page: V1, stage: 'v1-sheet-bg', type: 'card', index: 0, theme, below: 20 },
   ]),
+  // B-36: the v1 page's three pull-to-refresh frames — pulling, refreshing, done — each its screen as it stands
+  // (the header, the divider, the tongue or the pill, the list below), whole and with every word hidden, both themes,
+  // with the bodies the engine built on it.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [['Pulling', 'a'], ['Refreshing', 'b'], ['Done', 'c']].flatMap(([s, k]) => [false, true].map((bare) => ({
+    stem: `MutantPullToRefresh_${s}${bare ? 'Bare' : ''}_${theme}`, page: V1, el: true, slots: true, index: 0, theme,
+    sel: `[data-mu-stage="v1-ptr-${k}"]`,
+    hide: bare ? `[data-mu-stage="v1-ptr-${k}"], [data-mu-stage="v1-ptr-${k}"] * { color: transparent !important; }` : '',
+  })))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
@@ -554,7 +562,7 @@ async function elementCell(t, ref) {
       out.origin = [Math.round(b.left - hr.left), Math.round(b.top - hr.top)];
       out.stageSlots = st.items.filter((s) => n.contains(s.n)).map((s) => ({ key: s.key, ox: s.el.ox, oy: s.el.oy, w: s.el.w, h: s.el.h, r: s.el.r, over: s.el.over,
         cf: s.el.cf, ow: s.el.ow, wob: s.el.wob, round: s.el.round, calm: s.el.calm, dead: s.el.dead, marks: s.el.marks, edge: s.el.edge, tz: s.el.tz, cz: s.el.cz,
-        fill: s.el.fill, hl: s.el.hl, state: s.el.state, still: !!s.stat, drawnOutline: s.H ? +s.H.O.getAttribute('stroke-width') : s.el.ow }));
+        fill: s.el.fill, hl: s.el.hl, state: s.el.state, still: !!s.stat, heat: s.el.hkFix ?? s.heat, drawnOutline: s.H ? +s.H.O.getAttribute('stroke-width') : s.el.ow }));
     }
     return out;
   })()`);

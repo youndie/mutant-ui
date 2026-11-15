@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -44,6 +47,7 @@ import io.github.youndie.mutant.components.MutantListItem
 import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
+import io.github.youndie.mutant.components.MutantPullToRefresh
 import io.github.youndie.mutant.components.MutantRadioButton
 import io.github.youndie.mutant.components.MutantSegmentedButton
 import io.github.youndie.mutant.components.MutantSlider
@@ -81,6 +85,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionProgress) { Progress() }
         Section(strings.sectionDialog) { Dialog(strings) }
         Section(strings.sectionSheet) { Sheet(strings) }
+        Section(strings.sectionPull) { Pull(strings) }
         Section(strings.sectionEmpty) { EmptyStates(strings) }
         Section(strings.sectionIcons) { IconsAndPatterns(strings) }
     }
@@ -329,6 +334,29 @@ private fun Sheet(s: SampleStrings) {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 MutantButton(s.done, { open = false }, key = "sheet-done")
             }
+        }
+    }
+}
+
+/** Pull the list down, by a finger or a mouse: it refreshes for two seconds. */
+@Composable
+private fun Pull(s: SampleStrings) {
+    var refreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(refreshing) {
+        if (refreshing) {
+            kotlinx.coroutines.delay(2000)
+            refreshing = false
+        }
+    }
+    MutantPullToRefresh(
+        refreshing,
+        { refreshing = true },
+        Modifier.width(360.dp).height(260.dp),
+        refreshingLabel = s.refreshingWord,
+        doneLabel = s.refreshedWord,
+    ) {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            repeat(8) { MutantListItem("${s.untitled} ${it + 1}", key = "pull-row-$it") }
         }
     }
 }
