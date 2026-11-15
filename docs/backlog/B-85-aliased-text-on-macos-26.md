@@ -1,7 +1,7 @@
 ---
 id: B-85
 title: "On macOS 26 the slider's disabled value is drawn without antialiasing"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-5-product
