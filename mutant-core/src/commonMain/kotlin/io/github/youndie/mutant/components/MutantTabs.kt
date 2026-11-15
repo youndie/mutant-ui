@@ -1,5 +1,6 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
@@ -7,11 +8,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -62,7 +65,8 @@ public class MutantTab(
  * sends the bar across in 330 ms, stepped twelve times a second, its echo trailing behind it; under reduce motion it
  * lands at once. An index outside the tabs, -1 for none, shows no bar. Each tab is a target 48 dp tall reaching half
  * the gap to each side (at least 48 wide), so the row stands 12 dp wider each side and 1 dp taller each way than
- * what it draws; keyboard focus draws the corner brackets around a tab.
+ * what it draws; keyboard focus draws the corner brackets around a tab. Tabs that need more than the row's width keep
+ * their own: the row scrolls, and brings the focused tab and a newly selected one into view (B-60).
  */
 @Composable
 public fun MutantTabs(
@@ -78,45 +82,59 @@ public fun MutantTabs(
     val slide = remember { TabSlide(selectedIndex) }
     val barWidth = LocalTabBarWidth.current
     slide.follow(selectedIndex, clock.nowMs)
+    val scroll = rememberScrollState()
+    val density = androidx.compose.ui.platform.LocalDensity.current.density
+    // A newly selected tab out of view comes into it at once; a focused one is brought in by the scroll itself.
+    LaunchedEffect(selectedIndex, marks.x[selectedIndex], marks.width[selectedIndex]) {
+        val x = marks.x[selectedIndex] ?: return@LaunchedEffect
+        val w = (marks.width[selectedIndex] ?: return@LaunchedEffect) + 2 * SIDE.value
+        val left = (x * density).toInt()
+        val right = ((x + w) * density).toInt()
+        val view = scroll.viewportSize
+        when {
+            left < scroll.value -> scroll.scrollTo(left)
+            right > scroll.value + view && view > 0 -> scroll.scrollTo(right - view)
+        }
+    }
     Layout(
         content = {
             tabs.forEachIndexed { i, tab -> TabItem(tab, i == selectedIndex, { onSelect(i) }, marks, i) }
         },
         modifier =
-            modifier.selectableGroup().drawWithContent {
-                drawContent()
-                val p = if (reduce) 1.0 else stepped(clock.nowMs - slide.since, MutantMotion.SLIDE_MS)
-                // While the bar runs it reads every frame; at rest it reads nothing.
-                if (p < 1) clock.frame
-                scale(
-                    density,
-                    Offset.Zero,
-                ) { drawIndicator(marks, slide, selectedIndex, tabs.size, p, colors, barWidth) }
-            },
+            modifier
+                .layout { m, c ->
+                    // No width at all (a scrolling row): the tabs' own, which a scroll cannot take as its limit.
+                    val bounded =
+                        if (c.hasBoundedWidth) {
+                            c
+                        } else {
+                            c.copy(
+                                maxWidth = m.maxIntrinsicWidth(c.maxHeight).coerceAtLeast(c.minWidth),
+                            )
+                        }
+                    val p = m.measure(bounded)
+                    layout(p.width, p.height) { p.place(0, 0) }
+                }.horizontalScroll(scroll)
+                .selectableGroup()
+                .drawWithContent {
+                    drawContent()
+                    val p = if (reduce) 1.0 else stepped(clock.nowMs - slide.since, MutantMotion.SLIDE_MS)
+                    // While the bar runs it reads every frame; at rest it reads nothing.
+                    if (p < 1) clock.frame
+                    scale(
+                        density,
+                        Offset.Zero,
+                    ) { drawIndicator(marks, slide, selectedIndex, tabs.size, p, colors, barWidth) }
+                },
     ) { measurables, constraints ->
+        // Each tab its own width: inside the scroll the row has no limit, and one too wide for the window scrolls.
         val h = TAB_HEIGHT.roundToPx()
         var x = 0
         val placeables =
             measurables.map { m ->
-                val room =
-                    if (constraints.hasBoundedWidth) {
-                        (constraints.maxWidth - x).coerceAtLeast(
-                            0,
-                        )
-                    } else {
-                        Constraints.Infinity
-                    }
-                m.measure(Constraints(maxWidth = room, minHeight = h, maxHeight = h)).also { x += it.width }
+                m.measure(Constraints(minHeight = h, maxHeight = h)).also { x += it.width }
             }
-        val width =
-            if (constraints.hasBoundedWidth) {
-                x.coerceIn(
-                    constraints.minWidth,
-                    constraints.maxWidth,
-                )
-            } else {
-                max(x, constraints.minWidth)
-            }
+        val width = max(x, constraints.minWidth)
         layout(width, h) {
             var at = 0
             placeables.forEachIndexed { i, p ->

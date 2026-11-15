@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantDialog
@@ -174,7 +175,6 @@ class LongContentSweepTest {
             assertEquals(0f, scrollRange(), "a text that fits has nothing to scroll")
         }
 
-    @Ignore("F08: tabs past the row's width get zero width, yet stay focusable and selectable; no scroll, no bar")
     @Test
     fun `F08 twelve tabs in 360 dp each stay visible or scroll into view, and none focusable is zero-sized`() =
         runComposeUiTest {
@@ -187,6 +187,9 @@ class LongContentSweepTest {
                 }
             }
             mainClock.advanceTimeBy(300)
+            // The selected tab, the last, is scrolled into view before anything is focused (B-60).
+            val chosen = onNodeWithText("Вкладка 11", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertTrue(chosen.width > 0f && chosen.left >= 0f && chosen.right <= 360f, "the selected tab at $chosen")
             repeat(12) {
                 press(androidx.compose.ui.input.key.Key.Tab)
                 val f = focusedBounds().single()
