@@ -3,6 +3,7 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -49,11 +50,12 @@ public fun MutantLinearProgress(
     val value = if (progress.isNaN()) 0f else progress.coerceIn(0f, 1f)
     val acid = MutantTheme.colors.primary
     Row(
-        modifier.semantics { progressBarRangeInfo = ProgressBarRangeInfo(value, 0f..1f) },
+        modifier.ownWidthWhenUnbounded().semantics { progressBarRangeInfo = ProgressBarRangeInfo(value, 0f..1f) },
         horizontalArrangement = Arrangement.spacedBy(VALUE_GAP),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Canvas(Modifier.weight(1f).height(TRACK)) {
+        // At least TRACK_MIN wide when the row has no width of its own to share (B-64).
+        Canvas(Modifier.weight(1f).defaultMinSize(minWidth = TRACK_MIN).height(TRACK)) {
             scale(density, Offset.Zero) {
                 val w = size.width / density
                 drawTrack(w)
@@ -151,6 +153,9 @@ private fun DrawScope.drawSegments(
 
 /** The track (`height: 12px`), its ring (2), its segments (6 + 2) and the value 12 dp after it (Handjet 20). */
 private val TRACK = 12.dp
+
+/** The track's width in a row with none to give it (B-64): a third of the page's 600 dp column. */
+private val TRACK_MIN = 200.dp
 private const val TRACK_RING = 2f
 private const val SEGMENT = 6f
 private const val SEGMENT_GAP = 2f

@@ -440,9 +440,6 @@ class OverlayAndMouseTest {
             )
         }
 
-    @Ignore(
-        "F14: in unbounded width the weighted parts collapse to nothing: the list item's words, the bar's title, the progress track",
-    )
     @Test
     fun `F14 in a scrolling row the list item, the bar and the progress keep their words and track`() =
         runComposeUiTest {

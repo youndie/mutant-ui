@@ -43,7 +43,7 @@ public fun MutantTopAppBar(
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
     val raster = LocalMutantTextRaster.current
-    Column(modifier.windowInsetsPadding(windowInsets)) {
+    Column(modifier.ownWidthWhenUnbounded().windowInsetsPadding(windowInsets)) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = BAR),
             horizontalArrangement = Arrangement.spacedBy(GAP),
