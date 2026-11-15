@@ -68,7 +68,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[?]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
-| [B-66](docs/backlog/B-66-navigation-pill-in-narrow-cells.md) `[ ]` | Navigation bar: the pill overruns narrow cells | P3 | S | B-40 |
+| [B-66](docs/backlog/B-66-navigation-pill-in-narrow-cells.md) `[~]` | Navigation bar: the pill overruns narrow cells | P3 | S | B-40 |
 | [B-67](docs/backlog/B-67-text-field-error-description.md) `[ ]` | Text field: the error has no words for a screen reader | P3 | S | B-40 |
 | [B-68](docs/backlog/B-68-fab-icon-name-match.md) `[ ]` | FAB: a consumer's icon is swapped for the kit's on a name match | P3 | S | B-40 |
 | [B-69](docs/backlog/B-69-tall-body-tick-cost.md) `[ ]` | Measure what a tall body costs per tick | P3 | S | B-40 |

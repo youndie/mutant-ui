@@ -1,7 +1,7 @@
 ---
 id: B-66
 title: "Navigation bar: the pill overruns narrow cells"
-status: open
+status: wip
 priority: P3
 size: S
 stage: stage-5-product
