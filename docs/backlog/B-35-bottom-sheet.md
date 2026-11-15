@@ -1,7 +1,7 @@
 ---
 id: B-35
 title: "BottomSheet: a blob of r 22 with a divider above"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-4-v1
