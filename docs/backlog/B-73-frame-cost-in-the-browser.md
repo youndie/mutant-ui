@@ -1,7 +1,7 @@
 ---
 id: B-73
 title: "The sample's frame cost in the browser (wasm)"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-5-product
