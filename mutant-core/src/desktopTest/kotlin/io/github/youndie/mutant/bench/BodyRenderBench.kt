@@ -34,6 +34,8 @@ import io.github.youndie.mutant.components.MutantCardTitle
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.surface.BodyPart
+import io.github.youndie.mutant.surface.LocalMutantBodyAsImage
+import io.github.youndie.mutant.surface.LocalMutantRasterProbe
 import io.github.youndie.mutant.surface.LocalMutantSkipBodyParts
 import io.github.youndie.mutant.theme.MutantTheme
 import java.lang.management.ManagementFactory
@@ -48,7 +50,7 @@ import kotlin.system.exitProcess
  * load of tessellated paths must add the same on a blank page and over the bodies. Scenes rotate each round; round 1
  * and each scene's first second are not counted.
  *
- * `./gradlew :mutant-core:bodyRenderBench --args="<commit> [rounds] [scene-ms]"`, stdout into `logs/b-78/`.
+ * `./gradlew :mutant-core:bodyRenderBench --args="<commit> [rounds] [scene-ms] [Scene,Scene]"`, stdout into `logs/b-78/`.
  */
 private var rounds = 6
 private var sceneMs = 8_000L
@@ -62,14 +64,20 @@ private class Scene(
     val bodies: Boolean,
     val load: Boolean = false,
     val skip: Set<BodyPart> = emptySet(),
+    val asImage: Boolean = false,
 )
 
-private val scenes: List<Scene> =
+private var scenes: List<Scene> = emptyList()
+
+private val allScenes: List<Scene> =
     listOf(
         Scene("Blank", bodies = false),
         Scene("BlankLoad", bodies = false, load = true),
         Scene("Bodies", bodies = true),
         Scene("BodiesLoad", bodies = true, load = true),
+        // B-82: every resting body rasterised once per tick and drawn as an image between ticks.
+        Scene("BodiesImage", bodies = true, asImage = true),
+        Scene("BodiesImageLoad", bodies = true, load = true, asImage = true),
     ) + BodyPart.entries.map { Scene("No$it", bodies = true, skip = setOf(it)) }
 
 /** The CPU time of every render thread seen, a finished one at its last reading; sampled every 5 ms. */
@@ -110,6 +118,33 @@ private class Reading(
 }
 
 @Volatile private var frames = 0
+
+// B-82: the rasterising's own cost on the threads that build ahead, as the probe reports it.
+private val rasterNsTotal =
+    java.util.concurrent.atomic
+        .AtomicLong()
+private val rasterCount =
+    java.util.concurrent.atomic
+        .AtomicInteger()
+private val rasterLargest =
+    java.util.concurrent.atomic
+        .AtomicLong()
+
+// The main thread's busy time: every AWT event, timed.
+private val mainBusyNs =
+    java.util.concurrent.atomic
+        .AtomicLong()
+
+private class TimingQueue : java.awt.EventQueue() {
+    override fun dispatchEvent(event: java.awt.AWTEvent) {
+        val t0 = System.nanoTime()
+        try {
+            super.dispatchEvent(event)
+        } finally {
+            mainBusyNs.addAndGet(System.nanoTime() - t0)
+        }
+    }
+}
 
 @Composable
 private fun Ticker() {
@@ -173,7 +208,15 @@ private fun LibraryBodies(column: Int) {
 @Composable
 private fun SceneContent(scene: Scene) {
     MutantTheme {
-        CompositionLocalProvider(LocalMutantSkipBodyParts provides scene.skip) {
+        CompositionLocalProvider(
+            LocalMutantSkipBodyParts provides scene.skip,
+            LocalMutantBodyAsImage provides scene.asImage,
+            LocalMutantRasterProbe provides { ns, bytes ->
+                rasterNsTotal.addAndGet(ns)
+                rasterCount.incrementAndGet()
+                rasterLargest.accumulateAndGet(bytes, ::maxOf)
+            },
+        ) {
             Box(Modifier.fillMaxSize().background(MutantTheme.colors.page)) {
                 if (scene.bodies) {
                     Row(Modifier.padding(24.dp), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
@@ -189,10 +232,40 @@ private fun SceneContent(scene: Scene) {
 
 private fun f2(v: Double) = "%.2f".format(v)
 
+/** The process's resident memory, MiB, as `ps` reads it (B-82: images are native memory the heap does not show). */
+private fun rssMiB(): Long =
+    ProcessBuilder("ps", "-o", "rss=", "-p", ProcessHandle.current().pid().toString())
+        .start()
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
+        .toLong() / 1024
+
+/** B-82: how many bodies were rasterised in a scene, what each cost the main thread, and the largest image. */
+private fun rasterLine(
+    count: Int,
+    ns: Long,
+): String =
+    if (count == 0) {
+        ""
+    } else {
+        ", rasterised ahead $count (${f2(
+            ns / 1e6 / count,
+        )} ms each, ${f2(ns / 1e6 / (sceneMs / 1000.0))} ms a second, " +
+            "largest ${rasterLargest.get() / 1024} KiB)"
+    }
+
 fun main(args: Array<String>) {
     val commit = args.getOrNull(0) ?: "unknown"
     args.getOrNull(1)?.let { rounds = it.toInt() }
     args.getOrNull(2)?.let { sceneMs = it.toLong() }
+    val only = args.getOrNull(3)?.split(',')
+    scenes = allScenes.filter { only == null || it.name in only }
+    java.awt.Toolkit
+        .getDefaultToolkit()
+        .systemEventQueue
+        .push(TimingQueue())
     RenderThread.start()
     var show: (Int) -> Unit = {}
     lateinit var window: ComposeWindow
@@ -237,6 +310,9 @@ fun main(args: Array<String>) {
             SwingUtilities.invokeAndWait { show(index) }
             Thread.sleep(SETTLE_MS)
             val f0 = frames
+            val n0 = rasterNsTotal.get()
+            val c0 = rasterCount.get()
+            val m0 = mainBusyNs.get()
             val r0 = RenderThread.cumulativeNs
             val t0 = System.nanoTime()
             Thread.sleep(sceneMs)
@@ -245,7 +321,10 @@ fun main(args: Array<String>) {
             println(
                 "round $round ${scenes[index].name}: ${reading.frames} frames, ${f2(
                     reading.perFrameMs,
-                )} ms render/frame",
+                )} ms render/frame" +
+                    rasterLine(rasterCount.get() - c0, rasterNsTotal.get() - n0) +
+                    ", main busy ${"%.0f".format(100.0 * (mainBusyNs.get() - m0) / (System.nanoTime() - t0))} %" +
+                    ", rss ${rssMiB()} MiB",
             )
         }
     }
@@ -273,11 +352,18 @@ fun main(args: Array<String>) {
     fun added(
         with: String,
         without: String,
-    ) = counted.map { readings[it to with]!!.perFrameMs - readings[it to without]!!.perFrameMs }
+    ) = counted.mapNotNull { r ->
+        val a = readings[r to with] ?: return@mapNotNull null
+        val b = readings[r to without] ?: return@mapNotNull null
+        a.perFrameMs - b.perFrameMs
+    }
     println()
     println("control, what the load adds per frame per counted round:")
     println("  on a blank page    ${added("BlankLoad", "Blank").joinToString { f2(it) }} ms")
     println("  over the bodies    ${added("BodiesLoad", "Bodies").joinToString { f2(it) }} ms")
+    if (scenes.any { it.name == "BodiesImageLoad" }) {
+        println("  over the images    ${added("BodiesImageLoad", "BodiesImage").joinToString { f2(it) }} ms")
+    }
     println("render threads seen: ${RenderThread.threadsSeen}")
     SwingUtilities.invokeAndWait { window.dispose() }
     exitProcess(0)

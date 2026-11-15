@@ -1,0 +1,56 @@
+
+# B-78 body render bench
+# commit 5e13f0b
+# host MacBookAir10,1, cpu Apple M1
+# os Mac OS X 27.0.1, jvm 25.0.4.1+1-b635.79
+# window 1280x814, rounds 6 (round 1 not counted), scene 10 s
+round 1 Blank: 601 frames, 0.31 ms render/frame, main busy 2 %, rss 207 MiB
+round 1 BlankLoad: 600 frames, 2.73 ms render/frame, main busy 4 %, rss 225 MiB
+round 1 Bodies: 418 frames, 20.04 ms render/frame, main busy 14 %, rss 363 MiB
+round 1 BodiesLoad: 348 frames, 24.23 ms render/frame, main busy 11 %, rss 401 MiB
+round 1 BodiesImage: 585 frames, 1.65 ms render/frame, rasterised ahead 1920 (3.95 ms each, 758.29 ms a second, largest 943 KiB), main busy 10 %, rss 564 MiB
+round 1 BodiesImageLoad: 601 frames, 4.98 ms render/frame, rasterised ahead 1925 (3.78 ms each, 728.43 ms a second, largest 943 KiB), main busy 13 %, rss 523 MiB
+round 2 BlankLoad: 592 frames, 3.75 ms render/frame, main busy 5 %, rss 478 MiB
+round 2 Bodies: 404 frames, 21.39 ms render/frame, main busy 10 %, rss 467 MiB
+round 2 BodiesLoad: 339 frames, 25.36 ms render/frame, main busy 11 %, rss 523 MiB
+round 2 BodiesImage: 601 frames, 1.74 ms render/frame, rasterised ahead 1938 (3.27 ms each, 633.25 ms a second, largest 943 KiB), main busy 8 %, rss 554 MiB
+round 2 BodiesImageLoad: 599 frames, 5.08 ms render/frame, rasterised ahead 1920 (3.46 ms each, 664.20 ms a second, largest 943 KiB), main busy 12 %, rss 495 MiB
+round 2 Blank: 601 frames, 0.40 ms render/frame, main busy 1 %, rss 492 MiB
+round 3 Bodies: 404 frames, 21.40 ms render/frame, main busy 10 %, rss 466 MiB
+round 3 BodiesLoad: 346 frames, 24.71 ms render/frame, main busy 11 %, rss 448 MiB
+round 3 BodiesImage: 601 frames, 1.45 ms render/frame, rasterised ahead 1920 (3.30 ms each, 632.75 ms a second, largest 943 KiB), main busy 7 %, rss 467 MiB
+round 3 BodiesImageLoad: 601 frames, 4.41 ms render/frame, rasterised ahead 1930 (3.13 ms each, 603.43 ms a second, largest 943 KiB), main busy 12 %, rss 497 MiB
+round 3 Blank: 600 frames, 0.40 ms render/frame, main busy 1 %, rss 451 MiB
+round 3 BlankLoad: 601 frames, 3.99 ms render/frame, main busy 4 %, rss 451 MiB
+round 4 BodiesLoad: 352 frames, 24.16 ms render/frame, main busy 11 %, rss 476 MiB
+round 4 BodiesImage: 601 frames, 1.71 ms render/frame, rasterised ahead 1926 (3.16 ms each, 609.43 ms a second, largest 943 KiB), main busy 7 %, rss 481 MiB
+round 4 BodiesImageLoad: 600 frames, 4.94 ms render/frame, rasterised ahead 1920 (3.38 ms each, 648.59 ms a second, largest 943 KiB), main busy 11 %, rss 515 MiB
+round 4 Blank: 601 frames, 0.40 ms render/frame, main busy 1 %, rss 445 MiB
+round 4 BlankLoad: 601 frames, 4.02 ms render/frame, main busy 4 %, rss 445 MiB
+round 4 Bodies: 416 frames, 20.78 ms render/frame, main busy 11 %, rss 435 MiB
+round 5 BodiesImage: 601 frames, 1.64 ms render/frame, rasterised ahead 1920 (3.09 ms each, 593.44 ms a second, largest 943 KiB), main busy 7 %, rss 473 MiB
+round 5 BodiesImageLoad: 590 frames, 5.05 ms render/frame, rasterised ahead 1924 (3.46 ms each, 666.06 ms a second, largest 943 KiB), main busy 11 %, rss 507 MiB
+round 5 Blank: 601 frames, 0.40 ms render/frame, main busy 1 %, rss 450 MiB
+round 5 BlankLoad: 600 frames, 3.67 ms render/frame, main busy 4 %, rss 420 MiB
+round 5 Bodies: 419 frames, 20.82 ms render/frame, main busy 10 %, rss 487 MiB
+round 5 BodiesLoad: 352 frames, 24.29 ms render/frame, main busy 11 %, rss 434 MiB
+round 6 BodiesImageLoad: 600 frames, 4.78 ms render/frame, rasterised ahead 1920 (3.21 ms each, 615.67 ms a second, largest 943 KiB), main busy 12 %, rss 486 MiB
+round 6 Blank: 600 frames, 0.42 ms render/frame, main busy 1 %, rss 484 MiB
+round 6 BlankLoad: 601 frames, 3.67 ms render/frame, main busy 4 %, rss 435 MiB
+round 6 Bodies: 426 frames, 20.44 ms render/frame, main busy 10 %, rss 396 MiB
+round 6 BodiesLoad: 350 frames, 24.51 ms render/frame, main busy 11 %, rss 383 MiB
+round 6 BodiesImage: 600 frames, 1.78 ms render/frame, rasterised ahead 1920 (3.03 ms each, 581.42 ms a second, largest 943 KiB), main busy 8 %, rss 454 MiB
+
+scene            frames/s  render/frame  vs Bodies   (counted rounds 2..6, mean; per round)
+Blank                60.0        0.40 ms           ms   0.40 0.40 0.40 0.40 0.42
+BlankLoad            59.9        3.82 ms           ms   3.75 3.99 4.02 3.67 3.67
+Bodies               41.4       20.97 ms      0.00 ms   21.39 21.40 20.78 20.82 20.44
+BodiesLoad           34.8       24.61 ms      3.64 ms   25.36 24.71 24.16 24.29 24.51
+BodiesImage          60.0        1.67 ms    -19.30 ms   1.74 1.45 1.71 1.64 1.78
+BodiesImageLoad      59.8        4.85 ms    -16.11 ms   5.08 4.41 4.94 5.05 4.78
+
+control, what the load adds per frame per counted round:
+  on a blank page    3.35, 3.59, 3.62, 3.27, 3.25 ms
+  over the bodies    3.97, 3.31, 3.38, 3.47, 4.07 ms
+  over the images    3.34, 2.96, 3.23, 3.41, 2.99 ms
+render threads seen: 2

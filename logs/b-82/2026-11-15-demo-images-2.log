@@ -1,0 +1,39 @@
+
+# B-72 frame bench
+# commit 5e13f0b
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 3 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 Blank: 602 frames
+round 1 BlankLoad: 602 frames
+round 1 DemoPage: 600 frames
+round 1 DemoPageClean: 604 frames
+round 1 DemoLibrary: 603 frames
+round 2 BlankLoad: 604 frames
+round 2 DemoPage: 601 frames
+round 2 DemoPageClean: 603 frames
+round 2 DemoLibrary: 602 frames
+round 2 Blank: 602 frames
+round 3 DemoPage: 603 frames
+round 3 DemoPageClean: 602 frames
+round 3 DemoLibrary: 605 frames
+round 3 Blank: 605 frames
+round 3 BlankLoad: 602 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95  | render/frame busy
+Blank                    60.4       16.67  18.55   40.75  0.08  |   0.18   0.25   0.35   1.72 |   0.24   0.33 |     0.61    4%  GREY
+BlankLoad                60.3       16.67  18.26   24.50  0.00  |   0.49   0.59   0.68   1.07 |   0.60   0.71 |     4.28   26%  GREY
+DemoPage                 60.2       16.67  17.77   30.20  0.00  |   0.05   0.26   0.31   0.46 |   0.50   0.72 |    11.27   68%  GREY
+DemoPageClean            60.3       16.67  16.94   41.06  0.00  |   0.05   0.24   0.29   0.62 |   0.32   0.52 |     9.21   55%  GREY
+DemoLibrary              60.4       16.67  18.65   33.94  0.00  |   0.07   2.79   4.81   7.99 |   0.29   3.08 |     2.29   14%  GREY
+
+render control, what the load adds to the render thread's CPU per frame, per counted round:
+  on a blank page    3.62, 3.72 ms
+  on the Demo page    ms
+
+control: work p50 over ComponentsRest per counted round  ms
+         (busy-wait 10 ms)
+render threads seen: 2
+wheel: scrolled per counted round [] px

@@ -46,7 +46,9 @@ class TickFramesAheadTest {
             CompositionLocalProvider(
                 LocalDensity provides Density(1f),
                 LocalMutantBuildOffFrame provides offFrame,
-                LocalMutantFrameProbe provides { if (it) count.ahead++ else count.inFrame++ },
+                // The frame alone: drawing a resting body from an image (B-82) is held by BodyAsImageTest.
+                LocalMutantBodyAsImage provides false,
+                LocalMutantFrameProbe provides { ahead, _ -> if (ahead) count.ahead++ else count.inFrame++ },
             ) {
                 ProvideMutantClock(clock) {
                     Box(Modifier.size(360.dp, 120.dp).testTag("stage")) {
