@@ -73,6 +73,36 @@ class TextFieldBehaviourTest {
         }
 
     @Test
+    fun `B-67 an error tells a screen reader what is wrong, or the generic word`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Column {
+                            MutantTextField(
+                                "99",
+                                {},
+                                Modifier.width(240.dp).testTag("described"),
+                                isError = true,
+                                errorDescription = "Нет сигнала на канале 99",
+                            )
+                            MutantTextField("99", {}, Modifier.width(240.dp).testTag("generic"), isError = true)
+                            MutantTextField("99", {}, Modifier.width(240.dp).testTag("fine"))
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+
+            fun error(tag: String) =
+                onNodeWithTag(tag).fetchSemanticsNode().config.getOrElseNullable(SemanticsProperties.Error) { null }
+            assertEquals("Нет сигнала на канале 99", error("described"))
+            assertEquals("Ошибка", error("generic"))
+            assertEquals(null, error("fine"))
+        }
+
+    @Test
     fun `typing reaches the caller, and focus shows on the body`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
