@@ -58,7 +58,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (18)
+## Open (17)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -66,7 +66,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-34](docs/backlog/B-34-navigation-drawer.md) `[?]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[?]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
-| [B-47](docs/backlog/B-47-carousel.md) `[ ]` | Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots | P3 | M | B-21, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
 | [B-64](docs/backlog/B-64-weighted-parts-in-unbounded-width.md) `[ ]` | Unbounded width: weighted parts collapse to nothing | P3 | S | B-40 |
@@ -81,7 +80,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 
-## Closed (67)
+## Closed (68)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -170,5 +169,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
+- [B-47](docs/backlog/B-47-carousel.md) `[x]` - Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots
 
 <!-- END INDEX -->

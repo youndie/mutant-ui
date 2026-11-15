@@ -223,6 +223,14 @@ export const REFERENCES = [
     sel: '[data-mu-stage="l-table"] > div:has(> [data-mu-divider])',
     hide: bare ? '[data-mu-stage="l-table"], [data-mu-stage="l-table"] * { color: transparent !important; }' : '',
   }))),
+  // B-47: the later page's carousel as it stands — the view (a stage of its own, clipped) with the current card and
+  // its calm neighbours, and the dots with the pill pointer — whole and with every word hidden, both themes, with the
+  // bodies the engine built on both stages.
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) => ({
+    stem: `MutantCarousel_Rest${bare ? 'Bare' : ''}_${theme}`, page: LATER, el: true, slots: true, index: 0, theme,
+    sel: '[data-mu-stage="l-carousel"] > div:has(> [data-mu-stage="l-carousel-view"])',
+    hide: bare ? '[data-mu-stage="l-carousel"], [data-mu-stage="l-carousel"] * { color: transparent !important; }' : '',
+  }))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
@@ -578,7 +586,10 @@ async function elementCell(t, ref) {
       const sh = n.closest('[data-mu-stage]'), e = window.__muEngines.find(x => x.stages.some(s => s.host === sh)), st = e.stages.find(s => s.host === sh);
       const hr = sh.getBoundingClientRect();
       out.origin = [Math.round(b.left - hr.left), Math.round(b.top - hr.top)];
-      out.stageSlots = st.items.filter((s) => n.contains(s.n)).map((s) => ({ key: s.key, ox: s.el.ox, oy: s.el.oy, w: s.el.w, h: s.el.h, r: s.el.r, over: s.el.over,
+      // B-47: and the bodies of the stages nested in the element (a carousel's clipped view), each slot in its own
+      // stage's frame, as the kit seeds that view's bodies on a stage of their own.
+      const nested = window.__muEngines.flatMap((x) => x.stages).filter((o) => o !== st && n.contains(o.host));
+      out.stageSlots = [st, ...nested].flatMap((o) => o.items).filter((s) => n.contains(s.n)).map((s) => ({ key: s.key, ox: s.el.ox, oy: s.el.oy, w: s.el.w, h: s.el.h, r: s.el.r, over: s.el.over,
         cf: s.el.cf, ow: s.el.ow, wob: s.el.wob, round: s.el.round, calm: s.el.calm, dead: s.el.dead, marks: s.el.marks, edge: s.el.edge, tz: s.el.tz, cz: s.el.cz,
         fill: s.el.fill, hl: s.el.hl, state: s.el.state, still: !!s.stat, heat: s.el.hkFix ?? s.heat, drawnOutline: s.H ? +s.H.O.getAttribute('stroke-width') : s.el.ow }));
     }

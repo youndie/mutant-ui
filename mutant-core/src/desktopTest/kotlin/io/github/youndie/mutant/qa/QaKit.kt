@@ -37,6 +37,8 @@ import io.github.youndie.mutant.components.MutantButtonState
 import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardSubtitle
 import io.github.youndie.mutant.components.MutantCardTitle
+import io.github.youndie.mutant.components.MutantCarousel
+import io.github.youndie.mutant.components.MutantCarouselItem
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantCircularProgress
@@ -126,6 +128,9 @@ internal val subjects: List<Subject> =
             "SearchResult",
         ) { m, t -> MutantSearchResult(t, "ночь", m, supporting = t, leadingIcon = MutantIcons.Search) },
         Subject("SearchResultLoading") { m, _ -> MutantSearchResultLoading(m) },
+        Subject("Carousel") { m, t ->
+            MutantCarousel(listOf(MutantCarouselItem(t, t, t), MutantCarouselItem(t, t), MutantCarouselItem("Эфир")), m)
+        },
         Subject("DataTable") { m, t ->
             MutantDataTable(
                 listOf(t, "Нет сигнала"),
