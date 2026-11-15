@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -124,7 +125,18 @@ public fun MutantTabs(
                     scale(
                         density,
                         Offset.Zero,
-                    ) { drawIndicator(marks, slide, selectedIndex, tabs.size, p, colors, barWidth) }
+                    ) {
+                        drawIndicator(
+                            marks,
+                            slide,
+                            selectedIndex,
+                            tabs.size,
+                            p,
+                            colors,
+                            barWidth,
+                            size.height / density,
+                        )
+                    }
                 },
     ) { measurables, constraints ->
         // Each tab its own width: inside the scroll the row has no limit, and one too wide for the window scrolls.
@@ -132,10 +144,11 @@ public fun MutantTabs(
         var x = 0
         val placeables =
             measurables.map { m ->
-                m.measure(Constraints(minHeight = h, maxHeight = h)).also { x += it.width }
+                m.measure(Constraints(minHeight = h)).also { x += it.width }
             }
         val width = max(x, constraints.minWidth)
-        layout(width, h) {
+        val rowH = placeables.maxOfOrNull { it.height } ?: h
+        layout(width, rowH) {
             var at = 0
             placeables.forEachIndexed { i, p ->
                 p.place(at, 0)
@@ -169,7 +182,7 @@ private fun TabItem(
         Modifier
             .selectable(selected, source, indication = null, enabled = tab.enabled, role = Role.Tab, onClick = onClick)
             .widthIn(min = TOUCH)
-            .height(TAB_HEIGHT)
+            .heightIn(min = TAB_HEIGHT)
             .drawWithContent {
                 drawContent()
                 if (focused && keyboard) {
@@ -177,12 +190,12 @@ private fun TabItem(
                     val h = size.height / density
                     scale(density, Offset.Zero) { drawCornerBrackets(1f, 1f, w - 1, h - 1, colors.focus) }
                 }
-            }.padding(start = SIDE, end = SIDE, top = TOP),
+            }.padding(start = SIDE, end = SIDE, top = TOP, bottom = FOOT),
     ) {
         BasicText(
             tab.label,
             Modifier
-                .height(LABEL_ROW)
+                .heightIn(min = LABEL_ROW)
                 .wrapContentHeight(Alignment.CenterVertically)
                 .layout { measurable, c ->
                     val p = measurable.measure(c)
@@ -246,6 +259,7 @@ private fun DrawScope.drawIndicator(
     p: Double,
     colors: MutantColors,
     width: Float?,
+    rowHeight: Float,
 ) {
     if (selected !in 0 until count) return
     val toX = (marks.x[selected] ?: return) + SIDE.value
@@ -257,7 +271,8 @@ private fun DrawScope.drawIndicator(
     val e = if (run) (1 - (1 - p).pow(3)).toFloat() else 1f
     val x = if (run) fromX + (toX - fromX) * e else toX
     val w = if (run) fromW + (toW - fromW) * e else toW
-    val y = BAR_Y
+    // 5 dp over the row's foot: at 43 in the page's 48, and under a label grown with the font.
+    val y = rowHeight - (TAB_HEIGHT.value - BAR_Y)
     // The ring, the page's `box-shadow: 0 0 0 1.5px`, then the bar.
     drawRect(RING, Offset(x - RING_WIDTH, y - RING_WIDTH), Size(w + 2 * RING_WIDTH, BAR_HEIGHT + 2 * RING_WIDTH))
     drawRect(colors.primary, Offset(x, y), Size(w, BAR_HEIGHT))
@@ -287,6 +302,9 @@ private val TAB_HEIGHT = 48.dp
 private val TOUCH = 48.dp
 private val LABEL_ROW = 36.dp
 private val TOP = 1.dp
+
+/** Under the label's row: the bar's 6 dp gap, its 4 dp and 1 below, so the bar keeps under a label grown with the font. */
+private val FOOT = TAB_HEIGHT - TOP - LABEL_ROW
 
 /** Half the page's `gap: 24px` on each side of a label: the target reaches it. */
 private val SIDE = 12.dp

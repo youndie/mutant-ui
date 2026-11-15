@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -115,13 +116,24 @@ internal fun TextFieldBody(
 
     fun tint(c: Color) = if (hidden) Color.Transparent else c
     val textColor = tint(if (enabled) colors.text else colors.textDisabled)
-    val valueStyle =
+    val plain =
         TextStyle(
             fontFamily = fonts?.text,
             fontSize = VALUE_SIZE.sp,
             color = textColor,
             platformStyle = LocalMutantTextRaster.current,
-        ).cssLine(MutantFaceMetrics.Rubik)
+        )
+    // On Blink's line at the user's own size (research §1.14). A larger font scale lays the value on the face's own
+    // line: a single-line BasicTextField holds its text to the line it measures itself, which cssLine's rounded line
+    // overran by a pixel at font scale 3 and cut (B-61).
+    val valueStyle =
+        if (androidx.compose.ui.platform.LocalDensity.current.fontScale >
+            1f
+        ) {
+            plain
+        } else {
+            plain.cssLine(MutantFaceMetrics.Rubik)
+        }
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     // The cursor is the field's own, kept here so a press on the body can place it; a value changed from outside puts
     // it at the end. Focus by Tab finds it at the end too.
@@ -135,7 +147,7 @@ internal fun TextFieldBody(
         key,
         modifier
             .defaultMinSize(minWidth = MIN_WIDTH)
-            .height(HEIGHT)
+            .heightIn(min = HEIGHT)
             .onGloballyPositioned { body = it }
             // A press the text itself does not take (the prefix, the padding, above and below the line) focuses the
             // field and puts the cursor at the nearest place on the line (B-58).

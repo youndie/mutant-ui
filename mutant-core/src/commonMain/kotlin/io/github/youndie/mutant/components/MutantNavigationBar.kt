@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -107,12 +108,13 @@ internal fun NavigationBarBody(
     MutantSurface(
         MutantBody.Bar,
         key,
-        modifier.fillMaxWidth().height(BAR),
+        modifier.fillMaxWidth().heightIn(min = BAR),
         // The page's `data-marks="0"`: no dead pixels or marks on the bar.
         profile = MutantBody.Bar.profile.with(marks = false),
         probe = probe,
     ) {
-        BoxWithConstraints(Modifier.fillMaxSize()) {
+        // As wide as the bar, as tall as its items: its height is a minimum now (B-61), and filling it took the window.
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
             val n = items.size.coerceAtLeast(1)
             // Unbounded (a horizontally scrolling row): each destination takes the design's cell, never Infinity.
             val bounded = constraints.hasBoundedWidth
@@ -145,12 +147,19 @@ internal fun NavigationBarBody(
                 },
                 modifier = Modifier.selectableGroup(),
             ) { measurables, constraints ->
-                val h = constraints.maxHeight
                 val w = if (bounded) constraints.maxWidth else DESIGN_CELL.roundToPx() * n
                 val cells = IntArray(n + 1) { (w.toFloat() * it / n).roundToInt() }
+                // The page's 68 dp, or what the tallest item needs: a label grown with the font grows the bar (B-61).
+                val items = measurables.drop(if (chosen) 1 else 0)
+                val tallest =
+                    items.withIndex().maxOfOrNull { (i, m) ->
+                        m.maxIntrinsicHeight((cells[i + 1] - cells[i]).coerceAtLeast(0))
+                    }
+                        ?: 0
+                val h = maxOf(constraints.minHeight, BAR.roundToPx(), tallest)
                 val pill = if (chosen) measurables.first().measure(Constraints()) else null
                 val placed =
-                    measurables.drop(if (chosen) 1 else 0).mapIndexed { i, m ->
+                    items.mapIndexed { i, m ->
                         m.measure(Constraints.fixed((cells[i + 1] - cells[i]).coerceAtLeast(0), h))
                     }
                 layout(w, h) {

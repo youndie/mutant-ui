@@ -262,7 +262,7 @@ class BarTabsBehaviourTest {
         }
 
     @Test
-    fun `the bar stands under its insets, 58 dp of row and divider, the title cut and the status kept`() =
+    fun `the bar stands under its insets, its row grown at font scale 2, the long title cut, the status kept`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             val long = "Эфир с начала первой стороны без подписи и до конца второй"
@@ -288,8 +288,9 @@ class BarTabsBehaviourTest {
                 }
             }
             mainClock.advanceTimeByFrame()
-            onNodeWithTag("bar").assertHeightIsEqualTo(82.dp)
-            onNodeWithTag("long").assertIsDisplayed().assertHeightIsEqualTo(58.dp)
+            // Handjet 26 at font scale 2 lays a 58 dp line: the 56 dp row grows to it, and the divider's 2 under (B-61).
+            onNodeWithTag("bar").assertHeightIsEqualTo(84.dp)
+            onNodeWithTag("long").assertIsDisplayed().assertHeightIsEqualTo(60.dp)
             pixels("all")
             val bar = onNodeWithTag("long").fetchSemanticsNode().boundsInRoot
             val status = onAllNodesWithText("CH 03", useUnmergedTree = true).fetchSemanticsNodes().first().boundsInRoot
@@ -308,10 +309,10 @@ class BarTabsBehaviourTest {
                 layouts.single().layoutInput.overflow,
                 "with an ellipsis",
             )
-            // The divider: the two rows under the 56 dp row carry the tracking strokes.
+            // The divider: the two rows under the row, grown to 58 dp at font scale 2, carry the tracking strokes.
             val px = onNodeWithTag("bar").captureToImage().toPixelMap()
             val ground = px[px.width - 1, 0]
-            assertTrue((0 until px.width).any { px[it, 80] != ground }, "the divider drawn under the row")
+            assertTrue((0 until px.width).any { px[it, 82] != ground }, "the divider drawn under the row")
         }
 
     @Test
@@ -349,5 +350,52 @@ class BarTabsBehaviourTest {
                     layouts.single().layoutInput.overflow,
                 )
             }
+        }
+
+    @Test
+    fun `at font scale 3 the tabs grow with their labels and the bar stands under the selected one, not on it`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = 3f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Box {
+                            MutantTabs(
+                                listOf(MutantTab("Дорожки"), MutantTab("Заметки")),
+                                0,
+                                {},
+                                Modifier.testTag("tabs"),
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val label =
+                onAllNodesWithText("Дорожки", useUnmergedTree = true).fetchSemanticsNodes().first().boundsInRoot
+            val px = onNodeWithTag("tabs").captureToImage().toPixelMap()
+            val lime = io.github.youndie.mutant.tokens.MutantPalettes.Efir.primary
+
+            // The bar's top row: the first with an unbroken run of the acid lime most of the label wide. The selected
+            // label is lime too, but its glyphs break every row they cross.
+            fun lime(
+                x: Int,
+                y: Int,
+            ) = px[x, y].let {
+                kotlin.math.abs(it.red - lime.red) < .05f &&
+                    kotlin.math.abs(it.green - lime.green) < .05f
+            }
+            val barTop =
+                (0 until px.height).first { y ->
+                    var run = 0
+                    var best = 0
+                    for (x in 0 until px.width) {
+                        run = if (lime(x, y)) run + 1 else 0
+                        best = maxOf(best, run)
+                    }
+                    best > label.width * .8f
+                }
+            assertTrue(px.height > 48, "the row grew: ${px.height}")
+            assertTrue(barTop >= label.bottom, "the bar at $barTop, the label down to ${label.bottom}")
         }
 }
