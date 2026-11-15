@@ -1,7 +1,7 @@
 ---
 id: B-83
 title: "Bodies under a held or paused clock keep drawing vectors on the render thread"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
