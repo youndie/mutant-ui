@@ -1,7 +1,7 @@
 ---
 id: B-48
 title: "Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-6-later
@@ -16,3 +16,5 @@ Every 9 s a band of 9–18 block rows breaks into 16 and 8 dp blocks for 900–1
 
 - AC: the owner decides to build it; then it matches the demo references and stays inside the measured flash budget.
 - Anchors: `reference/design-system/mutant-tokens.json`, `reference/design-system/mutant-engine.js`
+
+**Answered 2026-11-15 by the owner: build it.**
