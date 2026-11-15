@@ -1,0 +1,39 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.skiko.LibraryLoader in an unnamed module (file:/Users/youndie/.gradle/caches/modules-2/files-2.1/org.jetbrains.skiko/skiko-awt/0.150.1/e03fd8140c0e331c3c7018b00a9710ec98d78fc1/skiko-awt-0.150.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+# B-72 frame bench
+# commit b6c65fc
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 3 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 Blank: 598 frames
+round 1 BlankLoad: 601 frames
+round 1 DemoPage: 601 frames
+round 1 DemoSettings: 592 frames
+round 2 BlankLoad: 602 frames
+round 2 DemoPage: 602 frames
+round 2 DemoSettings: 600 frames
+round 2 Blank: 603 frames
+round 3 DemoPage: 504 frames
+round 3 DemoSettings: 604 frames
+round 3 Blank: 604 frames
+round 3 BlankLoad: 604 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95  | render/frame busy
+Blank                    60.4       16.67  17.68   35.60  0.08  |   0.13   0.21   0.35   3.45 |   0.17   0.28 |     0.42    2%  GREY
+BlankLoad                60.3       16.67  17.66   35.38  0.00  |   0.53   1.07   1.30   9.01 |   0.63   1.24 |     2.90   17%  GREY
+DemoPage                 55.3       16.75  26.41   53.89  2.17  |   0.07   0.34   0.51   0.75 |   0.59   1.23 |    14.56   80%  GREY
+DemoSettings             60.2       16.67  17.96   32.20  0.25  |   0.11   0.46   0.60   4.29 |   0.33   0.68 |     3.53   21%  GREY
+
+render control, what the load adds to the render thread's CPU per frame, per counted round:
+  on a blank page    2.67, 2.30 ms
+  on the Demo page    ms
+
+control: work p50 over ComponentsRest per counted round  ms
+         (busy-wait 10 ms)
+render threads seen: 2
+wheel: scrolled per counted round [] px

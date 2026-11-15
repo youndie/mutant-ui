@@ -1,0 +1,39 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.skiko.LibraryLoader in an unnamed module (file:/Users/youndie/.gradle/caches/modules-2/files-2.1/org.jetbrains.skiko/skiko-awt/0.150.1/e03fd8140c0e331c3c7018b00a9710ec98d78fc1/skiko-awt-0.150.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+# B-72 frame bench
+# commit b6c65fc
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 3 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 Blank: 606 frames
+round 1 BlankLoad: 604 frames
+round 1 DemoPage: 410 frames
+round 1 DemoSettings: 599 frames
+round 2 BlankLoad: 604 frames
+round 2 DemoPage: 433 frames
+round 2 DemoSettings: 600 frames
+round 2 Blank: 605 frames
+round 3 DemoPage: 421 frames
+round 3 DemoSettings: 597 frames
+round 3 Blank: 600 frames
+round 3 BlankLoad: 603 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95  | render/frame busy
+Blank                    60.3       16.66  19.69   39.82  0.08  |   0.14   0.23   0.31   1.19 |   0.19   0.32 |     0.41    2%  GREY
+BlankLoad                60.4       16.67  19.98   41.74  0.17  |   0.66   1.09   1.58   3.33 |   0.80   1.26 |     2.89   17%  GREY
+DemoPage                 42.7       19.72  40.34   97.18 11.03  |   0.11   0.60   0.87   5.93 |   0.81   1.69 |    18.42   78%  RED
+DemoSettings             59.9       16.66  20.05   39.41  0.59  |   0.12   0.56   0.74   4.74 |   0.44   0.86 |     4.50   27%  GREY
+
+render control, what the load adds to the render thread's CPU per frame, per counted round:
+  on a blank page    2.50, 2.46 ms
+  on the Demo page    ms
+
+control: work p50 over ComponentsRest per counted round  ms
+         (busy-wait 10 ms)
+render threads seen: 3
+wheel: scrolled per counted round [] px
