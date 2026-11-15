@@ -284,6 +284,10 @@ public final class io/github/youndie/mutant/pattern/MutantPatternKt {
 	public static synthetic fun mutantPattern$default (Landroidx/compose/ui/Modifier;Lio/github/youndie/mutant/pattern/MutantPattern;ZILjava/lang/Object;)Landroidx/compose/ui/Modifier;
 }
 
+public final class io/github/youndie/mutant/surface/MutantKeyframeLossKt {
+	public static final fun MutantKeyframeLoss-3IgeMak (Landroidx/compose/ui/Modifier;JLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/surface/MutantTapeKt {
 	public static final fun mutantTape (Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
 }
