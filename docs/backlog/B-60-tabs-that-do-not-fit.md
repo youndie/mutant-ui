@@ -1,7 +1,7 @@
 ---
 id: B-60
 title: "Tabs: tabs past the row's width are invisible yet focusable"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-5-product
