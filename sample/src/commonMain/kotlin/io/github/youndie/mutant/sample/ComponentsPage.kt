@@ -39,6 +39,7 @@ import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantCircularProgress
 import io.github.youndie.mutant.components.MutantCocoon
 import io.github.youndie.mutant.components.MutantDataTable
+import io.github.youndie.mutant.components.MutantDatePicker
 import io.github.youndie.mutant.components.MutantDialog
 import io.github.youndie.mutant.components.MutantDialogAction
 import io.github.youndie.mutant.components.MutantDivider
@@ -70,6 +71,7 @@ import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
+import io.github.youndie.mutant.components.MutantTimePicker
 import io.github.youndie.mutant.components.MutantTooltipBox
 import io.github.youndie.mutant.components.MutantTopAppBar
 import io.github.youndie.mutant.icons.MutantIcon
@@ -95,6 +97,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionSearch) { Search(strings) }
         Section(strings.sectionTable) { Table(strings) }
         Section(strings.sectionCarousel) { Carousel(strings) }
+        Section(strings.sectionPickers) { Pickers(strings) }
         Section(strings.sectionCard) { Cards(strings) }
         Section(strings.sectionNav) { Navigation(strings) }
         Section(strings.sectionList) { ListRows(strings) }
@@ -237,6 +240,34 @@ private fun Search(s: SampleStrings) {
             MutantDivider(key = "search")
             MutantSearchResultLoading(key = "search")
         }
+    }
+}
+
+/** Press a day or turn the month; press a time field and step it with Up and Down. */
+@Composable
+private fun Pickers(s: SampleStrings) {
+    var day by remember { mutableIntStateOf(13) }
+    var month by remember { mutableIntStateOf(11) }
+    var year by remember { mutableIntStateOf(2026) }
+    var hour by remember { mutableIntStateOf(21) }
+    var minute by remember { mutableIntStateOf(30) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(40.dp), verticalArrangement = Arrangement.spacedBy(36.dp)) {
+        MutantDatePicker(
+            year,
+            month,
+            day.coerceAtMost(31),
+            { day = it },
+            { y, m ->
+                year = y
+                month = m
+            },
+            monthNames = s.monthNames,
+            weekdayNames = s.weekdayNames,
+        )
+        MutantTimePicker(hour, minute, { h, m ->
+            hour = h
+            minute = m
+        })
     }
 }
 

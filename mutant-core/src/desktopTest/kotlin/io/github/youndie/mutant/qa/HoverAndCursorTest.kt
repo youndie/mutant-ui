@@ -29,6 +29,7 @@ import io.github.youndie.mutant.components.MutantCarouselItem
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantDataTable
+import io.github.youndie.mutant.components.MutantDatePicker
 import io.github.youndie.mutant.components.MutantDialogAction
 import io.github.youndie.mutant.components.MutantDrawerItem
 import io.github.youndie.mutant.components.MutantDropdown
@@ -52,6 +53,7 @@ import io.github.youndie.mutant.components.MutantTab
 import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
+import io.github.youndie.mutant.components.MutantTimePicker
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlin.test.Test
@@ -92,6 +94,8 @@ class HoverAndCursorTest {
             "SegmentedButton" to { e -> MutantSegmentedButton(listOf("SP", "LP"), 0, {}, enabled = e) },
             "Slider" to { e -> MutantSlider(0, {}, Modifier.width(240.dp), enabled = e) },
             "SearchBar" to { e -> MutantSearchBar("ночь", {}, Modifier.width(300.dp), enabled = e) },
+            "DatePicker" to { _ -> MutantDatePicker(2026, 11, 13, {}, { _, _ -> }) },
+            "TimePicker" to { _ -> MutantTimePicker(21, 30, { _, _ -> }) },
             "NavigationDrawer" to
                 { _ -> MutantNavigationDrawer(true, {}, listOf(MutantDrawerItem("CH 01", "Эфир")), 0, {}) },
             "Dropdown" to { _ -> MutantDropdown("Настройка", listOf("ТРЕКИНГ"), 0, {}) },
@@ -135,7 +139,8 @@ class HoverAndCursorTest {
         val disabledWithHand =
             controls
                 .filter { (n, c) ->
-                    n !in setOf("Fab", "Carousel", "Dropdown", "NavigationDrawer") && hands(false, c) > 0
+                    n !in setOf("Fab", "Carousel", "Dropdown", "NavigationDrawer", "DatePicker", "TimePicker") &&
+                        hands(false, c) > 0
                 }.map { it.first }
         assertEquals(emptyList(), missing, "no hand")
         assertEquals(emptyList(), disabledWithHand, "a hand over a disabled control")

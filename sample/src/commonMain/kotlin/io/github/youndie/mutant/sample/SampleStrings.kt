@@ -38,6 +38,47 @@ class SampleStrings(
     val sectionSearch = t("Search bar", "Строка поиска")
     val sectionTable = t("Data table", "Таблица")
     val sectionCarousel = t("Carousel", "Карусель")
+    val sectionPickers = t("Date · Time picker", "Дата · Время")
+    val monthNames =
+        if (language == SampleLanguage.English) {
+            listOf(
+                "JANUARY",
+                "FEBRUARY",
+                "MARCH",
+                "APRIL",
+                "MAY",
+                "JUNE",
+                "JULY",
+                "AUGUST",
+                "SEPTEMBER",
+                "OCTOBER",
+                "NOVEMBER",
+                "DECEMBER",
+            )
+        } else {
+            listOf(
+                "ЯНВАРЬ",
+                "ФЕВРАЛЬ",
+                "МАРТ",
+                "АПРЕЛЬ",
+                "МАЙ",
+                "ИЮНЬ",
+                "ИЮЛЬ",
+                "АВГУСТ",
+                "СЕНТЯБРЬ",
+                "ОКТЯБРЬ",
+                "НОЯБРЬ",
+                "ДЕКАБРЬ",
+            )
+        }
+    val weekdayNames =
+        if (language ==
+            SampleLanguage.English
+        ) {
+            listOf("MO", "TU", "WE", "TH", "FR", "SA", "SU")
+        } else {
+            listOf("ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС")
+        }
     val columnRecord = t("RECORD", "ЗАПИСЬ")
     val columnLength = t("LENGTH", "ДЛИНА")
     val columnChannel = t("CHANNEL", "КАНАЛ")

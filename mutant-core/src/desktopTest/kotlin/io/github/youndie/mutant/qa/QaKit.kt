@@ -45,6 +45,7 @@ import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantCircularProgress
 import io.github.youndie.mutant.components.MutantCocoon
 import io.github.youndie.mutant.components.MutantDataTable
+import io.github.youndie.mutant.components.MutantDatePicker
 import io.github.youndie.mutant.components.MutantDivider
 import io.github.youndie.mutant.components.MutantDrawerItem
 import io.github.youndie.mutant.components.MutantDropdown
@@ -74,6 +75,7 @@ import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTabs
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
+import io.github.youndie.mutant.components.MutantTimePicker
 import io.github.youndie.mutant.components.MutantTopAppBar
 import io.github.youndie.mutant.components.TooltipPlate
 import io.github.youndie.mutant.icons.MutantIcon
@@ -132,6 +134,10 @@ internal val subjects: List<Subject> =
             "SearchResult",
         ) { m, t -> MutantSearchResult(t, "ночь", m, supporting = t, leadingIcon = MutantIcons.Search) },
         Subject("SearchResultLoading") { m, _ -> MutantSearchResultLoading(m) },
+        Subject(
+            "DatePicker",
+        ) { m, t -> MutantDatePicker(2026, 11, 13, {}, { _, _ -> }, m, monthNames = List(12) { t }) },
+        Subject("TimePicker") { m, t -> MutantTimePicker(21, 30, { _, _ -> }, m, hourLabel = t, minuteLabel = t) },
         Subject("NavigationDrawer") { m, t ->
             MutantNavigationDrawer(true, {
             }, listOf(MutantDrawerItem("CH 01", t), MutantDrawerItem(t, "Поиск")), 0, {}, m, title = t)
