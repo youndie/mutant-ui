@@ -1,7 +1,7 @@
 ---
 id: B-46
 title: "DataTable: OSD header, 48 dp rows, tracking dividers, row selection"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-6-later
