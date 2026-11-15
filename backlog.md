@@ -58,7 +58,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (17)
+## Open (16)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -68,7 +68,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[?]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
-| [B-64](docs/backlog/B-64-weighted-parts-in-unbounded-width.md) `[~]` | Unbounded width: weighted parts collapse to nothing | P3 | S | B-40 |
 | [B-65](docs/backlog/B-65-tabs-and-navigation-in-rtl.md) `[ ]` | Tabs and the navigation bar mirror in a right-to-left layout | P3 | S | B-40 |
 | [B-66](docs/backlog/B-66-navigation-pill-in-narrow-cells.md) `[ ]` | Navigation bar: the pill overruns narrow cells | P3 | S | B-40 |
 | [B-67](docs/backlog/B-67-text-field-error-description.md) `[ ]` | Text field: the error has no words for a screen reader | P3 | S | B-40 |
@@ -80,7 +79,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 
-## Closed (68)
+## Closed (69)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -153,6 +152,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-61](docs/backlog/B-61-text-under-font-scale.md) `[x]` - Font scale: fixed heights cut text, and illustration labels leave the art
 - [B-62](docs/backlog/B-62-focus-through-loading.md) `[x]` - Button: keyboard focus survives Loading and Success
 - [B-63](docs/backlog/B-63-hover-and-hand-cursor.md) `[x]` - Desktop: the hand cursor and a hover look
+- [B-64](docs/backlog/B-64-weighted-parts-in-unbounded-width.md) `[x]` - Unbounded width: weighted parts collapse to nothing
 - [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[x]` - The code gate replayed failed tests from the build cache as a pass
 - [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[x]` - The sample's frame cost on the JVM, in a real window, and where it goes
 - [B-74](docs/backlog/B-74-handjet-a-row-higher-on-macos-26.md) `[x]` - Handjet's ink a row higher on the CI's macOS 26 than on macOS 27 and in Chrome
