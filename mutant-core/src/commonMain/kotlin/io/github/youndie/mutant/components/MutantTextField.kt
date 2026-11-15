@@ -305,11 +305,10 @@ private fun Caret(
     }
 }
 
-/** The field's height (the page's `height: 52px`) and the width it takes given none (research D15). */
-
 /** What a screen reader says of an error the caller did not describe (B-67). */
 private const val ERROR_WORD = "Ошибка"
 
+/** The field's height (the page's `height: 52px`) and the width it takes given none (research D15). */
 private val HEIGHT = 52.dp
 private val MIN_WIDTH = 200.dp
 
