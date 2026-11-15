@@ -73,7 +73,9 @@ internal object ComponentParity {
     /** Every body the engine built on [stem]'s stage, by key: the cell's own and the stage's others. */
     fun stageSlots(stem: String): Map<String, Any> {
         val ref = DesignParity.reference(stem)
-        val all = listOf(ref["slot"]!!.jsonObject) + (ref["stageSlots"] as? JsonArray).orEmpty().map { it.jsonObject }
+        // An element's crop (B-30) records only the bodies inside it, and no slot of its own.
+        val all =
+            listOfNotNull(ref["slot"]?.jsonObject) + (ref["stageSlots"] as? JsonArray).orEmpty().map { it.jsonObject }
         return all.map { EngineSlot.of(it) }.associateBy { it.key }
     }
 

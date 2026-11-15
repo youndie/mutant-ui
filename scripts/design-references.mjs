@@ -42,6 +42,7 @@ const MVP = 'mutant-ui Компоненты.dc.html';
 const DEMO = 'mutant-ui Демо.dc.html';
 const SPECS = 'mutant-ui Анимационные спеки.dc.html';
 const ICONS = 'mutant-ui Иконки и заготовки.dc.html';
+const V1 = 'mutant-ui Компоненты v1.dc.html';
 // B-14: the Icons page's icons (in its order), patterns and illustrations, named as the kit names them.
 const ICON_NAMES = ['Menu', 'Back', 'Close', 'Search', 'Home', 'Add', 'Delete', 'Edit', 'Share', 'Refresh', 'Settings', 'Done', 'Error', 'Warning', 'Info', 'Schedule'];
 const PATTERNS = [['Lines', 'lines'], ['Snow', 'snow'], ['Raster', 'raster'], ['Mosaic', 'mosaic']];
@@ -169,6 +170,14 @@ export const REFERENCES = [
       { stem: `MutantTabs_Rest${bare ? 'Bare' : ''}_${theme}`, page: MVP, el: true, sel: '[data-mu-stage="nav"] div:has(> div > span + span + span)', index: 0, theme, hide },
     ];
   })),
+  // B-30: the v1 page's two sliders, the one to drag and the disabled one, cropped as they stand (header, ticks,
+  // channel, fill and the thumb with its drips), whole and with the text hidden, both themes; the thumb's slot is
+  // recorded with the crop's place on its stage.
+  ...['Efir', 'Kopiya'].flatMap((theme) => ['Rest', 'Disabled'].flatMap((s, index) => [false, true].map((bare) => ({
+    stem: `MutantSlider_${s}${bare ? 'Bare' : ''}_${theme}`, page: V1, el: true, slots: true, index, theme,
+    sel: '[data-mu-stage="v1-slider"] div:has(> div > [data-mu="fab"])',
+    hide: bare ? '[data-mu-stage="v1-slider"], [data-mu-stage="v1-slider"] * { color: transparent !important; }' : '',
+  })))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>
@@ -518,6 +527,15 @@ async function elementCell(t, ref) {
       out.stageSlots = st.items.map((s) => ({ key: s.key, ox: s.el.ox, oy: s.el.oy, w: s.el.w, h: s.el.h, r: s.el.r, over: s.el.over, cf: s.el.cf, ow: s.el.ow,
         wob: s.el.wob, round: s.el.round, calm: s.el.calm, marks: s.el.marks, edge: s.el.edge, tz: s.el.tz, cz: s.el.cz, fill: s.el.fill, hl: s.el.hl,
         drawnOutline: s.H ? +s.H.O.getAttribute('stroke-width') : s.el.ow }));
+    }
+    // B-30: the bodies inside the element, as a component's cell records them, and the crop's place on their stage.
+    if (${JSON.stringify(!!ref.slots)}) {
+      const sh = n.closest('[data-mu-stage]'), e = window.__muEngines.find(x => x.stages.some(s => s.host === sh)), st = e.stages.find(s => s.host === sh);
+      const hr = sh.getBoundingClientRect();
+      out.origin = [Math.round(b.left - hr.left), Math.round(b.top - hr.top)];
+      out.stageSlots = st.items.filter((s) => n.contains(s.n)).map((s) => ({ key: s.key, ox: s.el.ox, oy: s.el.oy, w: s.el.w, h: s.el.h, r: s.el.r, over: s.el.over,
+        cf: s.el.cf, ow: s.el.ow, wob: s.el.wob, round: s.el.round, calm: s.el.calm, dead: s.el.dead, marks: s.el.marks, edge: s.el.edge, tz: s.el.tz, cz: s.el.cz,
+        fill: s.el.fill, hl: s.el.hl, state: s.el.state, still: !!s.stat, drawnOutline: s.H ? +s.H.O.getAttribute('stroke-width') : s.el.ow }));
     }
     return out;
   })()`);

@@ -43,6 +43,7 @@ import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
 import io.github.youndie.mutant.components.MutantSwitch
 import io.github.youndie.mutant.components.MutantTab
@@ -65,6 +66,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionIconButtons) { IconButtons(strings) }
         Section(strings.sectionChips) { Chips(strings) }
         Section(strings.sectionSelection) { Selection(strings) }
+        Section(strings.sectionSlider) { Sliders(strings) }
         Section(strings.sectionField) { Field(strings) }
         Section(strings.sectionCard) { Cards(strings) }
         Section(strings.sectionNav) { Navigation(strings) }
@@ -134,6 +136,15 @@ private fun Selection(s: SampleStrings) {
             MutantSwitch(loss, { loss = it }, label = s.frameLoss)
             MutantSwitch(true, {}, label = s.disabled, enabled = false, key = "switch-off")
         }
+    }
+}
+
+@Composable
+private fun Sliders(s: SampleStrings) {
+    var tracking by remember { mutableIntStateOf(3) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
+        MutantSlider(tracking, { tracking = it }, Modifier.width(300.dp), label = s.tracking)
+        MutantSlider(-4, {}, Modifier.width(220.dp), label = s.sharpness, enabled = false, key = "slider-off")
     }
 }
 
