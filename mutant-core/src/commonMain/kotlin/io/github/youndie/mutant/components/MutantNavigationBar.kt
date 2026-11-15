@@ -37,12 +37,14 @@ import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.gen.Instance
@@ -127,7 +129,9 @@ internal fun NavigationBarBody(
             Layout(
                 content = {
                     if (chosen) {
-                        val dx = if (from.at in items.indices) cell * (from.at - selectedIndex) else 0.dp
+                        // The cell the pill came from, on the screen: to the other side in a right-to-left layout (B-65).
+                        val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
+                        val dx = if (from.at in items.indices) cell * (side * (from.at - selectedIndex)) else 0.dp
                         MutantSurface(
                             MutantBody.Pill,
                             pillKey,
@@ -167,9 +171,10 @@ internal fun NavigationBarBody(
                         val x =
                             cells[selectedIndex] +
                                 ((cells[selectedIndex + 1] - cells[selectedIndex] - pill.width) / 2f).roundToInt()
-                        pill.place(x, tops[selectedIndex])
+                        pill.placeRelative(x, tops[selectedIndex])
                     }
-                    placed.forEachIndexed { i, p -> p.place(cells[i], 0) }
+                    // Mirrored in a right-to-left layout, the first destination at the right (B-65).
+                    placed.forEachIndexed { i, p -> p.placeRelative(cells[i], 0) }
                 }
             }
         }

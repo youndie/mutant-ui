@@ -150,9 +150,11 @@ public fun MutantTabs(
         val rowH = placeables.maxOfOrNull { it.height } ?: h
         layout(width, rowH) {
             var at = 0
+            // Mirrored in a right-to-left layout, the first tab at the right; the indicator reads where each stands (B-65).
+            val rtl = layoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl
             placeables.forEachIndexed { i, p ->
-                p.place(at, 0)
-                marks.x[i] = at / density
+                p.placeRelative(at, 0)
+                marks.x[i] = (if (rtl) width - at - p.width else at) / density
                 at += p.width
             }
         }
