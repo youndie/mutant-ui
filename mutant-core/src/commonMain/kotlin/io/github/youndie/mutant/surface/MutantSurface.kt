@@ -29,6 +29,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.BodyFrame
 import io.github.youndie.mutant.gen.FieldCache
@@ -52,7 +53,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -256,6 +256,8 @@ internal fun MutantSurface(
     // B-48: the screen's keyframe loss takes this body's picture and cuts its band out of it.
     val moshScene = LocalMutantMoshScene.current
     val moshBody = rememberMoshBody(moshScene)
+    val view = remember { BodyView() }
+    val reach = with(androidx.compose.ui.platform.LocalDensity.current) { OFF_SCREEN_REACH.dp.toPx() }
     val bodyFill = fill ?: colors.fillOf(p.fill)
     moves.follow(bodyFill, slide, clock.nowMs)
     val look =
@@ -272,9 +274,18 @@ internal fun MutantSurface(
             .onGloballyPositioned {
                 registry.surface = it
                 moshBody.coords = it
+                view.place(it, reach)
             }.drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
+                // B-87: a body off the screen builds no tick. It draws its last picture again, and looks at each tick
+                // whether it has come into view (an ancestor that grows moves no body, and tells it nothing).
+                view.flips
+                val last = moshBody.draw
+                if (last != null && !view.showsNow(registry.surface, reach)) {
+                    clock.restTick
+                    return@drawWithCache moshBehind(moshScene, moshBody, last)
+                }
                 val d = density
                 val zone = registry.union(d)
                 val w = engineSize?.width?.toDouble() ?: (size.width / d.toDouble())
@@ -576,6 +587,66 @@ internal fun MutantSurface(
     }
 }
 
+/**
+ * How far past its box a body can ink, dp — its drips, shadow, slip and outline (B-82's raster margin and more) — so
+ * a body counts as on the screen while any of that may show (B-87).
+ */
+private const val OFF_SCREEN_REACH = 64
+
+/**
+ * Whether a body is on the screen (B-87): whether its box, [OFF_SCREEN_REACH] wider all round, meets every box it is
+ * laid out in — each layout and layout modifier up to the window — as a scrolled-away body does not. [flips] counts
+ * the changes [place] saw, and invalidates the body's drawing.
+ */
+@androidx.compose.runtime.Stable
+internal class BodyView {
+    var flips by mutableIntStateOf(0)
+        private set
+    private var shown = true
+
+    /** After a layout: a change of whether the body shows asks for its drawing again. */
+    fun place(
+        at: androidx.compose.ui.layout.LayoutCoordinates,
+        reach: Float,
+    ) {
+        val now = at.showsWithin(reach)
+        if (now != shown) {
+            shown = now
+            flips++
+        }
+    }
+
+    /** At a draw: whether the body shows now, read from where it was last laid out. */
+    fun showsNow(
+        at: androidx.compose.ui.layout.LayoutCoordinates?,
+        reach: Float,
+    ): Boolean = (at == null || !at.isAttached || at.showsWithin(reach)).also { shown = it }
+}
+
+/** Whether this box, [reach] wider all round, meets each box it is laid out in, up to the window. */
+internal fun androidx.compose.ui.layout.LayoutCoordinates.showsWithin(reach: Float): Boolean {
+    var c = this
+    var a = Offset(-reach, -reach)
+    var b = Offset(size.width + reach, size.height + reach)
+    while (true) {
+        val p = c.parentCoordinates ?: return true
+        a = p.localPositionOf(c, a)
+        b = p.localPositionOf(c, b)
+        val w = p.size.width + reach
+        val h = p.size.height + reach
+        if (maxOf(a.x, b.x) < -reach || maxOf(a.y, b.y) < -reach || minOf(a.x, b.x) > w || minOf(a.y, b.y) > h) {
+            return false
+        }
+        c = p
+    }
+}
+
+/**
+ * Where a body's builds off the frame run (B-50, B-75, B-82): `Dispatchers.Default`, but in the browser, where it is the
+ * one thread, each build is a task of its own, so a tick's builds do not all land between the same two frames (B-87).
+ */
+internal expect val aheadDispatcher: kotlinx.coroutines.CoroutineDispatcher
+
 /** The print theme's default slip, dp (tokens `genome.slip`: «тема «Копия» 1.5»). */
 private const val PRINT_SLIP: Double = 1.5
 
@@ -633,7 +704,7 @@ internal class HeldInstance {
     ) {
         if (signature == pending) return
         pending = signature
-        val off: Deferred<Pair<Built, X>> = scope.async(Dispatchers.Default) { build() }
+        val off: Deferred<Pair<Built, X>> = scope.async(aheadDispatcher) { build() }
         // Undispatched: the wait for the next frame is registered in this one, so the result is taken in the next.
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             withFrameNanos { }
@@ -748,7 +819,7 @@ internal class FrameAhead {
         job?.cancel()
         instance = g
         at = t
-        job = scope.async(Dispatchers.Default) { build() }
+        job = scope.async(aheadDispatcher) { build() }
     }
 
     /** Hands over a frame built with the body's first instance, for [t] (B-83). */
