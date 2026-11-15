@@ -1,7 +1,7 @@
 ---
 id: B-84
 title: "Neighbouring drips' webs zip open and shut every tick at rest"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-5-product
