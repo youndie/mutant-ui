@@ -91,6 +91,10 @@ public final class io/github/youndie/mutant/components/MutantProgressKt {
 	public static final fun MutantLinearProgress (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantSliderKt {
+	public static final fun MutantSlider (ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/ranges/IntRange;ZLjava/lang/String;Landroidx/compose/foundation/interaction/MutableInteractionSource;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/components/MutantSnackbarKt {
 	public static final fun MutantSnackbar (Ljava/lang/String;Landroidx/compose/ui/Modifier;ZLjava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }

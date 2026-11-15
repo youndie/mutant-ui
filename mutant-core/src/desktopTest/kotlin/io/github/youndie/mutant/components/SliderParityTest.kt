@@ -121,7 +121,7 @@ class SliderParityTest {
     }
 
     @Test
-    fun `every slider the page draws matches it - channel, fill, ticks and handle whole, the words where the page puts them`() {
+    fun `the page's sliders - channel, fill, ticks and handle whole, the words where the page puts them`() {
         val lines = ArrayList<String>()
         val off = ArrayList<String>()
         for (theme in listOf("Efir", "Kopiya")) {

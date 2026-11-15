@@ -58,11 +58,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (30)
+## Open (29)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-30](docs/backlog/B-30-slider.md) `[~]` | Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside | P2 | M | B-10, B-11, B-43 |
 | [B-31](docs/backlog/B-31-segmented-button.md) `[ ]` | SegmentedButton: the selection moves by venom | P2 | M | B-10, B-12 |
 | [B-32](docs/backlog/B-32-tooltip.md) `[ ]` | Tooltip: a blob plate of 30 or 44 dp | P2 | M | B-10, B-43 |
 | [B-33](docs/backlog/B-33-menu.md) `[ ]` | Menu: 36 dp items, the selection by venom | P2 | M | B-10, B-12, B-43 |
@@ -93,7 +92,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 
-## Closed (54)
+## Closed (55)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -143,6 +142,10 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-37](docs/backlog/B-37-demo-screens-and-sample.md) `[x]` - The three demo screens and the sample kit on desktop and the web
 - [B-38](docs/backlog/B-38-accessibility.md) `[x]` - Accessibility: contrast after the Tape, flashes, greyscale, semantics
 - [B-55](docs/backlog/B-55-public-text-styles.md) `[x]` - Public text styles: a consumer cannot set its own words in Handjet or Rubik
+
+**Each v1 component matches its page and behaves as the owner's answer to B-43 says**
+
+- [B-30](docs/backlog/B-30-slider.md) `[x]` - Slider: a 14 dp channel, an 8 dp fill and a 34 dp handle with the value inside
 
 **The owner's questions answered; the QA pass triaged; the repository public and publishing**
 
