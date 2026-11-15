@@ -64082,6 +64082,686 @@
       ]
     },
     {
+      "stem": "MutantDrawer_Open_Efir",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-drawer-bg\"]",
+      "theme": "Efir",
+      "x": 92,
+      "y": 1049,
+      "w": 328,
+      "h": 308,
+      "art": [
+        0,
+        0,
+        328,
+        308
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgb(233, 242, 228)",
+      "radius": 12,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        0,
+        0
+      ],
+      "stageSlots": [
+        {
+          "key": "card",
+          "ox": 60,
+          "oy": 14,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            144.75,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            148.75,
+            46
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        },
+        {
+          "key": "card-b",
+          "ox": 60,
+          "oy": 124,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            192.203125,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            196.203125,
+            46
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.11
+        },
+        {
+          "key": "drawer",
+          "ox": -10,
+          "oy": -10,
+          "w": 212,
+          "h": 328,
+          "r": 0,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            16,
+            24,
+            192,
+            206.5
+          ],
+          "cz": [
+            14,
+            22,
+            196,
+            210.5
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.02
+        },
+        {
+          "key": "drawer-pill",
+          "ox": 12,
+          "oy": 140,
+          "w": 180,
+          "h": 42,
+          "r": 8,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
+      "stem": "MutantDrawer_OpenBare_Efir",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-drawer-bg\"]",
+      "theme": "Efir",
+      "x": 92,
+      "y": 1049,
+      "w": 328,
+      "h": 308,
+      "art": [
+        0,
+        0,
+        328,
+        308
+      ],
+      "background": "rgb(16, 20, 42)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 12,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        0,
+        0
+      ],
+      "stageSlots": [
+        {
+          "key": "card",
+          "ox": 60,
+          "oy": 14,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            144.75,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            148.75,
+            46
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        },
+        {
+          "key": "card-b",
+          "ox": 60,
+          "oy": 124,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            192.203125,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            196.203125,
+            46
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.11
+        },
+        {
+          "key": "drawer",
+          "ox": -10,
+          "oy": -10,
+          "w": 212,
+          "h": 328,
+          "r": 0,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            16,
+            24,
+            192,
+            206.5
+          ],
+          "cz": [
+            14,
+            22,
+            196,
+            210.5
+          ],
+          "fill": "#232b4a",
+          "hl": "#6b78b6",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.02
+        },
+        {
+          "key": "drawer-pill",
+          "ox": 12,
+          "oy": 140,
+          "w": 180,
+          "h": 42,
+          "r": 8,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
+      "stem": "MutantDrawer_Open_Kopiya",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-drawer-bg\"]",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 1049,
+      "w": 328,
+      "h": 308,
+      "art": [
+        0,
+        0,
+        328,
+        308
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgb(20, 17, 15)",
+      "radius": 12,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        0,
+        0
+      ],
+      "stageSlots": [
+        {
+          "key": "card",
+          "ox": 60,
+          "oy": 14,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            144.75,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            148.75,
+            46
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        },
+        {
+          "key": "card-b",
+          "ox": 60,
+          "oy": 124,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            192.203125,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            196.203125,
+            46
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.11
+        },
+        {
+          "key": "drawer",
+          "ox": -10,
+          "oy": -10,
+          "w": 212,
+          "h": 328,
+          "r": 0,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            16,
+            24,
+            192,
+            206.5
+          ],
+          "cz": [
+            14,
+            22,
+            196,
+            210.5
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.02
+        },
+        {
+          "key": "drawer-pill",
+          "ox": 12,
+          "oy": 140,
+          "w": 180,
+          "h": 42,
+          "r": 8,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
+      "stem": "MutantDrawer_OpenBare_Kopiya",
+      "page": "mutant-ui Компоненты v1.dc.html",
+      "index": 0,
+      "sel": "[data-mu-stage=\"v1-drawer-bg\"]",
+      "theme": "Kopiya",
+      "x": 92,
+      "y": 1049,
+      "w": 328,
+      "h": 308,
+      "art": [
+        0,
+        0,
+        328,
+        308
+      ],
+      "background": "rgb(239, 233, 217)",
+      "color": "rgba(0, 0, 0, 0)",
+      "radius": 12,
+      "subpixel": [
+        0,
+        0.1875
+      ],
+      "origin": [
+        0,
+        0
+      ],
+      "stageSlots": [
+        {
+          "key": "card",
+          "ox": 60,
+          "oy": 14,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            144.75,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            148.75,
+            46
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.08
+        },
+        {
+          "key": "card-b",
+          "ox": 60,
+          "oy": 124,
+          "w": 256,
+          "h": 80,
+          "r": 10,
+          "over": 24,
+          "cf": 0.4,
+          "ow": 3,
+          "wob": 1,
+          "round": 0,
+          "calm": 1,
+          "dead": 1,
+          "marks": 1,
+          "edge": 1,
+          "tz": [
+            10,
+            12,
+            192.203125,
+            42
+          ],
+          "cz": [
+            8,
+            10,
+            196.203125,
+            46
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.11
+        },
+        {
+          "key": "drawer",
+          "ox": -10,
+          "oy": -10,
+          "w": 212,
+          "h": 328,
+          "r": 0,
+          "over": 0,
+          "cf": 0,
+          "ow": 3,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 1,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            16,
+            24,
+            192,
+            206.5
+          ],
+          "cz": [
+            14,
+            22,
+            196,
+            210.5
+          ],
+          "fill": "#e3dbc6",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 3.02
+        },
+        {
+          "key": "drawer-pill",
+          "ox": 12,
+          "oy": 140,
+          "w": 180,
+          "h": 42,
+          "r": 8,
+          "over": 0,
+          "cf": 0,
+          "ow": 2.5,
+          "wob": 0.6,
+          "round": 0,
+          "calm": 0.2,
+          "dead": 0,
+          "marks": 0,
+          "edge": 0,
+          "tz": [
+            -99,
+            -99,
+            0,
+            0
+          ],
+          "cz": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "fill": "#b6ff1a",
+          "hl": "#ffffff",
+          "state": "",
+          "still": false,
+          "heat": 0,
+          "drawnOutline": 2.47
+        }
+      ]
+    },
+    {
       "stem": "MutantNavigationBar_Rest_Efir",
       "page": "mutant-ui Компоненты.dc.html",
       "stage": "nav",

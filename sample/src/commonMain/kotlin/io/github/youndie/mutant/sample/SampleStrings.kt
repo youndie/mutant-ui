@@ -49,6 +49,11 @@ class SampleStrings(
     val sectionSegmented = t("Segmented button", "Сегменты")
     val sectionTooltip = t("Tooltip", "Подсказка")
     val sectionSheet = t("Bottom sheet", "Нижний лист")
+    val sectionDrawer = t("Navigation drawer", "Боковое меню")
+    val openDrawer = t("Channels", "Каналы")
+    val channels = t("CHANNELS", "КАНАЛЫ")
+    val channelNames =
+        listOf(t("On air", "Эфир"), t("Queue", "Очередь"), t("Search", "Поиск"), t("Settings", "Настройка"))
     val sectionPull = t("Pull to refresh", "Потянуть, чтобы обновить")
     val refreshingWord = t("REFRESHING", "ОБНОВЛЯЕМ")
     val refreshedWord = t("REFRESHED", "ОБНОВЛЕНО")

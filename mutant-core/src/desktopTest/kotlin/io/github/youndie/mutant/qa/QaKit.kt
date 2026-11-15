@@ -46,6 +46,7 @@ import io.github.youndie.mutant.components.MutantCircularProgress
 import io.github.youndie.mutant.components.MutantCocoon
 import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantDivider
+import io.github.youndie.mutant.components.MutantDrawerItem
 import io.github.youndie.mutant.components.MutantDropdown
 import io.github.youndie.mutant.components.MutantEmptyState
 import io.github.youndie.mutant.components.MutantExtendedFab
@@ -54,6 +55,7 @@ import io.github.youndie.mutant.components.MutantIconButton
 import io.github.youndie.mutant.components.MutantLinearProgress
 import io.github.youndie.mutant.components.MutantListItem
 import io.github.youndie.mutant.components.MutantNavigationBar
+import io.github.youndie.mutant.components.MutantNavigationDrawer
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantPullToRefresh
@@ -130,6 +132,10 @@ internal val subjects: List<Subject> =
             "SearchResult",
         ) { m, t -> MutantSearchResult(t, "ночь", m, supporting = t, leadingIcon = MutantIcons.Search) },
         Subject("SearchResultLoading") { m, _ -> MutantSearchResultLoading(m) },
+        Subject("NavigationDrawer") { m, t ->
+            MutantNavigationDrawer(true, {
+            }, listOf(MutantDrawerItem("CH 01", t), MutantDrawerItem(t, "Поиск")), 0, {}, m, title = t)
+        },
         Subject("Dropdown") { m, t -> MutantDropdown(t, listOf(t, "СБРОС"), 0, {}, m) },
         Subject("Menu") { m, t -> MenuBody(listOf(t, "ЦВЕТНОСТЬ", "СБРОС"), 0, {}, m, "menu", "menu-pill") },
         Subject("Carousel") { m, t ->

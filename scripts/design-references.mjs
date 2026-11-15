@@ -238,6 +238,14 @@ export const REFERENCES = [
     sel: '[data-mu-stage="v1-menu"] div:has(> [data-mu="btn"][data-key="menu"])',
     hide: bare ? '[data-mu-stage="v1-menu"], [data-mu-stage="v1-menu"] * { color: transparent !important; }' : '',
   }))),
+  // B-34: the v1 page's navigation drawer screen as it stands — the still cards under the scrim and the drawer over
+  // them with its window on the third channel — whole and with every word hidden, both themes, with the bodies the
+  // engine built on the screen's stage and on the drawer's (`v1-drawer-win`, nested).
+  ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) => ({
+    stem: `MutantDrawer_Open${bare ? 'Bare' : ''}_${theme}`, page: V1, el: true, slots: true, index: 0, theme,
+    sel: '[data-mu-stage="v1-drawer-bg"]',
+    hide: bare ? '[data-mu-stage="v1-drawer-bg"], [data-mu-stage="v1-drawer-bg"] * { color: transparent !important; }' : '',
+  }))),
   // B-24: the nav stage's navigation bar with its pill, whole and bare (text and currentColor icons hidden, the
   // badge's plate kept), both themes.
   ...['Efir', 'Kopiya'].flatMap((theme) => [false, true].map((bare) =>

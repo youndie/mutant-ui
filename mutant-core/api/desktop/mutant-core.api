@@ -1,3 +1,9 @@
+public final class io/github/youndie/mutant/components/ComposableSingletons$MutantNavigationDrawerKt {
+	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantNavigationDrawerKt;
+	public fun <init> ()V
+	public final fun getLambda$-1293169296$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSearchBarKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantSearchBarKt;
 	public fun <init> ()V
@@ -90,6 +96,13 @@ public final class io/github/youndie/mutant/components/MutantDividerKt {
 	public static final fun MutantDivider (Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/components/MutantDrawerItem {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getCode ()Ljava/lang/String;
+	public final fun getLabel ()Ljava/lang/String;
+}
+
 public final class io/github/youndie/mutant/components/MutantEmptyStateKt {
 	public static final fun MutantEmptyState (Lio/github/youndie/mutant/illustration/MutantIllustrationKind;Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
@@ -111,6 +124,10 @@ public final class io/github/youndie/mutant/components/MutantMenuKt {
 
 public final class io/github/youndie/mutant/components/MutantNavigationBarKt {
 	public static final fun MutantNavigationBar (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/foundation/layout/WindowInsets;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/youndie/mutant/components/MutantNavigationDrawerKt {
+	public static final fun MutantNavigationDrawer (ZLkotlin/jvm/functions/Function0;Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/ui/focus/FocusRequester;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/components/MutantNavigationItem {

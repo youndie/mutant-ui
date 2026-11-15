@@ -42,6 +42,7 @@ import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantDialog
 import io.github.youndie.mutant.components.MutantDialogAction
 import io.github.youndie.mutant.components.MutantDivider
+import io.github.youndie.mutant.components.MutantDrawerItem
 import io.github.youndie.mutant.components.MutantDropdown
 import io.github.youndie.mutant.components.MutantEmptyState
 import io.github.youndie.mutant.components.MutantExtendedFab
@@ -50,6 +51,7 @@ import io.github.youndie.mutant.components.MutantIconButton
 import io.github.youndie.mutant.components.MutantLinearProgress
 import io.github.youndie.mutant.components.MutantListItem
 import io.github.youndie.mutant.components.MutantNavigationBar
+import io.github.youndie.mutant.components.MutantNavigationDrawer
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantPullToRefresh
@@ -100,6 +102,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionProgress) { Progress() }
         Section(strings.sectionDialog) { Dialog(strings) }
         Section(strings.sectionSheet) { Sheet(strings) }
+        Section(strings.sectionDrawer) { Drawer(strings) }
         Section(strings.sectionPull) { Pull(strings) }
         Section(strings.sectionEmpty) { EmptyStates(strings) }
         Section(strings.sectionIcons) { IconsAndPatterns(strings) }
@@ -392,6 +395,25 @@ private fun Dialog(s: SampleStrings) {
             MutantDialogAction(s.cancel, { open = false })
             MutantDialogAction(s.erase, { open = false }, primary = true)
         }
+    }
+}
+
+/** Open the drawer, press a channel: the window flows to it by venom; the scrim or Escape closes it. */
+@Composable
+private fun Drawer(s: SampleStrings) {
+    var open by remember { mutableStateOf(false) }
+    var channel by remember { mutableIntStateOf(2) }
+    Box(Modifier.width(360.dp).height(320.dp)) {
+        MutantButton(s.openDrawer, { open = true }, key = "open-drawer")
+        MutantNavigationDrawer(
+            open,
+            { open = false },
+            s.channelNames.mapIndexed { i, name -> MutantDrawerItem("CH 0${i + 1}", name) },
+            channel,
+            { channel = it },
+            title = s.channels,
+            key = "sample-drawer",
+        )
     }
 }
 
