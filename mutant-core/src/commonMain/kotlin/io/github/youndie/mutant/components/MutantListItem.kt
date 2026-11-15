@@ -24,9 +24,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.gen.Instance
@@ -64,7 +66,7 @@ public fun MutantListItem(
     interactionSource: MutableInteractionSource? = null,
 ) {
     ListItemBody(
-        headline,
+        AnnotatedString(headline),
         modifier,
         supporting,
         leadingIcon,
@@ -80,7 +82,7 @@ public fun MutantListItem(
 /** [MutantListItem]; [hidden] draws its words and icon transparent for a fixture's bare twin. */
 @Composable
 internal fun ListItemBody(
-    headline: String,
+    headline: AnnotatedString,
     modifier: Modifier,
     supporting: String?,
     leadingIcon: ImageVector?,
@@ -92,6 +94,7 @@ internal fun ListItemBody(
     interactionSource: MutableInteractionSource?,
     hidden: Boolean = false,
     probe: ((Instance) -> Unit)? = null,
+    rowHeight: Dp = ROW,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
@@ -119,7 +122,7 @@ internal fun ListItemBody(
         modifier
             .then(click)
             .fillMaxWidth()
-            .heightIn(min = ROW)
+            .heightIn(min = rowHeight)
             .drawWithContent {
                 drawContent()
                 if (onClick != null && focused && keyboard) {
@@ -149,7 +152,9 @@ internal fun ListItemBody(
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(LINE_GAP)) {
             BasicText(
-                headline,
+                // A headline's own colours (a search result's match, B-44) give way to the row's grey or a bare twin's
+                // transparency.
+                if (hidden || !enabled) AnnotatedString(headline.text) else headline,
                 style =
                     TextStyle(
                         fontFamily = fonts?.text,

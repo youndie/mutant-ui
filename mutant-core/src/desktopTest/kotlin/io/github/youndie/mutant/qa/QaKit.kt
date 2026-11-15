@@ -53,6 +53,10 @@ import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantPullToRefresh
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSearchBar
+import io.github.youndie.mutant.components.MutantSearchResult
+import io.github.youndie.mutant.components.MutantSearchResultLoading
+import io.github.youndie.mutant.components.MutantSearchSuggestions
 import io.github.youndie.mutant.components.MutantSegmentedButton
 import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
@@ -107,6 +111,18 @@ internal val subjects: List<Subject> =
         Subject("RadioButton") { m, t -> MutantRadioButton(true, {}, m, label = t) },
         Subject("Switch") { m, t -> MutantSwitch(true, {}, m, label = t) },
         Subject("Slider") { m, t -> MutantSlider(3, {}, m, label = t) },
+        Subject("SearchBar") { m, t ->
+            MutantSearchBar(t, {}, m) {
+                MutantSearchSuggestions(listOf(t, "ночной эфир"), {})
+                MutantSearchResult(t, t.take(4), supporting = t, leadingIcon = MutantIcons.Search, onClick = {})
+                MutantSearchResultLoading()
+            }
+        },
+        Subject("SearchSuggestions") { m, t -> MutantSearchSuggestions(listOf(t, t, "ночь"), {}, m) },
+        Subject(
+            "SearchResult",
+        ) { m, t -> MutantSearchResult(t, "ночь", m, supporting = t, leadingIcon = MutantIcons.Search) },
+        Subject("SearchResultLoading") { m, _ -> MutantSearchResultLoading(m) },
         Subject("SegmentedButton") { m, t -> MutantSegmentedButton(listOf(t, "LP", "EP"), 0, {}, m) },
         Subject("Tooltip") { m, t -> TooltipPlate(t, null, "tip", m) },
         Subject("Tooltip.Rich") { m, t -> TooltipPlate(t, "ОСТАЛОСЬ 3 МИН", "tip-rich", m) },

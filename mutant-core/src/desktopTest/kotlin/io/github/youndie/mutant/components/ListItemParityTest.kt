@@ -50,7 +50,9 @@ class ListItemParityTest {
             ) {
                 if (badge) MutantDivider(key = "0")
                 ListItemBody(
-                    if (badge) "Эфир, ночь на вторник" else "Настроечная таблица",
+                    androidx.compose.ui.text.AnnotatedString(
+                        if (badge) "Эфир, ночь на вторник" else "Настроечная таблица",
+                    ),
                     Modifier,
                     if (badge) "Записано поверх" else "Копия 4-го поколения",
                     play,
