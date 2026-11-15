@@ -109,7 +109,7 @@ internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
 
 /**
  * Told, for every body frame a surface draws, whether it was built ahead off the frame (B-75) and whether it is
- * drawn from an image rasterised ahead (B-82): a test reads it.
+ * drawn from an image rasterised ahead (B-82), and whether its webs were steadied (B-84): a test reads it.
  */
 internal val LocalMutantFrameProbe =
     staticCompositionLocalOf<
@@ -117,6 +117,7 @@ internal val LocalMutantFrameProbe =
             (
                 fromAhead: Boolean,
                 asImage: Boolean,
+                steadyWebs: Boolean,
             ) -> Unit
         )?,
     > { null }
@@ -225,6 +226,8 @@ internal fun MutantSurface(
     // A body's first instance is built off the frame (B-50), unless the clock is frozen (fixtures, references) or an
     // IDE preview draws it: those draw in their first frame, as before.
     val offFrame = LocalMutantBuildOffFrame.current && !clock.frozen && !LocalInspectionMode.current
+    // B-84: a running body's webs follow its drips, not the boil; a still keeps the engine's field.
+    val steadyWebs = !clock.frozen
     val boil = remember { HeatMachine() }
     if (interactionSource != null) {
         androidx.compose.runtime.LaunchedEffect(interactionSource, clock) {
@@ -379,7 +382,7 @@ internal fun MutantSurface(
                     dead: io.github.youndie.mutant.gen.DeadPixels?,
                     next: Double,
                 ): Ahead {
-                    val f = gen.frame(g, cache, next, 0.0, pressed = false)
+                    val f = gen.frame(g, cache, next, 0.0, pressed = false, steadyWebs = steadyWebs)
                     val inputs = imageInputsOf(dead)
                     val image =
                         inputs?.let {
@@ -429,9 +432,26 @@ internal fun MutantSurface(
                         val (g, cache, dead) = built
                         val first =
                             when {
-                                firstImage -> buildAhead(g, cache, dead, firstAt)
-                                !still -> null.also { gen.frame(g, cache, warmAt, 0.0, pressed = false) }
-                                else -> null
+                                firstImage -> {
+                                    buildAhead(g, cache, dead, firstAt)
+                                }
+
+                                !still -> {
+                                    null.also {
+                                        gen.frame(
+                                            g,
+                                            cache,
+                                            warmAt,
+                                            0.0,
+                                            pressed = false,
+                                            steadyWebs = steadyWebs,
+                                        )
+                                    }
+                                }
+
+                                else -> {
+                                    null
+                                }
                             }
                         built to first
                     }
@@ -482,7 +502,7 @@ internal fun MutantSurface(
                 val resting = offFrame && !hot && !boil.on && k == 0.0
                 val early = if (resting) ahead.take(g, t) else null
 
-                val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on)
+                val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
                 if (resting && cache.settledFor(g)) {
                     val next = t + clock.stepMs
                     ahead.prepare(g, next, scope) { buildAhead(g, cache, dead, next) }
@@ -505,7 +525,7 @@ internal fun MutantSurface(
                         imageInputs != null && early.inputs == imageInputs && pour == null &&
                             slideP >= 1
                     }
-                frameProbe?.invoke(early != null, image != null)
+                frameProbe?.invoke(early != null, image != null, frame.steadyWebs)
                 if (image != null) {
                     return@drawWithCache onDrawBehind {
                         drawImage(

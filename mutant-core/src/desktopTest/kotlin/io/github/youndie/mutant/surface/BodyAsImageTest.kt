@@ -51,7 +51,7 @@ class BodyAsImageTest {
             CompositionLocalProvider(
                 LocalDensity provides Density(density),
                 LocalMutantBodyAsImage provides asImage,
-                LocalMutantFrameProbe provides { _, image -> if (image) count.asImage++ else count.asVectors++ },
+                LocalMutantFrameProbe provides { _, image, _ -> if (image) count.asImage++ else count.asVectors++ },
                 LocalMutantRasterProbe provides { _, _ -> count.rasters++ },
             ) {
                 ProvideMutantClock(androidx.compose.runtime.remember { MutantClock() }) {
