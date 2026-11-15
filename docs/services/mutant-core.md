@@ -42,6 +42,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSwitch.kt` | `MutantSwitch` ([B-19](../backlog/B-19-switch.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSlider.kt` | `MutantSlider`, the v1 slider ([B-30](../backlog/B-30-slider.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantCarousel.kt` | `MutantCarousel`, `MutantCarouselItem` ([B-47](../backlog/B-47-carousel.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDatePicker.kt` | `MutantDatePicker`, `MutantTimePicker` ([B-45](../backlog/B-45-date-and-time-pickers.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDataTable.kt` | `MutantDataTable`, `MutantTableColumn`, `MutantTableCellStyle` ([B-46](../backlog/B-46-data-table.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSearchBar.kt` | `MutantSearchBar`, `MutantSearchSuggestions`, `MutantSearchResult`, `MutantSearchResultLoading` ([B-44](../backlog/B-44-search-bar.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSegmentedButton.kt` | `MutantSegmentedButton` ([B-31](../backlog/B-31-segmented-button.md)) |
