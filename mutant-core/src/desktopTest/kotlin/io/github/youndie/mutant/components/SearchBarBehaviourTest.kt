@@ -168,7 +168,7 @@ class SearchBarBehaviourTest {
     }
 
     @Test
-    fun `the rows stand as the page's - results and loading 60 dp, suggestion rows 40 dp apart, each chip a 48 dp target`() =
+    fun `rows as the page's - results and loading 60 dp, suggestion rows 40 dp apart, chip targets 48 dp`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             setContent {
