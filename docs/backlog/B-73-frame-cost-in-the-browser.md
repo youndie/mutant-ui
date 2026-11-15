@@ -1,7 +1,7 @@
 ---
 id: B-73
 title: "The sample's frame cost in the browser (wasm)"
-status: wip
+status: done
 priority: P3
 size: M
 stage: stage-5-product
@@ -29,3 +29,36 @@ The owner, 2026-11-14: the published sample stutters in the browser to the eye. 
   - **Then.** A Performance trace of each scene not green, and an item per cause with its own number.
 - AC: raw logs under `logs/b-73/`, the control's reading, a verdict per scene, its ratio to the JVM's; for each scene not green, the trace and an item per cause.
 - Anchors: `.github/workflows/pages.yaml`, `sample/build.gradle.kts`
+
+## Results, 2026-11-16
+
+Run on the stand above, on mains power, from the build of `ab88d77` (the sample and the kit unchanged through `e1dcaf8`, the harness's commit in the log's header). Five counted rounds of ten seconds a scene: [the log](../../logs/b-73/2026-11-15-browser.log) and [every frame](../../logs/b-73/2026-11-15-browser/frames.csv). The JVM ran next, at `4f04f96`, which changes nothing in the sample or the kit: [the log](../../logs/b-73/2026-11-16-desktop.log). Same host, not the same run.
+
+**The control reads the busy-wait.** On the idle page its work over the page's own, at p50 per counted round: 9.80, 9.90, 9.70, 9.80 and 9.70 ms against 10 ms. On the resting page (`ControlRest`, reported, not a condition) it read −39 to −41 ms, as the smoke run had found: the page is saturated, and a wait in the frame moves the rest of the work later. **Load was delivered.** The wheel scrolled 19 164–20 154 px a round. The harness sent 100–104 notches a round, not the 300 it asks for: each notch waits for the busy page to take it.
+
+| Scene | frames/s | interval p95 | > 16.7 ms | > 33 ms | work p50 | work p95 | Verdict | JVM: frames/s, work p50 / p95 |
+|---|---|---|---|---|---|---|---|---|
+| Components, at rest | 24.3 | 100.0 | 75.9 % | 53.4 % | 60.6 | 117.1 | **RED** | 59.8, 0.03 / 6.29 |
+| Components, wheel | 26.0 | 100.0 | 67.9 % | 35.6 % | 12.5 | 30.7 | **RED** | 59.9, 0.26 / 6.26 |
+| Components, «Чистый сигнал» | 24.8 | 100.0 | 78.6 % | 57.7 % | 62.3 | 112.8 | **RED** | 60.2, 0.03 / 6.01 |
+| Components, reduce motion | 60.5 | 16.8 | 45.4 % | 0.00 % | 2.3 | 2.6 | GREY | idle |
+| Demo page (three screens) | 60.6 | 16.7 | 45.7 % | 0.00 % | 12.0 | 14.7 | GREY | 60.1, 0.02 / 0.16 |
+| Demo, Library alone | 48.2 | 33.4 | 56.2 % | 16.4 % | 3.4 | 46.2 | **RED** | 60.0, 0.03 / 2.25 |
+| Demo, Recording alone | 60.0 | 16.8 | 47.4 % | 0.93 % | 3.3 | 32.3 | GREY | 60.2, 0.03 / 1.26 |
+| Demo, Settings alone | 60.5 | 16.8 | 44.9 % | 0.00 % | 3.8 | 9.6 | GREY | 60.3, 0.04 / 0.32 |
+
+Work and interval are in ms.
+
+**The ratio to the JVM is not a ratio of the same work.** At work p95, the browser's frame is 19 times the JVM's on the resting Components page (117.1 against 6.29), 5 on the wheel, 19 with the clean signal and 21 on the Library screen. At p50 the JVM's main thread does almost nothing (0.02–0.26 ms). Its tick is built on other threads (B-75), and its frame is drawn on Skia's render thread (B-76), and the JVM's *work* times neither. The browser has one thread for all three. The two *works* are also read differently: the JVM's is Compose's `onRender`, the browser's the frame's span up to the first task after it.
+
+**Green is out of reach of either recorder by this rule.** On a page at 60 frames a second, 45 % of the browser's intervals and 22–28 % of the JVM's stand over 16.7 ms by the timer's jitter around 16.67 ms. B-72 counted its intervals the same way; the rule is kept as it was registered, and this is its limitation.
+
+**Where the time goes**, sampled by the CDP profiler every 100 µs over 8 s. The Kotlin module was rebuilt by the same `wasm-opt` with `-g` to keep its names: the code is the same 3.48 MB, and the name section adds 1.41 MB. Logs: [Components at rest](../../logs/b-73/2026-11-16-profile-ComponentsRest-named.txt), [Library alone](../../logs/b-73/2026-11-16-profile-DemoLibrary-named.txt); the unnamed runs of the production build itself rank the same functions.
+
+1. **The bodies' ticks have one thread, and the Components page needs more than it.** B-75 builds a resting body's next tick ahead on `Dispatchers.Default`, and B-82 rasterises it there. On the JVM those are other threads. In the browser they are the page's own message queue, between frames.
+   - **On the resting Components page the main thread is busy 100 % of the time.** `gen.frame` is anywhere on the stack 50.5 % of the time. The builds ahead, in the queue, take 28.3 %. The bodies' draw takes 45.6 %, building in the frame the ticks whose build ahead had not run by then (`FrameAhead.take` finds none, and the next `prepare` cancels it). One thread cannot keep up. On the JVM the same page's tick cost 60–80 ms on the main thread before B-75 moved it (B-72's profile), and it has eight cores. Within the generator, `gen.frame` takes 13.9 % of self time, `march` 6.1 %, and the arrays' accessors around them 13 % more.
+   - **On the Library screen the thread is busy 42 % of the time.** 54.2 % of that is `FrameAhead.buildAhead` in the queue, and 33.1 % the bodies' vectors drawn in the frame. Each tick's builds land together between two frames, so one frame in six waits past 33 ms.
+   - The clean signal changes nothing (the Tape is not the cost). Why the Demo page, which holds the Library screen, keeps its frames while the screen alone does not, this run does not say.
+   → [B-87](B-87-ticks-on-the-one-thread.md)
+
+The JVM's fixes (B-75, B-76, B-82) moved the work off the frame. In the browser there is no other thread to move it to.

@@ -62,15 +62,15 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-87](docs/backlog/B-87-ticks-on-the-one-thread.md) `[ ]` | In the browser the bodies' ticks have one thread, and the Components page needs more than it | P1 | M | B-73 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
-| [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[~]` | The sample's frame cost in the browser (wasm) | P3 | M | B-72, B-75, B-76, B-78, B-82, B-83, B-30, B-31, B-32, B-33, B-34, B-35, B-36, B-44, B-45, B-46, B-47 |
 | [B-77](docs/backlog/B-77-the-tape-on-the-render-thread.md) `[ ]` | The Tape costs 3.2 ms a frame on the render thread of the Demo page | P3 | S | B-76 |
 | [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 | [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[ ]` | A tall body rasterises its whole height every tick | P3 | M | B-69 |
 
-## Closed (79)
+## Closed (80)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -154,6 +154,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-70](docs/backlog/B-70-snackbar-long-action.md) `[x]` - Snackbar: a long action pushes the message out
 - [B-71](docs/backlog/B-71-text-ink-varies-across-ci-macs.md) `[x]` - The code gate replayed failed tests from the build cache as a pass
 - [B-72](docs/backlog/B-72-frame-cost-on-the-jvm.md) `[x]` - The sample's frame cost on the JVM, in a real window, and where it goes
+- [B-73](docs/backlog/B-73-frame-cost-in-the-browser.md) `[x]` - The sample's frame cost in the browser (wasm)
 - [B-74](docs/backlog/B-74-handjet-a-row-higher-on-macos-26.md) `[x]` - Handjet's ink a row higher on the CI's macOS 26 than on macOS 27 and in Chrome
 - [B-75](docs/backlog/B-75-tick-frames-off-the-main-thread.md) `[x]` - The generator's tick frame runs on the main thread, 60–80 ms per tick on the Components page
 - [B-76](docs/backlog/B-76-render-thread-replay-on-the-demo-page.md) `[x]` - Skia's replay on the render thread bounds the Demo page

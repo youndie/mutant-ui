@@ -91,7 +91,8 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `scripts/fonts.py`, `scripts/fonts.lock` | fetch at a pinned google/fonts commit, check by SHA-256, cut the instances (`make fonts`) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/GeneratorBoundaryTest.kt` | holds the generator package free of Compose imports |
 | `mutant-core/karma.config.d/mocha-timeout.js` | the browser tests' limits |
-| `sample/` | the sample kit: `./gradlew :sample:run`, `:sample:wasmJsBrowserDistribution` |
+| `sample/` | the sample kit: `./gradlew :sample:run`, `:sample:wasmJsBrowserDistribution`; in the browser `?scene=<name>` opens one of B-72's scenes for B-73's recorder (`BenchScene.kt`) |
+| `scripts/frame-bench-browser.mjs`, `scripts/frame-profile-browser.mjs` | the sample's frame per scene in headless Chrome, and a scene's sampled profile ([B-73](../backlog/B-73-frame-cost-in-the-browser.md)); by hand, not in `make check` |
 
 ## 3. How it is built
 
