@@ -6,8 +6,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.qa.Still
@@ -38,13 +39,15 @@ class CarouselBehaviourTest {
                 }
             }
             mainClock.advanceTimeByFrame()
-            onNode(hasText("Настроечная таблица")).performClick()
-            // Under reduce motion (Still) the shelf moves at once.
-            mainClock.advanceTimeBy(100)
+            // A finger: a mouse press in the test window would focus the card, and the pager brings a focused card
+            // into view by itself.
+            onNode(hasText("Настроечная таблица")).performTouchInput { click() }
+            // Under reduce motion (Still) the shelf moves at once: one frame.
+            mainClock.advanceTimeByFrame()
             assertEquals(2, state.currentPage)
             assertEquals(emptyList(), clicks)
-            onNode(hasText("Настроечная таблица")).performClick()
-            mainClock.advanceTimeBy(100)
+            onNode(hasText("Настроечная таблица")).performTouchInput { click() }
+            mainClock.advanceTimeByFrame()
             assertEquals(listOf(2), clicks)
         }
 

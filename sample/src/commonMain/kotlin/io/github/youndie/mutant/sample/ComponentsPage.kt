@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -31,6 +32,8 @@ import io.github.youndie.mutant.components.MutantButtonState
 import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardSubtitle
 import io.github.youndie.mutant.components.MutantCardTitle
+import io.github.youndie.mutant.components.MutantCarousel
+import io.github.youndie.mutant.components.MutantCarouselItem
 import io.github.youndie.mutant.components.MutantCheckbox
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantCircularProgress
@@ -87,6 +90,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionField) { Field(strings) }
         Section(strings.sectionSearch) { Search(strings) }
         Section(strings.sectionTable) { Table(strings) }
+        Section(strings.sectionCarousel) { Carousel(strings) }
         Section(strings.sectionCard) { Cards(strings) }
         Section(strings.sectionNav) { Navigation(strings) }
         Section(strings.sectionList) { ListRows(strings) }
@@ -222,6 +226,20 @@ private fun Search(s: SampleStrings) {
             MutantSearchResultLoading(key = "search")
         }
     }
+}
+
+/** Swipe the shelf, or press a card beside the middle one to bring it in. */
+@Composable
+private fun Carousel(s: SampleStrings) {
+    MutantCarousel(
+        listOf(
+            MutantCarouselItem(s.untitled, s.sideA),
+            MutantCarouselItem(s.nightTuesday, s.recordedOver, s.status),
+            MutantCarouselItem(s.testCard, s.fourthGeneration),
+        ),
+        Modifier.width(400.dp),
+        rememberPagerState(initialPage = 1) { 3 },
+    )
 }
 
 /** Press a row to select it: the row is the target, the box shows it. */

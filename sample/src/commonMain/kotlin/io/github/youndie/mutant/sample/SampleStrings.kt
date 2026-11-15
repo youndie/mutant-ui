@@ -33,6 +33,7 @@ class SampleStrings(
     val sectionSlider = t("Slider", "Слайдер")
     val sectionSearch = t("Search bar", "Строка поиска")
     val sectionTable = t("Data table", "Таблица")
+    val sectionCarousel = t("Carousel", "Карусель")
     val columnRecord = t("RECORD", "ЗАПИСЬ")
     val columnLength = t("LENGTH", "ДЛИНА")
     val columnChannel = t("CHANNEL", "КАНАЛ")
