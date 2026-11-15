@@ -549,6 +549,20 @@ The owner's remark of 2026-11-15 ([B-84](../backlog/B-84-drip-webs-flip-every-ti
 - a plain `min` between drips, which cuts the webs to creases;
 - smoothing the field between ticks, where the design steps on purpose.
 
+
+### D19. Three owner-named exceptions to the 48 dp touch target
+
+The owner's choice of 2026-11-15 ([B-33](../backlog/B-33-menu.md), [B-34](../backlog/B-34-navigation-drawer.md), [B-45](../backlog/B-45-date-and-time-pickers.md)). The kit's rule is a touch target of at least 48 dp by the slot. Three places in the design draw shorter targets, and the kit keeps the design's drawing there:
+- the menu's 36 dp rows;
+- the navigation drawer's 42 dp rows;
+- the calendar's 36 × 36 day cells.
+
+In each, a row or cell is the whole target, and the targets tile their column or grid with no gap, so every press inside lands on one. An accessibility test pins each exception, and a sweep fails on a target under 48 dp that is not on this list.
+
+Rejected:
+- 48 dp rows with the 36 or 42 dp drawing inside: it departs from the page's spacing;
+- 48 dp cells for the calendar: its seven columns would make a 336 dp row, wider than its 284 dp body.
+
 ---
 
 ## 3. Risks and open questions
