@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-34](docs/backlog/B-34-navigation-drawer.md) `[ ]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
+| [B-34](docs/backlog/B-34-navigation-drawer.md) `[~]` | NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom | P2 | M | B-10, B-12, B-43 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[ ]` | DatePicker and TimePicker | P3 | M | B-10, B-43 |
 | [B-48](docs/backlog/B-48-keyframe-loss.md) `[ ]` | Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s | P3 | M | B-13, B-06 |

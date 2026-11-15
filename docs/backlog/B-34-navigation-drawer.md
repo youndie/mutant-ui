@@ -1,7 +1,7 @@
 ---
 id: B-34
 title: "NavigationDrawer: 42 dp items, slip 3, a shadow, the selection by venom"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-4-v1
