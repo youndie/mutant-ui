@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -51,6 +52,7 @@ import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 /**
  * A snackbar: the `bar` body in the no-signal blue with its deep misregistered shadow, 6 dp corners, 48 dp tall across
@@ -158,7 +160,10 @@ internal fun SnackbarBody(
     }
 }
 
-/** The action: its word 16 dp from the bar's end, its target the bar's height and at least 48 wide. */
+/**
+ * The action: its word 16 dp from the bar's end, its target the bar's height and at least 48 wide, and never more than
+ * half the bar: a longer word ends in an ellipsis and the message keeps the rest (B-70).
+ */
 @Composable
 private fun SnackbarAction(
     label: String,
@@ -174,7 +179,20 @@ private fun SnackbarAction(
         Modifier
             .mutantHand(enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onAction)
-            .fillMaxHeight()
+            .layout { m, c ->
+                // Measured before the weighted message, with the whole bar to take: half of it at most.
+                val cap =
+                    if (c.hasBoundedWidth) {
+                        maxOf(
+                            c.minWidth,
+                            (c.maxWidth * ACTION_SHARE).roundToInt(),
+                        )
+                    } else {
+                        c.maxWidth
+                    }
+                val p = m.measure(c.copy(maxWidth = cap))
+                layout(p.width, p.height) { p.place(0, 0) }
+            }.fillMaxHeight()
             .widthIn(min = TOUCH)
             .drawWithContent {
                 drawContent()
@@ -199,9 +217,13 @@ private fun SnackbarAction(
                 ).cssLine(MutantFaceMetrics.Handjet),
             maxLines = 1,
             softWrap = false,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
+
+/** The share of the bar an action may take (B-70). */
+private const val ACTION_SHARE = .5f
 
 /**
  * Follows [visible] from composition without writing state: a change starts the ride then. It starts settled where it
