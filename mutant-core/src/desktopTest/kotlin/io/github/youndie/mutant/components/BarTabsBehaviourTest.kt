@@ -262,7 +262,7 @@ class BarTabsBehaviourTest {
         }
 
     @Test
-    fun `the bar stands under its insets, its row grown to the title at font scale 2, the long title cut and the status kept`() =
+    fun `the bar stands under its insets, its row grown at font scale 2, the long title cut, the status kept`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             val long = "Эфир с начала первой стороны без подписи и до конца второй"
