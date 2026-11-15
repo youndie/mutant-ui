@@ -201,11 +201,38 @@ internal fun DrawScope.drawVenom(
     fillGoo: androidx.compose.ui.graphics.layer.GraphicsLayer,
     pill: DrawScope.() -> Unit = {},
 ) {
-    val fat = v.fat.map { it.toPath() }
-    val thin = v.thin.map { it.toPath(evenOdd = false) }
+    drawVenomInk(v, ink, outline, inkGoo)
+    pill()
+    drawVenomFill(v, fill, fillGoo)
+}
+
+/** [this] in the generator's dp, scaled to pixels by [scale] (the density). */
+private fun Path.scaled(scale: Float): Path =
+    if (scale == 1f) {
+        this
+    } else {
+        apply {
+            transform(
+                androidx.compose.ui.graphics
+                    .Matrix()
+                    .apply { scale(scale, scale) },
+            )
+        }
+    }
+
+/** [drawVenom]'s layer under the pill: the shapes in ink, filled and stroked twice [outline]. */
+internal fun DrawScope.drawVenomInk(
+    v: io.github.youndie.mutant.gen.VenomShapes,
+    ink: androidx.compose.ui.graphics.Color,
+    outline: Float,
+    inkGoo: androidx.compose.ui.graphics.layer.GraphicsLayer,
+    scale: Float = 1f,
+) {
+    val fat = v.fat.map { it.toPath().scaled(scale) }
+    val thin = v.thin.map { it.toPath(evenOdd = false).scaled(scale) }
     val stroke =
         androidx.compose.ui.graphics.drawscope.Stroke(
-            width = outline * 2,
+            width = outline * 2 * scale,
             join = androidx.compose.ui.graphics.StrokeJoin.Round,
         )
     inkGoo.record(
@@ -223,7 +250,17 @@ internal fun DrawScope.drawVenom(
         drawPath(p, ink)
         drawPath(p, ink, style = stroke)
     }
-    pill()
+}
+
+/** [drawVenom]'s layer over the pill: the shapes in the pill's fill. */
+internal fun DrawScope.drawVenomFill(
+    v: io.github.youndie.mutant.gen.VenomShapes,
+    fill: androidx.compose.ui.graphics.Color,
+    fillGoo: androidx.compose.ui.graphics.layer.GraphicsLayer,
+    scale: Float = 1f,
+) {
+    val fat = v.fat.map { it.toPath().scaled(scale) }
+    val thin = v.thin.map { it.toPath(evenOdd = false).scaled(scale) }
     fillGoo.record(
         size =
             androidx.compose.ui.unit

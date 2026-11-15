@@ -32,6 +32,7 @@ import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSegmentedButton
 import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
 import io.github.youndie.mutant.components.MutantSwitch
@@ -77,6 +78,8 @@ class KeyboardFocusSweepTest {
                 "Slider",
                 activates = false,
             ) { _ -> MutantSlider(0, {}, Modifier.width(240.dp), label = "Трекинг") },
+            // One focus stop; the arrows choose (SegmentedBehaviourTest).
+            Control("SegmentedButton", activates = false) { _ -> MutantSegmentedButton(listOf("SP", "LP"), 0, {}) },
             Control("TextField", activates = false) { _ -> MutantTextField("abc", {}, Modifier.width(240.dp)) },
             Control(
                 "Card.Clickable",

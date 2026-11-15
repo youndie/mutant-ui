@@ -43,6 +43,7 @@ import io.github.youndie.mutant.components.MutantNavigationBar
 import io.github.youndie.mutant.components.MutantNavigationItem
 import io.github.youndie.mutant.components.MutantOutlinedButton
 import io.github.youndie.mutant.components.MutantRadioButton
+import io.github.youndie.mutant.components.MutantSegmentedButton
 import io.github.youndie.mutant.components.MutantSlider
 import io.github.youndie.mutant.components.MutantSnackbar
 import io.github.youndie.mutant.components.MutantSwitch
@@ -67,6 +68,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionChips) { Chips(strings) }
         Section(strings.sectionSelection) { Selection(strings) }
         Section(strings.sectionSlider) { Sliders(strings) }
+        Section(strings.sectionSegmented) { Segmented() }
         Section(strings.sectionField) { Field(strings) }
         Section(strings.sectionCard) { Cards(strings) }
         Section(strings.sectionNav) { Navigation(strings) }
@@ -145,6 +147,22 @@ private fun Sliders(s: SampleStrings) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
         MutantSlider(tracking, { tracking = it }, Modifier.width(300.dp), label = s.tracking)
         MutantSlider(-4, {}, Modifier.width(220.dp), label = s.sharpness, enabled = false, key = "slider-off")
+    }
+}
+
+@Composable
+private fun Segmented() {
+    var speed by remember { mutableIntStateOf(0) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
+        MutantSegmentedButton(listOf("SP · 2 ч", "LP · 4 ч", "EP · 6 ч"), speed, { speed = it }, Modifier.width(312.dp))
+        MutantSegmentedButton(
+            listOf("SP · 2 ч", "LP · 4 ч"),
+            0,
+            {},
+            Modifier.width(208.dp),
+            enabled = false,
+            key = "seg-off",
+        )
     }
 }
 

@@ -31,6 +31,7 @@ class SampleStrings(
     val sectionChips = t("Chips", "Чипы")
     val sectionSelection = t("Checkbox · Radio · Switch", "Чекбокс · Радио · Переключатель")
     val sectionSlider = t("Slider", "Слайдер")
+    val sectionSegmented = t("Segmented button", "Сегменты")
     val sectionField = t("Text field", "Поле ввода")
     val sectionCard = t("Card · Cocoon", "Карточка · Кокон")
     val sectionNav = t("Top app bar · Tabs · Navigation bar", "Верхняя панель · Вкладки · Навигация")
