@@ -127,6 +127,7 @@ internal fun ActionBody(
         key,
         modifier
             .then(sized)
+            .mutantHand(enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick),
         state = if (enabled) BodyState.Rest else BodyState.Disabled,
         focused = focused && keyboard,

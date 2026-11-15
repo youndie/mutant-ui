@@ -411,7 +411,8 @@ public fun MutantDialogAction(
                 } else if (actions?.focused === requester) {
                     actions.focused = null
                 }
-            }.clickable(source, indication = null, enabled = open, role = Role.Button, onClick = onClick)
+            }.mutantHand(open)
+            .clickable(source, indication = null, enabled = open, role = Role.Button, onClick = onClick)
             .height(TOUCH)
             .widthIn(min = TOUCH)
             .drawWithContent {

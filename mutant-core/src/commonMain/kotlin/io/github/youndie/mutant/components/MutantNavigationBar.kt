@@ -200,6 +200,7 @@ private fun NavigationItem(
     val glyph = if (selected && !hidden && item.enabled) INK else word
     Box(
         Modifier
+            .mutantHand(item.enabled)
             .selectable(selected, source, indication = null, enabled = item.enabled, role = Role.Tab, onClick = onClick)
             .drawWithContent {
                 drawContent()

@@ -66,7 +66,7 @@ internal fun SwitchBody(
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val state = if (enabled) BodyState.Rest else BodyState.Disabled
     ControlRow(
-        modifier.toggleable(
+        modifier.mutantHand(enabled).toggleable(
             checked,
             source,
             indication = null,

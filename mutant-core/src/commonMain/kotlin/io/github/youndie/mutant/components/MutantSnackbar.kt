@@ -172,6 +172,7 @@ private fun SnackbarAction(
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     Box(
         Modifier
+            .mutantHand(enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onAction)
             .fillMaxHeight()
             .widthIn(min = TOUCH)

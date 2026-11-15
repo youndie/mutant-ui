@@ -90,6 +90,7 @@ internal fun ChipBody(
             .heightIn(min = TOUCH)
             // As wide as the label and its padding, or the width the caller gives; the body fills it.
             .width(IntrinsicSize.Max)
+            .mutantHand(enabled)
             .selectable(
                 selected,
                 source,
