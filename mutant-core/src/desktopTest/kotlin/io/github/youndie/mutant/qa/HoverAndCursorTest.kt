@@ -128,6 +128,17 @@ class HoverAndCursorTest {
         return n
     }
 
+    /** The button's pixels in its acid fill. */
+    private fun ComposeUiTest.lime(): Int {
+        val acid = io.github.youndie.mutant.tokens.MutantPalettes.Efir.primary
+        val m = onNodeWithTag("b").captureToImage().toPixelMap()
+        return (0 until m.width * m.height).count {
+            val c = m[it % m.width, it / m.width]
+            kotlin.math.abs(c.red - acid.red) < .03f && kotlin.math.abs(c.green - acid.green) < .03f &&
+                kotlin.math.abs(c.blue - acid.blue) < .03f
+        }
+    }
+
     private fun ComposeUiTest.button() {
         mainClock.autoAdvance = false
         setContent {
@@ -142,10 +153,13 @@ class HoverAndCursorTest {
     fun `under the mouse the body simmers at the hot tick, and settles once the mouse leaves`() =
         runComposeUiTest {
             button()
+            val limeRest = lime()
             val rest = changesASecond()
             onNodeWithTag("b").performMouseInput { moveTo(center) }
             mainClock.advanceTimeBy(400)
             val hovered = changesASecond()
+            // Its heat shows in the fill: the acid lime turns a third of the way to amber, so few pixels stay lime.
+            val limeHovered = lime()
             onNodeWithTag("b").performMouseInput { moveTo(Offset(-100f, -100f)) }
             mainClock.advanceTimeBy(600)
             val after = changesASecond()
@@ -153,6 +167,7 @@ class HoverAndCursorTest {
                 rest <= 9 && hovered >= 11 && after <= 9,
                 "changes a second: rest $rest, hovered $hovered, after $after",
             )
+            assertTrue(limeHovered * 2 < limeRest, "lime pixels at rest $limeRest, under the mouse $limeHovered")
         }
 
     @Test
