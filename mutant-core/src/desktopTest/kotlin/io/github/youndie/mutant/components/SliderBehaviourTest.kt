@@ -264,4 +264,42 @@ class SliderBehaviourTest {
             assertEquals(5, value)
             onNodeWithTag("reversed").captureToImage()
         }
+
+    @Test
+    fun `at font scale 2 the handle widens for its value, and no word of it is cut`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = 2f)) {
+                    MutantTheme {
+                        Box {
+                            MutantSlider(
+                                -10,
+                                {},
+                                Modifier.width(300.dp).testTag("s"),
+                                label = "ТРЕКИНГ",
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val cut =
+                onAllNodes(hasGetTextLayoutResult(), useUnmergedTree = true).fetchSemanticsNodes().flatMap { n ->
+                    val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                    n.config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+                    results
+                        // Compose's own width flag compares the box with the paragraph, which is as wide as the
+                        // constraint: the text's own width against its box is what says it is cut.
+                        .filter {
+                            it.didOverflowHeight ||
+                                it.multiParagraph.intrinsics.maxIntrinsicWidth > it.size.width + .5f
+                        }.map { it.layoutInput.text.text }
+                }
+            assertEquals(emptyList(), cut)
+        }
+
+    private fun hasGetTextLayoutResult() =
+        androidx.compose.ui.test.SemanticsMatcher
+            .keyIsDefined(SemanticsActions.GetTextLayoutResult)
 }
