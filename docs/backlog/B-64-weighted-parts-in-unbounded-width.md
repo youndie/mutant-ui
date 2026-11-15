@@ -1,7 +1,7 @@
 ---
 id: B-64
 title: "Unbounded width: weighted parts collapse to nothing"
-status: open
+status: wip
 priority: P3
 size: S
 stage: stage-5-product
