@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.MouseButton
 import androidx.compose.ui.test.captureToImage
@@ -409,7 +410,6 @@ class OverlayAndMouseTest {
             assertTrue(boundsOf("Сохранено").left > boundsOf("ОТМЕНА").left)
         }
 
-    @Ignore("F15: tabs and the navigation bar place their items left to right in a right-to-left layout")
     @Test
     fun `F15 tabs and the navigation bar mirror in a right-to-left layout`() =
         runComposeUiTest {
@@ -438,6 +438,61 @@ class OverlayAndMouseTest {
                 boundsOf("Дом").left > boundsOf("Поиск").left,
                 "navigation: ${boundsOf("Дом")} ${boundsOf("Поиск")}",
             )
+        }
+
+    /** Acid pixels left and right of the middle of [tag]'s capture: the tab's bar, the navigation's pill. */
+    private fun ComposeUiTest.acidHalves(tag: String): Pair<Int, Int> {
+        val m = onNodeWithTag(tag).captureToImage().toPixelMap()
+        val acid = MutantPalettes.Efir.primary
+        var left = 0
+        var right = 0
+        for (y in 0 until m.height) {
+            for (x in 0 until m.width) {
+                if (near(m[x, y], acid)) {
+                    if (x < m.width / 2) {
+                        left++
+                    } else {
+                        right++
+                    }
+                }
+            }
+        }
+        return left to right
+    }
+
+    @Test
+    fun `F15 the tab's bar and the navigation's pill stand under the chosen one in a right-to-left layout`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    Still {
+                        Column(Modifier.size(360.dp, 400.dp)) {
+                            MutantTabs(
+                                listOf(MutantTab("Один"), MutantTab("Два")),
+                                0,
+                                {},
+                                Modifier.width(360.dp).testTag("t"),
+                            )
+                            MutantNavigationBar(
+                                listOf(
+                                    MutantNavigationItem("Дом", MutantIcons.Home),
+                                    MutantNavigationItem("Поиск", MutantIcons.Search),
+                                ),
+                                0,
+                                {},
+                                Modifier.width(360.dp).testTag("n"),
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(300)
+            // The first one chosen, mirrored to the right: its bar and its pill there, none at the left.
+            val tabs = acidHalves("t")
+            val nav = acidHalves("n")
+            assertTrue(tabs.first == 0 && tabs.second > 0, "tab bar acid left/right $tabs")
+            assertTrue(nav.first == 0 && nav.second > 0, "navigation pill acid left/right $nav")
         }
 
     @Test
