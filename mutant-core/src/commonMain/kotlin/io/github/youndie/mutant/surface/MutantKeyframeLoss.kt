@@ -78,8 +78,10 @@ internal fun KeyframeLossBody(
     frozenAt: Double?,
     content: @Composable BoxScope.() -> Unit,
     first: Int = 1,
+    probe: ((running: Boolean) -> Unit)? = null,
 ) {
     val scene = remember { MoshScene(first) }
+    scene.probe = probe
     val clock = readMutantClock()
     val cassette = LocalMutantCassette.current
     val off = LocalMutantCleanSignal.current
@@ -153,6 +155,9 @@ internal class MoshScene(
     var frozenAt: Double? = null
     var live = false
 
+    /** Told, at each draw under the content, whether a loss runs: for tests. */
+    var probe: ((Boolean) -> Unit)? = null
+
     // The band in scene pixels, top and bottom; NaN while no loss runs. Bodies read it as they draw.
     private var bandTop by mutableFloatStateOf(Float.NaN)
     private var bandBottom by mutableFloatStateOf(Float.NaN)
@@ -202,6 +207,7 @@ internal class MoshScene(
             }
             if (plan != null) advance(scope, ((t - t0) / STEP_MS).toInt())
         }
+        probe?.invoke(plan != null)
         val pic = picture ?: return
         val top = bandTop
         if (top.isNaN()) return

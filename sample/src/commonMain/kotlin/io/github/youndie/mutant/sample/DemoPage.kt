@@ -59,6 +59,7 @@ import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.illustration.MutantIllustration
 import io.github.youndie.mutant.illustration.MutantIllustrationKind
+import io.github.youndie.mutant.surface.MutantKeyframeLoss
 import io.github.youndie.mutant.surface.mutantTape
 import io.github.youndie.mutant.theme.MutantTheme
 
@@ -87,7 +88,7 @@ internal fun DemoScreenFrame(
 ) {
     when (screen) {
         DemoScreen.Library -> {
-            Screen(strings.demoLibrary, "demo-library", roundedClip) { Library(strings) }
+            Screen(strings.demoLibrary, "demo-library", roundedClip, keyframeLoss = true) { Library(strings) }
         }
 
         DemoScreen.Recording -> {
@@ -113,6 +114,7 @@ private fun Screen(
     title: String,
     tag: String,
     roundedClip: Boolean,
+    keyframeLoss: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -126,7 +128,10 @@ private fun Screen(
                 .background(colors.background)
                 .mutantTape()
                 .testTag(tag),
-        ) { content() }
+        ) {
+            // The engine loses one screen's keyframe at a time; the sample gives the loss to its first screen.
+            if (keyframeLoss) MutantKeyframeLoss(Modifier.fillMaxSize(), colors.background) { content() } else content()
+        }
     }
 }
 
