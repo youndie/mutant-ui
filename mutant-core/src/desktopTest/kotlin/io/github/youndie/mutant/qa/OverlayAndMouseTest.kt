@@ -33,6 +33,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.youndie.mutant.components.MutantBottomSheet
 import io.github.youndie.mutant.components.MutantButton
 import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardTitle
@@ -115,6 +116,60 @@ class OverlayAndMouseTest {
             }
             mainClock.advanceTimeBy(500)
             // The close takes 200 ms: the second click lands inside it.
+            onRoot().performMouseInput { click(Offset(10f, 20f)) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(false, open, "the first click dismisses")
+            onRoot().performMouseInput { click(Offset(10f, 20f)) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(0, under, "the second reaches nothing under it")
+        }
+
+    @Test
+    fun `nothing under an open bottom sheet takes the wheel or a key`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var open by mutableStateOf(true)
+            var under by mutableIntStateOf(0)
+            val scroll = ScrollState(0)
+            setContent {
+                Still {
+                    Box(Modifier.size(360.dp, 600.dp)) {
+                        Column(Modifier.verticalScroll(scroll)) {
+                            MutantButton("Под", { under++ }, Modifier.size(360.dp, 48.dp))
+                            repeat(30) { MutantListItem("Строка $it") }
+                        }
+                        MutantBottomSheet(open, { open = false }) { MutantButton("Готово", {}) }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(500)
+            onRoot().performMouseInput {
+                moveTo(Offset(10f, 100f))
+                scroll(5f)
+            }
+            press(Key.PageDown)
+            press(Key.DirectionDown)
+            press(Key.Spacebar)
+            assertEquals(0, scroll.value, "nothing scrolls under the sheet")
+            assertEquals(0, under, "no key reaches what is under it")
+        }
+
+    @Test
+    fun `a second click on the scrim while the sheet sinks reaches nothing under it`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var open by mutableStateOf(true)
+            var under by mutableIntStateOf(0)
+            setContent {
+                MutantTheme {
+                    Box(Modifier.size(360.dp, 600.dp)) {
+                        MutantButton("Под", { under++ }, Modifier.size(360.dp, 48.dp))
+                        MutantBottomSheet(open, { open = false }) { MutantButton("Готово", {}) }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(500)
+            // The sinking takes 200 ms: the second click lands inside it.
             onRoot().performMouseInput { click(Offset(10f, 20f)) }
             mainClock.advanceTimeByFrame()
             assertEquals(false, open, "the first click dismisses")

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantBadge
+import io.github.youndie.mutant.components.MutantBottomSheet
 import io.github.youndie.mutant.components.MutantButton
 import io.github.youndie.mutant.components.MutantButtonState
 import io.github.youndie.mutant.components.MutantCard
@@ -79,6 +80,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionSnackbar) { Snackbar(strings) }
         Section(strings.sectionProgress) { Progress() }
         Section(strings.sectionDialog) { Dialog(strings) }
+        Section(strings.sectionSheet) { Sheet(strings) }
         Section(strings.sectionEmpty) { EmptyStates(strings) }
         Section(strings.sectionIcons) { IconsAndPatterns(strings) }
     }
@@ -304,6 +306,29 @@ private fun Dialog(s: SampleStrings) {
         MutantDialog(open, s.eraseQuestion, { open = false }, text = s.eraseText) {
             MutantDialogAction(s.cancel, { open = false })
             MutantDialogAction(s.erase, { open = false }, primary = true)
+        }
+    }
+}
+
+@Composable
+private fun Sheet(s: SampleStrings) {
+    var open by remember { mutableStateOf(false) }
+    var speed by remember { mutableIntStateOf(0) }
+    Box(Modifier.width(360.dp).height(320.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            MutantCard(Modifier.fillMaxWidth(), key = "sheet-card") {
+                MutantCardTitle(s.untitled)
+                MutantCardSubtitle(s.sideA)
+            }
+            MutantButton(s.openSheet, { open = true }, key = "open-sheet")
+        }
+        MutantBottomSheet(open, { open = false }, key = "sample-sheet") {
+            MutantSegmentedButton(listOf("SP · 2 ч", "LP · 4 ч"), speed, {
+                speed = it
+            }, Modifier.fillMaxWidth(), key = "sheet-speed")
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                MutantButton(s.done, { open = false }, key = "sheet-done")
+            }
         }
     }
 }
