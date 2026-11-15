@@ -80,6 +80,9 @@ private val arms: List<Pair<String, (Case) -> Unit>> =
         "warm2" to { c -> fold(c.gen.frame(c.instance, c.cache, 5000.0 + 125.0 * (c.tick++ % 64))) },
         "hot" to { c -> fold(c.gen.frame(c.instance, c.cache, 9340.0 + 83.333 * (c.tick++ % 64), heat = 1.0)) },
         "cold" to { c -> fold(c.gen.frame(c.instance, FieldCache(), 5000.0)) },
+        // B-84: a running body's frame, its webs steadied; against warm.
+        "steady" to
+            { c -> fold(c.gen.frame(c.instance, c.cache, 5000.0 + 125.0 * (c.tick++ % 64), steadyWebs = true)) },
     )
 
 /**
