@@ -42,6 +42,7 @@ import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantDialog
 import io.github.youndie.mutant.components.MutantDialogAction
 import io.github.youndie.mutant.components.MutantDivider
+import io.github.youndie.mutant.components.MutantDropdown
 import io.github.youndie.mutant.components.MutantEmptyState
 import io.github.youndie.mutant.components.MutantExtendedFab
 import io.github.youndie.mutant.components.MutantFab
@@ -86,6 +87,7 @@ internal fun ComponentsPage(strings: SampleStrings) {
         Section(strings.sectionSelection) { Selection(strings) }
         Section(strings.sectionSlider) { Sliders(strings) }
         Section(strings.sectionSegmented) { Segmented() }
+        Section(strings.sectionMenu) { Menu(strings) }
         Section(strings.sectionTooltip) { Tooltips(strings) }
         Section(strings.sectionField) { Field(strings) }
         Section(strings.sectionSearch) { Search(strings) }
@@ -171,6 +173,13 @@ private fun Sliders(s: SampleStrings) {
         MutantSlider(tracking, { tracking = it }, Modifier.width(300.dp), label = s.tracking)
         MutantSlider(-4, {}, Modifier.width(220.dp), label = s.sharpness, enabled = false, key = "slider-off")
     }
+}
+
+/** Press the anchor, then an item: the window flows to it by venom and the menu closes. */
+@Composable
+private fun Menu(s: SampleStrings) {
+    var chosen by remember { mutableIntStateOf(0) }
+    Box(Modifier.height(232.dp)) { MutantDropdown(s.setting, s.menuItems, chosen, { chosen = it }) }
 }
 
 @Composable
