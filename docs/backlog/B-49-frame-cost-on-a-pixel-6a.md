@@ -1,7 +1,7 @@
 ---
 id: B-49
 title: "The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-1-materials
@@ -28,3 +28,26 @@ on the desktop JVM and assumed the phone four times slower; this item measures t
 - AC: a verdict per target with raw logs under `logs/b-49/` and the control's reading; the factor between
   the M1 and the phone measured, so B-06's assumption is confirmed or refuted in writing.
 - Anchors: `docs/backlog/B-06-frame-cost.md`, `reference/design-system/brief.md`
+
+## Pre-registered, 2026-11-16, before the first number
+
+**Stand.** The owner's Pixel 6a (`bluejay`), on USB, screen on, the window asked for 60 Hz. The host `bench-android` is a release build with R8, signed with the debug key, compiled `speed-profile` before the run. Every log's header records the device, its build, the display, the cores, whether it is debuggable and the commit; every round records the thermal status. The M1 side is the same day's run of B-06's `fieldBench` on this Mac (MacBook Air M1, macOS 27.0.1, JDK 25).
+
+**Scenes**, each a screen of the kit under `MutantTheme` («Эфир»), composed from the kit's own components:
+- `Blank`: the screen's ground and nothing on it. The base of the control.
+- `TenCards12`: ten `MutantCard`s 328 × 80 dp, each with a title and a subtitle, under the screen's Tape (`mutantTape`), on a clock at the brief's 12 resting ticks a second. **The brief's first target.**
+- `TenCards8`: the same at the kit's own tick, 8 a second. Reported beside it, no verdict of its own.
+- `List100`: a `LazyColumn` of 100 `MutantListItem`s under the Tape, at 12 ticks a second, scrolled by a script at 1 500 dp a second, down to the end and back for the whole scene. **The brief's second target.** The scroll distance is read every round: load delivered.
+- `Spin5`: `TenCards12` with a busy-wait of 5 ms inside a graphics layer nested in another inside the screen, on every frame. **The positive control**: its draw must read 5 ms over `TenCards12`'s (pooled p50, within ±1 ms), or the recorder is blind there and no verdict stands (memory of plakat-ui B-06: a recorder ending in the root's draw missed a nested layer).
+- `Instance`: no screen. B-06's cases (the vendored golden's instances), each generated 200 times after 50 unmeasured, and a warm frame of each built 200 times after 50; per case the median. **The brief's third target**, and the factor against the M1.
+
+**Protocol.** Ten seconds a scene, six rounds, the order of the screen scenes rotating each round; round 1 and each scene's first second are not counted. Per frame, Android's `FrameMetrics`: animation + layout + draw (the main thread's work), sync, command issue, swap, GPU, total, deadline, and the intended vsync, whose differences are the intervals.
+
+**Verdicts.**
+- A screen scene, at 60 Hz: **green** when frames that missed their deadline (`TOTAL > DEADLINE`) are under 1 % and the p95 of `TOTAL` is ≤ 16.7 ms; **red** when the p50 of `TOTAL` is over 16.7 ms or missed frames exceed 5 %; anything else is grey. The frames delivered a second are reported beside it.
+- `Instance`: **green** when every case's median is ≤ 1 ms, **red** when any case's is over 1 ms: the brief's line, with no grey.
+- The factor: the phone's median over the M1's, per case, for the instance and the warm frame, reported against B-06's assumed 4 with its range over the cases. No verdict; B-06's assumption is confirmed when the cases' median factor is within 3–5, refuted otherwise.
+
+**On red**, the brief's retreat order (`brief.md`, «Производительность»), each step an arm measured on the red scene before the next: the Tape as a static tile shifted per tick → the grain off → resting ticks only for the six visible components → the mosaic only on a change of state. «Цель не понижаем»: a red stays red until an arm turns it, and each arm becomes an item if it changes the kit.
+
+**Rejected**: an instrumented test in `mutant-core` for the instance. Its APK is debuggable, and a debuggable runtime's times are not a user's. The host reaches the generator through `-Xfriend-paths`, as a harness, and is not published.
