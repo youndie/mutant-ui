@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-97](docs/backlog/B-97-a-risen-sheet-tears-a-wedge.md) `[ ]` | A risen bottom sheet tears a wedge out of its body | P2 | S | - |
 
-## Closed (96)
+## Closed (97)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -182,5 +182,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-94](docs/backlog/B-94-the-navigation-bar-label-on-its-pill.md) `[x]` - A chip's label turned before its fill: light on lime
 - [B-95](docs/backlog/B-95-pull-to-refresh-moves-smoothly.md) `[x]` - Pull-to-refresh moves in steps and cuts between its phases
 - [B-96](docs/backlog/B-96-a-richer-demo.md) `[x]` - The demo is thin and plain
+- [B-98](docs/backlog/B-98-the-loss-crashes-on-a-popup.md) `[x]` - The keyframe loss crashes the window when a popup is open over it
 
 <!-- END INDEX -->
