@@ -107,7 +107,7 @@ class PullToRefreshBehaviourTest {
         }
 
     @Test
-    fun `let go short, it does not refresh and the list goes back up in 200 ms`() =
+    fun `let go short, it does not refresh and the list goes back up in 300 ms`() =
         runComposeUiTest {
             val s = screen()
             onNodeWithTag("list").performTouchInput {
@@ -117,7 +117,7 @@ class PullToRefreshBehaviourTest {
             }
             mainClock.advanceTimeByFrame()
             val after = listTop()
-            mainClock.advanceTimeBy(300)
+            mainClock.advanceTimeBy(400)
             assertEquals(0, s.refreshes())
             assertTrue(after > 2f + 10f, "still part way down just after: $after")
             assertEquals(2f, listTop(), "back up")
@@ -128,11 +128,11 @@ class PullToRefreshBehaviourTest {
         runComposeUiTest {
             val s = screen()
             s.set(true)
-            mainClock.advanceTimeBy(100)
+            mainClock.advanceTimeBy(400)
             assertTrue(shows("ОБНОВЛЯЕМ"), "refreshing")
             assertEquals(2f + 74f, listTop())
             s.set(false)
-            mainClock.advanceTimeBy(100)
+            mainClock.advanceTimeBy(400)
             assertTrue(shows("ОБНОВЛЕНО") && !shows("ОБНОВЛЯЕМ"), "done")
             assertEquals(2f + 52f, listTop())
             mainClock.advanceTimeBy(1500)
