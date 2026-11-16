@@ -25,20 +25,10 @@ class SampleStrings(
     val pageComponents = t("Components", "Компоненты")
     val pageDemo = t("Demo", "Демо")
 
-    // Section titles, as the pages group the components.
-    val sectionButtons = t("Buttons", "Кнопки")
-    val sectionIconButtons = t("Icon buttons · FAB", "Кнопки-иконки · FAB")
-    val sectionChips = t("Chips", "Чипы")
-    val sectionSelection = t("Checkbox · Radio · Switch", "Чекбокс · Радио · Переключатель")
-    val sectionSlider = t("Slider", "Слайдер")
-    val sectionMenu = t("Menu", "Меню")
+    // The components' words.
     val setting = t("Setting", "Настройка")
     val menuItems =
         listOf(t("TRACKING", "ТРЕКИНГ"), t("CHROMA", "ЦВЕТНОСТЬ"), t("SHARPNESS", "ЧЁТКОСТЬ"), t("RESET", "СБРОС"))
-    val sectionSearch = t("Search bar", "Строка поиска")
-    val sectionTable = t("Data table", "Таблица")
-    val sectionCarousel = t("Carousel", "Карусель")
-    val sectionPickers = t("Date · Time picker", "Дата · Время")
     val monthNames =
         if (language == SampleLanguage.English) {
             listOf(
@@ -87,30 +77,16 @@ class SampleStrings(
     val nightToTuesday = t("Tuesday night", "ночь на вторник")
     val nightAir = t("night air", "ночной эфир")
     val clear = t("Clear", "Очистить")
-    val sectionSegmented = t("Segmented button", "Сегменты")
-    val sectionTooltip = t("Tooltip", "Подсказка")
-    val sectionSheet = t("Bottom sheet", "Нижний лист")
-    val sectionDrawer = t("Navigation drawer", "Боковое меню")
     val openDrawer = t("Channels", "Каналы")
     val channels = t("CHANNELS", "КАНАЛЫ")
     val channelNames =
         listOf(t("On air", "Эфир"), t("Queue", "Очередь"), t("Search", "Поиск"), t("Settings", "Настройка"))
-    val sectionPull = t("Pull to refresh", "Потянуть, чтобы обновить")
     val refreshingWord = t("REFRESHING", "ОБНОВЛЯЕМ")
     val refreshedWord = t("REFRESHED", "ОБНОВЛЕНО")
     val openSheet = t("Recording speed", "Скорость записи")
     val done = t("Done", "Готово")
     val share = t("SHARE", "ПОДЕЛИТЬСЯ")
     val recLeft = t("3 MIN LEFT", "ОСТАЛОСЬ 3 МИН")
-    val sectionField = t("Text field", "Поле ввода")
-    val sectionCard = t("Card · Cocoon", "Карточка · Кокон")
-    val sectionNav = t("Top app bar · Tabs · Navigation bar", "Верхняя панель · Вкладки · Навигация")
-    val sectionList = t("List · Divider · Badge", "Список · Разделитель · Бейдж")
-    val sectionSnackbar = t("Snackbar", "Строка-уведомление")
-    val sectionProgress = t("Progress", "Прогресс")
-    val sectionDialog = t("Dialog", "Диалог")
-    val sectionEmpty = t("Empty states", "Пустые состояния")
-    val sectionIcons = t("Icons · Patterns · Tape", "Иконки · Узоры · Лента")
 
     // The components' words.
     val play = t("Play", "Воспроизвести")
@@ -182,6 +158,82 @@ class SampleStrings(
             "«Эфир, ночь на вторник» будет стёрта. Плёнку можно будет записать заново.",
         )
     val resetSettings = t("Reset settings", "Сбросить настройки")
+
+    // The Components page's structure (B-99).
+    val rowVariants = t("VARIANTS", "ВАРИАНТЫ")
+    val rowStates = t("STATES", "СОСТОЯНИЯ")
+    val rowTry = t("TRY IT", "ПОПРОБУЙТЕ")
+    val groupMvp = t("Components", "Компоненты")
+    val groupMvpLine =
+        t(
+            "The 21 components of the first release, with every state the design draws.",
+            "21 компонент первого выпуска со всеми состояниями, которые рисует дизайн.",
+        )
+    val groupV1 = t("Components v1", "Компоненты v1")
+    val groupV1Line =
+        t(
+            "The second release: slider, segments, tooltip, menu, drawer, sheet and pull to refresh.",
+            "Второй выпуск: слайдер, сегменты, подсказка, меню, боковое меню, лист и «потянуть».",
+        )
+    val groupLater = t("Components later", "Компоненты позже")
+    val groupLaterLine =
+        t("Search, date and time, the table and the carousel.", "Поиск, дата и время, таблица и карусель.")
+    val groupBase = t("Foundations", "Основа")
+    val groupBaseLine =
+        t(
+            "Icons, patterns, the Tape and the keyframe loss every screen stands on.",
+            "Иконки, узоры, Лента и потеря кадра, на которых стоит каждый экран.",
+        )
+    val stageMvp = "MVP"
+    val stageV1 = "V1"
+    val stageLater = t("LATER", "ПОЗЖЕ")
+    val stageBase = t("BASE", "ОСНОВА")
+    val onThisPage = t("ON THIS PAGE", "НА СТРАНИЦЕ")
+
+    // State captions, as the design's table names them.
+    val stRest = t("rest", "покой")
+    val stPressed = t("pressed", "нажатие")
+    val stLoading = t("loading", "загрузка")
+    val stSuccess = t("success", "готово")
+    val stDisabled = t("disabled", "выключено")
+    val stSelected = t("selected", "выбрано")
+    val stUnselected = t("unselected", "не выбрано")
+    val stChecked = t("checked", "отмечено")
+    val stUnchecked = t("unchecked", "не отмечено")
+    val stOn = t("on", "вкл.")
+    val stOff = t("off", "выкл.")
+    val stFocused = t("focused", "фокус")
+    val stError = t("error", "ошибка")
+    val stDragging = t("dragging", "перетаскивание")
+    val stOpen = t("open", "открыто")
+    val stShown = t("shown", "показана")
+    val stRefreshing = t("refreshing", "обновление")
+    val stDeterminate = t("determinate", "определённый")
+    val stIndeterminate = t("indeterminate", "неопределённый")
+    val stRowSelected = t("row selected", "строка выбрана")
+
+    // Variant captions.
+    val vFilled = t("filled", "заливка")
+    val vOutlined = t("outlined", "контур")
+    val vText = t("text", "текст")
+    val vFab = t("FAB", "FAB")
+    val vExtended = t("extended", "расширенная")
+    val vBlock = t("a block", "блок")
+    val vRow = t("a row", "строка")
+    val vTrailingText = t("trailing text", "текст в хвосте")
+    val vTrailingBadge = t("trailing badge", "бейдж в хвосте")
+    val vPlain = t("plain", "простая")
+    val vSupporting = t("with a second line", "со второй строкой")
+    val vSuggestions = t("suggestions", "подсказки")
+    val vResults = t("results, one loading", "результаты, один грузится")
+    val vLoud = t("loud", "громкий")
+    val vQuiet = t("quiet", "тихий")
+    val hover = t("hover, focus or hold", "наведите, сфокусируйте или удержите")
+    val pullHint = t("pull the list down", "потяните список вниз")
+    val previousMonth = t("Previous month", "Предыдущий месяц")
+    val nextMonth = t("Next month", "Следующий месяц")
+    val hours = t("Hours", "Часы")
+    val minutes = t("Minutes", "Минуты")
 
     // The demo app's own words (B-96), designed here.
     val menu = t("Menu", "Меню")

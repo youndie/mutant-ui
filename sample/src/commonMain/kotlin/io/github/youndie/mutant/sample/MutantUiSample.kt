@@ -128,24 +128,3 @@ private fun Header(
         }
     }
 }
-
-/** A section's title over its content, the content's own spacing its own. */
-@Composable
-internal fun Section(
-    title: String,
-    content: @Composable () -> Unit,
-) {
-    val colors = MutantTheme.colors
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(bottom = 32.dp)
-            .background(colors.background)
-            .padding(24.dp)
-            .testTag("section-$title"),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        BasicText(title, style = TextStyle(color = colors.text, fontSize = 22.sp))
-        content()
-    }
-}
