@@ -3,7 +3,6 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -26,6 +25,7 @@ import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
@@ -104,15 +104,13 @@ internal fun ActionBody(
 ) {
     val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
-    val pressed by source.collectIsPressedAsState()
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
-    val boiling = pressed || (heat ?: 0.0) > 0
     val tint =
         when {
             hidden -> Color.Transparent
             !enabled -> colors.textDisabled
-            kind == ActionKind.Fab || boiling -> colors.onPrimary
+            kind == ActionKind.Fab -> colors.onPrimary
             else -> colors.text
         }
     val drawn = remember(icon, kind) { if (kind == ActionKind.Fab) MutantIcons.stroked(icon, FAB_LINE) else icon }
@@ -139,7 +137,7 @@ internal fun ActionBody(
             horizontalArrangement = Arrangement.spacedBy(ICON_GAP, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            MutantIcon(drawn, contentDescription, Modifier.mutantCleanZone(), tint = tint)
+            MutantIcon(drawn, contentDescription, Modifier.mutantCleanZone(), tint = inkOnBody(tint))
             if (text != null) ButtonLabel(text, tint, Modifier.weight(1f, fill = false))
         }
     }

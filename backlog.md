@@ -58,18 +58,17 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (7)
+## Open (5)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-91](docs/backlog/B-91-pressed-labels-on-amber.md) `[ ]` | A pressed body's light label stands on amber, unreadable | P1 | S | - |
 | [B-94](docs/backlog/B-94-the-navigation-bar-label-on-its-pill.md) `[ ]` | The navigation bar's selected label stands on its pill's drips | P1 | S | - |
 | [B-92](docs/backlog/B-92-the-dropdown-stays-open.md) `[ ]` | The dropdown closes itself after a pick | P2 | S | - |
 | [B-93](docs/backlog/B-93-the-calendar-slime-moves-to-the-new-day.md) `[ ]` | The calendar's selection jumps to the new day | P2 | M | - |
 | [B-95](docs/backlog/B-95-pull-to-refresh-moves-smoothly.md) `[ ]` | Pull-to-refresh moves in steps and cuts between its phases | P2 | M | - |
 | [B-96](docs/backlog/B-96-a-richer-demo.md) `[ ]` | The demo is thin and plain | P3 | M | - |
 
-## Closed (89)
+## Closed (91)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -181,5 +180,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-48](docs/backlog/B-48-keyframe-loss.md) `[x]` - Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s
 - [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[x]` - A tall body rasterises its whole height every tick
 - [B-90](docs/backlog/B-90-a-dialog-stops-the-whole-demo.md) `[x]` - A dialog open in the demo stops every screen and the Tape
+- [B-91](docs/backlog/B-91-pressed-labels-on-amber.md) `[x]` - A pressed body's light label stands on amber, unreadable
 
 <!-- END INDEX -->
