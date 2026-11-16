@@ -89,6 +89,12 @@ internal fun tapeBandTop(
     return if (phase < TRACKING_SHARE) jsRound(h - (phase / TRACKING_SHARE) * (h + 30)).toFloat() else null
 }
 
+/** A part of the Tape, as B-77's bench leaves one out to read what it costs. */
+internal enum class TapePart { Lines, Band, Grain, Noise }
+
+/** The parts of the Tape left out: for B-77's bench only, never for a consumer. */
+internal val LocalMutantTapeSkip = androidx.compose.runtime.staticCompositionLocalOf<Set<TapePart>> { emptySet() }
+
 /** The share of the cycle the band passes in. */
 private const val TRACKING_SHARE = .3
 
@@ -104,9 +110,10 @@ internal fun DrawScope.drawTape(
     w: Float = size.width,
     h: Float = size.height,
     grain: TapeGrain = TapeGrain.of(stage),
+    skip: Set<TapePart> = emptySet(),
 ) {
     val ink = inkOf(colors)
-    if (ink.scanline > 0) {
+    if (ink.scanline > 0 && TapePart.Lines !in skip) {
         var y = 0f
         while (y < h) {
             drawRect(Color.Black, Offset(0f, y), Size(w, 1f), alpha = ink.scanline)
@@ -115,7 +122,7 @@ internal fun DrawScope.drawTape(
     }
     val fi = floor(t / MutantClock.SCENE_TICK_MS).toLong()
     val by = tapeBandTop(t, h)
-    if (by != null) {
+    if (by != null && TapePart.Band !in skip) {
         drawRect(ink.bandTop, Offset(0f, by), Size(w, 1f), alpha = ink.bandTopAlpha)
         drawRect(ink.band, Offset(0f, by + 1), Size(w, 22f), alpha = ink.bandAlpha)
         drawRect(ink.bandBottom, Offset(0f, by + 23), Size(w, 1f), alpha = ink.bandBottomAlpha)
@@ -123,7 +130,7 @@ internal fun DrawScope.drawTape(
     val gx = ((fi * 37) % 90).toFloat()
     val gy = ((fi * 71) % 180).toFloat()
     var j = floor(-gy / TapeGrain.H).toInt()
-    while (gy + j * TapeGrain.H < h) {
+    while (TapePart.Grain !in skip && gy + j * TapeGrain.H < h) {
         var i = floor(-gx / TapeGrain.W).toInt()
         while (gx + i * TapeGrain.W < w) {
             val ox = gx + i * TapeGrain.W
@@ -154,6 +161,7 @@ internal fun DrawScope.drawTape(
         val a = jsToFixed(ink.noiseBase + ink.noiseRange * r.next(), 2).toFloat()
         drawRect(ink.grain, Offset(x, y), Size(nw, 1f), alpha = a)
     }
+    if (TapePart.Noise in skip) return
     if (by != null) repeat(14) { noise(by, 22.0) }
     repeat(jsRound(w / 10.0).toInt()) { noise(h - 12, 11.0) }
 }
@@ -174,6 +182,7 @@ public fun Modifier.mutantTape(): Modifier =
         val colors = LocalMutantColors.current
         val stage = LocalMutantStage.current
         val grain = remember(stage) { TapeGrain.of(stage) }
+        val skip = LocalMutantTapeSkip.current
         drawWithContent {
             drawContent()
             // A frozen clock is the engine's `data-mu-t`, drawn at that very time; a running one steps the Tape on
@@ -183,7 +192,7 @@ public fun Modifier.mutantTape(): Modifier =
             val w = size.width / d
             val h = size.height / d
             scale(d, Offset.Zero) {
-                clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain) }
+                clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain, skip) }
             }
         }
     }

@@ -180,6 +180,22 @@ tasks.register<JavaExec>("tallBodyBench") {
     notCompatibleWithConfigurationCache("a measurement, run by hand")
 }
 
+// B-77: `./gradlew :mutant-core:tapeRenderBench --args="$(git rev-parse --short HEAD)" > logs/b-77/<date>-tape.log`.
+// Opens a window on top for about ten minutes; not part of check.
+tasks.register<JavaExec>("tapeRenderBench") {
+    group = "verification"
+    description = "Measures what each part of the Tape costs the render thread in a real window; not part of check."
+    mainClass = "io.github.youndie.mutant.bench.TapeRenderBenchKt"
+    val test =
+        kotlin.targets
+            .getByName("desktop")
+            .compilations
+            .getByName("test")
+    classpath = test.output.allOutputs + test.runtimeDependencyFiles!!
+    dependsOn(test.compileAllTaskName)
+    notCompatibleWithConfigurationCache("a measurement, run by hand")
+}
+
 // B-88: `./gradlew :mutant-core:keyframeLossBench --args="$(git rev-parse --short HEAD)" > logs/b-88/<date>-desktop.log`.
 // Headless; not part of check.
 tasks.register<JavaExec>("keyframeLossBench") {
