@@ -150,5 +150,7 @@ def instance(run: Path, m1: Path):
 if __name__ == "__main__":
     run, m1 = Path(sys.argv[1]), Path(sys.argv[2])
     summarise(*screens(run))
-    print()
-    instance(run, m1)
+    # A run of the screens alone (`device-bench.sh screens`, B-89) has no instance arms.
+    if (run / "instance.txt").exists():
+        print()
+        instance(run, m1)
