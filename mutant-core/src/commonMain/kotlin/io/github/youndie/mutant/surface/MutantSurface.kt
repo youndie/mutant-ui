@@ -278,12 +278,12 @@ internal fun MutantSurface(
             }.drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
-                // B-87: a body off the screen builds no tick. It draws its last picture again, and looks at each tick
+                // B-87: a body off the screen builds no tick. It draws its last picture again, and looks once a second
                 // whether it has come into view (an ancestor that grows moves no body, and tells it nothing).
                 view.flips
                 val last = moshBody.draw
                 if (last != null && !view.showsNow(registry.surface, reach)) {
-                    clock.restTick
+                    clock.restSecond
                     return@drawWithCache moshBehind(moshScene, moshBody, last)
                 }
                 val d = density

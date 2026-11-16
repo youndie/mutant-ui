@@ -6,8 +6,9 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * The browser has one thread, and `Dispatchers.Default` runs up to sixteen of its queued coroutines in one task, so a
- * tick's builds for every body landed between two frames together (B-87). Here each build is a task of its own, posted
- * through a `MessageChannel`, and the browser draws a frame between two builds when one is due.
+ * tick's builds for every body landed between two frames together (B-87). Here each build is a task of its own, at the
+ * scheduler's `background` priority (`scheduler.postTask`), after the page's input, its frames and its other tasks;
+ * where there is no scheduler, posted through a `MessageChannel`.
  */
 internal actual val aheadDispatcher: CoroutineDispatcher = OneTaskEach
 
