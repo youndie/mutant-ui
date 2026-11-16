@@ -173,8 +173,8 @@ internal class MoshScene(
     private var retry by mutableIntStateOf(0)
     private var window = -1L
     private var plan: MoshPlan? = null
-    private var picture: ImageBitmap? = null
-    private var clean: ImageBitmap? = null
+    private var picture: StripPicture? = null
+    private var clean: StripPicture? = null
 
     // The blocks cut out of the snapshot (`gone`), in scene pixels.
     private var holes: List<Rect> = emptyList()
@@ -223,7 +223,7 @@ internal class MoshScene(
         val open = holes.filter { it.top >= top }
         if (open.isEmpty()) return
         val path = Path().apply { for (h in open) addRect(h.translate(-at.x, -at.y)) }
-        scope.clipPath(path) { translate(-at.x, -at.y) { drawImage(pic) } }
+        scope.clipPath(path) { translate(-at.x, -at.y) { pic.draw(this) } }
     }
 
     /** Under the content: the band's picture while a loss runs; starts, steps and ends the loss by the clock. */
@@ -252,7 +252,7 @@ internal class MoshScene(
         val pic = picture ?: return
         val top = bandTop
         if (top.isNaN()) return
-        scope.clipRect(0f, top, scope.size.width, scope.size.height) { drawImage(pic) }
+        scope.clipRect(0f, top, scope.size.width, scope.size.height) { pic.draw(this) }
     }
 
     private fun start(
@@ -301,16 +301,17 @@ internal class MoshScene(
                 }
             }
         }
-        val ref = ImageBitmap(pw, ph)
-        Canvas(ref).drawImage(
-            pic,
-            Offset.Zero,
-            androidx.compose.ui.graphics
-                .Paint(),
-        )
+        // B-88: kept as strips over the band and a row under it, where the blocks pull (at most 8 dp down).
+        val strips =
+            StripPicture(
+                pw,
+                floor(plan.y0 * d).toInt().coerceIn(0, ph),
+                ceil((plan.y0 + (plan.rows + 1) * ROW) * d).toInt().coerceIn(0, ph),
+                (ROW * d).roundToInt().coerceAtLeast(1),
+            ).also { it.fill(pic) }
         this.plan = plan
-        picture = pic
-        clean = ref
+        picture = strips
+        clean = strips.copy()
         holes = plan.runs.filter { it.gone }.map { Rect(it.x * d, it.y * d, (it.x + it.w) * d, (it.y + it.h) * d) }
         t0 = now
         steps = -1
@@ -352,14 +353,12 @@ internal class MoshScene(
         val el = n * STEP_MS
         if (el < plan.durationMs) {
             val u = el / plan.durationMs
-            val canvas = Canvas(pic)
             val paint =
                 androidx.compose.ui.graphics
                     .Paint()
             for (r in plan.runs) {
                 if (r.gone || u < r.start) continue
-                drawPart(
-                    canvas,
+                pic.drawPart(
                     pic,
                     IntOffset((r.x * d).roundToInt(), (r.y * d).roundToInt()),
                     IntSize((r.w * d).roundToInt(), (r.h * d).roundToInt()),
@@ -372,10 +371,10 @@ internal class MoshScene(
                             color = TINTS[r.tint].copy(alpha = TINT_ALPHA)
                             blendMode = BlendMode.Screen
                         }
-                    canvas.drawRect(r.x * d, r.y * d, (r.x + r.w) * d, (r.y + r.h) * d, tp)
+                    pic.drawRect(r.x * d, r.y * d, (r.x + r.w) * d, (r.y + r.h) * d, tp)
                 }
             }
-            restoreCleanZones(canvas, ref, d, plan)
+            restoreCleanZones(pic, ref, d, plan)
             drawn++
         } else {
             val k = ceil(plan.rows * min(1.0, (el - plan.durationMs + 1) / RECOVER_MS)).toInt()
@@ -389,8 +388,8 @@ internal class MoshScene(
 
     /** The bodies' clean zones (and 3 dp around them) inside the band are the clean snapshot's, as the engine's are. */
     private fun restoreCleanZones(
-        canvas: Canvas,
-        ref: ImageBitmap,
+        pic: StripPicture,
+        ref: StripPicture,
         d: Float,
         plan: MoshPlan,
     ) {
@@ -415,42 +414,15 @@ internal class MoshScene(
             val w = ((z[2] + 2 * ZONE_MARGIN) * d).toFloat()
             val h = ((z[3] + 2 * ZONE_MARGIN) * d).toFloat()
             if (y + h <= y0 || y >= y1) continue
-            canvas.drawRect(x, y, x + w, y + h, clear)
+            pic.drawRect(x, y, x + w, y + h, clear)
             val off = IntOffset(x.roundToInt().coerceAtLeast(0), y.roundToInt().coerceAtLeast(0))
             val sz =
                 IntSize(
                     w.roundToInt().coerceAtMost(ref.width - off.x),
-                    h.roundToInt().coerceAtMost(ref.height - off.y),
+                    h.roundToInt(),
                 )
-            if (sz.width > 0 && sz.height > 0) drawPart(canvas, ref, off, sz, off, copy)
+            if (sz.width > 0 && sz.height > 0) pic.drawPart(ref, off, sz, off, copy)
         }
-    }
-
-    /**
-     * Draws [from]'s pixels at [at], [size] to [to] on [canvas], as `drawImageRect` from [from] itself would, with the
-     * part of the source that lies in [from] (B-88). Read out as an image of their own first: Compose makes an image of
-     * the whole bitmap for every draw from it, which in the browser copied the whole picture once per block.
-     */
-    private fun drawPart(
-        canvas: Canvas,
-        from: ImageBitmap,
-        at: IntOffset,
-        size: IntSize,
-        to: IntOffset,
-        paint: androidx.compose.ui.graphics.Paint,
-    ) {
-        val x0 = maxOf(at.x, 0)
-        val y0 = maxOf(at.y, 0)
-        val x1 = minOf(at.x + size.width, from.width)
-        val y1 = minOf(at.y + size.height, from.height)
-        val w = x1 - x0
-        val h = y1 - y0
-        if (w <= 0 || h <= 0) return
-        val px = IntArray(w * h)
-        from.readPixels(px, x0, y0, w, h)
-        val part = imageBitmapOfPixels(px, w, h)
-        val cut = IntSize(w, h)
-        canvas.drawImageRect(part, IntOffset.Zero, cut, IntOffset(to.x + x0 - at.x, to.y + y0 - at.y), cut, paint)
     }
 
     private fun end() {
@@ -462,13 +434,6 @@ internal class MoshScene(
         bandBottom = Float.NaN
     }
 }
-
-/** An image of [pixels] (ARGB, not premultiplied, [width] × [height], as `ImageBitmap.readPixels` gives them). */
-internal expect fun imageBitmapOfPixels(
-    pixels: IntArray,
-    width: Int,
-    height: Int,
-): ImageBitmap
 
 /** Every 9 s, 3.5 s into the window (`t / 9000`, `> 3500`); a step each 125 ms; the recovery 375 ms. */
 private const val EVERY_MS = 9000.0
