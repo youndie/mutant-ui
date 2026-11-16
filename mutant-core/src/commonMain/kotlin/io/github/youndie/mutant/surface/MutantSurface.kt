@@ -248,6 +248,8 @@ internal fun MutantSurface(
     val wear = if (focused) FOCUS_CALM else calm
     val instant = io.github.youndie.mutant.theme.LocalMutantReduceMotion.current
     val moves = remember { BodyMoves() }
+    // The instance of the body's last draw: the pour's front is read from it (B-94).
+    val drawn = remember { mutableStateOf<Instance?>(null) }
     val p = profile
     val outlineOverride = LocalMutantOutlineOverride.current
     val origin = LocalMutantSlotOrigin.current?.invoke(key)
@@ -259,7 +261,7 @@ internal fun MutantSurface(
     val view = remember { BodyView() }
     val reach = with(androidx.compose.ui.platform.LocalDensity.current) { OFF_SCREEN_REACH.dp.toPx() }
     val bodyFill = fill ?: colors.fillOf(p.fill)
-    moves.follow(bodyFill, slide, clock.nowMs)
+    moves.follow(bodyFill, slide, clock.nowMs, drawn.value?.slot?.h)
     val look =
         BodyLook(
             fill = bodyFill,
@@ -274,11 +276,33 @@ internal fun MutantSurface(
     val fillNow by androidx.compose.runtime.rememberUpdatedState(bodyFill)
     val colorsNow by androidx.compose.runtime.rememberUpdatedState(colors)
     val heatNow by androidx.compose.runtime.rememberUpdatedState(heat)
+    // B-94: while a new fill pours down from the top, what stands under the label is the old fill until the front, its
+    // drips included, has passed the label's middle. The instance comes from the body's last draw ([drawn]).
+    val instantNow by androidx.compose.runtime.rememberUpdatedState(instant)
+    val cassetteNow by androidx.compose.runtime.rememberUpdatedState(cassette)
     val ground =
         remember(boil, clock) {
             androidx.compose.runtime.derivedStateOf {
-                val k = heatNow ?: boil.at(clock.nowMs)
-                if (k <= 0) null else boilFill(fillNow, colorsNow, k, clock.hotTimeMs())
+                // The clock's time is not state; its frame count is, so this follows every frame.
+                clock.frame
+                val now = clock.nowMs
+                val k = heatNow ?: boil.at(now)
+                val from = moves.pourFrom
+                val g = drawn.value
+                val p = g?.let { stepped(now - moves.pourSince, pourDuration(it.slot.h)) } ?: 1.0
+                // A pour asked for before the body first draws starts when it does: the old fill stands until then.
+                val pouring = from != null && !instantNow && (g == null || p < 1)
+                val under =
+                    if (pouring && g == null) {
+                        from
+                    } else if (pouring && g != null) {
+                        val el = g.slot
+                        val depth = MutantGenerator(cassetteNow).pourFront(g, p).depthUnderLabel(el.ox, el.oy, el.w)
+                        if (depth < el.h / 2) from else fillNow
+                    } else {
+                        fillNow
+                    }
+                if (k <= 0 && !pouring) null else boilFill(under, colorsNow, k, clock.hotTimeMs())
             }
         }
     Box(
@@ -491,6 +515,7 @@ internal fun MutantSurface(
                     return@drawWithCache onDrawBehind {}
                 }
                 val (g, cache, dead) = held.of(signature, build)
+                if (drawn.value !== g) drawn.value = g
                 probe?.invoke(g)
                 if (state == BodyState.Disabled || state == BodyState.Success) {
                     if (state == BodyState.Disabled && slot.edge && slot.w >= 40 &&
@@ -1042,10 +1067,15 @@ internal class BodyMoves {
         newFill: Color,
         slide: SlideRequest?,
         now: Double,
+        h: Double? = null,
     ) {
         val old = fill
         if (old != null && old != newFill) {
-            pourFrom = old
+            // A change back within a pour's first half pours from what still covers most of the body, the pour's own
+            // old fill, not from the fill it was pouring in: a body never jumps to a colour it was not showing (B-94).
+            val from = pourFrom
+            val early = from != null && h != null && stepped(now - pourSince, pourDuration(h)) < .5
+            pourFrom = if (early) from else old
             pourSince = now
         }
         fill = newFill
