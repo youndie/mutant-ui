@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
-| [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[ ]` | A tall body rasterises its whole height every tick | P3 | M | B-69 |
+| [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[~]` | A tall body rasterises its whole height every tick | P3 | M | B-69 |
 
 ## Closed (85)
 

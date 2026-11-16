@@ -1,7 +1,7 @@
 ---
 id: B-86
 title: "A tall body rasterises its whole height every tick"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-6-later
