@@ -580,6 +580,22 @@ The owner, on 2026-11-16: changes to the design system are to be made here, not 
 
 ---
 
+### D21. A body's field grid grows past the engine's where its contour reaches the edge
+
+Found while building the demo, 2026-11-16 ([B-97](../backlog/B-97-a-risen-sheet-tears-a-wedge.md)). The engine samples a body's field on a grid 7 dp past the slot's sides, 13 dp above it and 18 dp below its drips' reach. A tall, wobbly body bulges further: the bottom sheet, a blob 376 × 271 dp at wobble 1.6. Its contour was cut at the grid's edge, and the march left open chains whose joins crossed the body (stitches of 195 dp against a normal 2.4). Under the even-odd fill the crossing showed as a wedge-shaped hole, the screen under the sheet showing through.
+
+The engine draws the same hole: the port is 1:1 (D3), and the fault was there from the sheet's first commit.
+
+- **The fix.** A body found at the edge gets 8 dp more grid on every side, then twice that, up to 32 dp.
+  - The cells are added by index, so the engine's cells keep their positions to the bit.
+  - A body that never reaches the edge draws exactly as the engine does, at the engine's cost.
+  - The growth happens only on the frame's thread. A frame built ahead off it (B-75) never grows the grid, and a cut one is not taken.
+- **The goldens it moves.** Of the vendored goldens, three frames of `fab-b` (5 000, 12 100 and 15 990 ms) reach the edge. Their contours are now the port's own, listed as `B97_CUT_FRAMES` in the generator's golden test, which computes the list and fails on any change to it.
+- **Rejected:**
+  - a wider grid for every body, at up to 40 % more field cells for a small button;
+  - a margin estimated from the shape's amplitudes, which padded nearly every golden body that never reaches the edge;
+  - a flat clip at the grid's edge, which closes the contour but cuts the body's true shape.
+
 ## 3. Risks and open questions
 
 | # | Risk or hypothesis | Mitigation, and the item that settles it |
