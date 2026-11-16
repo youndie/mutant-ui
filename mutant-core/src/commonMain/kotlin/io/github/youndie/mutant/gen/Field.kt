@@ -20,7 +20,23 @@ internal class DistanceField(
     val x0: Double,
     val y0: Double,
     val step: Double,
-)
+    /**
+     * Cells added on every side past the engine's grid (B-97): index `i` stands at `x0 + (i - pad) * step`, so the
+     * engine's cells keep their positions to the bit.
+     */
+    val pad: Int = 0,
+) {
+    /**
+     * Whether the body reaches the grid's edge (a value inside it on the border): its contour is then cut there, and a
+     * frame built off the frame's thread is not taken (B-97).
+     */
+    val cut: Boolean by lazy {
+        var hit = false
+        for (i in 0 until nx) if (values[i] < 0 || values[(ny - 1) * nx + i] < 0) hit = true
+        for (j in 0 until ny) if (values[j * nx] < 0 || values[j * nx + nx - 1] < 0) hit = true
+        hit
+    }
+}
 
 /**
  * The static layers of one instance's field on one grid — edge noise, the lower body, the warped
@@ -43,12 +59,18 @@ internal class FieldCache {
     val static = HashMap<Long, FieldStatic>()
 
     /**
+     * The cells this body's grid is padded by past the engine's (B-97): 0, the engine's grid, until a frame built on the
+     * frame's thread found the body at the grid's edge. It only grows, and only there.
+     */
+    var pad: Int = 0
+
+    /**
      * Whether a resting frame of [g] would only read this cache: its static layers built and, where the body boils
      * at rest, all four boil phases. A frame may then be built on another thread while the frame's own thread reads
      * the cache too (B-75); before that, the first frames fill it, on the frame's thread alone.
      */
     fun settledFor(g: Instance): Boolean {
-        val st = static[gridKey(g)] ?: return false
+        val st = static[gridKey(g, pad)] ?: return false
         return REST_BOIL * g.slot.calm == 0.0 || st.boil.size == BOIL_PHASES
     }
 }
@@ -58,11 +80,24 @@ private const val BOIL_PHASES = 4
 
 private fun gridStep(g: Instance) = if (g.slot.w > 200) 1.5 else .9
 
-private fun gridKey(g: Instance): Long {
+/**
+ * B-97: how a body's grid grows past the engine's. The engine's grid reaches 7 dp past the slot's sides, 13 dp above
+ * and 18 dp below its drips' reach. A tall, wobbly body such as the bottom sheet bulged further: its contour was cut at
+ * the grid's edge, the march left open chains, and their joins crossed the body, a wedge-shaped hole under the even-odd
+ * fill. A body found at the edge gets [PAD_DP] more on every side, then twice that, up to [MAX_PAD_DP]. The engine's
+ * cells keep their positions, so a body that never reaches the edge draws as the engine does, to the bit.
+ */
+private const val PAD_DP = 8.0
+private const val MAX_PAD_DP = 32.0
+
+private fun gridKey(
+    g: Instance,
+    pad: Int,
+): Long {
     val el = g.slot
     val s = gridStep(g)
-    val nx = ceil((el.w + 14) / s).toInt() + 1
-    val ny = ceil((el.h + el.over + 31) / s).toInt() + 1
+    val nx = ceil((el.w + 14) / s).toInt() + 1 + 2 * pad
+    val ny = ceil((el.h + el.over + 31) / s).toInt() + 1 + 2 * pad
     return nx.toLong() shl 32 or ny.toLong()
 }
 
@@ -82,17 +117,43 @@ internal fun distanceField(
     heat: Double,
     boil0: Double,
     steadyWebs: Boolean = false,
+    grow: Boolean = true,
+): DistanceField {
+    val s = gridStep(g)
+    var pad = cache.pad
+    while (true) {
+        val fd = fieldOn(g, cache, prims, t, rough, boilPhase, boil, heat, boil0, steadyWebs, pad)
+        // Off the frame's thread the cache is only read: a cut frame is returned as it is and not taken (B-97).
+        if (!fd.cut || !grow || pad * s >= MAX_PAD_DP) return fd
+        pad = if (pad == 0) ceil(PAD_DP / s).toInt() else 2 * pad
+        cache.pad = pad
+    }
+}
+
+/** The field on the engine's grid with [pad] cells more on every side (B-97). */
+private fun fieldOn(
+    g: Instance,
+    cache: FieldCache,
+    prims: List<Primitive>,
+    t: Double,
+    rough: Double,
+    boilPhase: Int,
+    boil: Double,
+    heat: Double,
+    boil0: Double,
+    steadyWebs: Boolean,
+    pad: Int,
 ): DistanceField {
     val el = g.slot
     val s = gridStep(g)
     val x0 = el.ox - 7
     val y0 = el.oy - 13
-    val nx = ceil((el.w + 14) / s).toInt() + 1
-    val ny = ceil((el.h + el.over + 31) / s).toInt() + 1
+    val nx = ceil((el.w + 14) / s).toInt() + 1 + 2 * pad
+    val ny = ceil((el.h + el.over + 31) / s).toInt() + 1 + 2 * pad
     val n = nx * ny
     val st =
-        cache.static.getOrPut(gridKey(g)) {
-            fieldStatic(g, nx, ny, x0, y0, s)
+        cache.static.getOrPut(gridKey(g, pad)) {
+            fieldStatic(g, nx, ny, x0, y0, s, pad)
         }
     val bk =
         if (boil != 0.0) {
@@ -102,8 +163,8 @@ internal fun distanceField(
                     for (i in 0 until nx) {
                         k[j * nx + i] =
                             valueNoise(
-                                (x0 + i * s) * .16 + boilPhase * 41.3,
-                                (y0 + j * s) * .16 + boilPhase * 17.9,
+                                (x0 + (i - pad) * s) * .16 + boilPhase * 41.3,
+                                (y0 + (j - pad) * s) * .16 + boilPhase * 17.9,
                             ).toFloat()
                     }
                 }
@@ -117,12 +178,12 @@ internal fun distanceField(
     val cols = Array(nx) { ArrayList<Primitive>() }
     for (p in prims) {
         val rr = max(p[4], p[5]) + p[6] + 1
-        val a = max(0.0, floor((p[0] - rr - x0) / s)).toInt()
-        val b = min((nx - 1).toDouble(), ceil((p[0] + rr - x0) / s)).toInt()
+        val a = max(0.0, floor((p[0] - rr - x0) / s) + pad).toInt()
+        val b = min((nx - 1).toDouble(), ceil((p[0] + rr - x0) / s) + pad).toInt()
         for (i in a..b) cols[i] += p
     }
     for (i in 0 until nx) {
-        val x = x0 + i * s
+        val x = x0 + (i - pad) * s
         val lx = x - el.ox
         val tyx =
             if (heat != 0.0) {
@@ -134,7 +195,7 @@ internal fun distanceField(
         var cm = -1e9
         for (p in c) cm = max(cm, max(p[1], p[3]) + max(p[4], p[5]) + p[6] + 14)
         for (j in 0 until ny) {
-            val y = y0 + j * s
+            val y = y0 + (j - pad) * s
             val idx = j * nx + i
             val bc = st.lowerBody[idx].toDouble()
             val b0 = st.body0[idx].toDouble()
@@ -180,7 +241,7 @@ internal fun distanceField(
         val tmp = FloatArray(q.size / 2) { f[q[2 * it + 1]] }
         for (k in tmp.indices) f[q[2 * k]] = tmp[k]
     }
-    return DistanceField(f, nx, ny, x0, y0, s)
+    return DistanceField(f, nx, ny, x0, y0, s, pad)
 }
 
 /**
@@ -197,6 +258,7 @@ private fun fieldStatic(
     x0: Double,
     y0: Double,
     s: Double,
+    pad: Int,
 ): FieldStatic {
     val el = g.slot
     val n = nx * ny
@@ -204,8 +266,8 @@ private fun fieldStatic(
     val b = FloatArray(n) { Float.NaN }
     for (j in 0 until ny) {
         for (i in 0 until nx) {
-            val x = x0 + i * s
-            val y = y0 + j * s
+            val x = x0 + (i - pad) * s
+            val y = y0 + (j - pad) * s
             val ly = y - el.oy
             a[j * nx + i] = (.55 * valueNoise(x * .8, y * .8) + .3 * valueNoise(x * 2.1 + 17, y * 2.1 + 17)).toFloat()
             if (ly >= el.h * .5) b[j * nx + i] = bodyDistance(x - el.ox, ly, g, 0.0).toFloat()
@@ -215,8 +277,8 @@ private fun fieldStatic(
     val v2 = FloatArray(n)
     for (j in 0 until ny) {
         for (i in 0 until nx) {
-            val lx = x0 + i * s - el.ox
-            val ly = y0 + j * s - el.oy
+            val lx = x0 + (i - pad) * s - el.ox
+            val ly = y0 + (j - pad) * s - el.oy
             v1[j * nx + i] = valueNoise(lx * .03 + g.shape[7], ly * .05).toFloat()
             v2[j * nx + i] = valueNoise(lx * .03 + g.shape[7] + 31, ly * .05 + 9).toFloat()
         }
@@ -230,8 +292,8 @@ private fun fieldStatic(
     for (j in 0 until ny) {
         for (i in 0 until nx) {
             val idx = j * nx + i
-            val px = x0 + i * s - el.ox
-            val py = y0 + j * s - el.oy
+            val px = x0 + (i - pad) * s - el.ox
+            val py = y0 + (j - pad) * s - el.oy
             val u = clamp01(px / w)
             val v = clamp01(py / h)
             val m = clamp01(1 - py / (h * .5))
@@ -260,12 +322,12 @@ private fun fieldStatic(
             val bx = blk.x
             val by = blk.y
             val bs = blk.size
-            val ci = clamp(jsRound((el.ox + bx + bs / 2 - x0) / s), 0.0, (nx - 1).toDouble()).toInt()
-            val cj = clamp(jsRound((el.oy + by + bs / 2 - y0) / s), 0.0, (ny - 1).toDouble()).toInt()
-            var j = max(0.0, ceil((el.oy + by - y0) / s)).toInt()
-            while (j < ny && y0 + j * s < el.oy + by + bs) {
-                var i = max(0.0, ceil((el.ox + bx - x0) / s)).toInt()
-                while (i < nx && x0 + i * s < el.ox + bx + bs) {
+            val ci = clamp(jsRound((el.ox + bx + bs / 2 - x0) / s) + pad, 0.0, (nx - 1).toDouble()).toInt()
+            val cj = clamp(jsRound((el.oy + by + bs / 2 - y0) / s) + pad, 0.0, (ny - 1).toDouble()).toInt()
+            var j = max(0.0, ceil((el.oy + by - y0) / s) + pad).toInt()
+            while (j < ny && y0 + (j - pad) * s < el.oy + by + bs) {
+                var i = max(0.0, ceil((el.ox + bx - x0) / s) + pad).toInt()
+                while (i < nx && x0 + (i - pad) * s < el.ox + bx + bs) {
                     pr += j * nx + i
                     pr += cj * nx + ci
                     i++
@@ -324,8 +386,8 @@ internal fun march(
         if (id0 != 0) return id0 - 1
         val t = (a - iso) / (a - b)
         val id = np++
-        px[id] = (fd.x0 + (ax + (bx - ax) * t) * fd.step).toFloat()
-        py[id] = (fd.y0 + (ay + (by - ay) * t) * fd.step).toFloat()
+        px[id] = (fd.x0 + ((ax - fd.pad) + (bx - ax) * t) * fd.step).toFloat()
+        py[id] = (fd.y0 + ((ay - fd.pad) + (by - ay) * t) * fd.step).toFloat()
         nb[2 * id] = -1
         nb[2 * id + 1] = -1
         edge[k] = id + 1
@@ -474,8 +536,8 @@ internal fun smoothPath(
                 if (y < ya) ya = y
                 if (y > yb) yb = y
             }
-            val ci = clamp(jsRound((sx / (b - a) - fd.x0) / fd.step), 0.0, (fd.nx - 1).toDouble()).toInt()
-            val cj = clamp(jsRound((sy / (b - a) - fd.y0) / fd.step), 0.0, (fd.ny - 1).toDouble()).toInt()
+            val ci = clamp(jsRound((sx / (b - a) - fd.x0) / fd.step) + fd.pad, 0.0, (fd.nx - 1).toDouble()).toInt()
+            val cj = clamp(jsRound((sy / (b - a) - fd.y0) / fd.step) + fd.pad, 0.0, (fd.ny - 1).toDouble()).toInt()
             val width = if (fd.values[cj * fd.nx + ci].toDouble() > lines.iso) f32(min(xb - xa, yb - ya)) else 1e9
             if (width < minHole) continue
         }

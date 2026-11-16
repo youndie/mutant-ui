@@ -439,7 +439,8 @@ internal fun MutantSurface(
                     next: Double,
                     band: Rect?,
                 ): Ahead {
-                    val f = gen.frame(g, cache, next, 0.0, pressed = false, steadyWebs = steadyWebs)
+                    // Built off the frame's thread: the field's grid is not grown here (B-97).
+                    val f = gen.frame(g, cache, next, 0.0, pressed = false, steadyWebs = steadyWebs, grow = false)
                     val inputs = imageInputsOf(dead)
                     val image =
                         inputs?.let {
@@ -936,7 +937,8 @@ internal class FrameAhead {
     ): Ahead? {
         val j = job ?: return null
         if (instance !== g || at != t || !j.isCompleted || j.getCompletionExceptionOrNull() != null) return null
-        return j.getCompleted()
+        // A frame cut at its grid's edge is built again in the frame, where the grid grows (B-97).
+        return j.getCompleted().takeIf { !it.frame.field.cut }
     }
 
     private var band: Rect? = null

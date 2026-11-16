@@ -43,7 +43,9 @@ class GeneratorExactnessTest {
             val cache = FieldCache()
             for (f in golden.frames) {
                 val frame = gen.frame(g, cache, f.t, f.heat)
-                if (frame.contour.toSvg() != f.contour) differ += "${golden.name} @${f.t} contour"
+                // B-97: a contour the engine's grid cut is the port's own (B97_CUT_FRAMES).
+                val ownContour = "${golden.name} @${f.t}" in B97_CUT_FRAMES
+                if (!ownContour && frame.contour.toSvg() != f.contour) differ += "${golden.name} @${f.t} contour"
                 if (frame.highlight.toSvg() != f.highlight) differ += "${golden.name} @${f.t} highlight"
                 if (frame.flowLines.toSvg() != f.flowLines) differ += "${golden.name} @${f.t} flow lines"
             }
