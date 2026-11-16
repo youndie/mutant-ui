@@ -278,14 +278,13 @@ internal fun MutantSurface(
             }.drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
-                // B-87: a body off the screen builds no tick, and looks once a second whether it has come into view (an
-                // ancestor that grows moves no body, and tells it nothing). Off the window it draws nothing; outside a
-                // box it is laid out in but on the window, which that box may not clip, it draws its last picture.
+                // B-87: a body off the screen builds no tick and reads no clock; its layout tells it when it shows
+                // again ([BodyView.place]). Off the window it draws nothing; outside a box it is laid out in but on the
+                // window, which that box may not clip, it draws its last picture.
                 view.flips
                 val last = moshBody.draw
                 val where = view.whereNow(registry.surface, reach)
                 if (last != null && where != SHOWN) {
-                    clock.restSecond
                     if (where == OFF_WINDOW) return@drawWithCache onDrawBehind {}
                     return@drawWithCache moshBehind(moshScene, moshBody, last)
                 }

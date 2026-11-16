@@ -66,14 +66,6 @@ internal class MutantClock(
     /** The resting tick's number, `floor(t / step)`. Observable. */
     val restTick: Long get() = rest.longValue
 
-    private val second = androidx.compose.runtime.derivedStateOf { floor(rest.longValue * stepMs / 1000).toLong() }
-
-    /**
-     * The resting ticks' second, `floor(ts / 1000)`. Observable, and only when it changes: a body off the screen reads
-     * it to look again whether it shows, once a second rather than on every tick (B-87).
-     */
-    val restSecond: Long get() = second.value
-
     /** The hot tick's number, `floor(t / (step / 1.5))`. Observable. */
     val hotTick: Long get() = hot.longValue
 

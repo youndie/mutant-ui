@@ -29,7 +29,7 @@ import kotlin.test.assertTrue
 
 /**
  * B-87: a body off the screen builds no tick — a scrolled-away body, or one outside a box it is laid out in — and
- * ticks again once it shows: at once when it is scrolled into view, within a second when a box grows to it.
+ * ticks again once it shows, whether it was scrolled into view or a box grew to it.
  */
 @OptIn(ExperimentalTestApi::class)
 class OffScreenTicksTest {
@@ -95,7 +95,7 @@ class OffScreenTicksTest {
         }
 
     @Test
-    fun `a body a box grows to ticks again within a second`() =
+    fun `a body a box grows to ticks again`() =
         runComposeUiTest {
             val count = Count()
             var viewport by mutableIntStateOf(300)
@@ -103,9 +103,9 @@ class OffScreenTicksTest {
             column(count, gap = 500, ScrollState(0)) { viewport }
             framesOver(count, 1_000)
             assertEquals(0, framesOver(count, 2_000), "frames of a body 500 dp down a 300 dp box")
-            // The box grows past the body; the body itself does not move, so no layout callback tells it.
+            // The box grows past the body. The body does not move; the box's layout places it again, and tells it.
             viewport = 700
-            framesOver(count, 1_250)
+            framesOver(count, 250)
             val grown = framesOver(count, 2_000)
             assertTrue(grown >= 14, "once the box reaches it, it ticks again: $grown in 2 s")
         }
