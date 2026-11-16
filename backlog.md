@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-100](docs/backlog/B-100-motion-on-every-frame.md) `[ ]` | Movement runs on every frame by default; the boil keeps its tick | P2 | M | - |
 | [B-101](docs/backlog/B-101-demo-tape-twice.md) `[ ]` | On the Demo page the phones carry the Tape twice | P2 | S | - |
 | [B-102](docs/backlog/B-102-drawer-shows-its-venom.md) `[ ]` | The drawer closes before its venom run is seen | P2 | M | - |
-| [B-97](docs/backlog/B-97-a-risen-sheet-tears-a-wedge.md) `[ ]` | A risen bottom sheet tears a wedge out of its body | P2 | S | - |
+| [B-97](docs/backlog/B-97-a-risen-sheet-tears-a-wedge.md) `[~]` | A risen bottom sheet tears a wedge out of its body | P2 | S | - |
 | [B-99](docs/backlog/B-99-components-page-structured-and-neat.md) `[ ]` | The Components page is to be structured and neat | P2 | L | - |
 
 ## Closed (97)

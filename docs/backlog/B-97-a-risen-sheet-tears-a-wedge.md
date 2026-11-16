@@ -1,7 +1,7 @@
 ---
 id: B-97
 title: "A risen bottom sheet tears a wedge out of its body"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-6-later
