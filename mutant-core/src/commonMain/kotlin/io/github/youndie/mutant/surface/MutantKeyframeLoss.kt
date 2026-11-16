@@ -358,12 +358,12 @@ internal class MoshScene(
                     .Paint()
             for (r in plan.runs) {
                 if (r.gone || u < r.start) continue
-                canvas.drawImageRect(
+                drawPart(
+                    canvas,
                     pic,
                     IntOffset((r.x * d).roundToInt(), (r.y * d).roundToInt()),
                     IntSize((r.w * d).roundToInt(), (r.h * d).roundToInt()),
                     IntOffset(((r.x + r.vx) * d).roundToInt(), ((r.y + r.vy) * d).roundToInt()),
-                    IntSize((r.w * d).roundToInt(), (r.h * d).roundToInt()),
                     paint,
                 )
                 if (r.tint >= 0 && tinted.add(r)) {
@@ -422,8 +422,35 @@ internal class MoshScene(
                     w.roundToInt().coerceAtMost(ref.width - off.x),
                     h.roundToInt().coerceAtMost(ref.height - off.y),
                 )
-            if (sz.width > 0 && sz.height > 0) canvas.drawImageRect(ref, off, sz, off, sz, copy)
+            if (sz.width > 0 && sz.height > 0) drawPart(canvas, ref, off, sz, off, copy)
         }
+    }
+
+    /**
+     * Draws [from]'s pixels at [at], [size] to [to] on [canvas], as `drawImageRect` from [from] itself would, with the
+     * part of the source that lies in [from] (B-88). Read out as an image of their own first: Compose makes an image of
+     * the whole bitmap for every draw from it, which in the browser copied the whole picture once per block.
+     */
+    private fun drawPart(
+        canvas: Canvas,
+        from: ImageBitmap,
+        at: IntOffset,
+        size: IntSize,
+        to: IntOffset,
+        paint: androidx.compose.ui.graphics.Paint,
+    ) {
+        val x0 = maxOf(at.x, 0)
+        val y0 = maxOf(at.y, 0)
+        val x1 = minOf(at.x + size.width, from.width)
+        val y1 = minOf(at.y + size.height, from.height)
+        val w = x1 - x0
+        val h = y1 - y0
+        if (w <= 0 || h <= 0) return
+        val px = IntArray(w * h)
+        from.readPixels(px, x0, y0, w, h)
+        val part = imageBitmapOfPixels(px, w, h)
+        val cut = IntSize(w, h)
+        canvas.drawImageRect(part, IntOffset.Zero, cut, IntOffset(to.x + x0 - at.x, to.y + y0 - at.y), cut, paint)
     }
 
     private fun end() {
@@ -435,6 +462,13 @@ internal class MoshScene(
         bandBottom = Float.NaN
     }
 }
+
+/** An image of [pixels] (ARGB, not premultiplied, [width] × [height], as `ImageBitmap.readPixels` gives them). */
+internal expect fun imageBitmapOfPixels(
+    pixels: IntArray,
+    width: Int,
+    height: Int,
+): ImageBitmap
 
 /** Every 9 s, 3.5 s into the window (`t / 9000`, `> 3500`); a step each 125 ms; the recovery 375 ms. */
 private const val EVERY_MS = 9000.0
