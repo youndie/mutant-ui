@@ -15,9 +15,11 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -39,7 +41,7 @@ class MenuBehaviourTest {
             ).and(hasText("СБРОС").or(hasText("ТРЕКИНГ")).or(hasText("ЦВЕТНОСТЬ")).or(hasText("ЧЁТКОСТЬ")))
 
     @Test
-    fun `the anchor opens the menu, a pick goes to onSelect and the menu closes`() =
+    fun `the anchor opens the menu, a pick goes to onSelect, the menu stays open and the anchor closes it`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             var selected by mutableIntStateOf(0)
@@ -55,10 +57,46 @@ class MenuBehaviourTest {
             onNode(hasText("Настройка")).performClick()
             mainClock.advanceTimeByFrame()
             onNode(hasText("ЧЁТКОСТЬ")).performClick()
-            // Under reduce motion (Still) the window is there at once and the menu closes at once.
-            mainClock.advanceTimeBy(100)
+            // B-92: a pick leaves the menu open, the venom's run and the rest of the choice in view, for as long as it
+            // takes: two seconds on, it still stands.
+            mainClock.advanceTimeBy(2_000)
             assertEquals(2, selected)
-            assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size)
+            assertEquals(1, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "still open after a pick")
+            onNode(hasText("ЦВЕТНОСТЬ")).performClick()
+            mainClock.advanceTimeBy(100)
+            assertEquals(1, selected, "a second pick in the same opening")
+            onAllNodes(hasText("Настройка"))[0].performClick()
+            mainClock.advanceTimeBy(100)
+            assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "the anchor closes it")
+        }
+
+    @Test
+    fun `a press outside closes the menu`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still {
+                    Box(Modifier.size(400.dp, 400.dp)) {
+                        MutantDropdown("Настройка", items, 0, {})
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Настройка")).performClick()
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("ЧЁТКОСТЬ")).performClick()
+            mainClock.advanceTimeBy(100)
+            onAllNodes(
+                androidx.compose.ui.test
+                    .isRoot(),
+            )[0].performTouchInput {
+                click(
+                    androidx.compose.ui.geometry
+                        .Offset(390f, 390f),
+                )
+            }
+            mainClock.advanceTimeBy(100)
+            assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "closed by a press outside")
         }
 
     @Test
