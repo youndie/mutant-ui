@@ -12,25 +12,6 @@ import kotlin.test.assertTrue
 /** B-37: the sample walks every section in each theme and language, and every word it shows has its glyphs. */
 @OptIn(ExperimentalTestApi::class)
 class SampleAppTest {
-    private val sections =
-        { s: SampleStrings ->
-            listOf(
-                s.sectionButtons,
-                s.sectionIconButtons,
-                s.sectionChips,
-                s.sectionSelection,
-                s.sectionField,
-                s.sectionCard,
-                s.sectionNav,
-                s.sectionList,
-                s.sectionSnackbar,
-                s.sectionProgress,
-                s.sectionDialog,
-                s.sectionEmpty,
-                s.sectionIcons,
-            )
-        }
-
     @Test
     fun `every section composes and draws in each theme and language, the clock held`() {
         for (print in listOf(false, true)) {
@@ -42,12 +23,11 @@ class SampleAppTest {
                     setContent { MutantUiSample(settings) }
                     mainClock.advanceTimeByFrame()
                     onNodeWithTag("sample-root").assertIsDisplayed()
-                    val titles = sections(SampleStrings(language))
-                    assertTrue(titles.size == 13)
-                    for (title in titles) {
+                    // B-99: one section per entry of the catalogue, every component of the kit and the foundations.
+                    for (id in SpecId.entries) {
                         onNodeWithTag(
-                            "section-$title",
-                        ).assertExists("$title, ${if (print) "Копия" else "Эфир"}, $language")
+                            "section-${id.name}",
+                        ).assertExists("${id.name}, ${if (print) "Копия" else "Эфир"}, $language")
                     }
                     // The other page draws too.
                     settings.page = SamplePage.Demo
@@ -80,7 +60,7 @@ class SampleAppTest {
                         f.isAccessible = true
                         f.get(s) as String
                     }
-            }
+            } + SpecId.entries.flatMap { listOf(it.en, it.ru, it.enLine, it.ruLine) + it.api }
         assertTrue(words.size > 100, "both languages' words: ${words.size}")
         val missing = ArrayList<String>()
         for (font in fonts) {

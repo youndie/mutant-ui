@@ -58,16 +58,15 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (4)
+## Open (3)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-100](docs/backlog/B-100-motion-on-every-frame.md) `[ ]` | Movement runs on every frame by default; the boil keeps its tick | P2 | M | - |
 | [B-101](docs/backlog/B-101-demo-tape-twice.md) `[ ]` | On the Demo page the phones carry the Tape twice | P2 | S | - |
 | [B-102](docs/backlog/B-102-drawer-shows-its-venom.md) `[ ]` | The drawer closes before its venom run is seen | P2 | M | - |
-| [B-99](docs/backlog/B-99-components-page-structured-and-neat.md) `[ ]` | The Components page is to be structured and neat | P2 | L | - |
 
-## Closed (98)
+## Closed (99)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -187,5 +186,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-96](docs/backlog/B-96-a-richer-demo.md) `[x]` - The demo is thin and plain
 - [B-97](docs/backlog/B-97-a-risen-sheet-tears-a-wedge.md) `[x]` - A risen bottom sheet tears a wedge out of its body
 - [B-98](docs/backlog/B-98-the-loss-crashes-on-a-popup.md) `[x]` - The keyframe loss crashes the window when a popup is open over it
+- [B-99](docs/backlog/B-99-components-page-structured-and-neat.md) `[x]` - The Components page is to be structured and neat
 
 <!-- END INDEX -->
