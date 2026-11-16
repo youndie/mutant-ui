@@ -70,6 +70,7 @@ import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
@@ -135,10 +136,11 @@ internal fun DrawerFrame(
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
     val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
         val clock = readMutantClock()
         follow.follow(visible, clock.nowMs)
-        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (visible) IN_MS else OUT_MS)
+        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (visible) IN_MS else OUT_MS, steps)
         if (p < 1) clock.frame
         val shown = (if (visible) p else 1 - p).toFloat()
         val gone = !visible && p >= 1
@@ -221,6 +223,7 @@ internal fun DrawerWindow(
     val cassette = LocalMutantCassette.current
     val chosen = selectedIndex in items.indices
     val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
+    run.steps = LocalMutantSteppedMotion.current
     val top = TOP + (if (title != null) TITLE + GAP else 0f)
     run.key = "$key-pill"
     run.cassette = cassette

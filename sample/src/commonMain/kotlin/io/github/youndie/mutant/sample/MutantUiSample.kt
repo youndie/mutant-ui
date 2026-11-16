@@ -37,12 +37,14 @@ class SampleSettings(
     print: Boolean = false,
     reduceMotion: Boolean = false,
     cleanSignal: Boolean = false,
+    steppedMotion: Boolean = false,
     language: SampleLanguage = SampleLanguage.English,
     page: SamplePage = SamplePage.Components,
 ) {
     var print by mutableStateOf(print)
     var reduceMotion by mutableStateOf(reduceMotion)
     var cleanSignal by mutableStateOf(cleanSignal)
+    var steppedMotion by mutableStateOf(steppedMotion)
     var language by mutableStateOf(language)
     var page by mutableStateOf(page)
 }
@@ -62,6 +64,7 @@ fun MutantUiSample(
         colors = if (settings.print) MutantPalettes.Kopiya else MutantPalettes.Efir,
         reduceMotion = settings.reduceMotion,
         cleanSignal = settings.cleanSignal,
+        steppedMotion = settings.steppedMotion,
     ) {
         val colors = MutantTheme.colors
         Box(
@@ -124,6 +127,12 @@ private fun Header(
                 { settings.cleanSignal = it },
                 label = strings.cleanSignal,
                 key = "clean",
+            )
+            MutantSwitch(
+                settings.steppedMotion,
+                { settings.steppedMotion = it },
+                label = strings.designSteps,
+                key = "steps",
             )
         }
     }

@@ -46,6 +46,7 @@ import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
@@ -98,11 +99,12 @@ internal fun SnackbarBody(
     val colors = MutantTheme.colors
     val clock = readMutantClock()
     val reduce = LocalMutantReduceMotion.current
+    val steps = LocalMutantSteppedMotion.current
     val ride = remember { SnackbarRide(visible, if (playIn) clock.nowMs else Double.NEGATIVE_INFINITY) }
     ride.follow(visible, clock.nowMs)
     val duration = if (visible) IN_MS else OUT_MS
     val elapsed = if (reduce) Double.POSITIVE_INFINITY else clock.nowMs - ride.since
-    val p = stepped(elapsed, duration)
+    val p = stepped(elapsed, duration, steps)
     // While it rides it reads every frame, so composition follows it and it leaves the moment it is gone. Stepped, it
     // lands a step after its duration (250 ms for 200): asked by the time alone, it would stand at 83 % for ever.
     if (p < 1) clock.frame

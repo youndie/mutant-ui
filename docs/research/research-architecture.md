@@ -596,6 +596,18 @@ The engine draws the same hole: the port is 1:1 (D3), and the fault was there fr
   - a margin estimated from the shape's amplitudes, which padded nearly every golden body that never reaches the edge;
   - a flat clip at the grid's edge, which closes the contour but cuts the body's true shape.
 
+### D22. Movement runs on every frame; the boil keeps its tick
+
+The owner's remark of 2026-11-16 ([B-100](../backlog/B-100-motion-on-every-frame.md)): the boil and the drips are bound to the tick, but movement need not be — «флаг конфигурации и по умолчанию перемещение не ограничивать».
+
+The design steps every transition at the hot tick (83.33 ms, 12 a second: pour, slide, melt, the rise of a dialog, a sheet, a drawer and a snackbar, the tabs' bar, the calendar's drop) and the venom run at 24 a second. `MutantTheme(steppedMotion = false)` is now the default: these advance on every frame of the screen's clock. What a body looks like stays on its tick (D6): its boil, drips, mosaic and the Tape change only there, and the movement carries it between.
+
+- **The design's steps.** `steppedMotion = true` brings them back, and the sample's header switches it. Over the first 300 ms of each of eleven kinds, 14 to 19 of 19 frames change on every frame, and 3 to 7 under the steps (`MotionEveryFrameTest`).
+- **What it moves.** No golden or parity cell: they draw at rest or at frozen times. One behaviour test held the tabs' bar to a step, and now holds it to the frame.
+- **Rejected:**
+  - the design's steps as the default with a switch off, which keeps the motion the owner found limited;
+  - per-frame movement of the bodies' shapes too, which would rebuild every body's field on every frame against D6.
+
 ## 3. Risks and open questions
 
 | # | Risk or hypothesis | Mitigation, and the item that settles it |

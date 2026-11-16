@@ -67,6 +67,7 @@ import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.tokens.MutantMotion
@@ -234,6 +235,7 @@ internal fun MenuBody(
     val cassette = LocalMutantCassette.current
     val chosen = selectedIndex in items.indices
     val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
+    run.steps = LocalMutantSteppedMotion.current
     run.key = pillKey
     run.cassette = cassette
     run.slot =

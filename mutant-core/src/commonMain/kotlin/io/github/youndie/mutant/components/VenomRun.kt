@@ -38,6 +38,9 @@ internal class VenomRun(
         py = y
     }
 
+    /** Whether the run steps at 24 a second as the design draws it, or moves on every frame (B-100); set from composition. */
+    var steps: Boolean = false
+
     /** From composition: a new index starts a run from the old one, unless the clock stands. */
     fun follow(
         to: Int,
@@ -67,7 +70,12 @@ internal class VenomRun(
     ): Pair<Double, VenomShapes>? {
         if (to != at) return null
         val e = elapsed(clock) ?: return null
-        val p = min(1.0, floor(maxOf(0.0, e) / VENOM_STEP_MS) * VENOM_STEP_MS / MutantMotion.VENOM_MS)
+        val p =
+            if (steps) {
+                min(1.0, floor(maxOf(0.0, e) / VENOM_STEP_MS) * VENOM_STEP_MS / MutantMotion.VENOM_MS)
+            } else {
+                min(1.0, maxOf(0.0, e) / MutantMotion.VENOM_MS)
+            }
         if (p >= 1) {
             from = -1
             return null
