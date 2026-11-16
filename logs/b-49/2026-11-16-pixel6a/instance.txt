@@ -1,0 +1,157 @@
+# device: Google Pixel 6a, Android 17, API 37
+# build: google/bluejay/bluejay:17/CP3A.261005.002.A1/16269273:user/release-keys
+# display: 1080x2400 at 60.0 Hz, density 2.625
+# cores: 8, debuggable: false
+# commit: dcc1794
+# calls 200 per arm per round, arms interleaved per call, rounds 5 (round 1 discarded), warm-up 3 s per case
+# round 1 thermal 0
+round 1 btn-a instance=158,8 warm=1772,5
+round 1 btn-b instance=36,7 warm=1055,9
+round 1 btn-still instance=5,8 warm=1838,9
+round 1 fab-a instance=63,8 warm=555,6
+round 1 fab-b instance=288,3 warm=1371,3
+round 1 icon-a instance=4,1 warm=442,1
+round 1 icon-b instance=3,5 warm=324,6
+round 1 chip-a instance=125,1 warm=689,7
+round 1 chip-b instance=191,1 warm=1076,8
+round 1 card-a instance=151,0 warm=1270,1
+round 1 card-b instance=52,8 warm=915,2
+round 1 field-a instance=164,7 warm=982,8
+round 1 field-b instance=144,5 warm=1183,3
+round 1 track-a instance=29,5 warm=378,3
+round 1 track-b instance=116,5 warm=555,3
+round 1 thumb-a instance=2,6 warm=173,2
+round 1 thumb-b instance=2,0 warm=240,6
+round 1 box-a instance=1,5 warm=140,2
+round 1 box-b instance=1,5 warm=184,8
+round 1 dot-a instance=1,5 warm=178,6
+round 1 dot-b instance=1,5 warm=185,6
+round 1 bar-a instance=183,9 warm=592,7
+round 1 bar-b instance=36,3 warm=339,6
+round 1 pill-a instance=1,3 warm=258,3
+round 1 pill-b instance=1,9 warm=408,6
+round 1 blob-a instance=57,7 warm=2024,3
+round 1 blob-b instance=165,1 warm=998,1
+round 1 control card-a warm=1289,6 warm+200us=1487,8 delta=198,2
+round 1 checksum -11456814397675
+# round 2 thermal 0
+round 2 btn-a instance=161,1 warm=1764,3
+round 2 btn-b instance=36,9 warm=1069,0
+round 2 btn-still instance=5,5 warm=1830,2
+round 2 fab-a instance=64,3 warm=565,1
+round 2 fab-b instance=280,3 warm=1353,2
+round 2 icon-a instance=3,9 warm=444,4
+round 2 icon-b instance=3,3 warm=323,3
+round 2 chip-a instance=125,2 warm=694,2
+round 2 chip-b instance=193,6 warm=1071,0
+round 2 card-a instance=158,3 warm=1365,6
+round 2 card-b instance=50,7 warm=887,1
+round 2 field-a instance=166,9 warm=1008,7
+round 2 field-b instance=149,0 warm=1217,2
+round 2 track-a instance=31,1 warm=404,1
+round 2 track-b instance=113,6 warm=541,3
+round 2 thumb-a instance=2,5 warm=173,1
+round 2 thumb-b instance=2,0 warm=241,2
+round 2 box-a instance=1,5 warm=136,4
+round 2 box-b instance=1,4 warm=177,8
+round 2 dot-a instance=1,5 warm=131,1
+round 2 dot-b instance=1,6 warm=183,3
+round 2 bar-a instance=186,2 warm=591,8
+round 2 bar-b instance=36,1 warm=336,8
+round 2 pill-a instance=1,7 warm=283,7
+round 2 pill-b instance=1,9 warm=415,5
+round 2 blob-a instance=57,9 warm=2017,7
+round 2 blob-b instance=165,2 warm=1000,6
+round 2 control card-a warm=1269,9 warm+200us=1476,9 delta=207,0
+round 2 checksum -12850581840755
+# round 3 thermal 0
+round 3 btn-a instance=157,0 warm=1771,2
+round 3 btn-b instance=35,8 warm=1038,3
+round 3 btn-still instance=5,5 warm=1848,7
+round 3 fab-a instance=62,6 warm=543,0
+round 3 fab-b instance=286,1 warm=1376,3
+round 3 icon-a instance=4,1 warm=442,9
+round 3 icon-b instance=3,4 warm=331,7
+round 3 chip-a instance=123,5 warm=705,9
+round 3 chip-b instance=189,1 warm=1101,8
+round 3 card-a instance=160,7 warm=1419,6
+round 3 card-b instance=58,3 warm=1048,0
+round 3 field-a instance=169,0 warm=1063,9
+round 3 field-b instance=154,9 warm=1293,9
+round 3 track-a instance=29,5 warm=386,0
+round 3 track-b instance=113,0 warm=569,1
+round 3 thumb-a instance=3,1 warm=201,3
+round 3 thumb-b instance=2,2 warm=239,7
+round 3 box-a instance=1,6 warm=148,5
+round 3 box-b instance=1,6 warm=195,5
+round 3 dot-a instance=1,6 warm=142,6
+round 3 dot-b instance=1,5 warm=182,4
+round 3 bar-a instance=195,8 warm=701,1
+round 3 bar-b instance=36,9 warm=369,7
+round 3 pill-a instance=1,6 warm=278,9
+round 3 pill-b instance=1,8 warm=407,2
+round 3 blob-a instance=59,8 warm=2150,2
+round 3 blob-b instance=169,6 warm=1059,7
+round 3 control card-a warm=1346,8 warm+200us=1544,8 delta=198,1
+round 3 checksum -14244349286325
+# round 4 thermal 1
+round 4 btn-a instance=157,8 warm=1861,5
+round 4 btn-b instance=37,2 warm=1084,7
+round 4 btn-still instance=6,4 warm=1958,4
+round 4 fab-a instance=65,3 warm=578,4
+round 4 fab-b instance=287,6 warm=1408,0
+round 4 icon-a instance=4,2 warm=459,0
+round 4 icon-b instance=3,1 warm=330,6
+round 4 chip-a instance=129,8 warm=738,1
+round 4 chip-b instance=196,2 warm=1109,9
+round 4 card-a instance=157,1 warm=1377,2
+round 4 card-b instance=53,5 warm=954,8
+round 4 field-a instance=167,8 warm=1019,6
+round 4 field-b instance=148,9 warm=1228,0
+round 4 track-a instance=31,1 warm=417,4
+round 4 track-b instance=110,8 warm=535,0
+round 4 thumb-a instance=2,6 warm=171,1
+round 4 thumb-b instance=1,9 warm=237,5
+round 4 box-a instance=1,5 warm=207,6
+round 4 box-b instance=1,5 warm=179,3
+round 4 dot-a instance=1,5 warm=135,8
+round 4 dot-b instance=1,5 warm=192,5
+round 4 bar-a instance=182,2 warm=601,9
+round 4 bar-b instance=36,7 warm=347,3
+round 4 pill-a instance=1,7 warm=302,5
+round 4 pill-b instance=1,8 warm=410,1
+round 4 blob-a instance=58,1 warm=2095,0
+round 4 blob-b instance=165,9 warm=1033,5
+round 4 control card-a warm=1299,2 warm+200us=1500,3 delta=201,1
+round 4 checksum -15638116729571
+# round 5 thermal 1
+round 5 btn-a instance=160,5 warm=1867,7
+round 5 btn-b instance=35,0 warm=1054,6
+round 5 btn-still instance=5,5 warm=1989,5
+round 5 fab-a instance=61,9 warm=550,6
+round 5 fab-b instance=280,1 warm=1364,8
+round 5 icon-a instance=3,9 warm=458,3
+round 5 icon-b instance=3,4 warm=317,4
+round 5 chip-a instance=122,0 warm=688,2
+round 5 chip-b instance=188,3 warm=1081,7
+round 5 card-a instance=153,7 warm=1318,4
+round 5 card-b instance=53,1 warm=937,4
+round 5 field-a instance=166,1 warm=1020,3
+round 5 field-b instance=146,1 warm=1208,1
+round 5 track-a instance=30,8 warm=400,4
+round 5 track-b instance=114,7 warm=555,1
+round 5 thumb-a instance=2,6 warm=170,2
+round 5 thumb-b instance=2,0 warm=250,7
+round 5 box-a instance=1,4 warm=202,4
+round 5 box-b instance=1,5 warm=184,5
+round 5 dot-a instance=1,4 warm=133,9
+round 5 dot-b instance=1,5 warm=186,7
+round 5 bar-a instance=188,0 warm=626,5
+round 5 bar-b instance=40,0 warm=379,2
+round 5 pill-a instance=1,7 warm=297,4
+round 5 pill-b instance=1,7 warm=381,9
+round 5 blob-a instance=61,6 warm=2198,6
+round 5 blob-b instance=172,6 warm=1087,0
+round 5 control card-a warm=1443,1 warm+200us=1640,2 delta=197,1
+round 5 checksum -17031884175105
+# end thermal 1

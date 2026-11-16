@@ -1,0 +1,37 @@
+# device: Google Pixel 6a, Android 17, API 37
+# build: google/bluejay/bluejay:17/CP3A.261005.002.A1/16269273:user/release-keys
+# display: 1080x2400 at 60.0 Hz, density 2.625
+# cores: 8, debuggable: false
+# commit: dcc1794
+# rounds: 6, seconds a scene: 10
+scene,round,frames,scrolled_px,thermal_start,thermal_end
+Blank,1,602,0,0,0
+TenCards12,1,566,0,0,0
+TenCards8,1,593,0,0,0
+List100,1,603,39015,0,0
+Spin5,1,587,0,0,0
+TenCards12,2,587,0,0,0
+TenCards8,2,596,0,0,0
+List100,2,603,38951,0,0
+Spin5,2,580,0,0,0
+Blank,2,601,0,0,0
+TenCards8,3,594,0,0,0
+List100,3,603,38953,0,0
+Spin5,3,586,0,0,0
+Blank,3,602,0,0,0
+TenCards12,3,584,0,0,0
+List100,4,603,38947,0,0
+Spin5,4,581,0,0,0
+Blank,4,602,0,0,0
+TenCards12,4,585,0,0,0
+TenCards8,4,592,0,0,0
+Spin5,5,578,0,0,0
+Blank,5,602,0,0,0
+TenCards12,5,584,0,0,0
+TenCards8,5,595,0,0,0
+List100,5,602,38947,0,0
+Blank,6,602,0,0,0
+TenCards12,6,584,0,0,0
+TenCards8,6,593,0,0,0
+List100,6,603,38947,0,0
+Spin5,6,581,0,0,0

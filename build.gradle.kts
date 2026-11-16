@@ -6,6 +6,7 @@ plugins {
     // types to wire resources and can only see them when both land in the same build classloader
     // (oldge-ui, kvadrant-ui, toon-ui and plakat-ui met this).
     alias(wip.plugins.androidKotlinMultiplatformLibrary) apply false
+    alias(wip.plugins.androidApplication) apply false
     alias(libs.plugins.sborkaKmp) apply false
     alias(libs.plugins.sborkaLint) apply false
 }
