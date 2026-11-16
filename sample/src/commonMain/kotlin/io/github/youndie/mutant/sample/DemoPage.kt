@@ -61,6 +61,7 @@ import io.github.youndie.mutant.illustration.MutantIllustration
 import io.github.youndie.mutant.illustration.MutantIllustrationKind
 import io.github.youndie.mutant.surface.MutantKeyframeLoss
 import io.github.youndie.mutant.surface.mutantTape
+import io.github.youndie.mutant.theme.MutantScreenClock
 import io.github.youndie.mutant.theme.MutantTheme
 
 /**
@@ -118,21 +119,32 @@ private fun Screen(
     keyframeLoss: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colors = MutantTheme.colors
+    // Each phone its own clock (B-90): the Settings screen's dialog stands that screen alone, not its neighbours.
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText(title, style = MutantTheme.textStyles.display(28.sp))
-        Box(
-            Modifier
-                .size(360.dp, 720.dp)
-                .border(2.dp, Color(0xFF05060C), RoundedCornerShape(28.dp))
-                .then(if (roundedClip) Modifier.clip(RoundedCornerShape(28.dp)) else Modifier)
-                .background(colors.background)
-                .mutantTape()
-                .testTag(tag),
-        ) {
-            // The engine loses one screen's keyframe at a time; the sample gives the loss to its first screen.
-            if (keyframeLoss) MutantKeyframeLoss(Modifier.fillMaxSize(), colors.background) { content() } else content()
-        }
+        MutantScreenClock { ScreenBox(tag, roundedClip, keyframeLoss, content) }
+    }
+}
+
+@Composable
+private fun ScreenBox(
+    tag: String,
+    roundedClip: Boolean,
+    keyframeLoss: Boolean,
+    content: @Composable () -> Unit,
+) {
+    val colors = MutantTheme.colors
+    Box(
+        Modifier
+            .size(360.dp, 720.dp)
+            .border(2.dp, Color(0xFF05060C), RoundedCornerShape(28.dp))
+            .then(if (roundedClip) Modifier.clip(RoundedCornerShape(28.dp)) else Modifier)
+            .background(colors.background)
+            .mutantTape()
+            .testTag(tag),
+    ) {
+        // The engine loses one screen's keyframe at a time; the sample gives the loss to its first screen.
+        if (keyframeLoss) MutantKeyframeLoss(Modifier.fillMaxSize(), colors.background) { content() } else content()
     }
 }
 
