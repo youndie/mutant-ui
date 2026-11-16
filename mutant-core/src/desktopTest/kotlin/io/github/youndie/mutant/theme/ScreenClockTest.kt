@@ -74,6 +74,45 @@ class ScreenClockTest {
     }
 
     @Test
+    fun `a keyframe loss beside an open dialog runs`() {
+        var ran = false
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                MutantTheme(reduceMotion = false) {
+                    Row {
+                        MutantScreenClock {
+                            io.github.youndie.mutant.surface.KeyframeLossBody(
+                                Modifier.size(360.dp, 300.dp),
+                                MutantTheme.colors.background,
+                                null,
+                                {
+                                    io.github.youndie.mutant.components.MutantCard(Modifier.size(328.dp, 80.dp)) {
+                                        io.github.youndie.mutant.components
+                                            .MutantCardTitle("Кассета 07")
+                                    }
+                                },
+                                probe = { if (it) ran = true },
+                            )
+                        }
+                        MutantScreenClock {
+                            Box(Modifier.size(360.dp, 300.dp)) {
+                                MutantDialog(true, "Стереть?", {}) { MutantDialogAction("Да", {}) }
+                            }
+                        }
+                    }
+                }
+            }
+            // A loss comes once in every 9 s window, 3.5 s into it; the bodies build off the frame in real time.
+            repeat(12 * 60) {
+                mainClock.advanceTimeByFrame()
+                if (it % 4 == 0) Thread.sleep(2)
+            }
+        }
+        assertTrue(ran, "the loss ran within 12 s beside a screen held by its dialog")
+    }
+
+    @Test
     fun `without screen clocks a dialog stops every screen`() {
         val (theme, under, beside) = run(ownClocks = false)
         assertEquals(listOf(0.0, 0.0, 0.0), listOf(theme, under, beside))
