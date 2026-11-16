@@ -568,6 +568,16 @@ Rejected:
 - 48 dp rows with the 36 or 42 dp drawing inside: it departs from the page's spacing;
 - 48 dp cells for the calendar: its seven columns would make a 336 dp row, wider than its 284 dp body.
 
+### D20. The code is primary from 2026-11-16 *(as toon-ui's D13)*
+
+The owner, on 2026-11-16: changes to the design system are to be made here, not through Claude Design and an archive carried across. Until then the vendored export was the ruler (D3, D4), and a newer one was to be re-imported whole ([B-42](../backlog/B-42-re-import-the-design.md)). From now on the design is where the kit started, and the kit moves from here.
+
+- **Nothing is re-imported.** B-42 is dropped. A later export from the designer is read as a list of proposals, each taken here as an item, never as a snapshot to regenerate everything from.
+- **`reference/design-system/` stays as it is, unedited**, as the record of where each token, shape and component came from.
+- **The checks against it stay**, as a regression net for everything that has not left it: the generator's goldens (`gen-goldens.mjs`), the vendored golden (`design-golden.mjs`), the tokens (`tokens.mjs`), the icons (`icons.mjs`), parity against the Chrome references and the library's goldens.
+- **A departure is recorded, not loosened.** A change the owner asks for is made in the code, in an item. Where it moves what a check holds against the design, the check's own list of known entries names it, with the item, as `design-golden.mjs`'s `KNOWN` already does. A cell it moves past the parity line goes into a departures registry with an `asDesigned` switch (cmp-ui-parity §7); one under it is a dated note with its numbers. The moved goldens are re-recorded and looked at.
+- **Rejected**: keeping the vendored files as an editable source of our own, edited here and regenerated from. The generator would then live twice, as JavaScript and as its Kotlin port, and every change would be made in both and proved equal. The Kotlin is what ships.
+
 ---
 
 ## 3. Risks and open questions
@@ -576,7 +586,7 @@ Rejected:
 |---|---|---|
 | H1 | **The port does not match on every target.** `sin` in the lattice hash, `exp`/`pow` in the drips, `Float32` storage (§1.4). | *Closed by B-03:* every golden path is byte-identical on the JVM, the iOS simulator and wasm (§1.4); the common test still allows the handoff's 0.1 dp, and a JVM-only test holds exactness. |
 | H2 | **The fonts lack a script or a weight** (§1.6). | *Closed by B-02:* both carry Cyrillic and Latin; four static instances are bundled. |
-| H3 | **The field is too slow on a phone** (D13). | *Desktop half settled by B-06:* instance green, card frame grey (§1.9). The phone is [B-49](../backlog/B-49-frame-cost-on-a-pixel-6a.md); on red, the brief's retreat order and the handoff's two outs, a coarser grid or a shader field. |
+| H3 | **The field is too slow on a phone** (D13). | *Closed by B-49 and B-89 on the owner's Pixel 6a:* the instance's worst case is 283 µs; ten cards under the Tape at 12 ticks a second and a list of 100 scrolling skip no vsync, with a main-thread p95 of 3.1 and 11.8 ms. The phone is 2.7 times the M1 on a warm frame. |
 | H4 | **The venom's soft joins need a blur and an alpha threshold**, which Compose exposes as `RenderEffect` on Skia and Android 12+ only. | *Desktop settled by B-12:* a graphics layer with a blur and a colour matrix reproduces the filter but for its edges (§1.11). Android below 12 draws the geometric shapes, as the handoff allows; not run on a device. |
 | H5 | **The pages can be rendered at a fixed time** through `data-mu-t` and `setPaused`, so that a reference is reproducible. | *Closed by B-05:* `data-mu-t` on every stage, with keyframe loss off, renders byte-identically twice; the pause is not needed (§1.8). |
 | R1 | **Shape jumps when a slot is resized** (§1.7). | *Measured by B-10:* the drips stay, the mosaic mostly stays, the flow lines all move (§1.10); the owner decides in [B-51](../backlog/B-51-size-change-moves-the-flow-lines.md). |

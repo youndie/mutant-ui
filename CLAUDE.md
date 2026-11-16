@@ -53,19 +53,21 @@ reproduce the vendored golden, except the entries it lists with their cause.
 **Builds run on this Mac, not on the Linux box** (research D12). The project is not in
 `mutagen sync list`, and references and goldens are a claim about the rasteriser that recorded them.
 
-## Re-importing the design
+## The code is primary (D20)
 
 `reference/design-system/` is the owner's export of claude.ai/design project
-`3c6970f5-9ab1-4100-b418-41b7bacfcf78`, taken on 2026-11-13 (engine `?v=50`). A newer version is
-taken on a branch of its own, never by overwriting, and only when the owner starts it
-([B-42](docs/backlog/B-42-re-import-the-design.md)):
+`3c6970f5-9ab1-4100-b418-41b7bacfcf78`, taken on 2026-11-13 (engine `?v=50`). Since 2026-11-16 it is the
+record of where the kit started, not a source to re-import: the design system changes here, in the code
+(research D20; [B-42](docs/backlog/B-42-re-import-the-design.md) dropped).
 
-1. **Unpack** with a cp437 → UTF-8 name re-decode: the export's names are UTF-8 without the flag,
-   and macOS `unzip` stops on them (research §1.1).
-2. **Diff** `mutant-tokens.json`, `mutant-generator.js`, `mutant-golden.json` and each page's slots,
-   and put the diff in the commit body.
-3. **Regenerate** tokens, goldens and references in the same branch, update `KNOWN` in
-   `scripts/design-golden.mjs`, and update research §1.1.
+- **A change is an item**, made in Kotlin. The vendored files stay as they are.
+- **Where the change moves what a check holds against the design** (generator goldens, tokens, icons,
+  the vendored golden, parity, goldens), name it in that check's list of known entries with the item, as
+  `scripts/design-golden.mjs`'s `KNOWN` does. Past the parity line, also an entry in a departures registry
+  with an `asDesigned` switch. Under it, a dated note with its numbers. Re-record the moved goldens and look
+  at them.
+- **A later export from the designer is a list of proposals**, each taken as an item, never unpacked over
+  `reference/`.
 
 ## Rules that are easy to get wrong here
 
@@ -90,7 +92,8 @@ taken on a branch of its own, never by overwriting, and only when the owner star
   and centres unrounded metrics, so a label without it sits a pixel or two under Chrome's. Text parity is
   held by where the ink lies (top row exactly), not by a pixel count: the glyph masks differ on most edges.
 - **Never edit the vendored design, a golden or a reference to make parity pass**, and never raise
-  a tolerance to get green. A gap is a number in the commit body with its cause.
+  a tolerance to get green. Leaving the design on purpose is a departure (D20), recorded, not a
+  loosened check. A gap is a number in the commit body with its cause.
 - **Fonts only under an open licence**: Handjet and Rubik, both OFL (D9).
 - **No brands, franchises, real VCR menus, real test cards, vaporwave or analogue-horror motifs** in
   demo content (brief, «Не делаем»).
