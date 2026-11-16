@@ -100,8 +100,18 @@ class TallBodyBandTest {
             runComposeUiTest {
                 var images = 0
                 var vectors = 0
-                val scroll = tallCard(asImage, frames = { image -> if (image) images++ else vectors++ })
+                var drawnAt = -1L
+                val scroll =
+                    tallCard(asImage, frames = { image ->
+                        drawnAt = mainClock.currentTime
+                        if (image) images++ else vectors++
+                    })
                 repeat(40) {
+                    mainClock.advanceTimeByFrame()
+                    Thread.sleep(6)
+                }
+                // To the frame that drew a tick: the next one draws no tick of its own.
+                while (drawnAt != mainClock.currentTime) {
                     mainClock.advanceTimeByFrame()
                     Thread.sleep(6)
                 }
