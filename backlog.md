@@ -62,7 +62,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-90](docs/backlog/B-90-a-dialog-stops-the-whole-demo.md) `[ ]` | A dialog open in the demo stops every screen and the Tape | P1 | S | - |
 | [B-91](docs/backlog/B-91-pressed-labels-on-amber.md) `[ ]` | A pressed body's light label stands on amber, unreadable | P1 | S | - |
 | [B-94](docs/backlog/B-94-the-navigation-bar-label-on-its-pill.md) `[ ]` | The navigation bar's selected label stands on its pill's drips | P1 | S | - |
 | [B-92](docs/backlog/B-92-the-dropdown-stays-open.md) `[ ]` | The dropdown closes itself after a pick | P2 | S | - |
@@ -181,5 +180,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-47](docs/backlog/B-47-carousel.md) `[x]` - Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots
 - [B-48](docs/backlog/B-48-keyframe-loss.md) `[x]` - Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s
 - [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[x]` - A tall body rasterises its whole height every tick
+- [B-90](docs/backlog/B-90-a-dialog-stops-the-whole-demo.md) `[x]` - A dialog open in the demo stops every screen and the Tape
 
 <!-- END INDEX -->

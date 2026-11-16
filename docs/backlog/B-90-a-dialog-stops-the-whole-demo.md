@@ -1,7 +1,7 @@
 ---
 id: B-90
 title: "A dialog open in the demo stops every screen and the Tape"
-status: open
+status: done
 priority: P1
 size: S
 stage: stage-6-later
@@ -23,3 +23,25 @@ The Settings screen's dialog is open by default (`DemoScreenFrame(dialogOpen = t
   - Library's keyframe loss runs every 9 s.
   - A test holds that a dialog stops only its own screen's clock.
 - Anchors: `sample/src/commonMain/kotlin/io/github/youndie/mutant/sample/DemoPage.kt`, `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDialog.kt`, `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/clock/MutantClock.kt`
+
+## Findings (2026-11-16)
+
+**Seen.** On the Pages build the demo opens with the Settings screen's dialog showing, and nothing behind it moves.
+- One clock, the theme's, ran everything on the page: all three phones, the page's Tape and the header.
+- The dialog held that clock, so the Library screen never reached the 3.5 s of a 9 s window where its keyframe loss starts.
+- `ScreenClockTest`'s control reproduces it: without a screen clock, a dialog stops the theme's clock and both screens (0 ms moved in 2 s).
+
+**The decision.** A screen gets a clock of its own: `MutantScreenClock { }`, public. It follows the theme's reduce motion, and a dialog, bottom sheet or drawer opened inside holds it alone. A consumer showing two screens side by side, or one over another, meets the same need the demo has. The demo gives each phone one, so the Settings dialog stands the Settings screen and nothing else.
+
+Rejected: the dialog closed by default. That hides the problem in the demo and leaves it for a consumer.
+
+**Tests.**
+- `ScreenClockTest`, three cases:
+  - a dialog holds its own screen's clock alone, while the screen beside it and the theme's clock move 2 s in 2 s;
+  - a keyframe loss beside a screen held by its dialog runs within 12 s;
+  - without screen clocks, everything stands (the control).
+- `DemoClocksTest`: on the demo page, with the dialog open, the Library screen's pixels change over a second.
+
+A mutant making `MutantScreenClock` provide no clock of its own fails all three of the first two classes' behaviour tests.
+
+The public API adds one function; the ABI dump is updated.
