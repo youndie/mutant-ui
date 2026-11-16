@@ -1,7 +1,7 @@
 ---
 id: B-88
 title: "The keyframe loss copies its whole picture for every block it drags"
-status: question
+status: done
 priority: P1
 size: M
 stage: stage-5-product
@@ -73,3 +73,5 @@ The choices:
 1. **Accept it and close B-88** with these numbers: the first loss of a page stutters for about a second, and later ones do not.
 2. **Keep looking**, starting with which of the three it is.
 3. **Start a page's first loss later** than the engine's 3.5 s. That is a departure from the design, and yours to make.
+
+**Answered 2026-11-16 by the owner: accept it and close.** The residual stands as measured and is never to be counted as met: the first loss after a page opens drops about seven frames of about 60 ms over its run in the browser (Library screen alone, 1.3 % of intervals over 33 ms); later losses are nearly clean.
