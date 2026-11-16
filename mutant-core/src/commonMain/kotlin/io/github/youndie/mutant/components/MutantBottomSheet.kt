@@ -52,6 +52,7 @@ import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 
@@ -103,10 +104,11 @@ internal fun SheetFrame(
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
     val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
         val clock = readMutantClock()
         follow.follow(visible, clock.nowMs)
-        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (visible) RISE_MS else SINK_MS)
+        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (visible) RISE_MS else SINK_MS, steps)
         if (p < 1) clock.frame
         val shown = if (visible) p else 1 - p
         val gone = !visible && p >= 1

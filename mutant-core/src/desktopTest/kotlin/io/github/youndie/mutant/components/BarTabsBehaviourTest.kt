@@ -179,10 +179,11 @@ class BarTabsBehaviourTest {
             at = 2
             mainClock.advanceTimeBy(160)
             val mid = acid(43)!!
-            // 160 ms is one 83 ms step of 330 in: eased out by the cube, 1 - (1 - p)^3, from the first label to the third.
+            // 160 ms on, the run is 144 ms of 330 in: it starts with the frame that composes the new selection, one frame
+            // after it was made. On every frame (B-100), eased out by the cube, 1 - (1 - p)^3, from the first label to the third.
             val p =
                 io.github.youndie.mutant.surface
-                    .stepped(160.0, 330.0)
+                    .stepped(160.0 - 16, 330.0, steps = false)
             val e = 1 - Math.pow(1 - p, 3.0)
             val expected = start.first + (end.left - start.first) * e
             assertTrue(abs(mid.first - expected) <= 1.0, "at 160 ms the bar at ${mid.first}, eased to $expected")

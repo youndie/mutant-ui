@@ -63,6 +63,7 @@ import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.tokens.MutantMotion
@@ -221,7 +222,8 @@ private fun DayGrid(
     val run = remember(days, lead) { DayRun(selectedDay ?: 0) }
     run.follow(selectedDay ?: 0, clock.nowMs)
     val cellDp = remember { floatArrayOf(CELL.toFloat()) }
-    val p = if (instant || run.from <= 0) 1.0 else stepped(clock.nowMs - run.since, MutantMotion.SLIDE_MS)
+    val steps = LocalMutantSteppedMotion.current
+    val p = if (instant || run.from <= 0) 1.0 else stepped(clock.nowMs - run.since, MutantMotion.SLIDE_MS, steps)
     if (p < 1) clock.frame
     val left = (1 - p) * (1 - p)
     val newAt = selectedDay?.let { lead + it - 1 } ?: -1

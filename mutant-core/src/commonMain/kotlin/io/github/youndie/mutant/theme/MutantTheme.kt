@@ -33,6 +33,13 @@ internal val LocalMutantReduceMotion = staticCompositionLocalOf { false }
 /** «Чистый сигнал»: no Tape and no idle glitches; the clock runs (D7). */
 internal val LocalMutantCleanSignal = staticCompositionLocalOf { false }
 
+/**
+ * Whether movement steps at the hot tick as the design draws it (B-100). Off by default: a pour, a slide, a melt, a
+ * venom run and an overlay's rise move on every frame of the screen's clock, while the boil, the drips and the mosaic keep
+ * their tick (D6).
+ */
+internal val LocalMutantSteppedMotion = staticCompositionLocalOf { false }
+
 /** The two bundled families (B-02). */
 internal val LocalMutantFonts = staticCompositionLocalOf<MutantFonts?> { null }
 
@@ -55,6 +62,7 @@ public fun MutantTheme(
     cassette: String = DEFAULT_CASSETTE,
     reduceMotion: Boolean? = null,
     cleanSignal: Boolean = false,
+    steppedMotion: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val paused = reduceMotion ?: platformReduceMotion()
@@ -65,6 +73,7 @@ public fun MutantTheme(
         LocalMutantCassette provides cassette,
         LocalMutantReduceMotion provides paused,
         LocalMutantCleanSignal provides cleanSignal,
+        LocalMutantSteppedMotion provides steppedMotion,
         LocalMutantFonts provides mutantFonts(),
     ) {
         ProvideMutantClock(clock, content)

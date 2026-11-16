@@ -59,6 +59,7 @@ import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.tokens.MutantMotion
@@ -114,6 +115,7 @@ internal fun SegmentedBody(
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val chosen = enabled && selectedIndex in options.indices
     val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
+    run.steps = LocalMutantSteppedMotion.current
     val geo = remember { SegmentGeometry() }
     run.key = pillKey
     run.cassette = cassette

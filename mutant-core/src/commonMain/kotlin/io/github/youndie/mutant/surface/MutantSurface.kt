@@ -262,7 +262,8 @@ internal fun MutantSurface(
     val view = remember { BodyView() }
     val reach = with(androidx.compose.ui.platform.LocalDensity.current) { OFF_SCREEN_REACH.dp.toPx() }
     val bodyFill = fill ?: colors.fillOf(p.fill)
-    moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h)
+    val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
+    moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps)
     val look =
         BodyLook(
             fill = bodyFill,
@@ -290,7 +291,7 @@ internal fun MutantSurface(
                 val k = heatNow ?: boil.at(now)
                 val from = moves.pourFrom
                 val g = drawn.value
-                val p = g?.let { stepped(now - moves.pourSince, pourDuration(it.slot.h)) } ?: 1.0
+                val p = g?.let { stepped(now - moves.pourSince, pourDuration(it.slot.h), steps) } ?: 1.0
                 // A pour asked for before the body first draws starts when it does: the old fill stands until then.
                 val pouring = from != null && !instantNow && (g == null || p < 1)
                 val under =
@@ -575,10 +576,12 @@ internal fun MutantSurface(
                     ahead.prepare(g, next, shown, scope) { band -> buildAhead(g, cache, dead, next, band) }
                 }
                 val now = clock.nowMs
-                val pourP = pourAt?.first ?: if (instant) 1.0 else stepped(now - moves.pourSince, pourDuration(slot.h))
+                val pourP =
+                    pourAt?.first ?: if (instant) 1.0 else stepped(now - moves.pourSince, pourDuration(slot.h), steps)
                 val pourFrom = pourAt?.second ?: moves.pourFrom
                 val slideP =
-                    slideAt?.first ?: if (instant) 1.0 else stepped(now - moves.slideSince, MutantMotion.SLIDE_MS)
+                    slideAt?.first
+                        ?: if (instant) 1.0 else stepped(now - moves.slideSince, MutantMotion.SLIDE_MS, steps)
                 val slideDx = slideAt?.second ?: moves.slideDx
                 val slideDy = if (slideAt != null) 0.0 else moves.slideDy
                 // A running transition is evaluated on every frame, as the engine does, so its steps keep to the event.
@@ -1081,13 +1084,14 @@ internal class BodyMoves {
         slide: SlideRequest?,
         now: Double,
         h: Double? = null,
+        steps: Boolean = false,
     ) {
         val old = fill
         if (old != null && old != newFill) {
             // A change back within a pour's first half pours from what still covers most of the body, the pour's own
             // old fill, not from the fill it was pouring in: a body never jumps to a colour it was not showing (B-94).
             val from = pourFrom
-            val early = from != null && h != null && stepped(now - pourSince, pourDuration(h)) < .5
+            val early = from != null && h != null && stepped(now - pourSince, pourDuration(h), steps) < .5
             pourFrom = if (early) from else old
             pourSince = now
         }

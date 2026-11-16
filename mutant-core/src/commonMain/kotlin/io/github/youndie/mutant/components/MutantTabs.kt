@@ -44,6 +44,7 @@ import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantMotion
@@ -79,6 +80,7 @@ public fun MutantTabs(
     val colors = MutantTheme.colors
     val clock = readMutantClock()
     val reduce = LocalMutantReduceMotion.current
+    val steps = LocalMutantSteppedMotion.current
     val marks = remember { TabMarks() }
     val slide = remember { TabSlide(selectedIndex) }
     val barWidth = LocalTabBarWidth.current
@@ -119,7 +121,7 @@ public fun MutantTabs(
                 .selectableGroup()
                 .drawWithContent {
                     drawContent()
-                    val p = if (reduce) 1.0 else stepped(clock.nowMs - slide.since, MutantMotion.SLIDE_MS)
+                    val p = if (reduce) 1.0 else stepped(clock.nowMs - slide.since, MutantMotion.SLIDE_MS, steps)
                     // While the bar runs it reads every frame; at rest it reads nothing.
                     if (p < 1) clock.frame
                     scale(

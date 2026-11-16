@@ -21,6 +21,7 @@ class SampleStrings(
     val themeKopiya = t("Copy", "Копия")
     val reduceMotion = t("Reduce motion", "Без движения")
     val cleanSignal = t("Clean signal", "Чистый сигнал")
+    val designSteps = t("Design's steps", "Шаги дизайна")
     val languageName = t("EN", "RU")
     val pageComponents = t("Components", "Компоненты")
     val pageDemo = t("Demo", "Демо")

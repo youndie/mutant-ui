@@ -34,11 +34,20 @@ import kotlin.math.sin
 /** The transitions' step, ms: the hot tick. */
 internal const val TRANSITION_STEP_MS: Double = 83.33
 
-/** A transition's progress after [elapsed] ms of [duration]: whole steps only, at most 1. */
+/**
+ * A transition's progress after [elapsed] ms of [duration], at most 1: in whole steps where the theme's [steps] are on
+ * (`steppedMotion`, the design's), else on every frame (B-100).
+ */
 internal fun stepped(
     elapsed: Double,
     duration: Double,
-): Double = min(1.0, floor(max(0.0, elapsed) / TRANSITION_STEP_MS) * TRANSITION_STEP_MS / duration)
+    steps: Boolean,
+): Double =
+    if (steps) {
+        min(1.0, floor(max(0.0, elapsed) / TRANSITION_STEP_MS) * TRANSITION_STEP_MS / duration)
+    } else {
+        min(1.0, max(0.0, elapsed) / duration)
+    }
 
 /** How long a pour takes on a body [h] dp tall: `clamp(260 + 5 · h, 300, 620)` (tokens `motion.pour`). */
 internal fun pourDuration(h: Double): Double = max(MutantMotion.POUR_MIN_MS, min(MutantMotion.POUR_MAX_MS, 260 + 5 * h))
@@ -119,8 +128,9 @@ internal fun Modifier.mutantMelt(on: Boolean): Modifier =
         val melt = remember { MeltFollower(on) }
         melt.follow(on, clock.nowMs)
         val instant = io.github.youndie.mutant.theme.LocalMutantReduceMotion.current
+        val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
         val elapsed = if (instant) Double.POSITIVE_INFINITY else clock.nowMs - melt.since
-        val p = stepped(elapsed, MutantMotion.MELT_IN_MS)
+        val p = stepped(elapsed, MutantMotion.MELT_IN_MS, steps)
         // While it runs, the melt reads every frame, as the engine steps it; done, it reads nothing. Done is the
         // stepped progress at 1, which comes at 333.3 ms, not at the 330 ms duration (B-54).
         if (p < 1) clock.frame
