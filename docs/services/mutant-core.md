@@ -92,7 +92,8 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/GeneratorBoundaryTest.kt` | holds the generator package free of Compose imports |
 | `mutant-core/karma.config.d/mocha-timeout.js` | the browser tests' limits |
 | `sample/` | the sample kit: `./gradlew :sample:run`, `:sample:wasmJsBrowserDistribution`; in the browser `?scene=<name>` opens one of B-72's scenes for B-73's recorder (`BenchScene.kt`) |
-| `scripts/frame-bench-browser.mjs`, `scripts/frame-profile-browser.mjs` | the sample's frame per scene in headless Chrome, and a scene's sampled profile ([B-73](../backlog/B-73-frame-cost-in-the-browser.md)); by hand, not in `make check` |
+| `scripts/frame-bench-browser.mjs`, `scripts/frame-profile-browser.mjs` | the sample's frame per scene in headless Chrome, and a scene's sampled profile ([B-73](../backlog/B-73-frame-cost-in-the-browser.md)); by hand, not in `make check`. `DIST=<dir>` measures another build. After a change to a `@JsFun` alone, rebuild with `:sample:compileProductionExecutableKotlinWasmJsOptimize --rerun`: the task stays up to date, and the bundle keeps the old JS |
+| `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/surface/AheadDispatcher.*.kt` | where a body's builds off the frame run: `Dispatchers.Default`, and in the browser a task of its own each at `background` priority ([B-87](../backlog/B-87-ticks-on-the-one-thread.md)) |
 
 ## 3. How it is built
 

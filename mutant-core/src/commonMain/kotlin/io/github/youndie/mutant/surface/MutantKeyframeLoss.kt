@@ -138,8 +138,9 @@ internal fun CacheDrawScope.moshBehind(
     block: DrawScope.() -> Unit,
 ): DrawResult =
     onDrawBehind {
-        if (scene == null) return@onDrawBehind block()
+        // Kept with or without a scene: a body off the screen draws it again rather than build a frame (B-87).
         body.draw = block
+        if (scene == null) return@onDrawBehind block()
         val cut = scene.cutIn(body.coords)
         if (cut == null) {
             block()

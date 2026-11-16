@@ -33,7 +33,8 @@ const ALL = ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'De
 // it, reported beside, as the first smoke run found the resting page saturated (B-73's amendment).
 const HOST = { Control: 'ComponentsReduce', ControlRest: 'ComponentsRest' };
 const SCENES = scenesArg ? scenesArg.split(',') : ALL;
-const DIST = 'sample/build/dist/wasmJs/productionExecutable';
+// DIST: another copy of the build to measure, as one built at another commit.
+const DIST = process.env.DIST ?? 'sample/build/dist/wasmJs/productionExecutable';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 if (!existsSync(join(DIST, 'index.html'))) throw new Error(`no build at ${DIST}: run :sample:wasmJsBrowserDistribution`);

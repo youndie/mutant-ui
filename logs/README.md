@@ -12,3 +12,4 @@ named as void in its item, and no number of it is reported.
 | `b-85/` | [B-85](../docs/backlog/B-85-aliased-text-on-macos-26.md) — the slider's value under six raster settings over four grounds, on the macOS 26 runner and on this Mac, with crops | by hand |
 | `b-69/` | [B-69](../docs/backlog/B-69-tall-body-tick-cost.md) — a tall body's cost per tick in a real window | the bench's own table at the end of each log |
 | `b-73/` | [B-73](../docs/backlog/B-73-frame-cost-in-the-browser.md) — the sample's frame in headless Chrome per scene, the JVM's beside it at the same commit, and profiles of the red scenes | the bench's own pooled table at the end of each log; profiles by hand |
+| `b-87/` | [B-87](../docs/backlog/B-87-ticks-on-the-one-thread.md) — B-73's browser and JVM benches after the fix: `-final` at `085a110`, the others intermediate (`2271b6d`, `6e3faa5`) | the bench's own pooled table at the end of each log |
