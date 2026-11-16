@@ -1,7 +1,7 @@
 ---
 id: B-49
 title: "The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance"
-status: wip
+status: question
 priority: P3
 size: M
 stage: stage-1-materials
@@ -55,3 +55,47 @@ on the desktop JVM and assumed the phone four times slower; this item measures t
 **Amended 2026-11-16, before the first number.**
 - `List100`'s rows are laid out as the demo's Library lays them: each with a leading icon, whose tile is a drawn body, a time on the right and a `MutantDivider` under it, inside 16 dp of padding. A row of the kit has no body of its own, so bare rows would scroll nothing the kit draws.
 - `Instance` follows B-06's own protocol rather than the counts written above, so that the factor compares like with like. The arms `instance` and `warm` alternate per call, 200 calls a round. There are five rounds, round 1 not counted, with a 3 s warm-up a case. Each round reports the median per arm, and B-06's control (`warm` plus 200 µs) runs on `card-a`. The M1 figures come from `fieldBench` at the same commit.
+
+## Results, 2026-11-16
+
+Run at `dcc1794` on the stand above. The phone ran Android 17 (API 37) on a 1080 × 2400 panel at 60 Hz and density 2.625, release, not debuggable. Thermal status was 0 through every screen scene and 1 in the instance arms' last two rounds. Logs:
+- `logs/b-49/2026-11-16-pixel6a/` holds `metrics.csv`, every frame; `scenes.csv`, a line per scene; and `instance.txt`;
+- `logs/b-49/2026-11-16-m1-fieldbench.log` is the M1 at the same commit.
+
+`scripts/b49_summary.py` prints every number below from them.
+
+**The control sees the nested layer.** `Spin5`'s draw p50 over `TenCards12`'s read 5.00, 5.00, 5.01, 5.00 and 5.00 ms per counted round, against 5 ± 1. B-06's control on the phone read 197–207 µs for its 200 µs.
+
+**Load was delivered.** `List100` scrolled 38 947–39 015 px a scene against the 39 375 asked (1 500 dp a second for 10 s).
+
+| Scene | frames/s | `TOTAL` p50 / p95 | missed deadline | vsyncs skipped (gap > 25 ms) | main-thread work p95 | work > 16.7 ms | Pre-registered verdict |
+|---|---|---|---|---|---|---|---|
+| Blank | 60.3 | 28.1 / 28.9 | 0.0 % | 0 % | 1.25 | 0 % | (red: the base) |
+| TenCards12 | 59.4 | 29.1 / 55.0 | 1.5 % | 1.51 % | 27.03 | 6.8 % | **RED** |
+| TenCards8 | 60.3 | 12.7 / 30.7 | 0.0 % | 0 % | 3.22 | 0 % | (grey: the kit's tick) |
+| List100 | 60.3 | 17.7 / 32.9 | 0.0 % | 0 % | 13.32 | 0.3 % | **RED** |
+| Spin5 | 59.2 | 29.2 / 56.4 | 1.7 % | 1.74 % | 29.42 | 6.8 % | (red: the control) |
+
+Times are in ms, from rounds 2–6 and each scene's second second on; same host, same run.
+
+**The pre-registered rule for a screen fails its own base.** `TOTAL` runs from the intended vsync to the frame's end, through a pipeline of buffers: the empty `Blank` screen reads 28 ms at p50, and Android's own `DEADLINE` for these frames is 33–66 ms. A p95 of `TOTAL` under 16.7 ms is a latency no screen on this phone reaches, so both targets read RED by a condition the empty screen also fails. The threshold was chosen badly. That is a limitation of the rule, written here beside the number, not a moved line.
+
+What the run does show:
+- **`List100` holds 60 frames a second.** No vsync was skipped, and 0.3 % of frames took over 16.7 ms on the main thread.
+- **`TenCards12` drops 1.5 % of its frames**, all in its ticks. 6.8 % of frames, about a third of its 12 ticks a second, took 17–30 ms of main-thread work. At the kit's own 8 ticks a second the same ten cards drop nothing and stay under 3.3 ms at p95. A frame built ahead that is not ready in time is built in the frame (B-75). On the phone, at 12 ticks a second, that is a third of them → [B-89](B-89-twelve-ticks-built-in-the-frame-on-a-phone.md).
+
+**The instance** (B-06's cases, by B-06's protocol): the worst case is `fab-b` at 283.2 µs, `card-a` 157.7 µs. **GREEN**: every case is under 1 ms.
+
+**The factor between the M1 and the phone**, the phone's median over the M1's per case:
+- **Instance: median 3.53**, range 2.23–18.00. By the pre-registered rule (3–5), it **confirms** B-06's 4. The range's top is five cases the M1 runs in 0.1–0.4 µs, at its timer's resolution; without the cases under 1 µs on the M1 the median is about 2.9.
+- **Warm frame: median 2.68**, range 2.43–3.85. This **refutes** B-06's 4: the phone is slower by under three times, not four. B-06's grey card (532.5 µs on the M1, "about 21 ms on a Pixel 6a" for ten) reads 1 371 µs here, so ten cards take 13.7 ms of field a tick.
+
+The harness printed its instance numbers in the phone's locale, with a decimal comma. The summary reads them either way, and the harness now prints in `Locale.ROOT`.
+
+## Question for the owner, 2026-11-16
+
+The pre-registered rule makes both screen targets RED, and it makes the empty screen RED as well. The pre-registration says a red starts the brief's retreat order. No step of that order can bring `TOTAL` under the 28 ms the empty screen already reads. A late amendment is the owner's to make, and only to fix an incoherence like this one. The choices:
+
+1. **Amend late**: judge a screen by the vsyncs it skips. Green when under 1 % and the main thread's p95 is ≤ 16.7 ms; red when over 5 %. `List100` reads GREEN on that, with 0 % skipped and a p95 of 13.3 ms. `TenCards12` reads GREY, with 1.51 % skipped, and B-89 takes its cause.
+2. **Keep the rule as frozen**: both RED, and the retreat arms measured on `TenCards12` and `List100`, knowing none can reach the line.
+3. **Close as measured**: the numbers above stand, with no screen verdict, and B-89 goes on.

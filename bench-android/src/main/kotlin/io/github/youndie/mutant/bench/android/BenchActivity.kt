@@ -237,13 +237,17 @@ class BenchActivity : ComponentActivity() {
             for (c in cases) {
                 val cells = round(c, arms)
                 out.appendLine(
-                    "round $r ${c.golden.name} " + cells.joinToString(" ") { (n, v) -> "$n=${"%.1f".format(v)}" },
+                    "round $r ${c.golden.name} " +
+                        cells.joinToString(" ") { (n, v) -> "$n=${"%.1f".format(java.util.Locale.ROOT, v)}" },
                 )
             }
             val (w, ctl) = round(card, controlArms).map { it.second }
             out.appendLine(
-                "round $r control card-a warm=${"%.1f".format(w)} warm+200us=${"%.1f".format(ctl)} " +
-                    "delta=${"%.1f".format(ctl - w)}",
+                "round $r control card-a warm=${"%.1f".format(
+                    java.util.Locale.ROOT,
+                    w,
+                )} warm+200us=${"%.1f".format(java.util.Locale.ROOT, ctl)} " +
+                    "delta=${"%.1f".format(java.util.Locale.ROOT, ctl - w)}",
             )
             out.appendLine("round $r checksum $checksum")
             out.flush()
