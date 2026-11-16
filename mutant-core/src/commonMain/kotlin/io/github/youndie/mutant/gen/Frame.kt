@@ -38,6 +38,7 @@ internal fun MutantGenerator.frame(
     heat: Double = 0.0,
     pressed: Boolean = false,
     steadyWebs: Boolean = false,
+    grow: Boolean = true,
 ): BodyFrame {
     val el = g.slot
     val hot = heat > 0 || pressed
@@ -46,11 +47,11 @@ internal fun MutantGenerator.frame(
     val boil = boil0 * (1 + 2 * heat) + .6 * heat
     val prims = primitives(g, t, hot)
     if (heat > 0) prims += bubbles(g, t, heat)
-    val fd = distanceField(g, cache, prims, t, REST_ROUGH * el.calm, boilPhase, boil, heat, boil0, steadyWebs)
+    val fd = distanceField(g, cache, prims, t, REST_ROUGH * el.calm, boilPhase, boil, heat, boil0, steadyWebs, grow)
     val contour = smoothPath(march(fd, 0.0), .9, 5.0)
     val highlight =
         smoothPath(
-            march(fd, -3.4, ceil((el.r + 19) / fd.step).toInt(), floor((el.h + 7) / fd.step).toInt()),
+            march(fd, -3.4, ceil((el.r + 19) / fd.step).toInt() + fd.pad, floor((el.h + 7) / fd.step).toInt() + fd.pad),
             1.1,
         )
     val flow = if (g.flowLines.isEmpty()) GenPath.Empty else flowLinePath(g, t, boilPhase, boil)

@@ -53,6 +53,7 @@ class GeneratorGoldenTest {
         val report = StringBuilder()
         var exact = 0
         var total = 0
+        val cut = ArrayList<String>()
         for (golden in genGoldens) {
             val g = instanceOf(golden)
             val cache = FieldCache()
@@ -67,9 +68,19 @@ class GeneratorGoldenTest {
                     "$at primitives",
                 )
                 val fd = frame.field
+                // B-97: where the engine's field reaches its grid's edge, the engine's contour is cut there and the
+                // port's grid has grown by whole cells past it; the origin and the step stay the engine's.
+                val engineCut = gen.frame(g, FieldCache(), f.t, f.heat, grow = false).field.cut
+                if (engineCut) cut += "${golden.name} @${f.t}"
                 GoldenAssert.numbers(
                     f.grid,
-                    doubleArrayOf(fd.nx.toDouble(), fd.ny.toDouble(), fd.x0, fd.y0, fd.step),
+                    doubleArrayOf(
+                        (fd.nx - 2 * fd.pad).toDouble(),
+                        (fd.ny - 2 * fd.pad).toDouble(),
+                        fd.x0,
+                        fd.y0,
+                        fd.step,
+                    ),
                     "$at grid",
                 )
                 for ((what, want, got) in listOf(
@@ -78,10 +89,15 @@ class GeneratorGoldenTest {
                     Triple("flow lines", f.flowLines, frame.flowLines.toSvg()),
                 )) {
                     total++
-                    if (want == got) exact++ else GoldenAssert.path(want, got, "$at $what")
+                    if (want == got) {
+                        exact++
+                    } else if (!(engineCut && what == "contour")) {
+                        GoldenAssert.path(want, got, "$at $what")
+                    }
                 }
             }
         }
+        assertEquals(B97_CUT_FRAMES, cut.toSet(), "golden frames whose engine field reaches its grid's edge")
         report.append("paths byte-identical: $exact of $total")
         println(report)
     }
@@ -208,3 +224,9 @@ class GeneratorGoldenTest {
         }
     }
 }
+
+/**
+ * B-97: the golden frames whose field reaches the engine's grid edge. The engine's contour is cut there; the port's
+ * grid grows past it and closes the contour, so these contours are the port's own, not the engine's.
+ */
+internal val B97_CUT_FRAMES: Set<String> = setOf("fab-b @5000.0", "fab-b @12100.0", "fab-b @15990.0")
