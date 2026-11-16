@@ -45,7 +45,10 @@ def screens(run: Path):
 def summarise(rows, scenes):
     names = sorted({s for s, _ in rows})
     out = {}
-    print("scene        frames  fps   missed  total p50  total p95  work p50  work p95  gpu p95  >16.7   >33   verdict")
+    print(
+        "scene        frames  fps   missed  total p50  total p95  work p50  work p95  gpu p95  >16.7   >33  skipped"
+        "  frozen   amended"
+    )
     for s in names:
         frames = [r for (n, _), rs in rows.items() if n == s for r in rs]
         total = [int(r["total_ns"]) / MS for r in frames]
@@ -70,14 +73,26 @@ def summarise(rows, scenes):
             verdict = "RED"
         else:
             verdict = "GREY"
+        # The owner's late amendment (2026-11-16): vsyncs skipped and the main thread's work, not TOTAL.
+        skipped = sum(1 for g in gaps if g > 25) / max(1, len(gaps))
+        if skipped < .01 and pct(work, .95) <= FRAME:
+            amended = "GREEN"
+        elif skipped > .05:
+            amended = "RED"
+        else:
+            amended = "GREY"
         if s in ("Blank", "TenCards8", "Spin5"):
             verdict = f"({verdict.lower()})"
+            amended = f"({amended.lower()})"
         out[s] = dict(work=work, draw=[int(r["draw_ns"]) / MS for r in frames])
         print(
             f"{s:12} {len(frames):6} {fps:5.1f} {missed:7.1%} {p50:10.2f} {p95:10.2f} {pct(work, .5):9.2f} "
-            f"{pct(work, .95):9.2f} {pct(gpu, .95):8.2f} {over17:6.1%} {over33:6.1%}   {verdict}"
+            f"{pct(work, .95):9.2f} {pct(gpu, .95):8.2f} {over17:6.1%} {over33:6.1%} {skipped:8.2%}  {verdict:8} {amended}"
         )
-    print("Times in ms; verdicts in brackets are not the brief's targets (the base, the kit's own tick, the control).")
+    print(
+        "Times in ms; skipped: gaps between vsyncs over 25 ms. frozen: the pre-registered rule on TOTAL; amended: the "
+        "owner's late amendment. Verdicts in brackets are not the brief's targets."
+    )
     scrolled = [int(r["scrolled_px"]) for (n, _), r in scenes.items() if n == "List100"]
     print(f"List100 scrolled per scene, px: {', '.join(map(str, scrolled))}")
     thermals = sorted({(r["thermal_start"], r["thermal_end"]) for r in scenes.values()})
