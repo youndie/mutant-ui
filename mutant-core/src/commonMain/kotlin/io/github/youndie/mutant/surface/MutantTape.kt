@@ -128,15 +128,18 @@ internal fun DrawScope.drawTape(
         while (gx + i * TapeGrain.W < w) {
             val ox = gx + i * TapeGrain.W
             val oy = gy + j * TapeGrain.H
-            clipRect(ox, oy, ox + TapeGrain.W, oy + TapeGrain.H) {
-                for (s in grain.strokes) {
-                    drawRect(
-                        ink.grain,
-                        Offset(ox + s[0].toFloat(), oy + s[1].toFloat()),
-                        Size(s[2].toFloat(), 1f),
-                        alpha = s[3].toFloat(),
-                    )
-                }
+            // Each stroke cut at its tile's edge, as a clip to the tile would cut it (B-77): one clip a tile kept the
+            // render thread from drawing the strokes of the screen's 70-odd tiles together.
+            for (s in grain.strokes) {
+                val sx = s[0].toFloat()
+                val sy = s[1].toFloat()
+                if (sx >= TapeGrain.W || sy >= TapeGrain.H) continue
+                drawRect(
+                    ink.grain,
+                    Offset(ox + sx, oy + sy),
+                    Size(minOf(s[2].toFloat(), TapeGrain.W - sx), 1f),
+                    alpha = s[3].toFloat(),
+                )
             }
             i++
         }
