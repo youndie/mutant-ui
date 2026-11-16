@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 
@@ -25,10 +26,27 @@ internal class StripPicture(
     private val strips = List(tops.size) { ImageBitmap(width, minOf(stripHeight, bottom - tops[it])) }
     private val canvases = strips.map { Canvas(it) }
 
-    /** Fills the strips from [whole], a picture of the same width from y 0. */
-    fun fill(whole: ImageBitmap) {
-        val paint = Paint()
-        for (i in strips.indices) canvases[i].drawImage(whole, Offset(0f, -tops[i].toFloat()), paint)
+    /**
+     * Draws [block] into every strip, as into one bitmap [width] × [height] px: each strip draws it moved up to its own
+     * place, and clips it at its edges.
+     */
+    fun paint(
+        density: androidx.compose.ui.unit.Density,
+        direction: androidx.compose.ui.unit.LayoutDirection,
+        height: Int,
+        block: DrawScope.() -> Unit,
+    ) {
+        val scope =
+            androidx.compose.ui.graphics.drawscope
+                .CanvasDrawScope()
+        val size =
+            androidx.compose.ui.geometry
+                .Size(width.toFloat(), height.toFloat())
+        for (i in strips.indices) {
+            scope.draw(density, direction, canvases[i], size) {
+                translate(0f, -tops[i].toFloat()) { block() }
+            }
+        }
     }
 
     /** A copy, strip for strip. */

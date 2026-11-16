@@ -268,13 +268,16 @@ internal class MoshScene(
         val plan = moshPlan(cassette, count++, w, h)
         val pw = scope.size.width.roundToInt()
         val ph = scope.size.height.roundToInt()
-        val pic = ImageBitmap(pw, ph)
-        CanvasDrawScope().draw(
-            Density(d, scope.fontScale),
-            scope.layoutDirection,
-            Canvas(pic),
-            Size(pw.toFloat(), ph.toFloat()),
-        ) {
+        // B-88: kept as strips over the band and a row under it, where the blocks pull (at most 8 dp down); the bodies
+        // draw straight into them.
+        val strips =
+            StripPicture(
+                pw,
+                floor(plan.y0 * d).toInt().coerceIn(0, ph),
+                ceil((plan.y0 + (plan.rows + 1) * ROW) * d).toInt().coerceIn(0, ph),
+                (ROW * d).roundToInt().coerceAtLeast(1),
+            )
+        strips.paint(Density(d, scope.fontScale), scope.layoutDirection, ph) {
             val y0 = plan.y0 * d
             val y1 = (plan.y0 + plan.rows * ROW) * d
             drawRect(ground, Offset(0f, y0), Size(size.width, y1 - y0))
@@ -301,14 +304,6 @@ internal class MoshScene(
                 }
             }
         }
-        // B-88: kept as strips over the band and a row under it, where the blocks pull (at most 8 dp down).
-        val strips =
-            StripPicture(
-                pw,
-                floor(plan.y0 * d).toInt().coerceIn(0, ph),
-                ceil((plan.y0 + (plan.rows + 1) * ROW) * d).toInt().coerceIn(0, ph),
-                (ROW * d).roundToInt().coerceAtLeast(1),
-            ).also { it.fill(pic) }
         this.plan = plan
         picture = strips
         clean = strips.copy()
