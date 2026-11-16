@@ -79,7 +79,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/MutantTapeTest.kt` | the Tape's band cycle, scanlines, clean signal, pause, scene tick and density |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/TapeContrastTest.kt` | contrast under the Tape against the tokens' `contrast-after-tape` |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/VenomParityTest.kt` | the venom's goo against the engine's filter in Chrome |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal, text styles; the locals every body reads ([B-09](../backlog/B-09-theme.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal, text styles; the locals every body reads ([B-09](../backlog/B-09-theme.md)); `MutantScreenClock`, a screen's own clock, which a dialog, sheet or drawer inside holds alone ([B-90](../backlog/B-90-a-dialog-stops-the-whole-demo.md)) |
 | `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/theme/PlatformReduceMotion.*.kt` | the platform's reduce-motion setting per target |
 | `mutant-core/api/` | the committed public API dump |
 | `mutant-core/src/desktopTest/snapshots/design/` | the Chrome references and their `manifest.json`, rendered by `scripts/design-references.mjs` (`make references`) |

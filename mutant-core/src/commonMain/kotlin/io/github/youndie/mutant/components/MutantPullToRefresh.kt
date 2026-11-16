@@ -14,14 +14,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -42,7 +47,6 @@ import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
-import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
@@ -56,12 +60,13 @@ import kotlin.math.roundToInt
  * `btn` tongue grows from under the top edge — the page's short one (64 × 10, drips of 14) at 40 dp, its long one
  * (124 × 34, drips of 24 that let drops go) at 74 dp — and the content moves down with it. Let go past 74 dp, it calls
  * [onRefresh]; while [refreshing], the long tongue boils with [refreshingLabel] in it. When refreshing ends, a clean
- * `pill` with [doneLabel] stands for a second, then the content comes back up.
+ * `pill` with [doneLabel] stands for a second, then rides back up with the content.
  *
- * The design draws three frames; the gesture is designed here (D15): a finger's drag past the content's top, through
- * nested scroll, and a mouse's drag from wherever the content stands at its top, half the distance dragged, the content
- * back up over 200 ms if let go short. Under reduce motion it moves at once and the boil stands. A reader's custom
- * action refreshes. Over its content stands the header's tear line (the tracking divider, [divider]), drawn over the
+ * The design draws three frames; the gesture and the moves between them are designed here (D15): a finger's drag past
+ * the content's top, through nested scroll, and a mouse's drag from wherever the content stands at its top, half the
+ * distance dragged. Outside a drag the content glides, every frame of the screen clock, from where it stands to the
+ * phase's gap — back up when let go short, to 74 dp when refreshing, to the pill's 52, back up after it — in 300 ms,
+ * eased out. Under reduce motion every move is at once and the boil stands. A reader's custom action refreshes. Over its content stands the header's tear line (the tracking divider, [divider]), drawn over the
  * tongue as the page draws it: the tongue hangs 2 dp up into it.
  */
 @Composable
@@ -99,30 +104,27 @@ internal fun PullToRefreshBody(
     val slop = LocalViewConfiguration.current.touchSlop
     val density = androidx.compose.ui.platform.LocalDensity.current.density
     val refresh by rememberUpdatedState(onRefresh)
-    // The gap the content stands under, dp: the finger's half while held; the phases' own otherwise.
+    // The gap the content stands under, dp, while held: where the pull took it up, plus the finger's half.
     var dragged by remember { mutableFloatStateOf(0f) }
     var holding by remember { mutableStateOf(false) }
     var atTop by remember { mutableStateOf(true) }
-    val phase = remember { RefreshPhase() }
     val still = reduce || clock.frozen
+    // Outside a drag the gap glides on the screen clock; a screen composed refreshing stands open from its first frame.
+    val glide = remember { PullGlide(if (refreshing) REFRESH_AT else 0f) }
+    glide.follow(refreshing, clock.nowMs)
     // Read by the gestures, which are set up once: always this composition's.
     val refreshingNow by rememberUpdatedState(refreshing)
     val stillNow by rememberUpdatedState(still)
-    // The pill's second is the wall's, not the screen's clock, which stands under reduce motion.
-    var doneShown by remember { mutableStateOf(false) }
-    val was = remember { booleanArrayOf(refreshing) }
-    LaunchedEffect(refreshing) {
-        if (refreshing) {
-            was[0] = true
-            return@LaunchedEffect
+    // The pill's second is the screen clock's; under reduce motion that clock stands, and the second is waited out.
+    var waited by remember { mutableIntStateOf(0) }
+    LaunchedEffect(glide.dones, still) {
+        if (still && glide.pillStands()) {
+            delay(DONE_MS.toLong())
+            glide.endPill()
+            waited++
         }
-        if (!was[0]) return@LaunchedEffect
-        was[0] = false
-        doneShown = true
-        delay(DONE_MS.toLong())
-        doneShown = false
-        phase.back(DONE_GAP, clock.nowMs, still)
     }
+    val doneShown = waited.let { glide.pill(clock.nowMs, still) }
     val boil = remember { MutableInteractionSource() }
     LaunchedEffect(refreshing) {
         if (refreshing) {
@@ -134,11 +136,14 @@ internal fun PullToRefreshBody(
         }
     }
 
+    /** Where the content stands now, dp: a new pull takes it up from there, never from 0. */
+    fun standing(): Float = if (holding) dragged else glide.at(clock.nowMs, stillNow)
+
     fun letGo() {
         holding = false
         if (dragged >= REFRESH_AT && !refreshingNow) refresh()
-        // Back up from where it was let go; once the caller is refreshing, the long tongue holds it at 74 dp.
-        phase.back(dragged, clock.nowMs, stillNow)
+        // From where it was let go: the next composition glides it to the phase's gap.
+        glide.hold(dragged)
         dragged = 0f
     }
     val connection =
@@ -165,8 +170,9 @@ internal fun PullToRefreshBody(
                     if (consumed.y < 0) atTop = false
                     if (available.y > 0) atTop = true
                     if (source == NestedScrollSource.UserInput && available.y > 0 && !refreshingNow) {
+                        val from = standing()
                         holding = true
-                        dragged = (dragged + available.y / density * RESISTANCE).coerceAtMost(MAX_PULL)
+                        dragged = (from + available.y / density * RESISTANCE).coerceAtMost(MAX_PULL)
                         return Offset(0f, available.y)
                     }
                     return Offset.Zero
@@ -178,25 +184,41 @@ internal fun PullToRefreshBody(
                 }
             }
         }
+    val target =
+        when {
+            refreshing -> REFRESH_AT
+            doneShown -> DONE_GAP
+            else -> 0f
+        }
+    if (holding) glide.hold(dragged) else glide.toward(target, clock.nowMs, still)
     val gap =
         when {
             pull != null -> pull
+            done -> DONE_GAP
             holding -> dragged
-            done || doneShown -> DONE_GAP
-            refreshing -> REFRESH_AT
-            else -> phase.gap(clock)
+            else -> glide.at(clock.nowMs, still)
         }
-    if (phase.moving(clock)) clock.frame
-    val showDone = done || doneShown
+    // Every frame while it glides or the pill counts its second; nothing once it stands.
+    if (glide.moving(clock.nowMs, still) || (doneShown && !still)) clock.frame
+    // After its second the pill rides up with the content, under the line, instead of giving way to a tongue.
+    val riding = pull == null && !done && !holding && !doneShown && glide.riding && gap > 0f
+    val showDone = pull == null && (done || doneShown || riding)
+    val line = if (divider) (LINE * density).roundToInt() else 0
+    val g = (gap * density).roundToInt()
+    val doneG = (DONE_GAP * density).roundToInt()
+    val pillH = (PILL_H * density).roundToInt()
+    // The pill stands in the middle of the 52 dp gap; riding, it keeps that place over the content as the gap closes.
+    val pillY = if (riding) line + (doneG - pillH) / 2 - (doneG - g) else line + (g - pillH) / 2
+    val pillClip = (line - pillY).toFloat()
     Layout(
         content = {
             Box(Modifier.nestedScroll(connection)) { content() }
             // The line first in the list, last in the drawing: placed after the tongue, it lies over it.
             if (divider) MutantDivider(key = "0")
             if (showDone) {
-                DonePill(doneLabel, "$key-done", hidden)
-            } else if (gap >= SHOWN_FROM) {
-                Tongue(gap, refreshing, refreshingLabel, key, boil, heat, hidden)
+                DonePill(doneLabel, "$key-done", hidden, pillClip)
+            } else if (gap > SHOWN_FROM) {
+                Tongue(gap, refreshing, refreshingLabel, key, boil, heat, hidden, if (still) null else clock)
             }
         },
         modifier =
@@ -209,15 +231,19 @@ internal fun PullToRefreshBody(
                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                         if (down.type != PointerType.Mouse || !atTop || refreshingNow) return@awaitEachGesture
                         var pulling = false
+                        var from = 0f
                         while (true) {
                             val e = awaitPointerEvent(PointerEventPass.Initial)
                             val p = e.changes.firstOrNull { it.id == down.id } ?: break
                             if (!p.pressed) break
                             val dy = p.position.y - down.position.y
-                            if (!pulling && dy > slop) pulling = true
+                            if (!pulling && dy > slop) {
+                                pulling = true
+                                from = standing()
+                            }
                             if (pulling) {
                                 holding = true
-                                dragged = ((dy - slop) / density * RESISTANCE).coerceIn(0f, MAX_PULL)
+                                dragged = (from + (dy - slop) / density * RESISTANCE).coerceIn(0f, MAX_PULL)
                                 // The child's click is cancelled: its press was a pull.
                                 p.consume()
                             }
@@ -226,8 +252,6 @@ internal fun PullToRefreshBody(
                     }
                 },
     ) { measurables, c ->
-        val line = if (divider) (LINE * density).roundToInt() else 0
-        val g = (gap * density).roundToInt()
         // No height at all (a scrolling column): the content's own; no width at all (a scrolling row): its own too.
         val room = if (c.hasBoundedHeight) (c.maxHeight - g - line).coerceAtLeast(0) else Constraints.Infinity
         val body = measurables[0].measure(c.copy(minHeight = 0, maxHeight = room))
@@ -239,8 +263,8 @@ internal fun PullToRefreshBody(
             body.place(0, line + g)
             top?.let {
                 val x = (width - it.width) / 2
-                // The tongue hangs 2 dp up into the line; the pill stands in the middle of its 52 dp.
-                val y = if (showDone) line + (g - it.height) / 2 else line - (HANG * density).roundToInt()
+                // The tongue hangs 2 dp up into the line.
+                val y = if (showDone) pillY else line - (HANG * density).roundToInt()
                 it.place(x, y)
             }
             rule?.place(0, 0)
@@ -248,7 +272,11 @@ internal fun PullToRefreshBody(
     }
 }
 
-/** The tongue at [gap] dp: the page's short one at 40, its long one at 74, between them each number in turn. */
+/**
+ * The tongue at [gap] dp: from nothing at 16 dp to the page's short one at 40, its long one at 74, each number in
+ * turn between. Its body is built at whole dp once per hot tick of [clock] (D6; at every whole dp with no running
+ * clock) and scaled, about its top, to the gap's exact size between: it grows with every frame, not by steps.
+ */
 @Composable
 private fun Tongue(
     gap: Float,
@@ -258,11 +286,8 @@ private fun Tongue(
     boil: MutableInteractionSource,
     heat: Double?,
     hidden: Boolean,
+    clock: io.github.youndie.mutant.clock.MutantClock?,
 ) {
-    val f = ((gap - SHORT_AT) / (REFRESH_AT - SHORT_AT)).coerceIn(0f, 1f)
-    val grow = (gap / SHORT_AT).coerceAtMost(1f)
-    // Whole dp: a body is rebuilt for each size, so the tongue grows by steps, not by every pixel of the drag.
-    val w = (lerp(SHORT_W, LONG_W, f) * grow).roundToInt()
     val labelStyle =
         MutantTheme.textStyles
             .osd(LABEL_SIZE.sp)
@@ -276,44 +301,114 @@ private fun Tongue(
                 .toDp()
                 .value
         }
-    val longH = maxOf(LONG_H, word + 2 * LABEL_ROOM)
-    val h = (lerp(SHORT_H, longH, f) * grow).roundToInt().coerceAtLeast(MIN_H)
-    MutantSurface(
-        MutantBody.Btn,
-        key,
-        Modifier.size(w.dp, h.dp),
-        interactionSource = boil,
-        heat = heat,
-        profile =
-            MutantBody.Btn.profile.with(
-                radius = lerp(SHORT_R, LONG_R, f).toDouble(),
-                overhang = lerp(SHORT_OVER, LONG_OVER, f).roundToInt().toDouble(),
-                dripShare = if (f >= 1f) 1.0 else 0.0,
-                outline = OUTLINE,
-                marks = false,
-                mosaic = false,
-            ),
+    val longH = maxOf(LONG_H, word + 2 * LABEL_ROOM).roundToInt().toFloat()
+    val size = tongueSize(gap, longH)
+    val tick = clock?.hotTick
+    val built = remember { TongueBuilt() }
+    built.follow(size, tick)
+    val w = built.w
+    val h = built.h
+    val f = built.f
+    // Between ticks, and under 40 dp, the body built is scaled to the gap's exact size.
+    val sx = size.width / w
+    val sy = size.height / h
+    Box(
+        if (sx == 1f && sy == 1f) {
+            Modifier
+        } else {
+            Modifier.graphicsLayer {
+                scaleX = sx
+                scaleY = sy
+                transformOrigin = TransformOrigin(.5f, 0f)
+            }
+        },
     ) {
-        if (boiling && f >= 1f) {
-            Box(Modifier.size(w.dp, h.dp), contentAlignment = Alignment.Center) {
-                BasicText(
-                    label,
-                    Modifier.mutantCleanZone(),
-                    style = labelStyle,
-                    maxLines = 1,
-                    softWrap = false,
-                )
+        MutantSurface(
+            MutantBody.Btn,
+            key,
+            Modifier.size(w.dp, h.dp),
+            interactionSource = boil,
+            heat = heat,
+            profile =
+                MutantBody.Btn.profile.with(
+                    radius = lerp(SHORT_R, LONG_R, f).toDouble(),
+                    overhang = lerp(SHORT_OVER, LONG_OVER, f).roundToInt().toDouble(),
+                    dripShare = if (f >= 1f) 1.0 else 0.0,
+                    outline = OUTLINE,
+                    marks = false,
+                    mosaic = false,
+                ),
+        ) {
+            if (boiling && f >= 1f) {
+                Box(Modifier.size(w.dp, h.dp), contentAlignment = Alignment.Center) {
+                    BasicText(
+                        label,
+                        Modifier.mutantCleanZone(),
+                        style = labelStyle,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
             }
         }
     }
 }
 
-/** The end: a clean pill, 28 dp, its label 14 dp in. */
+/**
+ * The tongue's size at a gap: its body's [bodyWidth] × [bodyHeight], dp, drawn at [grow] of it, and [f], its share
+ * of the way from the short tongue to the long one.
+ */
+internal class TongueSize(
+    val bodyWidth: Float,
+    val bodyHeight: Float,
+    /** 0 for the short tongue (40 dp and under), 1 for the long one (74 and over). */
+    val f: Float,
+    /** How much of its body it has grown to: 0 at 16 dp, 1 from 40. */
+    val grow: Float,
+) {
+    val width: Float get() = bodyWidth * grow
+    val height: Float get() = bodyHeight * grow
+}
+
+/** The tongue's size at [gap] dp, with [longH] the long tongue's height. */
+
+internal fun tongueSize(
+    gap: Float,
+    longH: Float,
+): TongueSize {
+    val f = ((gap - SHORT_AT) / (REFRESH_AT - SHORT_AT)).coerceIn(0f, 1f)
+    val grow = ((gap - SHOWN_FROM) / (SHORT_AT - SHOWN_FROM)).coerceIn(0f, 1f)
+    return TongueSize(lerp(SHORT_W, LONG_W, f), lerp(SHORT_H, longH, f), f, grow)
+}
+
+/** The size the tongue's body is built at: whole dp, the short tongue's at the least, taken anew once per tick. */
+private class TongueBuilt {
+    var w = 0
+    var h = 0
+    var f = 0f
+    private var tick: Long? = null
+
+    fun follow(
+        size: TongueSize,
+        now: Long?,
+    ) {
+        // Under 40 dp the short tongue is scaled down whole: no body is built at a size the page never draws.
+        if (w == 0 || now == null || now != tick) {
+            w = size.bodyWidth.roundToInt()
+            h = size.bodyHeight.roundToInt()
+            f = size.f
+            tick = now
+        }
+    }
+}
+
+/** The end: a clean pill, 28 dp, its label 14 dp in; above [clipTop] px, its top, it is under the line and hidden. */
 @Composable
 private fun DonePill(
     label: String,
     key: String,
     hidden: Boolean,
+    clipTop: Float,
 ) {
     val style =
         MutantTheme.textStyles
@@ -324,49 +419,128 @@ private fun DonePill(
     val measured = rememberTextMeasurer().measure(label, style, maxLines = 1, softWrap = false)
     val width =
         with(androidx.compose.ui.platform.LocalDensity.current) { measured.multiParagraph.maxIntrinsicWidth.toDp() }
-    MutantSurface(
-        MutantBody.Pill,
-        key,
-        Modifier.width((width.value + 2 * PILL_PAD).roundToInt().dp).height(PILL_H.dp),
-        state = BodyState.Success,
+    // Riding up, it passes under the line: what stands above the component's top is not drawn. Standing, no clip at all
+    // (a clip moves letter edges).
+    Box(
+        if (clipTop > 0f) {
+            Modifier.drawWithContent {
+                clipRect(-size.width, clipTop, 2 * size.width, 2 * size.height) { this@drawWithContent.drawContent() }
+            }
+        } else {
+            Modifier
+        },
     ) {
-        Box(Modifier.padding(start = PILL_PAD.dp).height(PILL_H.dp), contentAlignment = Alignment.CenterStart) {
-            BasicText(label, Modifier.mutantCleanZone(), style = style, maxLines = 1, softWrap = false)
+        MutantSurface(
+            MutantBody.Pill,
+            key,
+            Modifier.width((width.value + 2 * PILL_PAD).roundToInt().dp).height(PILL_H.dp),
+            state = BodyState.Success,
+        ) {
+            Box(Modifier.padding(start = PILL_PAD.dp).height(PILL_H.dp), contentAlignment = Alignment.CenterStart) {
+                BasicText(label, Modifier.mutantCleanZone(), style = style, maxLines = 1, softWrap = false)
+            }
         }
     }
 }
 
-/** The content going back up, after the pill or after a pull let go short; times are the screen clock's. */
-private class RefreshPhase {
-    private var from = 0f
+/**
+ * The gap outside a drag, dp, on the screen clock: from where it stood to the phase's gap (0, the long tongue's 74,
+ * the pill's 52) along an eased-out cubic over [GLIDE_MS], taken up from wherever it is when the phase changes again,
+ * so no hand-over jumps. With [still] (reduce motion, a frozen clock) it stands at the phase's gap at once. It also
+ * marks, as composition sees refreshing end, when the pill came.
+ */
+internal class PullGlide(
+    start: Float,
+) {
+    private var from = start
+    var to = start
+        private set
     private var since = Double.NaN
-    private var instant = false
+    private var seen: Boolean? = null
+    private var doneAt = Double.NaN
 
-    fun back(
-        gap: Float,
+    /** How many times refreshing has ended: the pill's count, which a still clock's wait is keyed on. */
+    var dones = 0
+        private set
+
+    /** Going back up from the pill: it rides up with the content. */
+    var riding = false
+        private set
+
+    /** From composition: refreshing seen to end marks the pill, at that frame, without writing state. */
+    fun follow(
+        refreshing: Boolean,
+        now: Double,
+    ) {
+        val was = seen
+        seen = refreshing
+        if (refreshing) {
+            doneAt = Double.NaN
+        } else if (was == true) {
+            doneAt = now
+            dones++
+        }
+    }
+
+    /** The pill stands: its second on the running clock, or, [still], until [endPill] once it has been waited out. */
+    fun pill(
+        now: Double,
+        still: Boolean,
+    ): Boolean {
+        if (doneAt.isNaN()) return false
+        if (still) return true
+        if (now - doneAt < DONE_MS) return true
+        doneAt = Double.NaN
+        return false
+    }
+
+    /** The pill came and has not yet gone. */
+    fun pillStands(): Boolean = !doneAt.isNaN()
+
+    /** A still clock's second, waited out: the pill goes. */
+    fun endPill() {
+        doneAt = Double.NaN
+    }
+
+    /** Held at [gap] by a finger, or let go there. */
+    fun hold(gap: Float) {
+        from = gap
+        to = gap
+        since = Double.NaN
+        riding = false
+    }
+
+    /** Glides to [target] from where it stands at [now]; a target it already has changes nothing. */
+    fun toward(
+        target: Float,
         now: Double,
         still: Boolean,
     ) {
-        from = gap
+        if (target == to) return
+        val at = at(now, still)
+        riding = to == DONE_GAP && target == 0f
+        from = at
+        to = target
         since = now
-        instant = still
     }
 
-    /** Still going back, in the kit's steps: a step short of [BACK_MS] is not yet back. */
-    fun moving(clock: io.github.youndie.mutant.clock.MutantClock): Boolean =
-        !since.isNaN() && !instant && stepped(clock.nowMs - since, BACK_MS) < 1
-
-    /** The gap, dp, outside a drag, the pill and a refresh. */
-    fun gap(clock: io.github.youndie.mutant.clock.MutantClock): Float {
-        if (since.isNaN()) return 0f
-        val p = if (instant) 1.0 else stepped(clock.nowMs - since, BACK_MS)
-        if (p >= 1) {
-            since = Double.NaN
-            return 0f
-        }
-        return (from * (1 - p)).toFloat()
+    fun at(
+        now: Double,
+        still: Boolean,
+    ): Float {
+        if (still || since.isNaN()) return to
+        val p = ((now - since) / GLIDE_MS).coerceIn(0.0, 1.0)
+        return from + (to - from) * easeOut(p).toFloat()
     }
+
+    fun moving(
+        now: Double,
+        still: Boolean,
+    ): Boolean = !still && !since.isNaN() && now - since < GLIDE_MS
 }
+
+/** The eased-out cubic, `1 − (1 − p)³`: fastest as it leaves, at rest as it lands. */
+internal fun easeOut(p: Double): Double = 1 - (1 - p) * (1 - p) * (1 - p)
 
 private fun lerp(
     a: Float,
@@ -376,8 +550,8 @@ private fun lerp(
 
 /** The page's frames: the short tongue under a 40 dp gap, the long one under 74, the pill in the middle of 52. */
 private const val SHORT_AT = 40f
-private const val REFRESH_AT = 74f
-private const val DONE_GAP = 52f
+internal const val REFRESH_AT = 74f
+internal const val DONE_GAP = 52f
 private const val SHORT_W = 64f
 private const val SHORT_H = 10f
 private const val SHORT_R = 5f
@@ -399,12 +573,11 @@ private const val LABEL_ROOM = 7f
 /** The labels' black: the page's literal `#05060c` in both themes. */
 private val INK = Color(0xFF05060C)
 
-/** Designed here: half the distance dragged; no tongue under 16 dp, none shorter than 4; up to 120 dp. */
+/** Designed here: half the distance dragged; the tongue grows out of nothing from 16 dp; up to 120 dp. */
 private const val RESISTANCE = .5f
-private const val SHOWN_FROM = 16f
-private const val MIN_H = 4
-private const val MAX_PULL = 120f
+internal const val SHOWN_FROM = 16f
+internal const val MAX_PULL = 120f
 
-/** Designed here: the pill stands a second, and the content goes back up over 200 ms. */
-private const val DONE_MS = 1000.0
-private const val BACK_MS = 200.0
+/** Designed here: the pill stands a second, and every move between the phases' gaps takes 300 ms, eased out. */
+internal const val DONE_MS = 1000.0
+internal const val GLIDE_MS = 300.0

@@ -269,6 +269,18 @@ internal fun MutantSurface(
             slip = (slip ?: if (colors.print && !p.round) PRINT_SLIP else 0.0).toFloat(),
             shadow = shadow,
         )
+    // B-91: the fill a boiling body shows now, for its words to read against; null at rest. Derived per frame, its
+    // readers recompose only when their pick of colour changes.
+    val fillNow by androidx.compose.runtime.rememberUpdatedState(bodyFill)
+    val colorsNow by androidx.compose.runtime.rememberUpdatedState(colors)
+    val heatNow by androidx.compose.runtime.rememberUpdatedState(heat)
+    val ground =
+        remember(boil, clock) {
+            androidx.compose.runtime.derivedStateOf {
+                val k = heatNow ?: boil.at(clock.nowMs)
+                if (k <= 0) null else boilFill(fillNow, colorsNow, k, clock.hotTimeMs())
+            }
+        }
     Box(
         modifier
             .onGloballyPositioned {
@@ -591,7 +603,7 @@ internal fun MutantSurface(
             },
         propagateMinConstraints = true,
     ) {
-        CompositionLocalProvider(LocalCleanZone provides registry) { content() }
+        CompositionLocalProvider(LocalCleanZone provides registry, LocalMutantBodyGround provides ground) { content() }
     }
 }
 

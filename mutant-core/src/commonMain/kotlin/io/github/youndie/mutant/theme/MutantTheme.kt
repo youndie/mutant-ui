@@ -71,6 +71,20 @@ public fun MutantTheme(
     }
 }
 
+/**
+ * Gives [content] a clock of its own: one screen, where an app shows several side by side or one over another. The
+ * bodies, the Tape and the keyframe loss inside step on it, and a dialog, a bottom sheet or a navigation drawer opened
+ * inside holds this clock alone, so the screens beside it keep moving (B-90). Without it every screen shares the
+ * theme's clock, and a dialog anywhere stops them all. It follows the theme's reduce motion.
+ */
+@Composable
+public fun MutantScreenClock(content: @Composable () -> Unit) {
+    val paused = LocalMutantReduceMotion.current
+    val clock = remember { MutantClock().apply { this.paused = paused } }
+    SideEffect { clock.paused = paused }
+    ProvideMutantClock(clock, content)
+}
+
 /** The current theme's values, as a component reads them. */
 public object MutantTheme {
     /** The palette in effect. */

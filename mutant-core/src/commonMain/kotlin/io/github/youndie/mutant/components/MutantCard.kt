@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.MutantTheme
@@ -116,7 +117,7 @@ private fun CardLine(
     val tint =
         when {
             hidden -> Color.Transparent
-            LocalCardEnabled.current -> color
+            LocalCardEnabled.current -> inkOnBody(color)
             else -> colors.textDisabled
         }
     BasicText(
