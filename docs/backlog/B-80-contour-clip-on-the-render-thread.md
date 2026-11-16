@@ -1,7 +1,7 @@
 ---
 id: B-80
 title: "Clipping a body's layers to its contour costs the render thread 2.7 ms a frame"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-5-product
