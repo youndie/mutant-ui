@@ -36,6 +36,7 @@ import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
@@ -147,7 +148,13 @@ internal fun ListItemBody(
                 probe = probe,
             ) {
                 Box(Modifier.size(TILE), contentAlignment = Alignment.Center) {
-                    MutantIcon(leadingIcon, null, Modifier.mutantCleanZone(), tint = ink(colors.text), size = ICON)
+                    MutantIcon(
+                        leadingIcon,
+                        null,
+                        Modifier.mutantCleanZone(),
+                        tint = inkOnBody(ink(colors.text)),
+                        size = ICON,
+                    )
                 }
             }
         }

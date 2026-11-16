@@ -43,6 +43,7 @@ import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.drawTrackingDivider
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
@@ -275,7 +276,7 @@ internal fun ButtonLabel(
     BasicText(
         text,
         modifier.mutantCleanZone(),
-        style = buttonLabelStyle(size, color),
+        style = buttonLabelStyle(size, inkOnBody(color)),
         maxLines = 1,
         softWrap = false,
         overflow = TextOverflow.Ellipsis,
