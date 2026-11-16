@@ -527,7 +527,8 @@ internal fun MutantSurface(
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
                 if (resting && cache.settledFor(g)) {
-                    val next = t + clock.stepMs
+                    // B-89: the next tick's time as the clock will read it, so the frame built for it is found.
+                    val next = clock.nextRestTimeMs()
                     ahead.prepare(g, next, shown, scope) { band -> buildAhead(g, cache, dead, next, band) }
                 }
                 val now = clock.nowMs
