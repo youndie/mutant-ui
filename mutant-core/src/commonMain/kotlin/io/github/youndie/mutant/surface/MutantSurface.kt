@@ -865,7 +865,12 @@ internal fun rasterisedBody(
             scale(density, Offset.Zero) { translate(-left, -top) { draw() } }
         }
     }
-    return RasterisedBody(image, androidx.compose.ui.unit.IntOffset(at.x + x0, at.y + y0), whole)
+    return RasterisedBody(
+        image,
+        androidx.compose.ui.unit
+            .IntOffset(at.x + x0, at.y + y0),
+        whole,
+    )
 }
 
 private const val RASTER_MARGIN = 20.0
@@ -904,9 +909,11 @@ internal class FrameAhead {
     ) {
         val b = band
         val inside =
-            shown == null && b == null ||
-                shown != null && b != null && shown.left >= b.left && shown.top >= b.top && shown.right <= b.right &&
-                shown.bottom <= b.bottom
+            (shown == null && b == null) ||
+                (
+                    shown != null && b != null && shown.left >= b.left && shown.top >= b.top &&
+                        shown.right <= b.right && shown.bottom <= b.bottom
+                )
         if (instance === g && at == t && inside) return
         job?.cancel()
         instance = g
