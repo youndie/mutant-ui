@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (2)
+## Open (1)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-101](docs/backlog/B-101-demo-tape-twice.md) `[~]` | On the Demo page the phones carry the Tape twice | P2 | S | - |
 | [B-102](docs/backlog/B-102-drawer-shows-its-venom.md) `[ ]` | The drawer closes before its venom run is seen | P2 | M | - |
 
-## Closed (100)
+## Closed (101)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -171,6 +170,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 **Built only when the owner asks**
 
 - [B-100](docs/backlog/B-100-motion-on-every-frame.md) `[x]` - Movement runs on every frame by default; the boil keeps its tick
+- [B-101](docs/backlog/B-101-demo-tape-twice.md) `[x]` - On the Demo page the phones carry the Tape twice
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
