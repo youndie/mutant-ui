@@ -42,6 +42,6 @@ Rejected: the dialog closed by default. That hides the problem in the demo and l
   - without screen clocks, everything stands (the control).
 - `DemoClocksTest`: on the demo page, with the dialog open, the Library screen's pixels change over a second.
 
-A mutant making `MutantScreenClock` provide no clock of its own fails all three of the first two classes' behaviour tests.
+A mutant making `MutantScreenClock` provide no clock of its own fails three tests: the first two cases above and `DemoClocksTest`.
 
 The public API adds one function; the ABI dump is updated.
