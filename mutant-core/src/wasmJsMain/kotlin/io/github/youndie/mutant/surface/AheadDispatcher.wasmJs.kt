@@ -28,10 +28,12 @@ private object OneTaskEach : CoroutineDispatcher() {
     }
 }
 
-/** A `MessageChannel` whose every message runs [run]; the returned function posts one. */
+/** A function that posts one task running [run]: a background task of the scheduler, or a `MessageChannel`'s message. */
 @OptIn(kotlin.js.ExperimentalWasmJsInterop::class)
 @JsFun(
-    "(run) => { const c = new MessageChannel(); c.port1.onmessage = () => run(); return () => c.port2.postMessage(0); }",
+    "(run) => { const s = globalThis.scheduler; " +
+        "if (s && s.postTask) return () => { s.postTask(() => run(), { priority: 'background' }); }; " +
+        "const c = new MessageChannel(); c.port1.onmessage = () => run(); return () => c.port2.postMessage(0); }",
 )
 private external fun channel(run: () -> Unit): JsAny
 
