@@ -1,0 +1,142 @@
+Calculating task graph as no cached configuration is available for tasks: :sample:frameBench --args=125bef2 /Users/youndie/Documents/GitHub/mutant-ui/logs/b-77/2026-11-16-desktop-after 6 10000 DemoPage,DemoPageClean,ComponentsRest,ComponentsClean,Blank,BlankLoad
+
+> Configure project :mutant-core
+WARNING: The 'commonTest' source directory exists, but android host tests are not enabled. To enable android host tests, add `withHostTest {}` to your android target configuration in the Gradle build file.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Task :sample:checkDesktopMainComposeLibrariesCompatibility
+> Task :mutant-core:checkDesktopMainComposeLibrariesCompatibility
+> Task :sample:kmpPartiallyResolvedDependenciesChecker
+> Task :mutant-core:kmpPartiallyResolvedDependenciesChecker
+> Task :sample:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :mutant-core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sample:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :sample:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :mutant-core:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :sample:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :sample:generateResourceAccessorsForCommonMain SKIPPED
+> Task :sample:convertXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :mutant-core:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :sample:copyNonXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :sample:prepareComposeResourcesTaskForDesktopMain NO-SOURCE
+> Task :mutant-core:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :sample:generateResourceAccessorsForDesktopMain SKIPPED
+> Task :sample:generateActualResourceCollectorsForDesktopMain SKIPPED
+> Task :sample:generateComposeResClass SKIPPED
+> Task :mutant-core:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :sample:generateExpectResourceCollectorsForCommonMain SKIPPED
+> Task :mutant-core:convertXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :mutant-core:copyNonXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :mutant-core:prepareComposeResourcesTaskForDesktopMain NO-SOURCE
+> Task :sample:checkDesktopTestComposeLibrariesCompatibility
+> Task :mutant-core:generateResourceAccessorsForDesktopMain NO-SOURCE
+> Task :sample:assembleDesktopMainResources UP-TO-DATE
+> Task :mutant-core:generateActualResourceCollectorsForDesktopMain UP-TO-DATE
+> Task :sample:desktopProcessResources UP-TO-DATE
+> Task :mutant-core:generateComposeResClass UP-TO-DATE
+> Task :mutant-core:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :sample:processDesktopMainResources SKIPPED
+> Task :sample:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :sample:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :sample:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :sample:generateResourceAccessorsForCommonTest SKIPPED
+> Task :sample:convertXmlValueResourcesForDesktopTest NO-SOURCE
+> Task :sample:copyNonXmlValueResourcesForDesktopTest NO-SOURCE
+> Task :sample:prepareComposeResourcesTaskForDesktopTest NO-SOURCE
+> Task :sample:generateResourceAccessorsForDesktopTest SKIPPED
+> Task :sample:assembleDesktopTestResources UP-TO-DATE
+> Task :sample:desktopTestProcessResources UP-TO-DATE
+> Task :sample:processDesktopTestResources SKIPPED
+> Task :mutant-core:compileKotlinDesktop UP-TO-DATE
+> Task :mutant-core:compileDesktopMainJava NO-SOURCE
+> Task :mutant-core:assembleDesktopMainResources UP-TO-DATE
+> Task :mutant-core:desktopProcessResources UP-TO-DATE
+> Task :mutant-core:processDesktopMainResources SKIPPED
+> Task :mutant-core:desktopMainClasses UP-TO-DATE
+> Task :mutant-core:desktopJar UP-TO-DATE
+> Task :sample:compileKotlinDesktop
+> Task :sample:compileDesktopMainJava NO-SOURCE
+> Task :sample:desktopMainClasses
+> Task :sample:desktopJar UP-TO-DATE
+> Task :sample:compileTestKotlinDesktop
+> Task :sample:compileDesktopTestJava NO-SOURCE
+> Task :sample:desktopTestClasses
+
+> Task :sample:frameBench
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.skiko.LibraryLoader in an unnamed module (file:/Users/youndie/.gradle/caches/modules-2/files-2.1/org.jetbrains.skiko/skiko-awt/0.150.1/e03fd8140c0e331c3c7018b00a9710ec98d78fc1/skiko-awt-0.150.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+# B-72 frame bench
+# commit 125bef2
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 6 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 DemoPage: 606 frames
+round 1 DemoPageClean: 601 frames
+round 1 ComponentsRest: 606 frames
+round 1 ComponentsClean: 606 frames
+round 1 Blank: 602 frames
+round 1 BlankLoad: 605 frames
+round 2 DemoPageClean: 606 frames
+round 2 ComponentsRest: 600 frames
+round 2 ComponentsClean: 602 frames
+round 2 Blank: 601 frames
+round 2 BlankLoad: 601 frames
+round 2 DemoPage: 602 frames
+round 3 ComponentsRest: 603 frames
+round 3 ComponentsClean: 604 frames
+round 3 Blank: 602 frames
+round 3 BlankLoad: 603 frames
+round 3 DemoPage: 602 frames
+round 3 DemoPageClean: 601 frames
+round 4 ComponentsClean: 603 frames
+round 4 Blank: 601 frames
+round 4 BlankLoad: 603 frames
+round 4 DemoPage: 602 frames
+round 4 DemoPageClean: 603 frames
+round 4 ComponentsRest: 604 frames
+round 5 Blank: 603 frames
+round 5 BlankLoad: 605 frames
+round 5 DemoPage: 603 frames
+round 5 DemoPageClean: 604 frames
+round 5 ComponentsRest: 604 frames
+round 5 ComponentsClean: 605 frames
+round 6 BlankLoad: 602 frames
+round 6 DemoPage: 601 frames
+round 6 DemoPageClean: 601 frames
+round 6 ComponentsRest: 605 frames
+round 6 ComponentsClean: 604 frames
+round 6 Blank: 601 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95  | render/frame busy
+DemoPage                 60.2       16.67  18.60   30.45  0.03  |   0.05   0.24   0.36   2.73 |   0.32   0.58 |     2.54   15%  GREY
+DemoPageClean            60.3       16.67  18.62   32.56  0.00  |   0.06   0.31   0.48   0.93 |   0.29   0.63 |     1.51    9%  GREY
+ComponentsRest           60.3       16.67  18.33   25.67  0.00  |   0.05   6.55   8.51  13.93 |   0.69   7.50 |     2.15   13%  GREY
+ComponentsClean          60.4       16.67  18.35   26.05  0.03  |   0.05   6.40   9.57  20.96 |   0.69   7.34 |     1.91   11%  GREY
+Blank                    60.2       16.67  18.58   32.17  0.03  |   0.08   0.19   0.25   0.58 |   0.11   0.26 |     0.39    2%  GREY
+BlankLoad                60.3       16.67  18.44   27.02  0.00  |   0.38   0.54   0.83   1.16 |   0.46   0.65 |     3.04   18%  GREY
+
+render control, what the load adds to the render thread's CPU per frame, per counted round:
+  on a blank page    2.64, 2.67, 2.63, 2.71, 2.63 ms
+  on the Demo page    ms
+
+control: work p50 over ComponentsRest per counted round  ms
+         (busy-wait 10 ms)
+render threads seen: 2
+wheel: scrolled per counted round [] px
+
+[Incubating] Problems report is available at: file:///Users/youndie/Documents/GitHub/mutant-ui/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.8.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 6m 44s
+23 actionable tasks: 8 executed, 15 up-to-date
+Configuration cache entry discarded because incompatible task was found: 'task `:sample:frameBench` of type `org.gradle.api.tasks.JavaExec`'.
