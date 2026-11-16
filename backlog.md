@@ -58,16 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (4)
+## Open (1)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-94](docs/backlog/B-94-the-navigation-bar-label-on-its-pill.md) `[ ]` | The navigation bar's selected label stands on its pill's drips | P1 | S | - |
-| [B-92](docs/backlog/B-92-the-dropdown-stays-open.md) `[ ]` | The dropdown closes itself after a pick | P2 | S | - |
-| [B-93](docs/backlog/B-93-the-calendar-slime-moves-to-the-new-day.md) `[ ]` | The calendar's selection jumps to the new day | P2 | M | - |
 | [B-96](docs/backlog/B-96-a-richer-demo.md) `[ ]` | The demo is thin and plain | P3 | M | - |
 
-## Closed (92)
+## Closed (95)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -180,6 +177,9 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[x]` - A tall body rasterises its whole height every tick
 - [B-90](docs/backlog/B-90-a-dialog-stops-the-whole-demo.md) `[x]` - A dialog open in the demo stops every screen and the Tape
 - [B-91](docs/backlog/B-91-pressed-labels-on-amber.md) `[x]` - A pressed body's light label stands on amber, unreadable
+- [B-92](docs/backlog/B-92-the-dropdown-stays-open.md) `[x]` - The dropdown closes itself after a pick
+- [B-93](docs/backlog/B-93-the-calendar-slime-moves-to-the-new-day.md) `[x]` - The calendar's selection jumps to the new day
+- [B-94](docs/backlog/B-94-the-navigation-bar-label-on-its-pill.md) `[x]` - A chip's label turned before its fill: light on lime
 - [B-95](docs/backlog/B-95-pull-to-refresh-moves-smoothly.md) `[x]` - Pull-to-refresh moves in steps and cuts between its phases
 
 <!-- END INDEX -->

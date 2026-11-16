@@ -272,11 +272,12 @@ internal fun ButtonLabel(
     color: Color,
     modifier: Modifier,
     size: Int = LABEL_SIZE,
+    other: Color = MutantTheme.colors.onPrimary,
 ) {
     BasicText(
         text,
         modifier.mutantCleanZone(),
-        style = buttonLabelStyle(size, inkOnBody(color)),
+        style = buttonLabelStyle(size, inkOnBody(color, other)),
         maxLines = 1,
         softWrap = false,
         overflow = TextOverflow.Ellipsis,

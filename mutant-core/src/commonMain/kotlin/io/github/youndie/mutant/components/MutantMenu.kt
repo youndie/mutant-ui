@@ -79,8 +79,8 @@ import kotlin.math.roundToInt
 /**
  * A dropdown: the acid anchor chip with its [label] and a chevron (body `chip`, 32 dp), and under it, 18 dp below,
  * the [MutantMenu] of [items] while it is open. A press on the anchor opens and closes it; a press on an item hands it
- * to [onSelect], the window flows to it by venom and the menu closes once the venom has arrived (720 ms; at once
- * under reduce motion). A press outside or Escape closes it. Opening and closing are at once (designed here, D15).
+ * to [onSelect] and the window flows to it by venom, the menu staying open (the owner's choice, B-92: it closed once
+ * the venom arrived). A press outside or Escape closes it. Opening and closing are at once (designed here, D15).
  */
 @Composable
 public fun MutantDropdown(
@@ -92,14 +92,6 @@ public fun MutantDropdown(
     key: String = "menu",
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var picked by remember { mutableIntStateOf(0) }
-    val instant = LocalMutantReduceMotion.current
-    LaunchedEffect(picked) {
-        if (picked == 0) return@LaunchedEffect
-        // A timer of its own: under reduce motion the screen's clock stands.
-        delay(if (instant) 0L else MutantMotion.VENOM_MS.toLong())
-        expanded = false
-    }
     Box(modifier) {
         DropdownAnchor(label, "$key-anchor") { expanded = !expanded }
         MutantMenu(
@@ -107,10 +99,7 @@ public fun MutantDropdown(
             { expanded = false },
             items,
             selectedIndex,
-            {
-                onSelect(it)
-                picked++
-            },
+            onSelect,
             key = key,
         )
     }

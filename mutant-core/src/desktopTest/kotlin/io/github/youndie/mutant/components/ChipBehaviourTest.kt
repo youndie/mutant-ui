@@ -93,7 +93,7 @@ class ChipBehaviourTest {
     }
 
     @Test
-    fun `selected, the label turns to the ink 200 ms after the change, at once when paused`() {
+    fun `selected, the label turns to the ink once the pour passes under it, at once when paused`() {
         val ink = MutantPalettes.Efir.onPrimary.let { it.red + it.green + it.blue }
         val (first, mid, late) = turns(reduceMotion = false)
         assertTrue(first > ink + .3f && mid > ink + .3f, "still light at 16 and 112 ms: $first, $mid")

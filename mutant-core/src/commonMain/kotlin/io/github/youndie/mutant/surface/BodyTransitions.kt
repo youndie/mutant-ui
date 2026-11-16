@@ -43,6 +43,30 @@ internal fun stepped(
 /** How long a pour takes on a body [h] dp tall: `clamp(260 + 5 · h, 300, 620)` (tokens `motion.pour`). */
 internal fun pourDuration(h: Double): Double = max(MutantMotion.POUR_MIN_MS, min(MutantMotion.POUR_MAX_MS, 260 + 5 * h))
 
+/**
+ * How far down a pour's front stands under the middle of a body's width, dp below its top: the median of its points
+ * between 16 dp from each side, where a label stands, its drips included (B-94). Above it the new fill shows.
+ */
+internal fun PourFront.depthUnderLabel(
+    ox: Double,
+    oy: Double,
+    w: Double,
+): Double {
+    val ys = ArrayList<Double>()
+    var i = 0
+    while (i + 1 < points.size) {
+        val x = points[i] / 10.0 - ox
+        if (x >= LABEL_INSET && x <= w - LABEL_INSET) ys += points[i + 1] / 10.0 - oy
+        i += 2
+    }
+    if (ys.isEmpty()) return Double.NEGATIVE_INFINITY
+    ys.sort()
+    return ys[ys.size / 2]
+}
+
+/** Where a body's label starts from its side, dp: the chip's and the button's padding. */
+private const val LABEL_INSET = 16.0
+
 /** A pour front as a closed path: the front left to right, then down to the bottom and back. */
 internal fun PourFront.toPath(): Path =
     Path().apply {
@@ -66,6 +90,7 @@ internal inline fun DrawScope.slid(
     g: Instance,
     p: Double,
     dx: Double,
+    dy: Double = 0.0,
     block: DrawScope.() -> Unit,
 ) {
     if (p >= 1) return block()
@@ -74,8 +99,12 @@ internal inline fun DrawScope.slid(
     val el = g.slot
     val cx = (el.ox + el.w / 2).toFloat()
     val cy = (el.oy + el.h / 2).toFloat()
-    translate(jsToFixed(dx * (1 - e), 1).toFloat(), 0f) {
-        scale(jsToFixed(1 + .4 * q, 2).toFloat(), jsToFixed(1 - .18 * q, 2).toFloat(), Offset(cx, cy)) { block() }
+    // Stretched along the run and squeezed across it: a run more down than across stretches tall (B-93).
+    val along = jsToFixed(1 + .4 * q, 2).toFloat()
+    val across = jsToFixed(1 - .18 * q, 2).toFloat()
+    val down = kotlin.math.abs(dy) > kotlin.math.abs(dx)
+    translate(jsToFixed(dx * (1 - e), 1).toFloat(), jsToFixed(dy * (1 - e), 1).toFloat()) {
+        scale(if (down) across else along, if (down) along else across, Offset(cx, cy)) { block() }
     }
 }
 

@@ -1,7 +1,7 @@
 ---
 id: B-92
 title: "The dropdown closes itself after a pick"
-status: open
+status: done
 priority: P2
 size: S
 stage: stage-6-later
@@ -19,3 +19,18 @@ The owner, 2026-11-16: «dropdown пропадает в демо когда вы
   - A click outside, Escape and the anchor close it.
   - Tests for each.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantMenu.kt`
+
+## Findings (2026-11-16)
+
+**Done as decided.** `MutantDropdown` no longer closes 720 ms after a pick. The anchor, a press outside and Escape close it, as they did. A second pick in the same opening goes to `onSelect` too. The venom still runs the window to the new row.
+
+**Tests.** `MenuBehaviourTest`:
+- a pick goes to `onSelect` and the menu still stands 2 s later;
+- a second pick lands in the same opening;
+- the anchor closes it;
+- a press outside closes it;
+- Escape, as before.
+
+The mutant closing on a pick fails the first.
+
+`MutantMenu` itself never closed on a pick. Its caller decides, as before.
