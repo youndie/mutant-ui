@@ -124,7 +124,5 @@ private val PADDING = 16.dp
 /** The unselected chip's slip, dp (the page's `data-slip="2"`). */
 private const val UNSELECTED_SLIP = 2.0
 
-/** The label's lag behind the pour, ms (the engine's toggle). */
-
 /** The label's size, sp (the page's `font-size: 13px`). */
 private const val LABEL_SIZE = 13
