@@ -250,6 +250,7 @@ internal fun MutantSurface(
     val moves = remember { BodyMoves() }
     // The instance of the body's last draw: the pour's front is read from it (B-94).
     val drawn = remember { mutableStateOf<Instance?>(null) }
+    val drawnPlain = remember { arrayOfNulls<Instance>(1) }
     val p = profile
     val outlineOverride = LocalMutantOutlineOverride.current
     val origin = LocalMutantSlotOrigin.current?.invoke(key)
@@ -261,7 +262,7 @@ internal fun MutantSurface(
     val view = remember { BodyView() }
     val reach = with(androidx.compose.ui.platform.LocalDensity.current) { OFF_SCREEN_REACH.dp.toPx() }
     val bodyFill = fill ?: colors.fillOf(p.fill)
-    moves.follow(bodyFill, slide, clock.nowMs, drawn.value?.slot?.h)
+    moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h)
     val look =
         BodyLook(
             fill = bodyFill,
@@ -515,7 +516,11 @@ internal fun MutantSurface(
                     return@drawWithCache onDrawBehind {}
                 }
                 val (g, cache, dead) = held.of(signature, build)
-                if (drawn.value !== g) drawn.value = g
+                // Compared through a plain reference: reading the state here would make this cache depend on its own write.
+                if (drawnPlain[0] !== g) {
+                    drawnPlain[0] = g
+                    drawn.value = g
+                }
                 probe?.invoke(g)
                 if (state == BodyState.Disabled || state == BodyState.Success) {
                     if (state == BodyState.Disabled && slot.edge && slot.w >= 40 &&
