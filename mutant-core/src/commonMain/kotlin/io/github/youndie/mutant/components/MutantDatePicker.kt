@@ -54,13 +54,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
+import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
+import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
@@ -208,18 +213,44 @@ private fun DayGrid(
     val chosen = selectedDay != null && selectedDay in 1..days
     val focus = remember(days) { List(days) { FocusRequester() } }
     val scale = androidx.compose.ui.platform.LocalDensity.current.fontScale
+    // B-93: the drop runs from the day it stood on to the new one, as the navigation bar's pill does, through both axes.
+    // A new month starts it where it lands. A number is dark while the drop's middle stands within half a cell of it: the
+    // old day as the drop leaves, each day it runs over, and the new one as it arrives.
+    val clock = readMutantClock()
+    val instant = LocalMutantReduceMotion.current
+    val run = remember(days, lead) { DayRun(selectedDay ?: 0) }
+    run.follow(selectedDay ?: 0, clock.nowMs)
+    val cellDp = remember { floatArrayOf(CELL.toFloat()) }
+    val p = if (instant || run.from <= 0) 1.0 else stepped(clock.nowMs - run.since, MutantMotion.SLIDE_MS)
+    if (p < 1) clock.frame
+    val left = (1 - p) * (1 - p)
+    val newAt = selectedDay?.let { lead + it - 1 } ?: -1
+    val fromAt = if (run.from in 1..days && p < 1) lead + run.from - 1 else newAt
+    // Where the drop's middle stands, in cells: the eased run's remaining share of the way from the new cell to the old.
+    val atCol = newAt % 7 + (fromAt % 7 - newAt % 7) * left
+    val atRow = newAt / 7 + (fromAt / 7 - newAt / 7) * left
     Layout(
         content = {
             if (chosen) {
+                val (dx, dy) =
+                    if (run.from in 1..days) {
+                        val a = lead + run.from - 1
+                        val b = lead + selectedDay - 1
+                        ((a % 7 - b % 7) * cellDp[0]).toDouble() to ((a / 7 - b / 7) * cellDp[0]).toDouble()
+                    } else {
+                        0.0 to 0.0
+                    }
                 MutantSurface(
                     MutantBody.Pill,
                     "$key-day",
                     Modifier.size(CELL.dp),
                     profile = MutantBody.Pill.profile.with(radius = DROP_RADIUS),
+                    slide = SlideRequest(selectedDay, dx, dy),
                 ) {}
             }
             for (d in 1..days) {
-                val on = d == selectedDay
+                val i = lead + d - 1
+                val on = chosen && kotlin.math.abs(i % 7 - atCol) < .5 && kotlin.math.abs(i / 7 - atRow) < .5
                 DayCell(
                     d,
                     on,
@@ -274,6 +305,7 @@ private fun DayGrid(
                 least,
                 items.maxOfOrNull { maxOf(it.maxIntrinsicWidth(least), it.maxIntrinsicHeight(least)) } ?: least,
             )
+        cellDp[0] = cell / density
         val rows = (lead + days + 6) / 7
         val drop = if (chosen) measurables.first().measure(Constraints.fixed(cell, cell)) else null
         val cells = items.map { it.measure(Constraints.fixed(cell, cell)) }
@@ -573,6 +605,26 @@ private const val GAP = 8
 private const val RADIUS = 12.0
 private const val CELL = 36
 private const val DROP_RADIUS = 18.0
+
+/** Follows the chosen day from composition without writing state: where the drop runs from and since when (B-93). */
+private class DayRun(
+    private var now: Int,
+) {
+    var from: Int = 0
+        private set
+    var since: Double = Double.NEGATIVE_INFINITY
+        private set
+
+    fun follow(
+        to: Int,
+        time: Double,
+    ) {
+        if (to == now) return
+        from = now
+        now = to
+        since = time
+    }
+}
 
 /** The month (Handjet `22px`, tracked 1), the weekdays (Handjet `16px`) and the days (`14px`), sp. */
 private const val MONTH_SIZE = 22

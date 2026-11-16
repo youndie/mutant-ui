@@ -90,6 +90,7 @@ internal inline fun DrawScope.slid(
     g: Instance,
     p: Double,
     dx: Double,
+    dy: Double = 0.0,
     block: DrawScope.() -> Unit,
 ) {
     if (p >= 1) return block()
@@ -98,8 +99,12 @@ internal inline fun DrawScope.slid(
     val el = g.slot
     val cx = (el.ox + el.w / 2).toFloat()
     val cy = (el.oy + el.h / 2).toFloat()
-    translate(jsToFixed(dx * (1 - e), 1).toFloat(), 0f) {
-        scale(jsToFixed(1 + .4 * q, 2).toFloat(), jsToFixed(1 - .18 * q, 2).toFloat(), Offset(cx, cy)) { block() }
+    // Stretched along the run and squeezed across it: a run more down than across stretches tall (B-93).
+    val along = jsToFixed(1 + .4 * q, 2).toFloat()
+    val across = jsToFixed(1 - .18 * q, 2).toFloat()
+    val down = kotlin.math.abs(dy) > kotlin.math.abs(dx)
+    translate(jsToFixed(dx * (1 - e), 1).toFloat(), jsToFixed(dy * (1 - e), 1).toFloat()) {
+        scale(if (down) across else along, if (down) along else across, Offset(cx, cy)) { block() }
     }
 }
 

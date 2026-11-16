@@ -579,6 +579,7 @@ internal fun MutantSurface(
                 val slideP =
                     slideAt?.first ?: if (instant) 1.0 else stepped(now - moves.slideSince, MutantMotion.SLIDE_MS)
                 val slideDx = slideAt?.second ?: moves.slideDx
+                val slideDy = if (slideAt != null) 0.0 else moves.slideDy
                 // A running transition is evaluated on every frame, as the engine does, so its steps keep to the event.
                 if (pourP < 1 || slideP < 1) clock.frame
                 val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
@@ -613,6 +614,7 @@ internal fun MutantSurface(
                                 g,
                                 slideP,
                                 slideDx,
+                                slideDy,
                             ) {
                                 drawBody(
                                     g,
@@ -1053,6 +1055,8 @@ internal const val HOVER_HEAT: Double = .3
 internal class SlideRequest(
     val id: Any,
     val dx: Double,
+    /** Down from the old place to the new one, dp: a calendar's day in another row (B-93). */
+    val dy: Double = 0.0,
 )
 
 /** Follows a body's fill and slide requests from composition without writing state; a change starts a move then. */
@@ -1064,6 +1068,8 @@ internal class BodyMoves {
     var pourSince: Double = Double.NEGATIVE_INFINITY
         private set
     var slideDx: Double = 0.0
+        private set
+    var slideDy: Double = 0.0
         private set
     var slideSince: Double = Double.NEGATIVE_INFINITY
         private set
@@ -1087,6 +1093,7 @@ internal class BodyMoves {
         if (slide != null && slide.id != slideId) {
             if (slideId != null || slideSince == Double.NEGATIVE_INFINITY) {
                 slideDx = slide.dx
+                slideDy = slide.dy
                 slideSince = if (slideId == null) Double.NEGATIVE_INFINITY else now
             }
             slideId = slide.id
