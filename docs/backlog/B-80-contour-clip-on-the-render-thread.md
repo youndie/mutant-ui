@@ -1,7 +1,7 @@
 ---
 id: B-80
 title: "Clipping a body's layers to its contour costs the render thread 2.7 ms a frame"
-status: question
+status: dropped
 priority: P3
 size: M
 stage: stage-5-product
@@ -50,3 +50,5 @@ The item's premise was a cost on the render thread at rest, and that cost is gon
 3. **Keep it as written**: measure the three forms on vectors.
 
 B-81 (the speckle on the render thread) is blocked by B-80, and its premise is likely in the same state.
+
+**Answered 2026-11-16 by the owner: drop it.** The contour clip's cost on the render thread went with B-82; what remains is in transient vectors (a press, a transition, the first ticks) and in the rasterising ahead, measured above.
