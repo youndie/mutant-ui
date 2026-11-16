@@ -50,7 +50,8 @@ const send = (method, params = {}) => new Promise((res, rej) => {
 await send('Page.enable');
 await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 814, deviceScaleFactor: 2, mobile: false });
 await send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/?scene=${scene}` });
-await new Promise(r => setTimeout(r, 4000));
+// WAIT_MS: how long the page runs before the profile starts (4 s by default).
+await new Promise(r => setTimeout(r, +(process.env.WAIT_MS ?? 4000)));
 await send('Profiler.enable');
 await send('Profiler.setSamplingInterval', { interval: 100 });
 await send('Profiler.start');

@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-88](docs/backlog/B-88-keyframe-loss-copies-the-whole-picture.md) `[ ]` | The keyframe loss copies its whole picture for every block it drags | P1 | M | B-87 |
+| [B-88](docs/backlog/B-88-keyframe-loss-copies-the-whole-picture.md) `[?]` | The keyframe loss copies its whole picture for every block it drags | P1 | M | B-87 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
 | [B-77](docs/backlog/B-77-the-tape-on-the-render-thread.md) `[ ]` | The Tape costs 3.2 ms a frame on the render thread of the Demo page | P3 | S | B-76 |

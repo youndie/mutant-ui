@@ -45,6 +45,11 @@ internal fun benchScene(name: String?): (@Composable () -> Unit)? =
             { Alone(DemoScreen.Library) }
         }
 
+        // B-88's control: the Library screen without its keyframe loss.
+        "DemoLibraryNoLoss" -> {
+            { Alone(DemoScreen.Library, keyframeLoss = false) }
+        }
+
         "DemoRecording" -> {
             { Alone(DemoScreen.Recording) }
         }
@@ -75,11 +80,14 @@ private fun Recorded(settings: SampleSettings) {
 
 /** One Demo screen alone, as B-72's recorder composes it: no header, no page Tape. */
 @Composable
-private fun Alone(screen: DemoScreen) {
+private fun Alone(
+    screen: DemoScreen,
+    keyframeLoss: Boolean = true,
+) {
     val strings = remember { SampleStrings(SampleLanguage.English) }
     MutantTheme {
         Box(Modifier.fillMaxSize().background(MutantTheme.colors.page).padding(24.dp)) {
-            DemoScreenFrame(screen, strings)
+            DemoScreenFrame(screen, strings, keyframeLoss = keyframeLoss)
         }
     }
 }

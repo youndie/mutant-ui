@@ -85,10 +85,11 @@ internal fun DemoScreenFrame(
     strings: SampleStrings,
     dialogOpen: Boolean = true,
     roundedClip: Boolean = true,
+    keyframeLoss: Boolean = true,
 ) {
     when (screen) {
         DemoScreen.Library -> {
-            Screen(strings.demoLibrary, "demo-library", roundedClip, keyframeLoss = true) { Library(strings) }
+            Screen(strings.demoLibrary, "demo-library", roundedClip, keyframeLoss) { Library(strings) }
         }
 
         DemoScreen.Recording -> {

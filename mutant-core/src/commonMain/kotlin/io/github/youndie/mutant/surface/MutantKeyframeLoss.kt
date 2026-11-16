@@ -173,8 +173,8 @@ internal class MoshScene(
     private var retry by mutableIntStateOf(0)
     private var window = -1L
     private var plan: MoshPlan? = null
-    private var picture: ImageBitmap? = null
-    private var clean: ImageBitmap? = null
+    private var picture: StripPicture? = null
+    private var clean: StripPicture? = null
 
     // The blocks cut out of the snapshot (`gone`), in scene pixels.
     private var holes: List<Rect> = emptyList()
@@ -217,13 +217,17 @@ internal class MoshScene(
         if (holes.isEmpty() || top.isNaN() || of == null) return
         val me = coords ?: return
         if (!me.isAttached || !of.isAttached) return
+        val at = me.localPositionOf(of, Offset.Zero)
+        // Only the blocks this body may ink, its drips' reach around it (B-88): a body under none of them is not drawn
+        // again at every step.
+        val reach = HOLE_REACH * scope.density
+        val mine = Rect(at.x - reach, at.y - reach, at.x + of.size.width + reach, at.y + of.size.height + reach)
+        val open = holes.filter { it.top >= top && it.overlaps(mine) }
+        if (open.isEmpty()) return
         // Read so a step's drag into a block shows over the bodies too, not only under them.
         drawn
-        val at = me.localPositionOf(of, Offset.Zero)
-        val open = holes.filter { it.top >= top }
-        if (open.isEmpty()) return
         val path = Path().apply { for (h in open) addRect(h.translate(-at.x, -at.y)) }
-        scope.clipPath(path) { translate(-at.x, -at.y) { drawImage(pic) } }
+        scope.clipPath(path) { translate(-at.x, -at.y) { pic.draw(this) } }
     }
 
     /** Under the content: the band's picture while a loss runs; starts, steps and ends the loss by the clock. */
@@ -252,7 +256,7 @@ internal class MoshScene(
         val pic = picture ?: return
         val top = bandTop
         if (top.isNaN()) return
-        scope.clipRect(0f, top, scope.size.width, scope.size.height) { drawImage(pic) }
+        scope.clipRect(0f, top, scope.size.width, scope.size.height) { pic.draw(this) }
     }
 
     private fun start(
@@ -268,13 +272,16 @@ internal class MoshScene(
         val plan = moshPlan(cassette, count++, w, h)
         val pw = scope.size.width.roundToInt()
         val ph = scope.size.height.roundToInt()
-        val pic = ImageBitmap(pw, ph)
-        CanvasDrawScope().draw(
-            Density(d, scope.fontScale),
-            scope.layoutDirection,
-            Canvas(pic),
-            Size(pw.toFloat(), ph.toFloat()),
-        ) {
+        // B-88: kept as strips over the band and a row under it, where the blocks pull (at most 8 dp down); the bodies
+        // draw straight into them.
+        val strips =
+            StripPicture(
+                pw,
+                floor(plan.y0 * d).toInt().coerceIn(0, ph),
+                ceil((plan.y0 + (plan.rows + 1) * ROW) * d).toInt().coerceIn(0, ph),
+                (ROW * d).roundToInt().coerceAtLeast(1),
+            )
+        strips.paint(Density(d, scope.fontScale), scope.layoutDirection, ph) {
             val y0 = plan.y0 * d
             val y1 = (plan.y0 + plan.rows * ROW) * d
             drawRect(ground, Offset(0f, y0), Size(size.width, y1 - y0))
@@ -301,16 +308,9 @@ internal class MoshScene(
                 }
             }
         }
-        val ref = ImageBitmap(pw, ph)
-        Canvas(ref).drawImage(
-            pic,
-            Offset.Zero,
-            androidx.compose.ui.graphics
-                .Paint(),
-        )
         this.plan = plan
-        picture = pic
-        clean = ref
+        picture = strips
+        clean = strips.copy()
         holes = plan.runs.filter { it.gone }.map { Rect(it.x * d, it.y * d, (it.x + it.w) * d, (it.y + it.h) * d) }
         t0 = now
         steps = -1
@@ -352,18 +352,16 @@ internal class MoshScene(
         val el = n * STEP_MS
         if (el < plan.durationMs) {
             val u = el / plan.durationMs
-            val canvas = Canvas(pic)
             val paint =
                 androidx.compose.ui.graphics
                     .Paint()
             for (r in plan.runs) {
                 if (r.gone || u < r.start) continue
-                canvas.drawImageRect(
+                pic.drawPart(
                     pic,
                     IntOffset((r.x * d).roundToInt(), (r.y * d).roundToInt()),
                     IntSize((r.w * d).roundToInt(), (r.h * d).roundToInt()),
                     IntOffset(((r.x + r.vx) * d).roundToInt(), ((r.y + r.vy) * d).roundToInt()),
-                    IntSize((r.w * d).roundToInt(), (r.h * d).roundToInt()),
                     paint,
                 )
                 if (r.tint >= 0 && tinted.add(r)) {
@@ -372,10 +370,10 @@ internal class MoshScene(
                             color = TINTS[r.tint].copy(alpha = TINT_ALPHA)
                             blendMode = BlendMode.Screen
                         }
-                    canvas.drawRect(r.x * d, r.y * d, (r.x + r.w) * d, (r.y + r.h) * d, tp)
+                    pic.drawRect(r.x * d, r.y * d, (r.x + r.w) * d, (r.y + r.h) * d, tp)
                 }
             }
-            restoreCleanZones(canvas, ref, d, plan)
+            restoreCleanZones(pic, ref, d, plan)
             drawn++
         } else {
             val k = ceil(plan.rows * min(1.0, (el - plan.durationMs + 1) / RECOVER_MS)).toInt()
@@ -389,8 +387,8 @@ internal class MoshScene(
 
     /** The bodies' clean zones (and 3 dp around them) inside the band are the clean snapshot's, as the engine's are. */
     private fun restoreCleanZones(
-        canvas: Canvas,
-        ref: ImageBitmap,
+        pic: StripPicture,
+        ref: StripPicture,
         d: Float,
         plan: MoshPlan,
     ) {
@@ -415,14 +413,14 @@ internal class MoshScene(
             val w = ((z[2] + 2 * ZONE_MARGIN) * d).toFloat()
             val h = ((z[3] + 2 * ZONE_MARGIN) * d).toFloat()
             if (y + h <= y0 || y >= y1) continue
-            canvas.drawRect(x, y, x + w, y + h, clear)
+            pic.drawRect(x, y, x + w, y + h, clear)
             val off = IntOffset(x.roundToInt().coerceAtLeast(0), y.roundToInt().coerceAtLeast(0))
             val sz =
                 IntSize(
                     w.roundToInt().coerceAtMost(ref.width - off.x),
-                    h.roundToInt().coerceAtMost(ref.height - off.y),
+                    h.roundToInt(),
                 )
-            if (sz.width > 0 && sz.height > 0) canvas.drawImageRect(ref, off, sz, off, sz, copy)
+            if (sz.width > 0 && sz.height > 0) pic.drawPart(ref, off, sz, off, copy)
         }
     }
 
@@ -441,6 +439,9 @@ private const val EVERY_MS = 9000.0
 private const val OFFSET_MS = 3500.0
 private const val STEP_MS = 125.0
 private const val RECOVER_MS = 375.0
+
+/** How far past its box a body may ink, dp, for the cleared blocks drawn over it (as B-87's reach off the screen). */
+private const val HOLE_REACH = 64f
 
 /** A band's row (16 dp) and the margin kept around a clean zone (3 dp). */
 private const val ROW = 16
