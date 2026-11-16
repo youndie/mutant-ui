@@ -1,7 +1,7 @@
 ---
 id: B-99
 title: "The Components page is to be structured and neat"
-status: open
+status: wip
 priority: P2
 size: L
 stage: stage-6-later
