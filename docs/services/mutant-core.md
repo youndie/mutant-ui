@@ -96,6 +96,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantTape.kt` (`grainTile`) | at a whole density the Tape's grain is one fill repeating its tile, rasterised once, to the byte the strokes' own ([B-77](../backlog/B-77-the-tape-on-the-render-thread.md)); `:mutant-core:tapeRenderBench` measures each part of the Tape on the render thread |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/StripPicture.kt` | the keyframe loss's picture kept as strips, so a block is drawn from the strips it lies in, not from the whole picture ([B-88](../backlog/B-88-keyframe-loss-copies-the-whole-picture.md)); `:mutant-core:keyframeLossBench` measures a step on the JVM, and `?scene=DemoLibraryNoLoss` opens its control in the browser |
 | `mutant-core/src/*Main/kotlin/io/github/youndie/mutant/surface/AheadDispatcher.*.kt` | where a body's builds off the frame run: `Dispatchers.Default`, and in the browser a task of its own each at `background` priority ([B-87](../backlog/B-87-ticks-on-the-one-thread.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt` (`rasterisedBody`, `windowIn`, `BodyView.place`) | a body's image drawn ahead covers the window and half a window around it, cut on the whole image's grid; scrolled past it, the body draws its vectors until the next tick ([B-86](../backlog/B-86-tall-body-rasterised-whole.md)); `:mutant-core:tallBodyBench` measures a tall body per tick |
 
 ## 3. How it is built
 

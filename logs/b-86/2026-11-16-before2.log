@@ -1,0 +1,36 @@
+
+# B-69 tall body bench
+# commit ba3e291
+# host MacBookAir10,1, cpu Apple M1
+# os Mac OS X 27.0.1, jvm 25.0.4.1+1-b635.79
+# window 600x814, rounds 6 (round 1 not counted), scene 8 s
+round 1 Blank: 476 frames, 0 body frames, cpu 236.55 ms/s, render 0.72 ms/frame, raster 0.00 ms/s, main busy 7 %
+round 1 Card200: 481 frames, 64 body frames, cpu 361.75 ms/s, render 0.56 ms/frame, raster 85.71 ms/s, main busy 4 %
+round 1 Card1000: 480 frames, 64 body frames, cpu 377.32 ms/s, render 0.30 ms/frame, raster 201.22 ms/s, main busy 2 %
+round 1 Card3000: 481 frames, 64 body frames, cpu 847.47 ms/s, render 0.34 ms/frame, raster 705.18 ms/s, main busy 2 %
+round 2 Card200: 481 frames, 64 body frames, cpu 281.22 ms/s, render 0.56 ms/frame, raster 83.32 ms/s, main busy 3 %
+round 2 Card1000: 481 frames, 64 body frames, cpu 364.65 ms/s, render 0.33 ms/frame, raster 227.50 ms/s, main busy 2 %
+round 2 Card3000: 480 frames, 64 body frames, cpu 827.46 ms/s, render 0.32 ms/frame, raster 694.61 ms/s, main busy 2 %
+round 2 Blank: 480 frames, 0 body frames, cpu 145.74 ms/s, render 0.67 ms/frame, raster 0.00 ms/s, main busy 2 %
+round 3 Card1000: 481 frames, 64 body frames, cpu 360.44 ms/s, render 0.33 ms/frame, raster 234.43 ms/s, main busy 2 %
+round 3 Card3000: 480 frames, 64 body frames, cpu 850.52 ms/s, render 0.31 ms/frame, raster 693.80 ms/s, main busy 1 %
+round 3 Blank: 480 frames, 0 body frames, cpu 137.29 ms/s, render 0.64 ms/frame, raster 0.00 ms/s, main busy 2 %
+round 3 Card200: 480 frames, 64 body frames, cpu 251.71 ms/s, render 0.57 ms/frame, raster 86.84 ms/s, main busy 2 %
+round 4 Card3000: 480 frames, 64 body frames, cpu 824.28 ms/s, render 0.31 ms/frame, raster 693.47 ms/s, main busy 1 %
+round 4 Blank: 480 frames, 0 body frames, cpu 146.48 ms/s, render 0.65 ms/frame, raster 0.00 ms/s, main busy 2 %
+round 4 Card200: 480 frames, 64 body frames, cpu 235.35 ms/s, render 0.59 ms/frame, raster 84.66 ms/s, main busy 2 %
+round 4 Card1000: 480 frames, 64 body frames, cpu 357.54 ms/s, render 0.28 ms/frame, raster 232.97 ms/s, main busy 1 %
+round 5 Blank: 480 frames, 0 body frames, cpu 182.52 ms/s, render 0.54 ms/frame, raster 0.00 ms/s, main busy 3 %
+round 5 Card200: 480 frames, 64 body frames, cpu 263.30 ms/s, render 0.59 ms/frame, raster 84.39 ms/s, main busy 2 %
+round 5 Card1000: 480 frames, 64 body frames, cpu 354.14 ms/s, render 0.31 ms/frame, raster 228.42 ms/s, main busy 1 %
+round 5 Card3000: 480 frames, 64 body frames, cpu 837.82 ms/s, render 0.29 ms/frame, raster 689.22 ms/s, main busy 2 %
+round 6 Card200: 480 frames, 64 body frames, cpu 238.38 ms/s, render 0.59 ms/frame, raster 85.56 ms/s, main busy 2 %
+round 6 Card1000: 480 frames, 64 body frames, cpu 348.14 ms/s, render 0.29 ms/frame, raster 227.38 ms/s, main busy 1 %
+round 6 Card3000: 481 frames, 64 body frames, cpu 837.81 ms/s, render 0.28 ms/frame, raster 690.73 ms/s, main busy 1 %
+round 6 Blank: 480 frames, 0 body frames, cpu 123.56 ms/s, render 0.61 ms/frame, raster 0.00 ms/s, main busy 1 %
+
+scene      cpu ms/s  above blank  body frames/s  cost per tick ms   (counted rounds 2..6, mean; per round)
+Blank        147.12                        0.00                     
+Card200      253.99       106.87           7.99             13.37   16.96 14.31 11.12 10.10 14.36
+Card1000     356.98       209.86           7.99             26.26   27.39 27.93 26.41 21.46 28.09
+Card3000     835.58       688.46           8.00             86.10   85.21 89.20 84.78 81.96 89.33

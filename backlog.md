@@ -58,15 +58,14 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (3)
+## Open (2)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
-| [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[~]` | A tall body rasterises its whole height every tick | P3 | M | B-69 |
 
-## Closed (85)
+## Closed (86)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -173,5 +172,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
 - [B-47](docs/backlog/B-47-carousel.md) `[x]` - Carousel: 220 × 120 cards, calm side cards, a pill pointer among dots
 - [B-48](docs/backlog/B-48-keyframe-loss.md) `[x]` - Keyframe loss: a band of the screen breaks into 16 and 8 dp blocks every 9 s
+- [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[x]` - A tall body rasterises its whole height every tick
 
 <!-- END INDEX -->
