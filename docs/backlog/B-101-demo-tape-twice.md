@@ -1,7 +1,7 @@
 ---
 id: B-101
 title: "On the Demo page the phones carry the Tape twice"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-6-later
