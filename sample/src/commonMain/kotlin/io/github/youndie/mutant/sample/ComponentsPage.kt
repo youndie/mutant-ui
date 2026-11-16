@@ -182,10 +182,8 @@ private fun GroupTitle(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         BasicText(stage.title(s), style = MutantTheme.textStyles.display(40.sp))
-        BasicText(
-            stage.line(s),
-            style = MutantTheme.textStyles.text(15.sp).copy(color = MutantTheme.colors.textSecondary),
-        )
+        // In the text's own ink: the secondary one reads 4.49:1 on the page's ground of «Копия».
+        BasicText(stage.line(s), style = MutantTheme.textStyles.text(15.sp))
     }
 }
 
@@ -1149,9 +1147,12 @@ private val CELL_MIN = 96.dp
 private val WIDE = 900.dp
 private val HEAD_WIDTH = 260.dp
 
-/** The specimens' widths: a field, a card, a bar, a staged overlay, a table, an icon. */
-private val FIELD = 300.dp
-private val CARD = 328.dp
+/**
+ * The specimens' widths: a field, a card, a bar, a staged overlay, a table, an icon. Two fields or two cards stand in a
+ * row of a section's rows on a 1 024 dp window (620 dp across).
+ */
+private val FIELD = 280.dp
+private val CARD = 290.dp
 private val BAR = 360.dp
 private val STAGE_W = 360.dp
 private val TABLE = 520.dp

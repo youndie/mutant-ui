@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.sample
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import io.github.youndie.mutant.tokens.MutantPalettes
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -181,5 +183,34 @@ class ComponentsPageTest {
             assertTrue(scroll.value > 0, "the page scrolled: ${scroll.value}")
             assertTrue(top in 0f..200f, "the group's title stands near the top: $top")
         }
+    }
+
+    @Test
+    fun `the page's own words read at 4_5 to 1 on a section's ground in both palettes`() {
+        // The page's words: its titles and heads in text, its purposes and captions in the secondary text, the functions
+        // in the OSD amber, all on a section's ground, the page's on the group titles.
+        val failures = ArrayList<String>()
+        for ((name, c) in listOf("Efir" to MutantPalettes.Efir, "Kopiya" to MutantPalettes.Kopiya)) {
+            for ((what, ink, ground) in listOf(
+                Triple("name", c.text, c.background),
+                Triple("purpose, caption, row label", c.textSecondary, c.background),
+                Triple("function", c.textOsd, c.background),
+                Triple("group title", c.text, c.page),
+                Triple("group line", c.text, c.page),
+            )) {
+                val r = ratio(ink, ground)
+                if (r < 4.5) failures += "$name, $what: ${"%.2f".format(r)}:1"
+            }
+        }
+        assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+    }
+
+    private fun ratio(
+        a: androidx.compose.ui.graphics.Color,
+        b: androidx.compose.ui.graphics.Color,
+    ): Float {
+        val la = a.luminance()
+        val lb = b.luminance()
+        return (maxOf(la, lb) + .05f) / (minOf(la, lb) + .05f)
     }
 }
