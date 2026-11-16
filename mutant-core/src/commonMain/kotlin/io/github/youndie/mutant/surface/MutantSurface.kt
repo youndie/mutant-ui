@@ -400,6 +400,7 @@ internal fun MutantSurface(
                     cache: FieldCache,
                     dead: io.github.youndie.mutant.gen.DeadPixels?,
                     next: Double,
+                    band: Rect?,
                 ): Ahead {
                     val f = gen.frame(g, cache, next, 0.0, pressed = false, steadyWebs = steadyWebs)
                     val inputs = imageInputsOf(dead)
@@ -409,7 +410,7 @@ internal fun MutantSurface(
                                 kotlin.time.TimeSource.Monotonic
                                     .markNow()
                             val pic = pictureOf(g, f, next, 0.0)
-                            rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection) {
+                            rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection, band) {
                                 drawBody(
                                     g,
                                     pic.paths,
@@ -451,8 +452,9 @@ internal fun MutantSurface(
                         val (g, cache, dead) = built
                         val first =
                             when {
+                                // A standing clock has no next tick to follow a scroll: its one image is the whole body.
                                 firstImage -> {
-                                    buildAhead(g, cache, dead, firstAt)
+                                    buildAhead(g, cache, dead, firstAt, null)
                                 }
 
                                 !still -> {
@@ -522,9 +524,11 @@ internal fun MutantSurface(
                 val early = if (resting) ahead.take(g, t) else null
 
                 val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
+                val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
                 if (resting && cache.settledFor(g)) {
                     val next = t + clock.stepMs
-                    ahead.prepare(g, next, scope) { buildAhead(g, cache, dead, next) }
+                    ahead.prepare(g, next, shown, scope) { band -> buildAhead(g, cache, dead, next, band) }
                 }
                 val now = clock.nowMs
                 val pourP = pourAt?.first ?: if (instant) 1.0 else stepped(now - moves.pourSince, pourDuration(slot.h))
@@ -542,8 +546,9 @@ internal fun MutantSurface(
                 val image =
                     early?.image?.takeIf {
                         imageInputs != null && early.inputs == imageInputs && pour == null &&
-                            slideP >= 1
+                            slideP >= 1 && it.covers(shown)
                     }
+                view.drawn = image
                 frameProbe?.invoke(early != null, image != null, frame.steadyWebs)
                 if (image != null) {
                     return@drawWithCache moshBehind(moshScene, moshBody) {
@@ -613,11 +618,18 @@ internal class BodyView {
         reach: Float,
     ) {
         val now = at.standing(reach)
-        if (now != where) {
+        // B-86: scrolled past the part of a tall body its image covers, the body draws again, as vectors until the next
+        // tick's image covers where it now stands.
+        val uncovered = drawn?.let { !it.covers(windowIn(at)) } ?: false
+        if (now != where || uncovered) {
             where = now
+            drawn = null
             flips++
         }
     }
+
+    /** The image the body last drew, or null when it drew vectors (B-86). */
+    var drawn: RasterisedBody? = null
 
     /** At a draw: where the body stands now, read from where it was last laid out. */
     fun whereNow(
@@ -625,6 +637,35 @@ internal class BodyView {
         reach: Float,
     ): Int = (if (at == null || !at.isAttached) SHOWN else at.standing(reach)).also { where = it }
 }
+
+/**
+ * The window's bounds in [at]'s own pixels (B-86): what of a box can show, whatever the boxes between clip. Null when
+ * the box is no longer attached.
+ */
+internal fun windowIn(at: LayoutCoordinates): Rect? {
+    if (!at.isAttached) return null
+    var root = at
+    while (true) root = root.parentCoordinates ?: break
+    val w = root.size.width.toFloat()
+    val h = root.size.height.toFloat()
+    val corners = listOf(Offset.Zero, Offset(w, 0f), Offset(0f, h), Offset(w, h)).map { at.localPositionOf(root, it) }
+    return Rect(corners.minOf { it.x }, corners.minOf { it.y }, corners.maxOf { it.x }, corners.maxOf { it.y })
+}
+
+/**
+ * What a tall body rasterises ahead (B-86): the window, half its height and half its width more on each side, in the
+ * surface's pixels, so a tick's image still covers the screen after a scroll of half a window.
+ */
+internal fun bandAround(window: Rect): Rect =
+    Rect(
+        window.left - window.width * BAND_SPARE,
+        window.top - window.height * BAND_SPARE,
+        window.right + window.width * BAND_SPARE,
+        window.bottom + window.height * BAND_SPARE,
+    )
+
+/** How much of the window, on each side, a tall body's image covers past it (B-86). */
+private const val BAND_SPARE = .5f
 
 internal const val SHOWN = 0
 internal const val OFF_BOX = 1
@@ -750,15 +791,36 @@ internal val LocalMutantBodyAsImage = staticCompositionLocalOf { true }
 /** Told the time and the bytes of every body rasterised (B-82): the bench reads it. */
 internal val LocalMutantRasterProbe = staticCompositionLocalOf<((nanos: Long, bytes: Long) -> Unit)?> { null }
 
-/** A body rasterised at the device's pixels, and where its top-left pixel goes in the surface's own pixels. */
+/**
+ * A body rasterised at the device's pixels, and where its top-left pixel goes in the surface's own pixels. [whole] is
+ * everything the body can ink, in the same pixels; the image covers all of it, or the part of it a band asked for (B-86).
+ */
 internal class RasterisedBody(
     val image: androidx.compose.ui.graphics.ImageBitmap,
     val offset: androidx.compose.ui.unit.IntOffset,
-)
+    val whole: Rect,
+) {
+    private val drawn =
+        Rect(
+            offset.x.toFloat(),
+            offset.y.toFloat(),
+            (offset.x + image.width).toFloat(),
+            (offset.y + image.height).toFloat(),
+        )
+
+    /** Whether the image holds every pixel of the body inside [shown]; a null [shown] asks for the whole body. */
+    fun covers(shown: Rect?): Boolean {
+        val need = if (shown == null) whole else whole.intersect(shown)
+        if (need.isEmpty) return true
+        return need.left >= drawn.left && need.top >= drawn.top && need.right <= drawn.right &&
+            need.bottom <= drawn.bottom
+    }
+}
 
 /**
  * Draws [draw] (in the generator's scene coordinates) into an image covering everything a body can ink: its box,
- * the drips under it, the shadow, the slip, the outline's half width and the focus brackets (B-82).
+ * the drips under it, the shadow, the slip, the outline's half width and the focus brackets (B-82). With a [band], in
+ * the surface's pixels, only the rows and columns of that image inside it (B-86): the same pixels, cut on its grid.
  */
 internal fun rasterisedBody(
     g: Instance,
@@ -766,6 +828,7 @@ internal fun rasterisedBody(
     oy: Double,
     density: Float,
     direction: androidx.compose.ui.unit.LayoutDirection,
+    band: Rect? = null,
     draw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit,
 ): RasterisedBody {
     val el = g.slot
@@ -775,9 +838,20 @@ internal fun rasterisedBody(
     val bottom = kotlin.math.ceil(el.oy + el.h + el.over + RASTER_MARGIN + 16).toFloat()
     val w = kotlin.math.ceil((right - left) * density).toInt()
     val h = kotlin.math.ceil((bottom - top) * density).toInt()
+    val at =
+        androidx.compose.ui.unit.IntOffset(
+            kotlin.math.round((left - ox) * density).toInt(),
+            kotlin.math.round((top - oy) * density).toInt(),
+        )
+    val whole = Rect(at.x.toFloat(), at.y.toFloat(), (at.x + w).toFloat(), (at.y + h).toFloat())
+    // The band, on the whole image's pixel grid: whole pixels of it, so a cut image is the whole one's pixels.
+    val x0 = band?.let { (kotlin.math.floor(it.left) - at.x).toInt().coerceIn(0, w) } ?: 0
+    val y0 = band?.let { (kotlin.math.floor(it.top) - at.y).toInt().coerceIn(0, h) } ?: 0
+    val x1 = band?.let { (kotlin.math.ceil(it.right) - at.x).toInt().coerceIn(x0, w) } ?: w
+    val y1 = band?.let { (kotlin.math.ceil(it.bottom) - at.y).toInt().coerceIn(y0, h) } ?: h
     val image =
         androidx.compose.ui.graphics
-            .ImageBitmap(w, h)
+            .ImageBitmap(maxOf(1, x1 - x0), maxOf(1, y1 - y0))
     androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
         androidx.compose.ui.unit
             .Density(density),
@@ -785,16 +859,18 @@ internal fun rasterisedBody(
         androidx.compose.ui.graphics
             .Canvas(image),
         androidx.compose.ui.geometry
-            .Size(w.toFloat(), h.toFloat()),
+            .Size(image.width.toFloat(), image.height.toFloat()),
     ) {
-        scale(density, Offset.Zero) { translate(-left, -top) { draw() } }
+        translate(-x0.toFloat(), -y0.toFloat()) {
+            scale(density, Offset.Zero) { translate(-left, -top) { draw() } }
+        }
     }
-    val offset =
-        androidx.compose.ui.unit.IntOffset(
-            kotlin.math.round((left - ox) * density).toInt(),
-            kotlin.math.round((top - oy) * density).toInt(),
-        )
-    return RasterisedBody(image, offset)
+    return RasterisedBody(
+        image,
+        androidx.compose.ui.unit
+            .IntOffset(at.x + x0, at.y + y0),
+        whole,
+    )
 }
 
 private const val RASTER_MARGIN = 20.0
@@ -818,17 +894,33 @@ internal class FrameAhead {
         return j.getCompleted()
     }
 
+    private var band: Rect? = null
+
+    /**
+     * Builds the frame for [t] once, with an image of the body around [shown] (B-86); again for the same [t] only when
+     * the window has moved out of the band the first build was given.
+     */
     fun prepare(
         g: Instance,
         t: Double,
+        shown: Rect?,
         scope: CoroutineScope,
-        build: () -> Ahead,
+        build: (band: Rect?) -> Ahead,
     ) {
-        if (instance === g && at == t) return
+        val b = band
+        val inside =
+            (shown == null && b == null) ||
+                (
+                    shown != null && b != null && shown.left >= b.left && shown.top >= b.top &&
+                        shown.right <= b.right && shown.bottom <= b.bottom
+                )
+        if (instance === g && at == t && inside) return
         job?.cancel()
         instance = g
         at = t
-        job = scope.async(aheadDispatcher) { build() }
+        val next = shown?.let { bandAround(it) }
+        band = next
+        job = scope.async(aheadDispatcher) { build(next) }
     }
 
     /** Hands over a frame built with the body's first instance, for [t] (B-83). */
@@ -840,6 +932,7 @@ internal class FrameAhead {
         job?.cancel()
         instance = g
         at = t
+        band = null
         job = CompletableDeferred(built)
     }
 }
