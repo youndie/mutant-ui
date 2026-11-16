@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Mulberry32
@@ -111,6 +112,7 @@ internal fun DrawScope.drawTape(
     h: Float = size.height,
     grain: TapeGrain = TapeGrain.of(stage),
     skip: Set<TapePart> = emptySet(),
+    tile: androidx.compose.ui.graphics.ShaderBrush? = null,
 ) {
     val ink = inkOf(colors)
     if (ink.scanline > 0 && TapePart.Lines !in skip) {
@@ -129,25 +131,25 @@ internal fun DrawScope.drawTape(
     }
     val gx = ((fi * 37) % 90).toFloat()
     val gy = ((fi * 71) % 180).toFloat()
-    var j = floor(-gy / TapeGrain.H).toInt()
-    while (TapePart.Grain !in skip && gy + j * TapeGrain.H < h) {
-        var i = floor(-gx / TapeGrain.W).toInt()
-        while (gx + i * TapeGrain.W < w) {
-            val ox = gx + i * TapeGrain.W
-            val oy = gy + j * TapeGrain.H
-            clipRect(ox, oy, ox + TapeGrain.W, oy + TapeGrain.H) {
-                for (s in grain.strokes) {
-                    drawRect(
-                        ink.grain,
-                        Offset(ox + s[0].toFloat(), oy + s[1].toFloat()),
-                        Size(s[2].toFloat(), 1f),
-                        alpha = s[3].toFloat(),
-                    )
-                }
-            }
-            i++
+    if (tile != null && TapePart.Grain !in skip) {
+        // B-77: the tile rasterised once at the device's pixels, and the grain one fill repeating it, drawn at those
+        // pixels: the strokes of a frame's 70-odd tiles were thousands of draws for the render thread.
+        val d = density
+        scale(1f / d, Offset.Zero) {
+            translate(gx * d, gy * d) { drawRect(tile, Offset(-gx * d, -gy * d), Size(w * d, h * d)) }
         }
-        j++
+    } else {
+        var j = floor(-gy / TapeGrain.H).toInt()
+        while (TapePart.Grain !in skip && gy + j * TapeGrain.H < h) {
+            var i = floor(-gx / TapeGrain.W).toInt()
+            while (gx + i * TapeGrain.W < w) {
+                val ox = gx + i * TapeGrain.W
+                val oy = gy + j * TapeGrain.H
+                drawGrainTile(grain, ink.grain, ox, oy)
+                i++
+            }
+            j++
+        }
     }
     val r = Mulberry32("hd", "$stage$fi")
 
@@ -164,6 +166,55 @@ internal fun DrawScope.drawTape(
     if (TapePart.Noise in skip) return
     if (by != null) repeat(14) { noise(by, 22.0) }
     repeat(jsRound(w / 10.0).toInt()) { noise(h - 12, 11.0) }
+}
+
+/** The grain's tile at ([ox], [oy]) dp: its strokes, clipped to the tile. */
+private fun DrawScope.drawGrainTile(
+    grain: TapeGrain,
+    color: Color,
+    ox: Float,
+    oy: Float,
+) {
+    clipRect(ox, oy, ox + TapeGrain.W, oy + TapeGrain.H) {
+        for (s in grain.strokes) {
+            drawRect(
+                color,
+                Offset(ox + s[0].toFloat(), oy + s[1].toFloat()),
+                Size(s[2].toFloat(), 1f),
+                alpha = s[3].toFloat(),
+            )
+        }
+    }
+}
+
+/**
+ * The grain's tile rasterised at [density] as a repeating fill, or null where a tile is not a whole number of
+ * pixels (B-77). At a fractional density the strokes are drawn as before.
+ */
+internal fun grainTile(
+    grain: TapeGrain,
+    colors: MutantColors,
+    density: Float,
+): androidx.compose.ui.graphics.ShaderBrush? {
+    if (density != kotlin.math.round(density) || density < 1f) return null
+    val img =
+        androidx.compose.ui.graphics
+            .ImageBitmap((TapeGrain.W * density).toInt(), (TapeGrain.H * density).toInt())
+    androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
+        androidx.compose.ui.unit
+            .Density(density),
+        androidx.compose.ui.unit.LayoutDirection.Ltr,
+        androidx.compose.ui.graphics
+            .Canvas(img),
+        Size(img.width.toFloat(), img.height.toFloat()),
+    ) { scale(density, Offset.Zero) { drawGrainTile(grain, inkOf(colors).grain, 0f, 0f) } }
+    return androidx.compose.ui.graphics.ShaderBrush(
+        androidx.compose.ui.graphics.ImageShader(
+            img,
+            androidx.compose.ui.graphics.TileMode.Repeated,
+            androidx.compose.ui.graphics.TileMode.Repeated,
+        ),
+    )
 }
 
 /**
@@ -183,6 +234,8 @@ public fun Modifier.mutantTape(): Modifier =
         val stage = LocalMutantStage.current
         val grain = remember(stage) { TapeGrain.of(stage) }
         val skip = LocalMutantTapeSkip.current
+        val density = androidx.compose.ui.platform.LocalDensity.current.density
+        val tile = remember(grain, colors.print, density) { grainTile(grain, colors, density) }
         drawWithContent {
             drawContent()
             // A frozen clock is the engine's `data-mu-t`, drawn at that very time; a running one steps the Tape on
@@ -192,7 +245,7 @@ public fun Modifier.mutantTape(): Modifier =
             val w = size.width / d
             val h = size.height / d
             scale(d, Offset.Zero) {
-                clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain, skip) }
+                clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain, skip, tile) }
             }
         }
     }
