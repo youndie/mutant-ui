@@ -58,15 +58,14 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (3)
+## Open (2)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-89](docs/backlog/B-89-twelve-ticks-built-in-the-frame-on-a-phone.md) `[ ]` | At 12 ticks a second a third of a phone's ticks are built in the frame | P2 | M | B-49 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
-| [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[?]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
 
-## Closed (86)
+## Closed (87)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -87,6 +86,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-12](docs/backlog/B-12-transitions.md) `[x]` - Transitions: pour, melt, slide, and the venom with its soft joins
 - [B-13](docs/backlog/B-13-tape.md) `[x]` - The Tape («Лента»): one overlay over the screen
 - [B-14](docs/backlog/B-14-icons-illustrations-patterns.md) `[x]` - Icons, the six illustrations and the four patterns
+- [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[x]` - The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance
 - [B-50](docs/backlog/B-50-first-frame-off-the-frame.md) `[x]` - Build a body's instance and first frame off the frame
 - [B-51](docs/backlog/B-51-size-change-moves-the-flow-lines.md) `[x]` - A size change moves every flow line: accept, or hold them?
 - [B-52](docs/backlog/B-52-display-text-against-chrome.md) `[x]` - Display text against Chrome: Handjet labels 2 px low, and a floor for text

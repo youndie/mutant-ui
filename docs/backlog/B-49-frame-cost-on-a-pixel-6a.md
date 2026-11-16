@@ -1,7 +1,7 @@
 ---
 id: B-49
 title: "The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance"
-status: question
+status: done
 priority: P3
 size: M
 stage: stage-1-materials
@@ -99,3 +99,27 @@ The pre-registered rule makes both screen targets RED, and it makes the empty sc
 1. **Amend late**: judge a screen by the vsyncs it skips. Green when under 1 % and the main thread's p95 is ≤ 16.7 ms; red when over 5 %. `List100` reads GREEN on that, with 0 % skipped and a p95 of 13.3 ms. `TenCards12` reads GREY, with 1.51 % skipped, and B-89 takes its cause.
 2. **Keep the rule as frozen**: both RED, and the retreat arms measured on `TenCards12` and `List100`, knowing none can reach the line.
 3. **Close as measured**: the numbers above stand, with no screen verdict, and B-89 goes on.
+
+**Answered 2026-11-16 by the owner: amend late (choice 1).**
+
+## Late amendment, 2026-11-16, the owner's
+
+It is made after the numbers were seen, and it says so. It fixes an incoherence, not an inconvenient number: the frozen rule made the empty screen RED, so it judged no screen. The frozen rule's verdicts stay published beside the amended ones, in the table above and in `scripts/b49_summary.py`'s `frozen` column.
+
+**The amended rule for a screen scene, at 60 Hz.**
+- **Green**: vsyncs skipped (gaps between `VSYNC_TIMESTAMP`s over 25 ms) are under 1 %, and the main thread's work (`ANIMATION + LAYOUT_MEASURE + DRAW`) is ≤ 16.7 ms at p95.
+- **Red**: more than 5 % of vsyncs skipped.
+- **Grey**: anything else.
+
+The empty screen passes it: 0 % skipped, a p95 of 1.25 ms.
+
+## Verdicts
+
+| Target | Verdict | The number | Item |
+|---|---|---|---|
+| Ten cards with the Tape at 12 ticks a second | **GREY** (frozen rule: RED) | 1.51 % of vsyncs skipped; main thread p95 27.0 ms; at the kit's 8 ticks, 0 % and 3.2 ms | [B-89](B-89-twelve-ticks-built-in-the-frame-on-a-phone.md) |
+| A list of 100 scrolling | **GREEN** (frozen rule: RED) | 0 % skipped; main thread p95 13.3 ms; 39 000 px a scene delivered | — |
+| An instance ≤ 1 ms | **GREEN** | worst case 283.2 µs (`fab-b`) | — |
+| B-06's factor of 4 | instance: **confirmed** (3.53); warm frame: **refuted** (2.68) | ranges 2.23–18.00 and 2.43–3.85 | — |
+
+No target is red, so the brief's retreat order is not started. The grey target's cause is B-89's.
