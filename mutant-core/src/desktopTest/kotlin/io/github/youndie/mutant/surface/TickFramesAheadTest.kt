@@ -94,6 +94,28 @@ class TickFramesAheadTest {
         }
 
     @Test
+    fun `at 12 and 24 ticks a second every settled tick is taken from the frame built ahead`() {
+        // B-89: the frame was built for a time a bit away from the tick's, and a third of the ticks rebuilt it in the frame.
+        for (fps in listOf(12.0, 24.0)) {
+            runComposeUiTest {
+                val count = Count()
+                card(offFrame = true, count, MutantClock(fps = fps))
+                repeat(60) {
+                    mainClock.advanceTimeByFrame()
+                    Thread.sleep(6)
+                }
+                val settled = count.inFrame
+                repeat(60) {
+                    mainClock.advanceTimeByFrame()
+                    Thread.sleep(6)
+                }
+                assertEquals(settled, count.inFrame, "ticks built in the frame in the second second, at $fps a second")
+                assertTrue(count.ahead >= fps.toInt() - 2, "ticks taken ahead at $fps a second: ${count.ahead}")
+            }
+        }
+    }
+
+    @Test
     fun `a body building its frames ahead draws exactly what one building them in the tick draws`() {
         fun run(offFrame: Boolean): Pair<List<List<Color>>, Count> {
             val count = Count()

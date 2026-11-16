@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -51,10 +52,13 @@ import io.github.youndie.mutant.gen.frame
 import io.github.youndie.mutant.gen.goldens.GoldenInstance
 import io.github.youndie.mutant.gen.goldens.genGoldens
 import io.github.youndie.mutant.icons.MutantIcons
+import io.github.youndie.mutant.surface.LocalMutantFrameProbe
+import io.github.youndie.mutant.surface.LocalMutantRasterProbe
 import io.github.youndie.mutant.surface.mutantTape
 import io.github.youndie.mutant.theme.MutantTheme
 import java.io.BufferedWriter
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 
 private const val TAG = "MutantBench"
@@ -133,10 +137,15 @@ class BenchActivity : ComponentActivity() {
     ) {
         val rounds = intent.getIntExtra("rounds", 6)
         val seconds = intent.getIntExtra("seconds", 10)
+        // B-89 re-runs the screens alone.
+        val withInstance = intent.getBooleanExtra("instance", true)
         val scenes = File(dir, "scenes.csv").bufferedWriter()
         header(scenes, commit)
         scenes.appendLine("# rounds: $rounds, seconds a scene: $seconds")
-        scenes.appendLine("scene,round,frames,scrolled_px,thermal_start,thermal_end")
+        scenes.appendLine(
+            "scene,round,frames,scrolled_px,thermal_start,thermal_end,ticks_ahead,ticks_in_frame,as_image,as_vectors," +
+                "rasters,raster_p50_us,raster_p95_us",
+        )
         val out = File(dir, "metrics.csv").bufferedWriter()
         header(out, commit)
         metrics = out
@@ -164,7 +173,7 @@ class BenchActivity : ComponentActivity() {
                     }
                     scenes.close()
                     Thread {
-                        instances(File(dir, "instance.txt"), commit)
+                        if (withInstance) instances(File(dir, "instance.txt"), commit)
                         Log.i(TAG, "DONE")
                         runOnUiThread { finish() }
                     }.start()
@@ -178,10 +187,11 @@ class BenchActivity : ComponentActivity() {
                     LaunchedEffect(Unit) {
                         scene = s.name
                         round = r
+                        Ticks.reset()
                         since = System.nanoTime()
                         val end = since + seconds * 1_000_000_000L
                         while (System.nanoTime() < end) withFrameNanos { frames++ }
-                        scenes.appendLine("${s.name},$r,$frames,$scrolled,$t0,${thermal()}")
+                        scenes.appendLine("${s.name},$r,$frames,$scrolled,$t0,${thermal()},${Ticks.line()}")
                         scenes.flush()
                         at++
                     }
@@ -267,6 +277,20 @@ private fun SceneOf(
     var frame by remember { mutableLongStateOf(0L) }
     LaunchedEffect(Unit) { while (true) withFrameNanos { frame = it } }
     MutantTheme(reduceMotion = false) {
+        CompositionLocalProvider(
+            LocalMutantFrameProbe provides { early, image, _ -> Ticks.drawn(early, image) },
+            LocalMutantRasterProbe provides { nanos, _ -> Ticks.rasterised(nanos) },
+        ) { Screen(scene, { frame }, scrolled) }
+    }
+}
+
+@Composable
+private fun Screen(
+    scene: Scene,
+    frame: () -> Long,
+    scrolled: (Long) -> Unit,
+) {
+    run {
         val clock = remember { MutantClock(fps = if (scene == Scene.TenCards8) 8.0 else 12.0) }
         ProvideMutantClock(clock) {
             val ground = Modifier.fillMaxSize().background(MutantTheme.colors.background)
@@ -285,7 +309,7 @@ private fun SceneOf(
                 Box(Modifier.fillMaxSize().graphicsLayer { }) {
                     Box(
                         Modifier.fillMaxSize().graphicsLayer { }.drawBehind {
-                            frame
+                            frame()
                             if (scene == Scene.Spin5) {
                                 val until = System.nanoTime() + SPIN_NS
                                 while (System.nanoTime() < until) {
@@ -421,5 +445,44 @@ private fun round(
     return arms.mapIndexed { a, (name, _) ->
         ns[a].sort()
         name to ns[a][CALLS / 2] / 1000.0
+    }
+}
+
+/**
+ * B-89: what the kit's probes say a scene's bodies did. A resting tick taken ready from its build ahead, or built in the
+ * frame; drawn as an image or as vectors; and how long each rasterising ahead took, µs.
+ */
+private object Ticks {
+    private val ahead = AtomicInteger()
+    private val inFrame = AtomicInteger()
+    private val image = AtomicInteger()
+    private val vectors = AtomicInteger()
+    private val rasters = java.util.Collections.synchronizedList(ArrayList<Long>())
+
+    fun reset() {
+        ahead.set(0)
+        inFrame.set(0)
+        image.set(0)
+        vectors.set(0)
+        rasters.clear()
+    }
+
+    fun drawn(
+        early: Boolean,
+        asImage: Boolean,
+    ) {
+        (if (early) ahead else inFrame).incrementAndGet()
+        (if (asImage) image else vectors).incrementAndGet()
+    }
+
+    fun rasterised(nanos: Long) {
+        rasters += nanos / 1_000
+    }
+
+    fun line(): String {
+        val r = synchronized(rasters) { rasters.sorted() }
+        val p50 = r.getOrNull(r.size / 2) ?: 0
+        val p95 = r.getOrNull((r.size * 95) / 100) ?: 0
+        return "${ahead.get()},${inFrame.get()},${image.get()},${vectors.get()},${r.size},$p50,$p95"
     }
 }

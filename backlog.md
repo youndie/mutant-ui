@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (2)
+## Open (1)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-89](docs/backlog/B-89-twelve-ticks-built-in-the-frame-on-a-phone.md) `[ ]` | At 12 ticks a second a third of a phone's ticks are built in the frame | P2 | M | B-49 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 
-## Closed (87)
+## Closed (88)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -165,6 +164,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-85](docs/backlog/B-85-aliased-text-on-macos-26.md) `[x]` - On macOS 26 the slider's disabled value is drawn without antialiasing
 - [B-87](docs/backlog/B-87-ticks-on-the-one-thread.md) `[x]` - In the browser the bodies' ticks have one thread, and the Components page needs more than it
 - [B-88](docs/backlog/B-88-keyframe-loss-copies-the-whole-picture.md) `[x]` - The keyframe loss copies its whole picture for every block it drags
+- [B-89](docs/backlog/B-89-twelve-ticks-built-in-the-frame-on-a-phone.md) `[x]` - At 12 ticks a second a third of a phone's ticks are built in the frame
 
 **Built only when the owner asks**
 

@@ -64,6 +64,30 @@ class MutantClockTest {
     }
 
     @Test
+    fun `the next resting tick's time is the time the clock reads at that tick at every rate`() {
+        // B-89: at 12 and 24 ticks a second, `restTimeMs() + stepMs` missed the next tick's time on a third of the ticks.
+        for (fps in listOf(8.0, 12.0, 16.0, 24.0)) {
+            val clock = MutantClock(fps = fps)
+            var frame = 0L
+            var predicted = clock.nextRestTimeMs()
+            var ticks = 0
+            while (ticks < 2_000) {
+                frame += 16_666_667L
+                val before = clock.restTick
+                clock.onFrame(frame)
+                if (clock.restTick == before) continue
+                assertEquals(before + 1, clock.restTick, "one tick a frame at $fps")
+                assertTrue(
+                    predicted == clock.restTimeMs(),
+                    "tick ${clock.restTick} at $fps: $predicted, read ${clock.restTimeMs()}",
+                )
+                predicted = clock.nextRestTimeMs()
+                ticks++
+            }
+        }
+    }
+
+    @Test
     fun `a frozen clock never moves`() {
         val clock = MutantClock(startMs = STILL_MS, frozen = true)
         clock.onFrame(0L)

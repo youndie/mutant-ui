@@ -84,6 +84,13 @@ internal class MutantClock(
     /** The engine's `ts`: the time a resting body is drawn at. Observable through [restTick]. */
     fun restTimeMs(): Double = restTick * stepMs
 
+    /**
+     * The time of the resting tick after this one, exactly as [restTimeMs] will read it then: the same product, not
+     * `restTimeMs() + stepMs`, which at 12 or 24 ticks a second misses it in the last bit on a third of the ticks, so a
+     * frame built ahead for it was never found (B-89).
+     */
+    fun nextRestTimeMs(): Double = (restTick + 1) * stepMs
+
     /** The engine's `tsH`: the time a pressed body or a transition is drawn at. Observable through [hotTick]. */
     fun hotTimeMs(): Double = hotTick * (stepMs / 1.5)
 
