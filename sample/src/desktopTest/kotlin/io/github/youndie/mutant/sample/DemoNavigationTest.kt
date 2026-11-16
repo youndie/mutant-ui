@@ -97,7 +97,8 @@ class DemoNavigationTest {
                 .walk()
                 .filter { it.extension == "kt" }
                 .joinToString("\n") { it.readText() }
-        val missing = public.filter { !Regex("\\b$it\\b").containsMatchIn(sample) }
+        // A call, not a mention: an import alone does not show the component.
+        val missing = public.filter { !Regex("\\b$it\\s*[({<]").containsMatchIn(sample) }
         assertTrue(missing.isEmpty(), "never shown: $missing")
     }
 
