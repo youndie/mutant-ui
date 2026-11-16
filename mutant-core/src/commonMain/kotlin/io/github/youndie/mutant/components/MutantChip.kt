@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,12 +25,13 @@ import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 /**
  * A filter chip (body `chip`, 32 dp tall in a 48 dp touch target). Unselected, its fill has slipped 2 dp off the
@@ -68,10 +70,16 @@ internal fun ChipBody(
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val instant = LocalMutantReduceMotion.current
-    // The label follows the fill 200 ms late (the engine's `_muTc`): it turns once the pour has covered it.
+    // The label follows the fill 200 ms late (the engine's `_muTc`): it turns once the pour has covered it. The 200 ms are
+    // the screen clock's, as the pour's are: a clock held by a dialog stands both, so the label never turns light over a
+    // fill still lime, as it did on the sample's page switch (B-94).
+    val clock = readMutantClock()
     var inked by remember { mutableStateOf(selected) }
-    LaunchedEffect(selected, instant) {
-        if (!instant && inked != selected) delay(LABEL_LAG_MS)
+    LaunchedEffect(selected, instant, clock) {
+        if (!instant && inked != selected) {
+            val since = clock.nowMs
+            snapshotFlow { clock.nowMs }.first { it - since >= LABEL_LAG_MS }
+        }
         inked = selected
     }
     val label =
@@ -132,7 +140,7 @@ private val PADDING = 16.dp
 private const val UNSELECTED_SLIP = 2.0
 
 /** The label's lag behind the pour, ms (the engine's toggle). */
-private const val LABEL_LAG_MS = 200L
+private const val LABEL_LAG_MS = 200.0
 
 /** The label's size, sp (the page's `font-size: 13px`). */
 private const val LABEL_SIZE = 13
