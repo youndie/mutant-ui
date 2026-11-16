@@ -182,4 +182,70 @@ class SampleStrings(
             "«Эфир, ночь на вторник» будет стёрта. Плёнку можно будет записать заново.",
         )
     val resetSettings = t("Reset settings", "Сбросить настройки")
+
+    // The demo app's own words (B-96), designed here.
+    val menu = t("Menu", "Меню")
+    val back = t("Back", "Назад")
+    val rename = t("Rename", "Переименовать")
+    val shareWord = t("Share", "Поделиться")
+    val newRecording = t("New recording", "Новая запись")
+    val pause = t("Pause", "Пауза")
+    val volume = t("VOLUME", "ГРОМКОСТЬ")
+    val recentlyOnAir = t("RECENTLY ON AIR", "НЕДАВНО В ЭФИРЕ")
+    val onTheShelf = t("ON THE SHELF", "НА ПОЛКЕ")
+    val rain = t("Rain over the transmitter", "Дождь над передатчиком")
+    val sideB = t("Side B · 31 min", "Сторона B · 31 мин")
+    val staticBetween = t("Static between channels", "Помехи между каналами")
+    val noiseNine = t("Noise · 9 min", "Шум · 9 мин")
+    val weather = t("Weather at three a.m.", "Погода в три часа ночи")
+    val recordedOverTwenty = t("Recorded over · 20 min", "Записано поверх · 20 мин")
+    val lateRepeat = t("Late-night repeat", "Ночной повтор")
+    val freshOffTheAir = t("Fresh off the air", "Только что из эфира")
+    val justNow = t("Just now · 3 min", "Только что · 3 мин")
+    val copying = t("COPYING · 2 OF 3", "КОПИРУЕМ · 2 ИЗ 3")
+    val pullToRefresh = t("PULL DOWN FOR NEW TAPES", "ПОТЯНИТЕ ВНИЗ ЗА НОВЫМИ")
+
+    fun inLine(n: Int) = t("$n IN LINE", "$n В ОЧЕРЕДИ")
+
+    val rainWord = t("rain", "дождь")
+    val noiseWord = t("static", "помехи")
+    val archiveWord = t("ARCHIVE", "АРХИВ")
+    val sortOrders = listOf(t("AS FILED", "КАК НА ПОЛКЕ"), t("LONGEST", "САМЫЕ ДЛИННЫЕ"), t("BY CHANNEL", "ПО КАНАЛУ"))
+
+    fun sortBy(order: Int) = sortOrders[order].lowercase().replaceFirstChar { it.uppercase() }
+
+    fun eraseSelected(n: Int) =
+        if (n ==
+            0
+        ) {
+            t("Select to erase", "Выберите, что стереть")
+        } else {
+            t("Erase $n", "Стереть $n")
+        }
+
+    val notesText =
+        t(
+            "Taped off the night air. The tracking drifts after minute 30, and the head noise is the tape's own.",
+            "Записано с ночного эфира. После 30-й минуты плывёт трекинг, а шум головки у плёнки свой.",
+        )
+    val master = t("Master", "Мастер")
+    val secondGeneration = t("2nd-generation copy", "Копия 2-го поколения")
+    val copyToBlank = t("Copy to a blank tape", "Копировать на чистую кассету")
+    val sendACopy = t("Send a copy", "Отправить копию")
+    val printLabel = t("Print the label", "Напечатать этикетку")
+    val picture = t("Picture", "Картинка")
+    val pictureModes = listOf(t("STANDARD", "ОБЫЧНАЯ"), t("SOFT", "МЯГКАЯ"), t("SHARP", "РЕЗКАЯ"))
+    val sleepTimer = t("SLEEP TIMER", "ТАЙМЕР СНА")
+    val sleepOptions = listOf(t("OFF", "ВЫКЛ"), t("30 MIN", "30 МИН"), t("60 MIN", "60 МИН"))
+    val timerRecording = t("Timer recording", "Запись по таймеру")
+
+    fun timerLine(
+        day: Int,
+        month: Int,
+        hour: Int,
+        minute: Int,
+    ): String {
+        val two = { v: Int -> v.toString().padStart(2, '0') }
+        return "${two(day)}.${two(month)} · $hour:${two(minute)}"
+    }
 }

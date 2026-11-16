@@ -65,9 +65,8 @@ import io.github.youndie.mutant.theme.MutantScreenClock
 import io.github.youndie.mutant.theme.MutantTheme
 
 /**
- * The Demo page's three screens, rebuilt from the public API as it stands (the owner's answer of 2026-11-14): the
- * library, a recording, and settings under a dialog. Where the page composes them with spacing of its own, the
- * components keep theirs.
+ * The Demo page's three phones (B-96): each runs the demo app, opened where the design's three screens stand — the
+ * library, a recording, and settings under a dialog — and from there it navigates by its bar, its drawer and its cards.
  */
 @Composable
 internal fun DemoPage(strings: SampleStrings) {
@@ -88,23 +87,22 @@ internal fun DemoScreenFrame(
     roundedClip: Boolean = true,
     keyframeLoss: Boolean = true,
 ) {
-    when (screen) {
-        DemoScreen.Library -> {
-            Screen(strings.demoLibrary, "demo-library", roundedClip, keyframeLoss) { Library(strings) }
+    // Each phone runs the whole app (B-96), opened where the design's screen stands.
+    val nav =
+        remember(screen, dialogOpen) {
+            when (screen) {
+                DemoScreen.Library -> DemoNav()
+                DemoScreen.Recording -> DemoNav(open = 0)
+                DemoScreen.Settings -> DemoNav(DemoTab.Settings, erasing = dialogOpen)
+            }
         }
-
-        DemoScreen.Recording -> {
-            Screen(strings.demoRecording, "demo-recording", roundedClip) { Recording(strings) }
+    val (title, tag) =
+        when (screen) {
+            DemoScreen.Library -> strings.demoLibrary to "demo-library"
+            DemoScreen.Recording -> strings.demoRecording to "demo-recording"
+            DemoScreen.Settings -> strings.demoSettings to "demo-settings"
         }
-
-        DemoScreen.Settings -> {
-            Screen(
-                strings.demoSettings,
-                "demo-settings",
-                roundedClip,
-            ) { Settings(strings, dialogOpen) }
-        }
-    }
+    Screen(title, tag, roundedClip, keyframeLoss && screen == DemoScreen.Library) { DemoApp(nav, strings) }
 }
 
 /**
@@ -145,171 +143,5 @@ private fun ScreenBox(
     ) {
         // The engine loses one screen's keyframe at a time; the sample gives the loss to its first screen.
         if (keyframeLoss) MutantKeyframeLoss(Modifier.fillMaxSize(), colors.background) { content() } else content()
-    }
-}
-
-@Composable
-private fun Osd(
-    text: String,
-    color: Color = MutantTheme.colors.textOsd,
-    size: Int = 20,
-    tracking: Float = 1f,
-) {
-    BasicText(text, style = MutantTheme.textStyles.osd(size.sp).copy(color = color, letterSpacing = tracking.sp))
-}
-
-@Composable
-private fun Library(s: SampleStrings) {
-    var chosen by remember { mutableIntStateOf(1) }
-    var query by remember { mutableStateOf("") }
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            MutantTopAppBar(s.onAir, navigationIcon = {
-                MutantIcon(MutantIcons.Menu, null)
-            }, status = s.clock, windowInsets = WindowInsets(0))
-            Spacer(Modifier.height(8.dp))
-            MutantTextField(query, {
-                query = it
-            }, Modifier.fillMaxWidth(), prefix = s.search, placeholder = s.findRecording, key = "field")
-            Spacer(Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf(s.all, s.recordings, s.noise, s.favourites).forEachIndexed { i, label ->
-                    MutantChip(label, chosen == i, { chosen = i }, key = "chipA$i")
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(30.dp)) {
-                MutantCard(Modifier.fillMaxWidth(), onClick = {}, key = "cardA0") {
-                    MutantCardTitle(s.untitled)
-                    MutantCardSubtitle(s.sideA)
-                }
-                MutantCard(Modifier.fillMaxWidth(), onClick = {}, key = "cardA1") {
-                    MutantCardTitle(s.nightTuesday)
-                    MutantCardSubtitle(s.recordedOver)
-                }
-                MutantCocoon(Modifier.fillMaxWidth().height(80.dp), key = "0")
-            }
-            Spacer(Modifier.height(24.dp))
-            MutantButton(s.playAllWide, {}, Modifier.fillMaxWidth(), key = "button")
-        }
-        MutantFab(MutantIcons.Add, null, {
-        }, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 84.dp), key = "fab")
-        MutantNavigationBar(
-            listOf(
-                MutantNavigationItem(s.onAir, MutantIcons.Home),
-                MutantNavigationItem(s.queue, MutantIcons.Schedule, badge = "3"),
-                MutantNavigationItem(s.find, MutantIcons.Search),
-                MutantNavigationItem(s.settings, MutantIcons.Settings),
-            ),
-            0,
-            {},
-            Modifier.align(Alignment.BottomCenter).padding(8.dp),
-            windowInsets = WindowInsets(0),
-        )
-    }
-}
-
-@Composable
-private fun Recording(s: SampleStrings) {
-    var tab by remember { mutableIntStateOf(0) }
-    var queued by remember { mutableStateOf(true) }
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            MutantTopAppBar(
-                s.untitled,
-                navigationIcon = { MutantIcon(MutantIcons.Back, null) },
-                windowInsets = WindowInsets(0),
-                actions = { MutantIcon(MutantIcons.Edit, null) },
-            )
-            MutantIllustration(
-                MutantIllustrationKind.Cassette,
-                Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp),
-            )
-            Spacer(Modifier.height(42.dp))
-            BasicText(s.sideAShort, style = MutantTheme.textStyles.display(24.sp))
-            Osd(s.sideALine)
-            Spacer(Modifier.height(14.dp))
-            MutantLinearProgress(.26f)
-            Spacer(Modifier.height(22.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                MutantButton(s.listen, {}, Modifier.weight(1f), key = "buttonB")
-                MutantOutlinedButton(s.toQueue, { queued = true }, key = "button-o")
-                MutantIconButton(MutantIcons.Share, null, {}, key = "iconbtn")
-            }
-            Spacer(Modifier.height(26.dp))
-            MutantTabs(listOf(MutantTab(s.tracks), MutantTab(s.notes), MutantTab(s.copies)), tab, { tab = it })
-            MutantListItem(
-                s.testCard,
-                supporting = s.fourthGeneration,
-                leadingIcon = MutantIcons.Home,
-                trailingText = "12:04",
-                key = "tile1",
-            )
-            MutantDivider(key = "0")
-            MutantListItem(
-                s.nightTuesday,
-                supporting = s.recordedOverShort,
-                leadingIcon = MutantIcons.Home,
-                trailing = { MutantBadge(s.brandNew) },
-                key = "tile2",
-            )
-            MutantDivider(key = "1")
-        }
-        MutantSnackbar(
-            s.queued,
-            Modifier.align(Alignment.BottomCenter).padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
-            visible = queued,
-            actionLabel = s.undo,
-            onAction = { queued = false },
-        )
-    }
-}
-
-@Composable
-private fun Settings(
-    s: SampleStrings,
-    dialogOpen: Boolean,
-) {
-    var name by remember { mutableStateOf(s.nightTue) }
-    var speed by remember { mutableIntStateOf(0) }
-    var tracking by remember { mutableStateOf(true) }
-    var clean by remember { mutableStateOf(false) }
-    var noise by remember { mutableStateOf(true) }
-    var loss by remember { mutableStateOf(false) }
-    var open by remember { mutableStateOf(dialogOpen) }
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            MutantTopAppBar(
-                s.settings,
-                navigationIcon = { MutantIcon(MutantIcons.Back, null) },
-                windowInsets = WindowInsets(0),
-            )
-            Spacer(Modifier.height(12.dp))
-            MutantTextField(name, { name = it }, Modifier.fillMaxWidth(), prefix = s.name, key = "fieldC0")
-            Spacer(Modifier.height(30.dp))
-            MutantTextField("99", {}, Modifier.fillMaxWidth(), prefix = s.channel, isError = true, key = "fieldC1")
-            Spacer(Modifier.height(22.dp))
-            // The page's error line: 18 px, tracked .5.
-            Osd(s.noSignal99, MutantTheme.colors.textError, size = 18, tracking = .5f)
-            Spacer(Modifier.height(16.dp))
-            Osd(s.speed)
-            Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
-                listOf("SP", "LP", "EP").forEachIndexed {
-                    i,
-                    label,
-                    ->
-                    MutantRadioButton(speed == i, { speed = i }, label = label, key = "radio")
-                }
-            }
-            MutantSwitch(tracking, { tracking = it }, Modifier.fillMaxWidth(), label = s.autoTracking, key = "switch")
-            MutantSwitch(clean, { clean = it }, Modifier.fillMaxWidth(), label = s.clean, key = "switch2")
-            MutantCheckbox(noise, { noise = it }, label = s.headNoise, key = "check")
-            MutantCheckbox(loss, { loss = it }, label = s.frameLoss, key = "check2")
-            MutantTextButton(s.resetSettings, {}, key = "reset")
-        }
-        MutantDialog(open, s.eraseQuestion, { open = false }, text = s.eraseNamed) {
-            MutantDialogAction(s.cancel, { open = false })
-            MutantDialogAction(s.erase, { open = false }, primary = true)
-        }
     }
 }

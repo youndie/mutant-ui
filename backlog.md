@@ -62,9 +62,9 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-96](docs/backlog/B-96-a-richer-demo.md) `[~]` | The demo is thin and plain | P3 | M | - |
+| [B-97](docs/backlog/B-97-a-risen-sheet-tears-a-wedge.md) `[ ]` | A risen bottom sheet tears a wedge out of its body | P2 | S | - |
 
-## Closed (95)
+## Closed (96)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -181,5 +181,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-93](docs/backlog/B-93-the-calendar-slime-moves-to-the-new-day.md) `[x]` - The calendar's selection jumps to the new day
 - [B-94](docs/backlog/B-94-the-navigation-bar-label-on-its-pill.md) `[x]` - A chip's label turned before its fill: light on lime
 - [B-95](docs/backlog/B-95-pull-to-refresh-moves-smoothly.md) `[x]` - Pull-to-refresh moves in steps and cuts between its phases
+- [B-96](docs/backlog/B-96-a-richer-demo.md) `[x]` - The demo is thin and plain
 
 <!-- END INDEX -->
