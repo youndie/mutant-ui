@@ -278,12 +278,15 @@ internal fun MutantSurface(
             }.drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
-                // B-87: a body off the screen builds no tick. It draws its last picture again, and looks once a second
-                // whether it has come into view (an ancestor that grows moves no body, and tells it nothing).
+                // B-87: a body off the screen builds no tick, and looks once a second whether it has come into view (an
+                // ancestor that grows moves no body, and tells it nothing). Off the window it draws nothing; outside a
+                // box it is laid out in but on the window, which that box may not clip, it draws its last picture.
                 view.flips
                 val last = moshBody.draw
-                if (last != null && !view.showsNow(registry.surface, reach)) {
+                val where = view.whereNow(registry.surface, reach)
+                if (last != null && where != SHOWN) {
                     clock.restSecond
+                    if (where == OFF_WINDOW) return@drawWithCache onDrawBehind {}
                     return@drawWithCache moshBehind(moshScene, moshBody, last)
                 }
                 val d = density
@@ -594,49 +597,56 @@ internal fun MutantSurface(
 private const val OFF_SCREEN_REACH = 64
 
 /**
- * Whether a body is on the screen (B-87): whether its box, [OFF_SCREEN_REACH] wider all round, meets every box it is
- * laid out in — each layout and layout modifier up to the window — as a scrolled-away body does not. [flips] counts
- * the changes [place] saw, and invalidates the body's drawing.
+ * Where a body stands against the screen (B-87): [SHOWN] when its box, [OFF_SCREEN_REACH] wider all round, meets every
+ * box it is laid out in — each layout and layout modifier up to the window; [OFF_WINDOW] when it misses the window
+ * itself; [OFF_BOX] when it misses only a box inside it, which may or may not clip it. [flips] counts the changes
+ * [place] saw, and invalidates the body's drawing.
  */
 @androidx.compose.runtime.Stable
 internal class BodyView {
     var flips by mutableIntStateOf(0)
         private set
-    private var shown = true
+    private var where = SHOWN
 
-    /** After a layout: a change of whether the body shows asks for its drawing again. */
+    /** After a layout: a change of where the body stands asks for its drawing again. */
     fun place(
         at: androidx.compose.ui.layout.LayoutCoordinates,
         reach: Float,
     ) {
-        val now = at.showsWithin(reach)
-        if (now != shown) {
-            shown = now
+        val now = at.standing(reach)
+        if (now != where) {
+            where = now
             flips++
         }
     }
 
-    /** At a draw: whether the body shows now, read from where it was last laid out. */
-    fun showsNow(
+    /** At a draw: where the body stands now, read from where it was last laid out. */
+    fun whereNow(
         at: androidx.compose.ui.layout.LayoutCoordinates?,
         reach: Float,
-    ): Boolean = (at == null || !at.isAttached || at.showsWithin(reach)).also { shown = it }
+    ): Int = (if (at == null || !at.isAttached) SHOWN else at.standing(reach)).also { where = it }
 }
 
-/** Whether this box, [reach] wider all round, meets each box it is laid out in, up to the window. */
-internal fun androidx.compose.ui.layout.LayoutCoordinates.showsWithin(reach: Float): Boolean {
+internal const val SHOWN = 0
+internal const val OFF_BOX = 1
+internal const val OFF_WINDOW = 2
+
+/** Where this box, [reach] wider all round, stands against each box it is laid out in, up to the window. */
+internal fun androidx.compose.ui.layout.LayoutCoordinates.standing(reach: Float): Int {
     var c = this
     var a = Offset(-reach, -reach)
     var b = Offset(size.width + reach, size.height + reach)
+    var missed = false
     while (true) {
-        val p = c.parentCoordinates ?: return true
+        val p = c.parentCoordinates ?: return if (missed) OFF_BOX else SHOWN
         a = p.localPositionOf(c, a)
         b = p.localPositionOf(c, b)
         val w = p.size.width + reach
         val h = p.size.height + reach
-        if (maxOf(a.x, b.x) < -reach || maxOf(a.y, b.y) < -reach || minOf(a.x, b.x) > w || minOf(a.y, b.y) > h) {
-            return false
-        }
+        val outside =
+            maxOf(a.x, b.x) < -reach || maxOf(a.y, b.y) < -reach || minOf(a.x, b.x) > w || minOf(a.y, b.y) > h
+        if (outside && p.parentCoordinates == null) return OFF_WINDOW
+        missed = missed || outside
         c = p
     }
 }
