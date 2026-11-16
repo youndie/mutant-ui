@@ -1,7 +1,7 @@
 ---
 id: B-96
 title: "The demo is thin and plain"
-status: open
+status: wip
 priority: P3
 size: M
 stage: stage-6-later

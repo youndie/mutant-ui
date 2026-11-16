@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-96](docs/backlog/B-96-a-richer-demo.md) `[ ]` | The demo is thin and plain | P3 | M | - |
+| [B-96](docs/backlog/B-96-a-richer-demo.md) `[~]` | The demo is thin and plain | P3 | M | - |
 
 ## Closed (95)
 
