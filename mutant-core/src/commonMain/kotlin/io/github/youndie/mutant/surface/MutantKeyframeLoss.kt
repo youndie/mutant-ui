@@ -217,11 +217,15 @@ internal class MoshScene(
         if (holes.isEmpty() || top.isNaN() || of == null) return
         val me = coords ?: return
         if (!me.isAttached || !of.isAttached) return
+        val at = me.localPositionOf(of, Offset.Zero)
+        // Only the blocks this body may ink, its drips' reach around it (B-88): a body under none of them is not drawn
+        // again at every step.
+        val reach = HOLE_REACH * scope.density
+        val mine = Rect(at.x - reach, at.y - reach, at.x + of.size.width + reach, at.y + of.size.height + reach)
+        val open = holes.filter { it.top >= top && it.overlaps(mine) }
+        if (open.isEmpty()) return
         // Read so a step's drag into a block shows over the bodies too, not only under them.
         drawn
-        val at = me.localPositionOf(of, Offset.Zero)
-        val open = holes.filter { it.top >= top }
-        if (open.isEmpty()) return
         val path = Path().apply { for (h in open) addRect(h.translate(-at.x, -at.y)) }
         scope.clipPath(path) { translate(-at.x, -at.y) { pic.draw(this) } }
     }
@@ -435,6 +439,9 @@ private const val EVERY_MS = 9000.0
 private const val OFFSET_MS = 3500.0
 private const val STEP_MS = 125.0
 private const val RECOVER_MS = 375.0
+
+/** How far past its box a body may ink, dp, for the cleared blocks drawn over it (as B-87's reach off the screen). */
+private const val HOLE_REACH = 64f
 
 /** A band's row (16 dp) and the margin kept around a clean zone (3 dp). */
 private const val ROW = 16
