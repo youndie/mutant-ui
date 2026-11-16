@@ -63,7 +63,8 @@ private const val TAG = "MutantBench"
 private enum class Scene { Blank, TenCards12, TenCards8, List100, Spin5 }
 
 private const val METRICS_HEADER =
-    "scene,round,since_ns,vsync_ns,input_ns,animation_ns,layout_ns,draw_ns,sync_ns,command_ns,swap_ns,total_ns,gpu_ns," +
+    "scene,round,since_ns,vsync_ns,input_ns,animation_ns,layout_ns,draw_ns," +
+        "sync_ns,command_ns,swap_ns,total_ns,gpu_ns," +
         "deadline_ns,first"
 
 /** The control's known cost, inside a layer nested in another. */
@@ -220,7 +221,8 @@ class BenchActivity : ComponentActivity() {
         val out = file.bufferedWriter()
         header(out, commit)
         out.appendLine(
-            "# calls $CALLS per arm per round, arms interleaved per call, rounds $INSTANCE_ROUNDS (round 1 discarded), " +
+            "# calls $CALLS per arm per round, arms interleaved per call, " +
+                "rounds $INSTANCE_ROUNDS (round 1 discarded), " +
                 "warm-up ${WARMUP_NS / 1_000_000_000} s per case",
         )
         val cases = genGoldens.map { Case(it) }
