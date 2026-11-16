@@ -78,6 +78,8 @@ private val allScenes: List<Scene> =
         // B-82: every resting body rasterised once per tick and drawn as an image between ticks.
         Scene("BodiesImage", bodies = true, asImage = true),
         Scene("BodiesImageLoad", bodies = true, load = true, asImage = true),
+        // B-80: a body's contour clip where it is paid since B-82, in the rasterising ahead.
+        Scene("ImageNoContourClip", bodies = true, skip = setOf(BodyPart.ContourClip), asImage = true),
     ) + BodyPart.entries.map { Scene("No$it", bodies = true, skip = setOf(it)) }
 
 /** The CPU time of every render thread seen, a finished one at its last reading; sampled every 5 ms. */

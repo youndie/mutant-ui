@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
-| [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[ ]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
+| [B-80](docs/backlog/B-80-contour-clip-on-the-render-thread.md) `[?]` | Clipping a body's layers to its contour costs the render thread 2.7 ms a frame | P3 | M | B-78, B-82 |
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 | [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[ ]` | A tall body rasterises its whole height every tick | P3 | M | B-69 |
 

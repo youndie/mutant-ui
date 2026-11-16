@@ -1,0 +1,28 @@
+# B-78 body render bench
+# commit 39fce94
+# host MacBookAir10,1, cpu Apple M1
+# os Mac OS X 27.0.1, jvm 25.0.4.1+1-b635.79
+# window 1280x814, rounds 6 (round 1 not counted), scene 8 s
+round 1 Blank: 481 frames, 0.50 ms render/frame, main busy 4 %, rss 217 MiB
+round 1 BodiesImage: 481 frames, 1.15 ms render/frame, rasterised ahead 1547 (2.71 ms each, 524.76 ms a second, largest 943 KiB), main busy 8 %, rss 485 MiB
+round 1 ImageNoContourClip: 480 frames, 1.15 ms render/frame, rasterised ahead 1536 (2.40 ms each, 461.33 ms a second, largest 943 KiB), main busy 7 %, rss 537 MiB
+round 2 BodiesImage: 480 frames, 1.15 ms render/frame, rasterised ahead 1536 (2.80 ms each, 538.37 ms a second, largest 943 KiB), main busy 7 %, rss 495 MiB
+round 2 ImageNoContourClip: 480 frames, 1.13 ms render/frame, rasterised ahead 1536 (2.33 ms each, 446.78 ms a second, largest 943 KiB), main busy 6 %, rss 487 MiB
+round 2 Blank: 481 frames, 0.41 ms render/frame, main busy 1 %, rss 463 MiB
+round 3 ImageNoContourClip: 480 frames, 1.20 ms render/frame, rasterised ahead 1536 (2.41 ms each, 461.98 ms a second, largest 943 KiB), main busy 6 %, rss 476 MiB
+round 3 Blank: 481 frames, 0.39 ms render/frame, main busy 1 %, rss 476 MiB
+round 3 BodiesImage: 481 frames, 1.18 ms render/frame, rasterised ahead 1536 (2.82 ms each, 541.23 ms a second, largest 943 KiB), main busy 6 %, rss 542 MiB
+round 4 Blank: 481 frames, 0.40 ms render/frame, main busy 1 %, rss 477 MiB
+round 4 BodiesImage: 481 frames, 1.16 ms render/frame, rasterised ahead 1536 (2.97 ms each, 569.88 ms a second, largest 943 KiB), main busy 6 %, rss 471 MiB
+round 4 ImageNoContourClip: 417 frames, 1.26 ms render/frame, rasterised ahead 1390 (2.55 ms each, 442.46 ms a second, largest 943 KiB), main busy 8 %, rss 481 MiB
+round 5 BodiesImage: 450 frames, 1.83 ms render/frame, rasterised ahead 1432 (2.58 ms each, 462.14 ms a second, largest 943 KiB), main busy 13 %, rss 422 MiB
+round 5 ImageNoContourClip: 480 frames, 1.13 ms render/frame, rasterised ahead 1536 (2.35 ms each, 452.01 ms a second, largest 943 KiB), main busy 7 %, rss 424 MiB
+round 5 Blank: 480 frames, 0.36 ms render/frame, main busy 1 %, rss 420 MiB
+round 6 ImageNoContourClip: 480 frames, 1.12 ms render/frame, rasterised ahead 1536 (2.34 ms each, 448.37 ms a second, largest 943 KiB), main busy 7 %, rss 424 MiB
+round 6 Blank: 480 frames, 0.34 ms render/frame, main busy 1 %, rss 398 MiB
+round 6 BodiesImage: 466 frames, 1.15 ms render/frame, rasterised ahead 1536 (3.23 ms each, 620.45 ms a second, largest 943 KiB), main busy 9 %, rss 439 MiB
+scene            frames/s  render/frame  vs Bodies   (counted rounds 2..6, mean; per round)
+Blank                60.0        0.38 ms           ms   0.41 0.39 0.40 0.36 0.34
+BodiesImage          58.9        1.30 ms       NaN ms   1.15 1.18 1.16 1.83 1.15
+ImageNoContourClip     58.4        1.17 ms       NaN ms   1.13 1.20 1.26 1.13 1.12
+render threads seen: 2
