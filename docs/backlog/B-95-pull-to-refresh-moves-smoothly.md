@@ -1,7 +1,7 @@
 ---
 id: B-95
 title: "Pull-to-refresh moves in steps and cuts between its phases"
-status: open
+status: done
 priority: P2
 size: M
 stage: stage-6-later
