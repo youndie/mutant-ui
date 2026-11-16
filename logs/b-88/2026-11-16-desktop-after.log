@@ -1,0 +1,16 @@
+# B-88 keyframe loss bench, commit 2a5896b
+# Mac OS X 27.0.1, OpenJDK 64-Bit Server VM 25.0.4.1
+# 360 x 720 dp at 2x, loss 1 of seed 5: 10 rows, 140 blocks, 8 steps at 95 %
+round 1: one step 190.9 ms, 8 steps 83.6 ms, a step -15.34 ms
+round 2: one step 71.0 ms, 8 steps 73.0 ms, a step 0.28 ms
+round 3: one step 68.7 ms, 8 steps 65.6 ms, a step -0.44 ms
+round 4: one step 124.7 ms, 8 steps 67.1 ms, a step -8.23 ms
+round 5: one step 66.8 ms, 8 steps 69.0 ms, a step 0.31 ms
+round 6: one step 63.8 ms, 8 steps 63.3 ms, a step -0.07 ms
+round 7: one step 64.5 ms, 8 steps 63.1 ms, a step -0.20 ms
+round 8: one step 66.5 ms, 8 steps 63.6 ms, a step -0.42 ms
+round 9: one step 80.3 ms, 8 steps 62.8 ms, a step -2.50 ms
+round 10: one step 72.3 ms, 8 steps 63.8 ms, a step -1.21 ms
+round 11: one step 64.8 ms, 8 steps 62.8 ms, a step -0.29 ms
+round 12: one step 63.1 ms, 8 steps 65.6 ms, a step 0.36 ms
+# a step, counted rounds: median -0.29 ms, min -8.23, max 0.36
