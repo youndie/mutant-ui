@@ -71,7 +71,8 @@ fun MutantUiSample(
             Modifier
                 .fillMaxSize()
                 .background(colors.page)
-                .mutantTape()
+                // B-101: on the Demo page each phone is a screen and carries its own Tape; the page's over it doubled it.
+                .then(if (settings.page == SamplePage.Demo) Modifier else Modifier.mutantTape())
                 .testTag("sample-root"),
         ) {
             Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(24.dp)) {
