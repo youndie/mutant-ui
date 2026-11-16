@@ -1,7 +1,7 @@
 ---
 id: B-88
 title: "The keyframe loss copies its whole picture for every block it drags"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-5-product
