@@ -3,6 +3,7 @@
 #
 #   scripts/device-bench.sh install                      build the release, install it, compile speed-profile
 #   scripts/device-bench.sh run <out dir> [rounds] [s]   the screen scenes, then the instance arms; logs pulled into <out dir>
+#   scripts/device-bench.sh screens <out dir> [rounds] [s]  the screen scenes alone, likewise
 #   scripts/device-bench.sh instance <out dir>           the instance arms alone, likewise
 #   scripts/device-bench.sh show <scene>                 one scene on screen, for a look
 #   scripts/device-bench.sh stop                         takes the activity down
@@ -53,6 +54,15 @@ case "${1:-}" in
     wait_done $((rounds * 5 * (seconds + 2) + 600))
     for f in scenes.csv metrics.csv instance.txt; do "$ADB" pull "$FILES/$f" "$out/$f"; done
     ;;
+  screens)
+    out="$2"
+    rounds="${3:-6}"
+    seconds="${4:-10}"
+    mkdir -p "$out"
+    start --es mode bench --es commit "$(commit)" --ei rounds "$rounds" --ei seconds "$seconds" --ez instance false
+    wait_done $((rounds * 5 * (seconds + 2) + 120))
+    for f in scenes.csv metrics.csv; do "$ADB" pull "$FILES/$f" "$out/$f"; done
+    ;;
   instance)
     out="$2"
     mkdir -p "$out"
@@ -67,7 +77,7 @@ case "${1:-}" in
     "$ADB" shell am force-stop "$PKG"
     ;;
   *)
-    sed -n 2,9p "$0"
+    sed -n 2,10p "$0"
     exit 2
     ;;
 esac
