@@ -1,0 +1,74 @@
+# B-77 Tape render bench
+# commit 125bef2
+# host MacBookAir10,1, cpu Apple M1
+# os Mac OS X 27.0.1, jvm 25.0.4.1+1-b635.79
+# power -InternalBattery-0 (id=23658595)	100%; charged; 0:00 remaining present: true
+# window 1280x814, rounds 6 (round 1 not counted), scene 8 s
+round 1 Blank: 480 frames, 0.49 ms render/frame
+round 1 BlankLoad: 480 frames, 2.93 ms render/frame
+round 1 Tape1: 480 frames, 0.77 ms render/frame
+round 1 Tape4: 480 frames, 1.53 ms render/frame
+round 1 Tape4Load: 480 frames, 3.39 ms render/frame
+round 1 Tape4NoLines: 480 frames, 0.77 ms render/frame
+round 1 Tape4NoBand: 480 frames, 1.59 ms render/frame
+round 1 Tape4NoGrain: 480 frames, 1.54 ms render/frame
+round 1 Tape4NoNoise: 480 frames, 1.29 ms render/frame
+round 2 BlankLoad: 480 frames, 2.89 ms render/frame
+round 2 Tape1: 480 frames, 0.78 ms render/frame
+round 2 Tape4: 480 frames, 1.57 ms render/frame
+round 2 Tape4Load: 481 frames, 3.38 ms render/frame
+round 2 Tape4NoLines: 480 frames, 0.75 ms render/frame
+round 2 Tape4NoBand: 481 frames, 1.55 ms render/frame
+round 2 Tape4NoGrain: 480 frames, 1.55 ms render/frame
+round 2 Tape4NoNoise: 481 frames, 1.31 ms render/frame
+round 2 Blank: 480 frames, 0.38 ms render/frame
+round 3 Tape1: 481 frames, 0.78 ms render/frame
+round 3 Tape4: 479 frames, 1.50 ms render/frame
+round 3 Tape4Load: 480 frames, 3.43 ms render/frame
+round 3 Tape4NoLines: 480 frames, 0.74 ms render/frame
+round 3 Tape4NoBand: 480 frames, 1.57 ms render/frame
+round 3 Tape4NoGrain: 481 frames, 1.53 ms render/frame
+round 3 Tape4NoNoise: 480 frames, 1.30 ms render/frame
+round 3 Blank: 481 frames, 0.38 ms render/frame
+round 3 BlankLoad: 480 frames, 3.02 ms render/frame
+round 4 Tape4: 480 frames, 1.57 ms render/frame
+round 4 Tape4Load: 480 frames, 3.48 ms render/frame
+round 4 Tape4NoLines: 480 frames, 0.72 ms render/frame
+round 4 Tape4NoBand: 481 frames, 1.54 ms render/frame
+round 4 Tape4NoGrain: 480 frames, 1.52 ms render/frame
+round 4 Tape4NoNoise: 480 frames, 1.26 ms render/frame
+round 4 Blank: 481 frames, 0.37 ms render/frame
+round 4 BlankLoad: 481 frames, 2.99 ms render/frame
+round 4 Tape1: 480 frames, 0.82 ms render/frame
+round 5 Tape4Load: 481 frames, 3.41 ms render/frame
+round 5 Tape4NoLines: 481 frames, 0.75 ms render/frame
+round 5 Tape4NoBand: 480 frames, 1.57 ms render/frame
+round 5 Tape4NoGrain: 480 frames, 1.51 ms render/frame
+round 5 Tape4NoNoise: 480 frames, 1.31 ms render/frame
+round 5 Blank: 481 frames, 0.37 ms render/frame
+round 5 BlankLoad: 481 frames, 3.04 ms render/frame
+round 5 Tape1: 481 frames, 0.79 ms render/frame
+round 5 Tape4: 481 frames, 1.55 ms render/frame
+round 6 Tape4NoLines: 481 frames, 0.76 ms render/frame
+round 6 Tape4NoBand: 480 frames, 1.57 ms render/frame
+round 6 Tape4NoGrain: 481 frames, 1.50 ms render/frame
+round 6 Tape4NoNoise: 481 frames, 1.29 ms render/frame
+round 6 Blank: 480 frames, 0.37 ms render/frame
+round 6 BlankLoad: 480 frames, 3.07 ms render/frame
+round 6 Tape1: 481 frames, 0.79 ms render/frame
+round 6 Tape4: 480 frames, 1.52 ms render/frame
+round 6 Tape4Load: 480 frames, 3.43 ms render/frame
+scene            frames/s  render/frame  vs Tape4   (counted rounds 2..6, mean; per round)
+Blank                60.0        0.37 ms           ms   0.38 0.38 0.37 0.37 0.37
+BlankLoad            60.0        3.00 ms           ms   2.89 3.02 2.99 3.04 3.07
+Tape1                60.0        0.79 ms           ms   0.78 0.78 0.82 0.79 0.79
+Tape4                60.0        1.54 ms      0.00 ms   1.57 1.50 1.57 1.55 1.52
+Tape4Load            60.0        3.43 ms      1.89 ms   3.38 3.43 3.48 3.41 3.43
+Tape4NoLines         60.0        0.74 ms     -0.80 ms   0.75 0.74 0.72 0.75 0.76
+Tape4NoBand          60.0        1.56 ms      0.02 ms   1.55 1.57 1.54 1.57 1.57
+Tape4NoGrain         60.0        1.52 ms     -0.02 ms   1.55 1.53 1.52 1.51 1.50
+Tape4NoNoise         60.0        1.30 ms     -0.25 ms   1.31 1.30 1.26 1.31 1.29
+control, what the load adds per frame per counted round:
+  on a blank page    2.50, 2.64, 2.62, 2.67, 2.70 ms
+  over the Tapes     1.81, 1.93, 1.91, 1.86, 1.92 ms
+render threads seen: 2
