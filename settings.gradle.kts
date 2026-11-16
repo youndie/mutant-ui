@@ -30,3 +30,5 @@ rootProject.name = "mutant-ui"
 
 include(":mutant-core")
 include(":sample")
+// B-49: the frame benchmark on the owner's phone. A harness, never published.
+include(":bench-android")

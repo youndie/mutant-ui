@@ -51,3 +51,7 @@ on the desktop JVM and assumed the phone four times slower; this item measures t
 **On red**, the brief's retreat order (`brief.md`, «Производительность»), each step an arm measured on the red scene before the next: the Tape as a static tile shifted per tick → the grain off → resting ticks only for the six visible components → the mosaic only on a change of state. «Цель не понижаем»: a red stays red until an arm turns it, and each arm becomes an item if it changes the kit.
 
 **Rejected**: an instrumented test in `mutant-core` for the instance. Its APK is debuggable, and a debuggable runtime's times are not a user's. The host reaches the generator through `-Xfriend-paths`, as a harness, and is not published.
+
+**Amended 2026-11-16, before the first number.**
+- `List100`'s rows are laid out as the demo's Library lays them: each with a leading icon, whose tile is a drawn body, a time on the right and a `MutantDivider` under it, inside 16 dp of padding. A row of the kit has no body of its own, so bare rows would scroll nothing the kit draws.
+- `Instance` follows B-06's own protocol rather than the counts written above, so that the factor compares like with like. The arms `instance` and `warm` alternate per call, 200 calls a round. There are five rounds, round 1 not counted, with a 3 s warm-up a case. Each round reports the median per arm, and B-06's control (`warm` plus 200 µs) runs on `card-a`. The M1 figures come from `fieldBench` at the same commit.
