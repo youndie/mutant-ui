@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -108,6 +111,38 @@ class OffScreenTicksTest {
             framesOver(count, 250)
             val grown = framesOver(count, 2_000)
             assertTrue(grown >= 14, "once the box reaches it, it ticks again: $grown in 2 s")
+        }
+
+    /**
+     * A sheet, a drawer and a snackbar slide in by their layers, and no layout runs: the layout callback still comes,
+     * and tells the body it shows (read on [BodyView] itself: a body under the window inside a layer is not drawn).
+     */
+    @Test
+    fun `a body a layer slides in from under the window is told it shows`() =
+        runComposeUiTest {
+            val view = BodyView()
+            var shift by mutableFloatStateOf(900f)
+            var at: androidx.compose.ui.layout.LayoutCoordinates? = null
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    Box(Modifier.size(360.dp, 100.dp).graphicsLayer { translationY = shift }) {
+                        Box(
+                            Modifier.size(328.dp, 80.dp).onGloballyPositioned {
+                                at = it
+                                view.place(it, 64f)
+                            },
+                        )
+                    }
+                }
+            }
+            waitForIdle()
+            val laid = checkNotNull(at)
+            assertEquals(OFF_WINDOW, laid.standing(64f), "under the 768 dp window")
+            val flips = view.flips
+            shift = 100f
+            waitForIdle()
+            assertEquals(SHOWN, checkNotNull(at).standing(64f), "slid in")
+            assertTrue(view.flips > flips, "the slide told the body: flips $flips → ${view.flips}")
         }
 
     @Test
