@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-100](docs/backlog/B-100-motion-on-every-frame.md) `[ ]` | Movement runs on every frame by default; the boil keeps its tick | P2 | M | - |
+| [B-100](docs/backlog/B-100-motion-on-every-frame.md) `[~]` | Movement runs on every frame by default; the boil keeps its tick | P2 | M | - |
 | [B-101](docs/backlog/B-101-demo-tape-twice.md) `[ ]` | On the Demo page the phones carry the Tape twice | P2 | S | - |
 | [B-102](docs/backlog/B-102-drawer-shows-its-venom.md) `[ ]` | The drawer closes before its venom run is seen | P2 | M | - |
 

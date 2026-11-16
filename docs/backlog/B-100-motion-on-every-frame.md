@@ -1,7 +1,7 @@
 ---
 id: B-100
 title: "Movement runs on every frame by default; the boil keeps its tick"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-6-later
