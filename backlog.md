@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-87](docs/backlog/B-87-ticks-on-the-one-thread.md) `[~]` | In the browser the bodies' ticks have one thread, and the Components page needs more than it | P1 | M | B-73 |
+| [B-88](docs/backlog/B-88-keyframe-loss-copies-the-whole-picture.md) `[ ]` | The keyframe loss copies its whole picture for every block it drags | P1 | M | B-87 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 | [B-49](docs/backlog/B-49-frame-cost-on-a-pixel-6a.md) `[ ]` | The cost of a drawn body on a Pixel 6a: ten cards with the Tape, a list, an instance | P3 | M | B-06, B-10, B-73 |
 | [B-77](docs/backlog/B-77-the-tape-on-the-render-thread.md) `[ ]` | The Tape costs 3.2 ms a frame on the render thread of the Demo page | P3 | S | B-76 |
@@ -70,7 +70,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-81](docs/backlog/B-81-speckle-on-the-render-thread.md) `[ ]` | The speckle's squares cost the render thread 1.3 ms a frame | P3 | S | B-78, B-80, B-82 |
 | [B-86](docs/backlog/B-86-tall-body-rasterised-whole.md) `[ ]` | A tall body rasterises its whole height every tick | P3 | M | B-69 |
 
-## Closed (80)
+## Closed (81)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -164,6 +164,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-83](docs/backlog/B-83-a-held-clock-draws-vectors.md) `[x]` - Bodies under a held or paused clock keep drawing vectors on the render thread
 - [B-84](docs/backlog/B-84-drip-webs-flip-every-tick.md) `[x]` - Neighbouring drips' webs zip open and shut every tick at rest
 - [B-85](docs/backlog/B-85-aliased-text-on-macos-26.md) `[x]` - On macOS 26 the slider's disabled value is drawn without antialiasing
+- [B-87](docs/backlog/B-87-ticks-on-the-one-thread.md) `[x]` - In the browser the bodies' ticks have one thread, and the Components page needs more than it
 
 **Built only when the owner asks**
 
