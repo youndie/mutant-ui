@@ -195,9 +195,7 @@ internal class MoshScene(
         val top = bandTop
         val bottom = bandBottom
         if (top.isNaN() || of == null) return null
-        val me = coords ?: return null
-        if (!me.isAttached || !of.isAttached) return null
-        val at = me.localPositionOf(of, Offset.Zero)
+        val at = coords?.offsetOf(of) ?: return null
         val band = Path().apply { addRect(Rect(-HUGE, top - at.y, HUGE, bottom - at.y)) }
         if (holes.isEmpty()) return band
         val cut = Path().apply { for (h in holes) addRect(h.translate(-at.x, -at.y)) }
@@ -215,9 +213,7 @@ internal class MoshScene(
         val pic = picture ?: return
         val top = bandTop
         if (holes.isEmpty() || top.isNaN() || of == null) return
-        val me = coords ?: return
-        if (!me.isAttached || !of.isAttached) return
-        val at = me.localPositionOf(of, Offset.Zero)
+        val at = coords?.offsetOf(of) ?: return
         // Only the blocks this body may ink, its drips' reach around it (B-88): a body under none of them is not drawn
         // again at every step.
         val reach = HOLE_REACH * scope.density
@@ -287,8 +283,7 @@ internal class MoshScene(
             drawRect(ground, Offset(0f, y0), Size(size.width, y1 - y0))
             for (b in bodies) {
                 val c = b.coords ?: continue
-                if (!c.isAttached) continue
-                val at = me.localPositionOf(c, Offset.Zero)
+                val at = me.offsetOf(c) ?: continue
                 val saved = drawContext.size
                 drawContext.size = c.size.toSize()
                 translate(at.x, at.y) { b.draw?.invoke(this) }
@@ -406,8 +401,7 @@ internal class MoshScene(
             val z = b.zone ?: continue
             if (z[2] <= 0) continue
             val c = b.coords ?: continue
-            if (!c.isAttached) continue
-            val at = me.localPositionOf(c, Offset.Zero)
+            val at = me.offsetOf(c) ?: continue
             val x = at.x + ((z[0] - ZONE_MARGIN) * d).toFloat()
             val y = at.y + ((z[1] - ZONE_MARGIN) * d).toFloat()
             val w = ((z[2] + 2 * ZONE_MARGIN) * d).toFloat()
@@ -456,3 +450,18 @@ private const val MAX_TRIES = 8
 
 /** Far enough to cut the band across any body. */
 private const val HUGE = 1e5f
+
+/**
+ * Where [of] stands in this scene's pixels, or null when the scene does not draw it: detached, or in another layout
+ * hierarchy — a popup's (a menu, a tooltip), which reads the scene through the composition but floats over the screen
+ * the loss covers (B-98).
+ */
+private fun LayoutCoordinates.offsetOf(of: LayoutCoordinates?): Offset? {
+    if (of == null || !isAttached || !of.isAttached || rootOf(this) !== rootOf(of)) return null
+    return localPositionOf(of, Offset.Zero)
+}
+
+private fun rootOf(c: LayoutCoordinates): LayoutCoordinates {
+    var root = c
+    while (true) root = root.parentCoordinates ?: return root
+}
