@@ -58,13 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (1)
+## Open (0)
 
-| Task | | Priority | Size | Blocked by |
-|---|---|---|---|---|
-| [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
+No open tasks.
 
-## Closed (88)
+## Closed (89)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -131,6 +129,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-39](docs/backlog/B-39-licence.md) `[x]` - Licence
 - [B-40](docs/backlog/B-40-qa-pass-and-real-window.md) `[x]` - A QA pass over the finished MVP and a real window driven by AWT events
 - [B-41](docs/backlog/B-41-public-repository-and-publishing.md) `[x]` - Public repository, publishing every main to Reposilite, the site on Pages
+- [B-42](docs/backlog/B-42-re-import-the-design.md) `[-]` - Re-import the design when the owner starts it
 - [B-43](docs/backlog/B-43-undesigned-behaviour.md) `[x]` - What the design does not draw: appearance, gestures, «Чистый сигнал», hover
 - [B-56](docs/backlog/B-56-navigation-bar-unbounded-width.md) `[x]` - Navigation bar: throws in a horizontally scrolling row
 - [B-57](docs/backlog/B-57-visible-keyboard-focus-everywhere.md) `[x]` - Keyboard focus: every Tab stop visible, and the dialog's Tab cycle

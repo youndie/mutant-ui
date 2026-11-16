@@ -1,7 +1,7 @@
 ---
 id: B-42
 title: "Re-import the design when the owner starts it"
-status: open
+status: dropped
 priority: P3
 size: S
 stage: stage-5-product
@@ -15,3 +15,5 @@ stage: stage-5-product
 
 - AC: the new snapshot is in `reference/design-system/` with its version in `reference/README.md`; every generated file and reference is regenerated in the same branch; `scripts/design-golden.mjs` is updated with the new golden's known entries.
 - Anchors: `reference/README.md`, `scripts/design-golden.mjs`
+
+**Dropped 2026-11-16 by the owner**: changes to the design system are made here, not re-imported from Claude Design ([D20](../research/research-architecture.md)). A later export is read as proposals, each taken as an item of its own.
