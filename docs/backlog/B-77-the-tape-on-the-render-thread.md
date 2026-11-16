@@ -1,7 +1,7 @@
 ---
 id: B-77
 title: "The Tape costs 3.2 ms a frame on the render thread of the Demo page"
-status: open
+status: wip
 priority: P3
 size: S
 stage: stage-5-product
