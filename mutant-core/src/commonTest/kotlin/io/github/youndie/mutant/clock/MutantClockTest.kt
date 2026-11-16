@@ -64,7 +64,7 @@ class MutantClockTest {
     }
 
     @Test
-    fun `the next resting tick's time is the time the clock reads at that tick, at every rate`() {
+    fun `the next resting tick's time is the time the clock reads at that tick at every rate`() {
         // B-89: at 12 and 24 ticks a second, `restTimeMs() + stepMs` missed the next tick's time on a third of the ticks.
         for (fps in listOf(8.0, 12.0, 16.0, 24.0)) {
             val clock = MutantClock(fps = fps)
