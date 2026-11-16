@@ -1,7 +1,7 @@
 ---
 id: B-89
 title: "At 12 ticks a second a third of a phone's ticks are built in the frame"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-5-product

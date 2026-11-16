@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-89](docs/backlog/B-89-twelve-ticks-built-in-the-frame-on-a-phone.md) `[ ]` | At 12 ticks a second a third of a phone's ticks are built in the frame | P2 | M | B-49 |
+| [B-89](docs/backlog/B-89-twelve-ticks-built-in-the-frame-on-a-phone.md) `[~]` | At 12 ticks a second a third of a phone's ticks are built in the frame | P2 | M | B-49 |
 | [B-42](docs/backlog/B-42-re-import-the-design.md) `[ ]` | Re-import the design when the owner starts it | P3 | S | - |
 
 ## Closed (87)
