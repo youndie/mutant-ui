@@ -65,7 +65,8 @@ class DemoNavigationTest {
             onNodeWithContentDescription(s.menu).performClick()
             settle()
             onNode(hasText("CH 03") and hasText(s.channelNames[2])).assertIsDisplayed().performClick()
-            settle()
+            // B-102: the drawer stands until its venom run lands (720 ms), lingers 160 ms, then goes in 200 ms.
+            mainClock.advanceTimeBy(1_300)
             onNodeWithText(s.archiveWord, useUnmergedTree = true).assertIsDisplayed()
             assertEquals(0, shows(s.channels), "the drawer has closed")
         }
