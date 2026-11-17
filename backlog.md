@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-102](docs/backlog/B-102-drawer-shows-its-venom.md) `[ ]` | The drawer closes before its venom run is seen | P2 | M | - |
+| [B-102](docs/backlog/B-102-drawer-shows-its-venom.md) `[~]` | The drawer closes before its venom run is seen | P2 | M | - |
 
 ## Closed (101)
 
