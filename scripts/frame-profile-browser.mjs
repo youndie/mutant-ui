@@ -5,8 +5,11 @@
 //
 //   node scripts/frame-profile-browser.mjs <scene> <out.txt> [ms] [top]
 //
+// B-107: DEVICE=1 profiles in Chrome on a phone attached over adb, as frame-bench-browser.mjs measures there: the build
+// through `adb reverse`, the blank tab Chrome is brought forward with, nothing emulated.
+//
 // Needs `./gradlew :sample:wasmJsBrowserDistribution` first. Not part of `make check`.
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { existsSync, readFileSync, statSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { join, extname } from 'node:path';
@@ -28,16 +31,27 @@ const server = createServer((req, res) => {
   res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
   res.end(readFileSync(file));
 });
-await new Promise(r => server.listen(0, '127.0.0.1', r));
-const chrome = spawn(CHROME, ['--headless=new', '--window-size=1280,814', '--force-device-scale-factor=2',
+const DEVICE = process.env.DEVICE === '1';
+const ADB = process.env.ADB ?? `${process.env.HOME}/Library/Android/sdk/platform-tools/adb`;
+const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
+await new Promise(r => server.listen(DEVICE ? 8763 : 0, '127.0.0.1', r));
+if (DEVICE) {
+  sh(`${ADB} reverse tcp:8763 tcp:8763`);
+  sh(`${ADB} shell am start -a android.intent.action.VIEW -d about:blank -n com.android.chrome/com.google.android.apps.chrome.Main`);
+  sh(`${ADB} forward tcp:9337 localabstract:chrome_devtools_remote`);
+}
+const DEBUG = DEVICE ? 9337 : 9336;
+const chrome = DEVICE ? null : spawn(CHROME, ['--headless=new', '--window-size=1280,814', '--force-device-scale-factor=2',
   '--remote-debugging-port=9336', `--user-data-dir=${mkdtempSync(join(tmpdir(), 'b73p-'))}`, '--no-first-run',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let up;
 for (let i = 0; i < 50 && !up; i++) {
   await new Promise(r => setTimeout(r, 200));
-  up = await fetch('http://127.0.0.1:9336/json/list').then(r => r.json()).catch(() => null);
+  up = await fetch(`http://127.0.0.1:${DEBUG}/json/list`, { signal: AbortSignal.timeout(2_000) }).then(r => r.json()).catch(() => null);
 }
-const ws = new WebSocket(up.find(t => t.type === 'page').webSocketDebuggerUrl);
+const target = up?.find(t => t.type === 'page' && (!DEVICE || t.url === 'about:blank'));
+if (!target) throw new Error('no page to profile in');
+const ws = new WebSocket(target.webSocketDebuggerUrl);
 await new Promise(r => { ws.onopen = r; });
 let seq = 0;
 const pending = new Map();
@@ -48,7 +62,15 @@ const send = (method, params = {}) => new Promise((res, rej) => {
   ws.send(JSON.stringify({ id, method, params }));
 });
 await send('Page.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 814, deviceScaleFactor: 2, mobile: false });
+// B-107: PHONE=1 profiles on the phone proxy of frame-bench-browser.mjs: 390 × 844 at 3x, mobile, touch, CPU slowed.
+const PHONE = process.env.PHONE === '1' && !DEVICE;
+if (!DEVICE) await send('Emulation.setDeviceMetricsOverride', PHONE
+  ? { width: 390, height: 844, deviceScaleFactor: 3, mobile: true }
+  : { width: 1280, height: 814, deviceScaleFactor: 2, mobile: false });
+if (PHONE) {
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  await send('Emulation.setCPUThrottlingRate', { rate: +(process.env.CPU ?? 4) });
+}
 await send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/?scene=${scene}` });
 // WAIT_MS: how long the page runs before the profile starts (4 s by default).
 await new Promise(r => setTimeout(r, +(process.env.WAIT_MS ?? 4000)));
@@ -84,7 +106,8 @@ profile.samples.forEach((id, i) => {
 const busy = all - idle;
 const line = ([k, v]) => `${v.toFixed(1).padStart(9)} ms ${(100 * v / busy).toFixed(1).padStart(5)} %  ${k}`;
 const text = [
-  `# B-73 profile of ${scene}, ${new Date().toISOString()}, ${MS} ms sampled every 100 µs`,
+  `# B-73 profile of ${scene}, ${new Date().toISOString()}, ${MS} ms sampled every 100 µs` +
+    (DEVICE ? `, on ${sh(`${ADB} shell getprop ro.product.model`)} in Chrome, nothing emulated` : PHONE ? ', phone proxy' : ''),
   `# sampled ${all.toFixed(0)} ms, idle ${idle.toFixed(0)} ms, busy ${busy.toFixed(0)} ms (${(100 * busy / all).toFixed(1)} %)`,
   '', `## self time, top ${TOP} (share of busy)`, ...[...self].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(line),
   '', `## total time, top ${TOP} (share of busy)`, ...[...total].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(line), '',
@@ -92,6 +115,10 @@ const text = [
 writeFileSync(outFile, text);
 console.log(text.split('\n').slice(0, 4).join('\n'));
 ws.close();
-chrome.kill();
+if (DEVICE) {
+  await fetch(`http://127.0.0.1:${DEBUG}/json/close/${target.id}`).catch(() => null);
+  sh(`${ADB} forward --remove tcp:${DEBUG}`);
+  sh(`${ADB} reverse --remove tcp:8763`);
+} else chrome.kill();
 server.close();
 process.exit(0);

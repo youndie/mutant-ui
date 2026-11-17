@@ -58,11 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (0)
+## Open (1)
 
-No open tasks.
+| Task | | Priority | Size | Blocked by |
+|---|---|---|---|---|
+| [B-108](docs/backlog/B-108-a-phones-budget-for-the-boil.md) `[?]` | A phone's budget for the boil | P2 | M | - |
 
-## Closed (106)
+## Closed (107)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -174,6 +176,7 @@ No open tasks.
 - [B-104](docs/backlog/B-104-carousel-words-on-a-pressed-card.md) `[x]` - A pressed carousel card keeps its light words on amber
 - [B-105](docs/backlog/B-105-tongue-becomes-the-pill.md) `[x]` - Refreshing ends with a cut from the tongue to the pill
 - [B-106](docs/backlog/B-106-stepped-motion-named-plainly.md) `[x]` - The header's «Шаги дизайна» switch says nothing of what it does
+- [B-107](docs/backlog/B-107-wasm-on-a-phone.md) `[x]` - The sample stutters in a phone's browser
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection

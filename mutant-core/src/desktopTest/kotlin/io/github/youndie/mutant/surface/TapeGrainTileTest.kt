@@ -12,12 +12,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import io.github.youndie.mutant.tokens.MutantPalettes
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 /**
  * B-77: at a whole density the Tape's grain is one fill repeating its tile, rasterised once, and it draws the very
- * pixels its strokes drew, tile by tile; at a fractional density, where a tile is not whole pixels, the strokes are
- * drawn as before.
+ * pixels its strokes drew, tile by tile. B-107: at a fractional density the fill repeats a block of tiles that is whole
+ * pixels; where no block is, the strokes are drawn as before.
  */
 class TapeGrainTileTest {
     private fun render(
@@ -62,7 +63,27 @@ class TapeGrainTileTest {
     }
 
     @Test
-    fun `a fractional density keeps the strokes`() {
-        assertNull(grainTile(TapeGrain.of("tape-tile"), MutantPalettes.Efir, 2.625f))
+    fun `at Android's 2_625 the grain repeats over four tiles across and two down, whole pixels`() {
+        assertEquals(4, wholeSpan(TapeGrain.W, 2.625f))
+        assertEquals(2, wholeSpan(TapeGrain.H, 2.625f))
+        assertNotNull(grainTile(TapeGrain.of("tape-tile"), MutantPalettes.Efir, 2.625f))
+    }
+
+    @Test
+    fun `at 2_625 the grain from its block is the strokes' own where the tick's offset is whole pixels`() {
+        for (print in listOf(false, true)) {
+            // Ticks whose offset is a multiple of 8 dp both ways, 21 px at 2.625: (0, 0), (8, 64), (48, 24).
+            for (tick in listOf(0L, 44L, 84L)) {
+                val strokes = render(2.625f, fromTile = false, tick, print)
+                val tiled = render(2.625f, fromTile = true, tick, print)
+                val off = strokes.indices.count { strokes[it] != tiled[it] }
+                assertEquals(0, off, "pixels off at tick $tick, ${if (print) "Kopiya" else "Efir"}")
+            }
+        }
+    }
+
+    @Test
+    fun `a density with no whole span keeps the strokes`() {
+        assertNull(grainTile(TapeGrain.of("tape-tile"), MutantPalettes.Efir, 2.6180339f))
     }
 }

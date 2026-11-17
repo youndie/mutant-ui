@@ -113,13 +113,19 @@ internal fun DrawScope.drawTape(
     grain: TapeGrain = TapeGrain.of(stage),
     skip: Set<TapePart> = emptySet(),
     tile: androidx.compose.ui.graphics.ShaderBrush? = null,
+    lines: androidx.compose.ui.graphics.ShaderBrush? = null,
 ) {
     val ink = inkOf(colors)
-    if (ink.scanline > 0 && TapePart.Lines !in skip) {
+    if (ink.scanline > 0 && TapePart.Lines !in skip && lines != null) {
+        // B-107: the scanlines rasterised once as a block of rows that is whole pixels, and one fill repeating it down
+        // the screen from its top at the device's pixels: 261 rects a frame on a phone, one here.
+        val d = density
+        scale(1f / d, Offset.Zero) { drawRect(lines, Offset.Zero, Size(w * d, h * d)) }
+    } else if (ink.scanline > 0 && TapePart.Lines !in skip) {
         var y = 0f
         while (y < h) {
             drawRect(Color.Black, Offset(0f, y), Size(w, 1f), alpha = ink.scanline)
-            y += 3f
+            y += SCANLINE_EVERY
         }
     }
     val fi = floor(t / MutantClock.SCENE_TICK_MS).toLong()
@@ -188,18 +194,26 @@ private fun DrawScope.drawGrainTile(
 }
 
 /**
- * The grain's tile rasterised at [density] as a repeating fill, or null where a tile is not a whole number of
- * pixels (B-77). At a fractional density the strokes are drawn as before.
+ * The grain's tile rasterised at [density] as a repeating fill, or null where no block of tiles is a whole number of
+ * pixels within [MAX_GRAIN_PX] (B-77). At a whole density the block is one tile. At a fractional one it is the fewest
+ * tiles across and down whose span is whole pixels (B-107): at Android's 2.625 a tile is 236.25 × 472.5 px, and four
+ * across by two down make 945 × 945, so the fill repeats where the strokes repeat.
  */
 internal fun grainTile(
     grain: TapeGrain,
     colors: MutantColors,
     density: Float,
 ): androidx.compose.ui.graphics.ShaderBrush? {
-    if (density != kotlin.math.round(density) || density < 1f) return null
+    if (density < 1f) return null
+    val across = wholeSpan(TapeGrain.W, density) ?: return null
+    val down = wholeSpan(TapeGrain.H, density) ?: return null
     val img =
         androidx.compose.ui.graphics
-            .ImageBitmap((TapeGrain.W * density).toInt(), (TapeGrain.H * density).toInt())
+            .ImageBitmap(
+                kotlin.math.round(TapeGrain.W * across * density).toInt(),
+                kotlin.math.round(TapeGrain.H * down * density).toInt(),
+            )
+    val ink = inkOf(colors).grain
     androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
         androidx.compose.ui.unit
             .Density(density),
@@ -207,7 +221,20 @@ internal fun grainTile(
         androidx.compose.ui.graphics
             .Canvas(img),
         Size(img.width.toFloat(), img.height.toFloat()),
-    ) { scale(density, Offset.Zero) { drawGrainTile(grain, inkOf(colors).grain, 0f, 0f) } }
+    ) {
+        scale(density, Offset.Zero) {
+            for (j in 0 until down) {
+                for (i in 0 until across) {
+                    drawGrainTile(
+                        grain,
+                        ink,
+                        i * TapeGrain.W,
+                        j * TapeGrain.H,
+                    )
+                }
+            }
+        }
+    }
     return androidx.compose.ui.graphics.ShaderBrush(
         androidx.compose.ui.graphics.ImageShader(
             img,
@@ -216,6 +243,64 @@ internal fun grainTile(
         ),
     )
 }
+
+/**
+ * The scanlines rasterised at [density] as a fill repeating down the screen, or null where the Tape draws none (in
+ * «Копия») or no block of rows is a whole number of pixels within [MAX_GRAIN_PX] (B-107). The block is the fewest
+ * periods of [SCANLINE_EVERY] dp whose height is whole pixels: one at a whole density, eight (63 px) at 2.625.
+ */
+internal fun scanlineFill(
+    colors: MutantColors,
+    density: Float,
+): androidx.compose.ui.graphics.ShaderBrush? {
+    val alpha = inkOf(colors).scanline
+    if (alpha <= 0f || density < 1f) return null
+    val periods = wholeSpan(SCANLINE_EVERY, density) ?: return null
+    val img =
+        androidx.compose.ui.graphics
+            .ImageBitmap(1, kotlin.math.round(SCANLINE_EVERY * periods * density).toInt())
+    androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
+        androidx.compose.ui.unit
+            .Density(density),
+        androidx.compose.ui.unit.LayoutDirection.Ltr,
+        androidx.compose.ui.graphics
+            .Canvas(img),
+        Size(img.width.toFloat(), img.height.toFloat()),
+    ) {
+        scale(density, Offset.Zero) {
+            for (k in 0 until periods) {
+                drawRect(Color.Black, Offset(0f, k * SCANLINE_EVERY), Size(img.width / density, 1f), alpha = alpha)
+            }
+        }
+    }
+    return androidx.compose.ui.graphics.ShaderBrush(
+        androidx.compose.ui.graphics.ImageShader(
+            img,
+            androidx.compose.ui.graphics.TileMode.Repeated,
+            androidx.compose.ui.graphics.TileMode.Repeated,
+        ),
+    )
+}
+
+/** One dark dp of scanline every this many. */
+private const val SCANLINE_EVERY = 3f
+
+/** The fewest tiles of [dp] whose span at [density] is whole pixels, within [MAX_GRAIN_PX]; null where there is none. */
+internal fun wholeSpan(
+    dp: Float,
+    density: Float,
+): Int? {
+    var n = 1
+    while (dp * n * density <= MAX_GRAIN_PX) {
+        val px = dp.toDouble() * n * density
+        if (kotlin.math.abs(px - kotlin.math.round(px)) < 1e-3) return n
+        n++
+    }
+    return null
+}
+
+/** The widest block of grain tiles rasterised, in pixels a side. */
+private const val MAX_GRAIN_PX = 2048f
 
 /**
  * The Tape («Лента») over this element: scanlines, a grain stepping eight times a second, a tracking band
@@ -236,6 +321,7 @@ public fun Modifier.mutantTape(): Modifier =
         val skip = LocalMutantTapeSkip.current
         val density = androidx.compose.ui.platform.LocalDensity.current.density
         val tile = remember(grain, colors.print, density) { grainTile(grain, colors, density) }
+        val lines = remember(colors.print, density) { scanlineFill(colors, density) }
         drawWithContent {
             drawContent()
             // A frozen clock is the engine's `data-mu-t`, drawn at that very time; a running one steps the Tape on
@@ -245,7 +331,7 @@ public fun Modifier.mutantTape(): Modifier =
             val w = size.width / d
             val h = size.height / d
             scale(d, Offset.Zero) {
-                clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain, skip, tile) }
+                clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain, skip, tile, lines) }
             }
         }
     }

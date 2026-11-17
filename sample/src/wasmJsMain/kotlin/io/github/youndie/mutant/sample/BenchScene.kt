@@ -41,6 +41,11 @@ internal fun benchScene(name: String?): (@Composable () -> Unit)? =
             { Recorded(SampleSettings(page = SamplePage.Demo)) }
         }
 
+        // B-107: the Demo page with the Tape off on every phone.
+        "DemoPageClean" -> {
+            { Recorded(SampleSettings(page = SamplePage.Demo, cleanSignal = true)) }
+        }
+
         "DemoLibrary" -> {
             { Alone(DemoScreen.Library) }
         }

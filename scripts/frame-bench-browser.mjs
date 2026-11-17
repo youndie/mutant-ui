@@ -8,6 +8,15 @@
 //
 //   node scripts/frame-bench-browser.mjs <out-dir> [rounds] [scene-ms] [Scene,Scene]
 //
+// B-107: DIST_B=<dir> measures a second build beside the first, interleaved: each scene also runs as `<scene>~b` from
+// it, in the same rotation, so a drift of the machine (a fanless Mac heating up) falls on both builds alike.
+// B-107: PHONE=1 stands in for a phone: a 390 × 844 viewport at 3x, emulated as mobile with touch, and the main thread
+// slowed CPU=<rate> times (4 by default) by Chrome's own throttling. It is a proxy, not a phone: the GPU is the Mac's.
+//
+// B-107: DEVICE=1 measures in Chrome on a phone attached over adb instead: the build is served through `adb reverse`,
+// the page opened as a new tab of the phone's Chrome through its DevTools socket, nothing emulated or throttled. The phone
+// keeps its screen on while plugged in, and Chrome must be open on it. The wheel scene has no meaning there.
+//
 // Needs `./gradlew :sample:wasmJsBrowserDistribution` first and Google Chrome. Not part of `make check`.
 import { spawn, execSync } from 'node:child_process';
 import { createServer } from 'node:http';
@@ -24,15 +33,21 @@ const SETTLE_MS = 1_000;
 const CONTROL_MS = 10;
 const WHEEL_EVERY_MS = 32;
 const WHEEL_FLIP_MS = 2_500;
-const WIDTH = 1280;
-const HEIGHT = 814;
-const SCALE = 2;
-const ALL = ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'DemoRecording', 'DemoSettings',
-  'ComponentsClean', 'ComponentsReduce', 'Control', 'ControlRest'];
+const DEVICE = process.env.DEVICE === '1';
+const PHONE = process.env.PHONE === '1' && !DEVICE;
+const CPU = PHONE ? +(process.env.CPU ?? 4) : 1;
+const WIDTH = PHONE ? 390 : 1280;
+const HEIGHT = PHONE ? 844 : 814;
+const SCALE = PHONE ? 3 : 2;
+const ALL = DEVICE ? ['ComponentsRest', 'ComponentsClean', 'DemoPage', 'DemoPageClean', 'DemoLibrary', 'DemoRecording',
+  'DemoSettings', 'ComponentsReduce', 'Control', 'ControlRest'] : ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'DemoRecording', 'DemoSettings',
+  'ComponentsClean', 'ComponentsReduce', 'Control', 'ControlRest', 'DemoPageClean'];
 // The control is the idle page (reduce motion stops the clock) with the busy-wait; ControlRest is the resting page with
 // it, reported beside, as the first smoke run found the resting page saturated (B-73's amendment).
 const HOST = { Control: 'ComponentsReduce', ControlRest: 'ComponentsRest' };
-const SCENES = scenesArg ? scenesArg.split(',') : ALL;
+const BASE_SCENES = scenesArg ? scenesArg.split(',') : ALL;
+const DIST_B = process.env.DIST_B;
+const SCENES = DIST_B ? BASE_SCENES.flatMap(s => [s, `${s}~b`]) : BASE_SCENES;
 // DIST: another copy of the build to measure, as one built at another commit.
 const DIST = process.env.DIST ?? 'sample/build/dist/wasmJs/productionExecutable';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -43,27 +58,47 @@ mkdirSync(out, { recursive: true });
 // The build, served as the site serves it.
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
   '.css': 'text/css', '.ttf': 'font/ttf', '.png': 'image/png', '.json': 'application/json', '.map': 'application/json' };
-const server = createServer((req, res) => {
-  const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  const file = join(DIST, path === '/' ? 'index.html' : path);
-  if (!file.startsWith(DIST) || !existsSync(file) || statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
-  res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
-  res.end(readFileSync(file));
-});
-await new Promise(r => server.listen(0, '127.0.0.1', r));
-const origin = `http://127.0.0.1:${server.address().port}`;
+const ADB = process.env.ADB ?? `${process.env.HOME}/Library/Android/sdk/platform-tools/adb`;
+const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
+let nextPort = 8761;
+const serve = async dist => {
+  const server = createServer((req, res) => {
+    const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    const file = join(dist, path === '/' ? 'index.html' : path);
+    if (!file.startsWith(dist) || !existsSync(file) || statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
+    res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
+    res.end(readFileSync(file));
+  });
+  await new Promise(r => server.listen(DEVICE ? nextPort++ : 0, '127.0.0.1', r));
+  if (DEVICE) sh(`${ADB} reverse tcp:${server.address().port} tcp:${server.address().port}`);
+  return `http://127.0.0.1:${server.address().port}`;
+};
+const origin = await serve(DIST);
+const originB = DIST_B ? await serve(DIST_B) : null;
 
-const profile = mkdtempSync(join(tmpdir(), 'b73-'));
-const chrome = spawn(CHROME, ['--headless=new', `--window-size=${WIDTH},${HEIGHT}`, `--force-device-scale-factor=${SCALE}`,
+const DEBUG = DEVICE ? 9336 : 9335;
+// A Chrome in the background is frozen and its DevTools socket accepts but never answers: bring it to the front first.
+if (DEVICE) {
+  sh(`${ADB} shell am start -a android.intent.action.VIEW -d about:blank -n com.android.chrome/com.google.android.apps.chrome.Main`);
+  sh(`${ADB} forward tcp:${DEBUG} localabstract:chrome_devtools_remote`);
+}
+const profile = DEVICE ? null : mkdtempSync(join(tmpdir(), 'b73-'));
+const chrome = DEVICE ? null : spawn(CHROME, ['--headless=new', `--window-size=${WIDTH},${HEIGHT}`, `--force-device-scale-factor=${SCALE}`,
   '--remote-debugging-port=9335', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
   'about:blank'], { stdio: 'ignore' });
 let version;
 for (let i = 0; i < 50 && !version; i++) {
   await new Promise(r => setTimeout(r, 200));
-  version = await fetch('http://127.0.0.1:9335/json/version').then(r => r.json()).catch(() => null);
+  version = await fetch(`http://127.0.0.1:${DEBUG}/json/version`, { signal: AbortSignal.timeout(2_000) }).then(r => r.json()).catch(() => null);
 }
-const page = (await fetch('http://127.0.0.1:9335/json/list').then(r => r.json())).find(t => t.type === 'page');
+if (!version) throw new Error(`no DevTools on port ${DEBUG}${DEVICE ? ': is Chrome open on the phone?' : ''}`);
+// On the phone, /json/new answers «Could not create new page»: the tab is the blank one the intent above opened in front,
+// and no other tab of the owner's is touched.
+const page = DEVICE
+  ? (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page' && t.url === 'about:blank')
+  : (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page');
+if (!page) throw new Error('no blank tab to measure in');
 const ws = new WebSocket(page.webSocketDebuggerUrl);
 await new Promise(r => { ws.onopen = r; });
 let seq = 0;
@@ -87,7 +122,11 @@ const evaluate = async expr => (await send('Runtime.evaluate', { expression: exp
 
 await send('Page.enable');
 await send('Runtime.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: false });
+if (!DEVICE) await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: PHONE });
+if (PHONE) {
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  await send('Emulation.setCPUThrottlingRate', { rate: CPU });
+}
 // The recorder, in the page before the sample's own script.
 await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
   const control = new URLSearchParams(location.search).get('control') === '1';
@@ -108,21 +147,29 @@ await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
     .observe({ type: 'long-animation-frame' });
 })();` });
 
-const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
 // The GPU is the browser target's to report, not the page's.
 const gpu = await new Promise((res, rej) => {
+  if (DEVICE) { res(null); return; }
   const b = new WebSocket(version.webSocketDebuggerUrl);
   b.onopen = () => b.send(JSON.stringify({ id: 1, method: 'SystemInfo.getInfo' }));
   b.onmessage = e => { const m = JSON.parse(e.data); b.close(); m.error ? rej(new Error(m.error.message)) : res(m.result.gpu); };
 });
-const digest = readdirSync(DIST).filter(f => f.endsWith('.wasm')).sort()
-  .map(f => `${f} ${createHash('sha256').update(readFileSync(join(DIST, f))).digest('hex').slice(0, 16)}`).join(', ');
+const digestOf = dist => readdirSync(dist).filter(f => f.endsWith('.wasm')).sort()
+  .map(f => `${f} ${createHash('sha256').update(readFileSync(join(dist, f))).digest('hex').slice(0, 16)}`).join(', ');
+const digest = digestOf(DIST) + (DIST_B ? `; ~b: ${digestOf(DIST_B)}` : '');
+const adbProp = k => sh(`${ADB} shell getprop ${k}`);
+const battery = DEVICE ? sh(`${ADB} shell dumpsys battery | grep -E 'level|AC powered|temperature' | tr -s ' ' | tr '\\n' ';'`) : '';
 const header = [
   `# B-73 browser frame bench, ${new Date().toISOString()}`,
-  `# host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
-  `# power: ${sh("pmset -g batt | tail -1 | sed 's/\\t/ /g'")}`,
-  `# browser: ${version.Browser}, headless=new, ${WIDTH}x${HEIGHT} at ${SCALE}x`,
-  `# gpu: ${gpu.devices.map(d => d.deviceString).join('; ')}; webgl ${gpu.featureStatus.webgl}, gpu_compositing ${gpu.featureStatus.gpu_compositing}`,
+  ...(DEVICE ? [
+    `# device: ${adbProp('ro.product.model')} (${adbProp('ro.product.device')}), Android ${adbProp('ro.build.version.release')}, build ${adbProp('ro.build.id')}`,
+    `# device power: ${battery}`,
+    `# browser: ${version.Browser}, on the device (its viewport in the sample printed below), nothing emulated or throttled`,
+  ] : []),
+  `# driver host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
+  ...(DEVICE ? [] : [`# power: ${sh("pmset -g batt | tail -1 | sed 's/\\t/ /g'")}`,
+  `# browser: ${version.Browser}, headless=new, ${WIDTH}x${HEIGHT} at ${SCALE}x${PHONE ? `, phone proxy: mobile, touch, CPU slowed ${CPU}x` : ''}`,
+  `# gpu: ${gpu.devices.map(d => d.deviceString).join('; ')}; webgl ${gpu.featureStatus.webgl}, gpu_compositing ${gpu.featureStatus.gpu_compositing}`]),
   `# commit: ${sh('git rev-parse --short HEAD')}${sh('git status --porcelain -- sample mutant-core') ? ' (dirty)' : ''}`,
   `# build: ${digest}`,
   `# rounds ${ROUNDS} (round 1 not counted), ${SCENE_MS} ms a scene, first ${SETTLE_MS} ms not counted; scenes ${SCENES.join(',')}`,
@@ -137,13 +184,16 @@ let load = 0;
 for (let round = 1; round <= ROUNDS; round++) {
   const order = SCENES.map((_, i) => SCENES[(i + round - 1) % SCENES.length]);
   for (const scene of order) {
-    const url = `${origin}/?scene=${HOST[scene] ?? scene}${HOST[scene] ? '&control=1' : ''}&load=${++load}`;
+    const b = scene.endsWith('~b');
+    const name = b ? scene.slice(0, -2) : scene;
+    const url = `${b ? originB : origin}/?scene=${HOST[name] ?? name}${HOST[name] ? '&control=1' : ''}&load=${++load}`;
     const loaded = event('Page.loadEventFired');
     await send('Page.navigate', { url });
     await loaded;
     // The sample is up once its canvas has drawn: wait for the wasm to start, then settle.
     for (let i = 0; i < 100 && !(await evaluate('!!document.querySelector("canvas")')); i++) await new Promise(r => setTimeout(r, 100));
     await new Promise(r => setTimeout(r, SETTLE_MS));
+    if (DEVICE && load === 1) console.log(`# viewport in the sample: ${await evaluate('`${innerWidth}x${innerHeight} at ${devicePixelRatio}x`')}`);
     await evaluate('window.__bench.recording = true; 0');
     const until = Date.now() + SCENE_MS;
     let down = true;
@@ -152,7 +202,7 @@ for (let round = 1; round <= ROUNDS; round++) {
     while (Date.now() < until) {
       if (scene === 'ComponentsWheel') {
         if (Date.now() > flipAt) { down = !down; flipAt += WHEEL_FLIP_MS; }
-        await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 450, deltaX: 0, deltaY: down ? 100 : -100 });
+        await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: WIDTH / 2, y: HEIGHT / 2, deltaX: 0, deltaY: down ? 100 : -100 });
         wheels++;
         await new Promise(r => setTimeout(r, WHEEL_EVERY_MS));
       } else {
@@ -207,7 +257,20 @@ for (const [ctl, base] of [['Control', 'ComponentsReduce'], ['ControlRest', 'Com
   console.log(`# ${ctl}: work p50 over ${base}'s, per counted round: ` +
     c.map(r => (r.workP50 - by.get(r.round)).toFixed(2)).join(', ') + ` ms against ${CONTROL_MS} ms`);
 }
+// B-107: the second build against the first, per counted round: work p50 of `<scene>~b` minus `<scene>`.
+if (DIST_B) {
+  for (const scene of BASE_SCENES) {
+    const a = new Map((results[scene] ?? []).filter(r => r.round > 1).map(r => [r.round, r.workP50]));
+    const d = (results[`${scene}~b`] ?? []).filter(r => r.round > 1 && a.has(r.round)).map(r => r.workP50 - a.get(r.round));
+    if (!d.length) continue;
+    const mean = d.reduce((x, y) => x + y, 0) / d.length;
+    console.log(`# ~b minus a, ${scene}: per counted round ${d.map(x => x.toFixed(2)).join(', ')} ms; mean ${mean.toFixed(2)} ms`);
+  }
+}
 ws.close();
-chrome.kill();
-server.close();
+if (DEVICE) {
+  await fetch(`http://127.0.0.1:${DEBUG}/json/close/${page.id}`).catch(() => null);
+  sh(`${ADB} forward --remove tcp:${DEBUG}`);
+  sh(`${ADB} reverse --remove-all`);
+} else chrome.kill();
 process.exit(0);
