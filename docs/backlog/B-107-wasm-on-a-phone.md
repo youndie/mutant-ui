@@ -1,7 +1,7 @@
 ---
 id: B-107
 title: "The sample stutters in a phone's browser"
-status: question
+status: done
 priority: P2
 size: M
 stage: stage-6-later
@@ -166,7 +166,37 @@ drift with it: the first counted round ran faster than the four after it on ever
 - **The run.** The build before both Tape fixes against the build with both, on the phone, the paired protocol: five
   rounds, `ComponentsRest`, `DemoPage`, `ComponentsClean`, `ComponentsReduce`.
 
-## Question for the owner
+## Findings: both Tape fixes on the Pixel 6a, 2026-11-17
+
+[The paired run](../../logs/b-107/2026-11-17-pixel6a-paired-tape.log): the build before both fixes against the build
+with both, five rounds, round 1 not counted. New minus old work p50 per counted round:
+
+| Page | Per counted round, ms | Mean | Verdict |
+|---|---|---|---|
+| `ComponentsRest` | −15.1, +0.2, −8.1, −1.9 | −6.2 | below resolution: not every round negative |
+| `DemoPage` | −5.8, −5.7, −8.7, −1.4 | −5.4 | below resolution: all negative, under twice the ruler's spread of 10.6 |
+| `ComponentsClean` (the ruler, no Tape) | −2.7, +7.9, +2.2, +1.4 | +2.2 | — |
+| `ComponentsReduce` (the Tape drawn every frame, the clock still) | −9.5, −10.0, −8.9, −7.7 | −9.0 | distinguishable: all negative, more than twice the ruler's spread; 26.8 → 17.4 ms |
+
+- The frame rate moved 9.0 → 9.8 on Components and 7.8 → 8.8 on Demo. Pooled, the resting Components page now works
+  107.9 ms a frame against the clean one's 105.9 (before: 114.0), so what the Tape still costs there is about 2 ms
+  against about 8; that is a reading of pooled medians, not the rule.
+- **The tail did not move**: work p95 227.0 → 226.4 on Components, 279.6 → 293.5 on Demo. The longest frames are not
+  the Tape's on this phone; they are the drawing and the generator's, as the profile has them.
+- Same phone, same run for every number in the table: yes. Same build of the driver: the Mac, unchanged.
+- Both gates green on the branch (`make check`, `./gradlew check`).
+
+## Outcome
+
+The owner chose option 1 (2026-11-17): the grain and the scanlines are now fills at any density whose block of tiles
+is whole pixels, and the Tape's cost on the phone went from about 8 ms a frame to about 2 by pooled medians, below
+resolution by the rule on the busy pages and distinguishable on the still one. The sample still runs at 9–10 frames a
+second on the Pixel 6a: drawing is three quarters of the main thread and the generator a fifth. What would change that
+is a phone's budget for the boil, option 2 below, which changes what a phone shows; it is [B-108](B-108-a-phones-budget-for-the-boil.md),
+a question for the owner.
+
+## The question asked of the owner, kept
+
 
 Asked first after the proxy (options: the Tape's tail, a phone's budget for the boil, leave it until a phone). The owner
 attached a phone, and the question is now asked with its numbers:
