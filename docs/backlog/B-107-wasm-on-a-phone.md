@@ -192,7 +192,7 @@ The owner chose option 1 (2026-11-17): the grain and the scanlines are now fills
 is whole pixels, and the Tape's cost on the phone went from about 8 ms a frame to about 2 by pooled medians, below
 resolution by the rule on the busy pages and distinguishable on the still one. The sample still runs at 9–10 frames a
 second on the Pixel 6a: drawing is three quarters of the main thread and the generator a fifth. What would change that
-is a phone's budget for the boil, option 2 below, which changes what a phone shows; it is [B-108](B-108-a-phones-budget-for-the-boil.md),
+is a phone's budget for the boil, option 2 below, which changes what a phone shows; it is [B-108](B-108-the-browser-against-android.md),
 a question for the owner.
 
 ## The question asked of the owner, kept

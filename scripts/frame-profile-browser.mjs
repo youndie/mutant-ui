@@ -103,12 +103,24 @@ profile.samples.forEach((id, i) => {
     total.set(k, (total.get(k) ?? 0) + d);
   }
 });
+// B-108: self time by where its code lives: the app's Kotlin module, Skia's (skiko) module, the page's JavaScript, or
+// the browser itself (an empty url: WebGL, the DOM, the engine's own work), so a share can be put on a thread's owner.
+const where = new Map();
+profile.samples.forEach((id, i) => {
+  const d = (dt[i + 1] ?? dt[i]) / 1000;
+  const leaf = byId.get(id);
+  const f = leaf.callFrame;
+  if (f.functionName === '(idle)') return;
+  const k = f.url ? f.url.split('/').pop() : ['(program)', '(garbage collector)'].includes(f.functionName) ? f.functionName : '(browser)';
+  where.set(k, (where.get(k) ?? 0) + d);
+});
 const busy = all - idle;
 const line = ([k, v]) => `${v.toFixed(1).padStart(9)} ms ${(100 * v / busy).toFixed(1).padStart(5)} %  ${k}`;
 const text = [
   `# B-73 profile of ${scene}, ${new Date().toISOString()}, ${MS} ms sampled every 100 µs` +
     (DEVICE ? `, on ${sh(`${ADB} shell getprop ro.product.model`)} in Chrome, nothing emulated` : PHONE ? ', phone proxy' : ''),
   `# sampled ${all.toFixed(0)} ms, idle ${idle.toFixed(0)} ms, busy ${busy.toFixed(0)} ms (${(100 * busy / all).toFixed(1)} %)`,
+  '', '## self time by where its code lives (share of busy)', ...[...where].sort((x, y) => y[1] - x[1]).map(line),
   '', `## self time, top ${TOP} (share of busy)`, ...[...self].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(line),
   '', `## total time, top ${TOP} (share of busy)`, ...[...total].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(line), '',
 ].join('\n');

@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-108](docs/backlog/B-108-a-phones-budget-for-the-boil.md) `[?]` | A phone's budget for the boil | P2 | M | - |
+| [B-108](docs/backlog/B-108-the-browser-against-android.md) `[~]` | What the browser costs against Android, on one phone | P2 | M | - |
 
 ## Closed (107)
 
