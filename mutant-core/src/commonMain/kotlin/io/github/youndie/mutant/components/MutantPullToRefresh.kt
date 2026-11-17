@@ -21,11 +21,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -200,25 +199,54 @@ internal fun PullToRefreshBody(
         }
     // Every frame while it glides or the pill counts its second; nothing once it stands.
     if (glide.moving(clock.nowMs, still) || (doneShown && !still)) clock.frame
-    // After its second the pill rides up with the content, under the line, instead of giving way to a tongue.
+    // After its second the pill goes back up with the content, drawn back into the line as the gap closes.
     val riding = pull == null && !done && !holding && !doneShown && glide.riding && gap > 0f
     val showDone = pull == null && (done || doneShown || riding)
+    // B-105: refreshing over, the tongue becomes the pill over [MORPH_MS] as the content glides up to the pill's gap.
+    val since = glide.sinceDone(clock.nowMs)
+    val morph =
+        if (pull != null || done || still || !doneShown || since.isNaN()) {
+            1f
+        } else {
+            easeOut((since / MORPH_MS).coerceIn(0.0, 1.0)).toFloat()
+        }
+    // Going back up, how far the pill has been drawn into the line: 0 at the pill's gap, 1 as the gap closes.
+    val exit = if (riding) (1f - gap / DONE_GAP).coerceIn(0f, 1f) else 0f
     val line = if (divider) (LINE * density).roundToInt() else 0
     val g = (gap * density).roundToInt()
-    val doneG = (DONE_GAP * density).roundToInt()
     val pillH = (PILL_H * density).roundToInt()
-    // The pill stands in the middle of the 52 dp gap; riding, it keeps that place over the content as the gap closes.
-    val pillY = if (riding) line + (doneG - pillH) / 2 - (doneG - g) else line + (g - pillH) / 2
-    val pillClip = (line - pillY).toFloat()
+    val hang = line - (HANG * density).roundToInt()
+    // The pill stands in the middle of the gap; becoming it, the body comes down from where the tongue hangs.
+    val middle = line + (g - pillH) / 2
+    val pillY =
+        when {
+            morph < 1f -> lerp(hang.toFloat(), middle.toFloat(), morph).roundToInt()
+
+            // Going back up it stays in the middle of the closing gap as it shrinks, and meets the line as both end.
+            exit > 0f -> line + (g - (PILL_H * (1f - exit) * density).roundToInt()) / 2
+
+            else -> middle
+        }
     Layout(
         content = {
             Box(Modifier.nestedScroll(connection)) { content() }
             // The line first in the list, last in the drawing: placed after the tongue, it lies over it.
             if (divider) MutantDivider(key = "0")
-            if (showDone) {
-                DonePill(doneLabel, "$key-done", hidden, pillClip)
-            } else if (gap > SHOWN_FROM) {
-                Tongue(gap, refreshing, refreshingLabel, key, boil, heat, hidden, if (still) null else clock)
+            if (showDone || gap > SHOWN_FROM) {
+                Hanging(
+                    showDone,
+                    morph,
+                    exit,
+                    gap,
+                    refreshing,
+                    refreshingLabel,
+                    doneLabel,
+                    key,
+                    boil,
+                    heat,
+                    hidden,
+                    if (still) null else clock,
+                )
             }
         },
         modifier =
@@ -287,38 +315,38 @@ private fun Tongue(
     heat: Double?,
     hidden: Boolean,
     clock: io.github.youndie.mutant.clock.MutantClock?,
+    morph: Float? = null,
+    morphW: Float = 0f,
+    morphH: Float = 0f,
 ) {
     val labelStyle =
         MutantTheme.textStyles
             .osd(LABEL_SIZE.sp)
             .copy(color = if (hidden) Color.Transparent else INK, platformStyle = LocalMutantTextRaster.current)
-    // The long tongue keeps its 7 dp of room around its word: a taller word (font scale 2) makes it taller.
-    val word =
-        with(androidx.compose.ui.platform.LocalDensity.current) {
-            rememberTextMeasurer()
-                .measure(label, labelStyle, maxLines = 1)
-                .size.height
-                .toDp()
-                .value
-        }
-    val longH = maxOf(LONG_H, word + 2 * LABEL_ROOM).roundToInt().toFloat()
-    val size = tongueSize(gap, longH)
+    val longH = longHeight(label)
+    // Becoming the pill (B-105), it takes the shape it is given, whole: its drips are drawn back up as it goes.
+    val size = if (morph != null) TongueSize(morphW, morphH, 1f, 1f) else tongueSize(gap, longH)
     val tick = clock?.hotTick
     val built = remember { TongueBuilt() }
-    built.follow(size, tick)
+    built.follow(size, tick, morph)
     val w = built.w
     val h = built.h
     val f = built.f
+    val m = built.m
     // Between ticks, and under 40 dp, the body built is scaled to the gap's exact size.
     val sx = size.width / w
     val sy = size.height / h
+    // Becoming the pill, it fades draw by draw, so its drips, outside its box, fade with it.
+    val fade = if (morph != null) 1f - morph else 1f
     Box(
-        if (sx == 1f && sy == 1f) {
+        if (sx == 1f && sy == 1f && fade == 1f) {
             Modifier
         } else {
             Modifier.graphicsLayer {
                 scaleX = sx
                 scaleY = sy
+                alpha = fade
+                compositingStrategy = CompositingStrategy.ModulateAlpha
                 transformOrigin = TransformOrigin(.5f, 0f)
             }
         },
@@ -331,15 +359,18 @@ private fun Tongue(
             heat = heat,
             profile =
                 MutantBody.Btn.profile.with(
-                    radius = lerp(SHORT_R, LONG_R, f).toDouble(),
-                    overhang = lerp(SHORT_OVER, LONG_OVER, f).roundToInt().toDouble(),
+                    radius = (if (m != null) lerp(LONG_R, PILL_R, m) else lerp(SHORT_R, LONG_R, f)).toDouble(),
+                    overhang =
+                        (if (m != null) lerp(LONG_OVER, 0f, m) else lerp(SHORT_OVER, LONG_OVER, f))
+                            .roundToInt()
+                            .toDouble(),
                     dripShare = if (f >= 1f) 1.0 else 0.0,
                     outline = OUTLINE,
                     marks = false,
                     mosaic = false,
                 ),
         ) {
-            if (boiling && f >= 1f) {
+            if (boiling && f >= 1f && morph == null) {
                 Box(Modifier.size(w.dp, h.dp), contentAlignment = Alignment.Center) {
                     BasicText(
                         label,
@@ -386,61 +417,195 @@ private class TongueBuilt {
     var w = 0
     var h = 0
     var f = 0f
+
+    /** How far it had become the pill when built, or null. */
+    var m: Float? = null
     private var tick: Long? = null
 
     fun follow(
         size: TongueSize,
         now: Long?,
+        morph: Float?,
     ) {
         // Under 40 dp the short tongue is scaled down whole: no body is built at a size the page never draws.
-        if (w == 0 || now == null || now != tick) {
+        if (w == 0 || now == null || now != tick || (morph == null) != (m == null)) {
             w = size.bodyWidth.roundToInt()
             h = size.bodyHeight.roundToInt()
             f = size.f
+            m = morph
             tick = now
         }
     }
 }
 
-/** The end: a clean pill, 28 dp, its label 14 dp in; above [clipTop] px, its top, it is under the line and hidden. */
+/**
+ * What hangs from the line: the tongue, the pill, or both while one becomes the other (B-105). One structure in every
+ * phase, so neither body is built anew as the phases hand over: the pill's body under, the tongue over, and the words of
+ * a move over both, at their size.
+ */
 @Composable
-private fun DonePill(
+private fun Hanging(
+    showDone: Boolean,
+    morph: Float,
+    exit: Float,
+    gap: Float,
+    refreshing: Boolean,
+    refreshingLabel: String,
+    doneLabel: String,
+    key: String,
+    boil: MutableInteractionSource,
+    heat: Double?,
+    hidden: Boolean,
+    clock: io.github.youndie.mutant.clock.MutantClock?,
+) {
+    val moving = showDone && morph < 1f
+    val pillW = pillWidth(doneLabel).toFloat()
+    val longH = longHeight(refreshingLabel)
+    // While it becomes the pill, both bodies take one shape: from the long tongue's to the pill's.
+    val w = lerp(LONG_W, pillW, morph)
+    val h = lerp(longH, PILL_H.toFloat(), morph)
+    Box(contentAlignment = Alignment.TopCenter) {
+        if (showDone) PillBody(morph, exit, w, h, pillW, doneLabel, key, hidden, clock)
+        if (!showDone || moving) {
+            Tongue(gap, refreshing, refreshingLabel, key, boil, heat, hidden, clock, if (moving) morph else null, w, h)
+        }
+        if (moving || exit > 0f) {
+            val bw = if (moving) w else pillW * (1f - exit)
+            val bh = if (moving) h else PILL_H * (1f - exit)
+            Box(Modifier.size(bw.dp, bh.dp), contentAlignment = Alignment.Center) {
+                // The tongue's word fades out in the first half of the move and the pill's comes in over the second;
+                // going back up, the pill's fades in the first 40 %.
+                val out = if (moving) (1f - 2 * morph).coerceIn(0f, 1f) else 0f
+                val into = if (moving) (2 * morph - 1f).coerceIn(0f, 1f) else (1f - exit / .4f).coerceIn(0f, 1f)
+                if (out > 0f) BasicText(refreshingLabel, style = pillWords(hidden, out), maxLines = 1, softWrap = false)
+                if (into > 0f) BasicText(doneLabel, style = pillWords(hidden, into), maxLines = 1, softWrap = false)
+            }
+        }
+    }
+}
+
+/**
+ * The pill: standing, the page's clean pill, 28 dp, its label 14 dp in. Becoming it ([morph] under 1), it has the shape
+ * [w] × [h] the tongue over it has, its corners rounding from the tongue's 7 dp to its own; going back up ([exit] over
+ * 0), it shrinks about its top into the line and is gone as the gap closes. Its words stand in it only while it stands.
+ */
+@Composable
+private fun PillBody(
+    morph: Float,
+    exit: Float,
+    w: Float,
+    h: Float,
+    pillW: Float,
     label: String,
     key: String,
     hidden: Boolean,
-    clipTop: Float,
+    clock: io.github.youndie.mutant.clock.MutantClock?,
 ) {
-    val style =
-        MutantTheme.textStyles
-            .osd(LABEL_SIZE.sp)
-            .copy(color = if (hidden) Color.Transparent else INK, platformStyle = LocalMutantTextRaster.current)
-    // As wide as Chrome makes it: the label's own width, unrounded, and the padding, rounded once. A box around the
-    // label's rounded-up width was a pixel wider.
-    val measured = rememberTextMeasurer().measure(label, style, maxLines = 1, softWrap = false)
-    val width =
-        with(androidx.compose.ui.platform.LocalDensity.current) { measured.multiParagraph.maxIntrinsicWidth.toDp() }
-    // Riding up, it passes under the line: what stands above the component's top is not drawn. Standing, no clip at all
-    // (a clip moves letter edges).
-    Box(
-        if (clipTop > 0f) {
-            Modifier.drawWithContent {
-                clipRect(-size.width, clipTop, 2 * size.width, 2 * size.height) { this@drawWithContent.drawContent() }
-            }
+    val standing = morph >= 1f && exit <= 0f
+    val tw = if (morph < 1f) w else pillW * (1f - exit)
+    val th = if (morph < 1f) h else PILL_H * (1f - exit)
+    val profile =
+        if (morph < 1f) {
+            MutantBody.Pill.profile.with(radius = lerp(LONG_R, PILL_R, morph).toDouble())
         } else {
+            MutantBody.Pill.profile
+        }
+    val built = remember { BuiltShape() }
+    built.follow(tw, th, profile, if (standing) null else clock?.hotTick, exact = standing)
+    val sx = tw / built.w
+    val sy = th / built.h
+    Box(
+        if (sx == 1f && sy == 1f) {
             Modifier
+        } else {
+            Modifier.graphicsLayer {
+                scaleX = sx
+                scaleY = sy
+                transformOrigin = TransformOrigin(.5f, 0f)
+            }
         },
     ) {
         MutantSurface(
             MutantBody.Pill,
-            key,
-            Modifier.width((width.value + 2 * PILL_PAD).roundToInt().dp).height(PILL_H.dp),
+            "$key-done",
+            Modifier.size(built.w.dp, built.h.dp),
             state = BodyState.Success,
+            profile = built.profile!!,
         ) {
-            Box(Modifier.padding(start = PILL_PAD.dp).height(PILL_H.dp), contentAlignment = Alignment.CenterStart) {
-                BasicText(label, Modifier.mutantCleanZone(), style = style, maxLines = 1, softWrap = false)
+            if (standing) {
+                Box(Modifier.padding(start = PILL_PAD.dp).height(PILL_H.dp), contentAlignment = Alignment.CenterStart) {
+                    BasicText(
+                        label,
+                        Modifier.mutantCleanZone(),
+                        style = pillWords(hidden),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
             }
         }
     }
+}
+
+/** The size and profile the pill's body is built at: exact while it stands, else whole dp once per tick, at least 1. */
+private class BuiltShape {
+    var w = 0
+    var h = 0
+    var profile: io.github.youndie.mutant.tokens.MutantProfile? = null
+    private var tick: Long? = null
+
+    fun follow(
+        w: Float,
+        h: Float,
+        profile: io.github.youndie.mutant.tokens.MutantProfile,
+        now: Long?,
+        exact: Boolean,
+    ) {
+        if (exact || this.w == 0 || now == null || now != tick) {
+            this.w = maxOf(w.roundToInt(), MIN_BUILT)
+            this.h = maxOf(h.roundToInt(), MIN_BUILT)
+            this.profile = profile
+            tick = now
+        }
+    }
+}
+
+/** The pill's label style: the OSD face, black in both themes. */
+@Composable
+private fun pillWords(
+    hidden: Boolean,
+    alpha: Float = 1f,
+) = MutantTheme.textStyles
+    .osd(LABEL_SIZE.sp)
+    .copy(
+        color = if (hidden) Color.Transparent else INK.copy(alpha = alpha),
+        platformStyle = LocalMutantTextRaster.current,
+    )
+
+/**
+ * The pill's width, dp, as Chrome makes it: the label's own width, unrounded, and the padding, rounded once. A box around
+ * the label's rounded-up width was a pixel wider.
+ */
+@Composable
+private fun pillWidth(label: String): Int {
+    val measured = rememberTextMeasurer().measure(label, pillWords(false), maxLines = 1, softWrap = false)
+    val width =
+        with(androidx.compose.ui.platform.LocalDensity.current) { measured.multiParagraph.maxIntrinsicWidth.toDp() }
+    return (width.value + 2 * PILL_PAD).roundToInt()
+}
+
+/** The long tongue's height, dp: 34, or its word's line and 7 dp of room either side if that is taller (font scale 2). */
+@Composable
+private fun longHeight(label: String): Float {
+    val word =
+        with(androidx.compose.ui.platform.LocalDensity.current) {
+            rememberTextMeasurer()
+                .measure(label, pillWords(false), maxLines = 1)
+                .size.height
+                .toDp()
+                .value
+        }
+    return maxOf(LONG_H, word + 2 * LABEL_ROOM).roundToInt().toFloat()
 }
 
 /**
@@ -493,6 +658,9 @@ internal class PullGlide(
         doneAt = Double.NaN
         return false
     }
+
+    /** Ms since the pill came, on the screen clock; NaN once it has gone or before it came. */
+    fun sinceDone(now: Double): Double = now - doneAt
 
     /** The pill came and has not yet gone. */
     fun pillStands(): Boolean = !doneAt.isNaN()
@@ -581,3 +749,12 @@ internal const val MAX_PULL = 120f
 /** Designed here: the pill stands a second, and every move between the phases' gaps takes 300 ms, eased out. */
 internal const val DONE_MS = 1000.0
 internal const val GLIDE_MS = 300.0
+
+/** Designed here (B-105): the tongue becomes the pill over the glide to the pill's gap, eased out with it. */
+internal const val MORPH_MS = GLIDE_MS
+
+/** The pill's corner: half its height (the `pill` body's radius, 99, comes to that). */
+private const val PILL_R = PILL_H / 2f
+
+/** The smallest a body is built at, dp; under it, it is scaled. */
+private const val MIN_BUILT = 4
