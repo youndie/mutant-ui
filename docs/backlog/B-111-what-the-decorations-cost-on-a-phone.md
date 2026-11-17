@@ -1,7 +1,7 @@
 ---
 id: B-111
 title: "What a body's decorations cost on a phone"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-6-later

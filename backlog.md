@@ -63,7 +63,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-111](docs/backlog/B-111-what-the-decorations-cost-on-a-phone.md) `[ ]` | What a body's decorations cost on a phone | P2 | S | - |
+| [B-111](docs/backlog/B-111-what-the-decorations-cost-on-a-phone.md) `[~]` | What a body's decorations cost on a phone | P2 | S | - |
 
 ## Closed (109)
 
