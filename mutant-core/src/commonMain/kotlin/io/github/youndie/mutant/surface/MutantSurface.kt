@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -218,6 +219,8 @@ internal fun MutantSurface(
     val registry = remember { CleanZoneRegistry() }
     val held = remember { HeldInstance() }
     val ahead = remember { FrameAhead() }
+    val stillLayers = remember { StillLayers() }
+    val stillOnce = LocalMutantStillLayersOnce.current
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
     // B-110, a spike: the body's silhouette drawn by a shader from its field, where the platform has one.
@@ -474,6 +477,24 @@ internal fun MutantSurface(
                                 kotlin.time.TimeSource.Monotonic
                                     .markNow()
                             val pic = pictureOf(g, f, next, 0.0)
+                            val still =
+                                if (!stillOnce) {
+                                    null
+                                } else {
+                                    stillLayers.of(g, it) {
+                                        stillLayersImage(
+                                            g,
+                                            look.slip,
+                                            colors,
+                                            speckle,
+                                            Offset.Zero,
+                                            dead,
+                                            skipParts,
+                                            d,
+                                            layoutDirection,
+                                        )
+                                    }
+                                }
                             rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection, band) {
                                 drawBody(
                                     g,
@@ -486,6 +507,7 @@ internal fun MutantSurface(
                                     pic.decor,
                                     null,
                                     skipParts,
+                                    still,
                                 )
                             }.also {
                                 rasterProbe?.invoke(
@@ -936,8 +958,7 @@ internal fun rasterisedBody(
     draw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit,
 ): RasterisedBody {
     val el = g.slot
-    val left = kotlin.math.floor(el.ox - RASTER_MARGIN).toFloat()
-    val top = kotlin.math.floor(el.oy - RASTER_MARGIN - 4).toFloat()
+    val (left, top) = rasterOrigin(g)
     val right = kotlin.math.ceil(el.ox + el.w + RASTER_MARGIN).toFloat()
     val bottom = kotlin.math.ceil(el.oy + el.h + el.over + RASTER_MARGIN + 16).toFloat()
     val w = kotlin.math.ceil((right - left) * density).toInt()
@@ -978,6 +999,34 @@ internal fun rasterisedBody(
 }
 
 private const val RASTER_MARGIN = 20.0
+
+/** B-112: whether a body's still layers are drawn once per instance; off only to measure against drawing them each tick. */
+internal val LocalMutantStillLayersOnce = staticCompositionLocalOf { true }
+
+/**
+ * B-112: a body's still layers drawn once ([stillLayersImage]), kept for as long as its instance and the inputs of its
+ * image are what they were. Built ahead off the frame's thread, so the three are held as one reference.
+ */
+internal class StillLayers {
+    private var held: Triple<Instance, List<Any?>, ImageBitmap>? = null
+
+    fun of(
+        g: Instance,
+        inputs: List<Any?>,
+        make: () -> ImageBitmap,
+    ): ImageBitmap {
+        val h = held
+        if (h != null && h.first === g && h.second == inputs) return h.third
+        return make().also { held = Triple(g, inputs, it) }
+    }
+}
+
+/** Where [rasterisedBody]'s image of [g] starts, in whole scene units. */
+internal fun rasterOrigin(g: Instance): Offset =
+    Offset(
+        kotlin.math.floor(g.slot.ox - RASTER_MARGIN).toFloat(),
+        kotlin.math.floor(g.slot.oy - RASTER_MARGIN - 4).toFloat(),
+    )
 
 /**
  * The next resting tick's frame of one body, built on a background thread (B-75): [prepare] starts it for an

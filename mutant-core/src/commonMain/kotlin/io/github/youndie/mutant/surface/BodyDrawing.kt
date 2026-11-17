@@ -4,12 +4,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import io.github.youndie.mutant.gen.BodyFrame
 import io.github.youndie.mutant.gen.DeadPixelColor
@@ -145,6 +147,7 @@ internal fun DrawScope.drawBody(
     decor: BodyDecor = BodyDecor(),
     pour: Pair<Path, Color>? = null,
     skip: Set<BodyPart> = emptySet(),
+    still: ImageBitmap? = null,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -161,23 +164,14 @@ internal fun DrawScope.drawBody(
         clipPathUnless(BodyPart.ContourClip in skip, paths.contour) {
             if (BodyPart.Fill !in skip) drawRect(look.fill, bb.topLeft, bb.size)
             pour?.let { (path, from) -> drawPath(path, from) }
-            // Speckle and flow lines are the theme's ink whatever the outline's colour (the engine's `C.ink`).
-            if (BodyPart.Speckle !in skip) drawSpeckle(speckle, speckleOrigin, bb, colors.ink)
-            val tiles =
-                if (BodyPart.Mosaic in skip) {
-                    emptyList()
-                } else {
-                    decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
-                }
-            for ((t, c) in tiles) {
-                drawRect(
-                    c,
-                    Offset(t.x.toFloat(), t.y.toFloat()),
-                    Size(t.size.toFloat(), t.size.toFloat()),
-                    alpha = t.opacity.toFloat(),
-                )
+            if (still != null && decor.runningMosaic == null) {
+                // B-112: the still layers, drawn once into an image on this raster's own pixel grid, are one draw under
+                // the clip instead of hundreds. Undo the slip and the scale, so the image's pixels land on the raster's.
+                val at = rasterOrigin(g)
+                translate(at.x - look.slip, at.y - look.slip) { scale(1 / density, Offset.Zero) { drawImage(still) } }
+            } else {
+                drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, decor, skip)
             }
-            if (deadPixels != null && BodyPart.DeadPixels !in skip) drawDeadPixels(deadPixels, colors)
             for ((r, c) in decor.errorBlocks) drawRect(c, r.topLeft, r.size)
             if (BodyPart.FlowLines !in skip) drawPath(paths.flowLines, colors.ink)
             for ((i, b) in decor.bands.withIndex()) {
@@ -214,6 +208,61 @@ internal fun DrawScope.drawBody(
     }
     decor.brackets?.let { drawBrackets(g, it) }
 }
+
+/**
+ * The layers under a body's clip that do not move with the tick, in the order [drawBody] draws them: the stage's speckle,
+ * the edge mosaic, the dead pixels. Coordinates are the scene's, inside the slip.
+ */
+internal fun DrawScope.drawStillLayers(
+    g: Instance,
+    colors: MutantColors,
+    speckle: Speckle,
+    speckleOrigin: Offset,
+    deadPixels: DeadPixels?,
+    decor: BodyDecor,
+    skip: Set<BodyPart>,
+) {
+    val el = g.slot
+    val ox = el.ox.toFloat()
+    val oy = el.oy.toFloat()
+    val bb = Rect(ox - 12, oy - 15, ox + el.w.toFloat() + 12, oy + el.h.toFloat() + el.over.toFloat() + 30)
+    // Speckle and flow lines are the theme's ink whatever the outline's colour (the engine's `C.ink`).
+    if (BodyPart.Speckle !in skip) drawSpeckle(speckle, speckleOrigin, bb, colors.ink)
+    val tiles =
+        if (BodyPart.Mosaic in skip) {
+            emptyList()
+        } else {
+            decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
+        }
+    for ((t, c) in tiles) {
+        drawRect(
+            c,
+            Offset(t.x.toFloat(), t.y.toFloat()),
+            Size(t.size.toFloat(), t.size.toFloat()),
+            alpha = t.opacity.toFloat(),
+        )
+    }
+    if (deadPixels != null && BodyPart.DeadPixels !in skip) drawDeadPixels(deadPixels, colors)
+}
+
+/**
+ * B-112: a body's still layers ([drawStillLayers]) drawn once, into an image on the grid [rasterisedBody] draws the
+ * body on, so the body's image of every tick takes them as one draw. The mosaic of a hot body moves and is not in it.
+ */
+internal fun stillLayersImage(
+    g: Instance,
+    slip: Float,
+    colors: MutantColors,
+    speckle: Speckle,
+    speckleOrigin: Offset,
+    deadPixels: DeadPixels?,
+    skip: Set<BodyPart>,
+    density: Float,
+    direction: androidx.compose.ui.unit.LayoutDirection,
+): ImageBitmap =
+    rasterisedBody(g, 0.0, 0.0, density, direction) {
+        translate(slip, slip) { drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, BodyDecor(), skip) }
+    }.image
 
 /**
  * The parts of a body, each of which a measurement can leave out of the draw (B-78). The kit draws them all;
