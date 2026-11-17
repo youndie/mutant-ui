@@ -1,7 +1,7 @@
 ---
 id: B-112
 title: "A body's still decorations drawn once, and painted without the clip"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-6-later

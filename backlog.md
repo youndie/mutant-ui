@@ -63,7 +63,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-112](docs/backlog/B-112-static-decorations-drawn-once.md) `[ ]` | A body's still decorations drawn once, and painted without the clip | P2 | M | - |
+| [B-112](docs/backlog/B-112-static-decorations-drawn-once.md) `[~]` | A body's still decorations drawn once, and painted without the clip | P2 | M | - |
 
 ## Closed (110)
 
