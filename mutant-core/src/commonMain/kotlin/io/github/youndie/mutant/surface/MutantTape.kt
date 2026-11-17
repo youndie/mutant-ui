@@ -188,18 +188,26 @@ private fun DrawScope.drawGrainTile(
 }
 
 /**
- * The grain's tile rasterised at [density] as a repeating fill, or null where a tile is not a whole number of
- * pixels (B-77). At a fractional density the strokes are drawn as before.
+ * The grain's tile rasterised at [density] as a repeating fill, or null where no block of tiles is a whole number of
+ * pixels within [MAX_GRAIN_PX] (B-77). At a whole density the block is one tile. At a fractional one it is the fewest
+ * tiles across and down whose span is whole pixels (B-107): at Android's 2.625 a tile is 236.25 × 472.5 px, and four
+ * across by two down make 945 × 945, so the fill repeats where the strokes repeat.
  */
 internal fun grainTile(
     grain: TapeGrain,
     colors: MutantColors,
     density: Float,
 ): androidx.compose.ui.graphics.ShaderBrush? {
-    if (density != kotlin.math.round(density) || density < 1f) return null
+    if (density < 1f) return null
+    val across = wholeSpan(TapeGrain.W, density) ?: return null
+    val down = wholeSpan(TapeGrain.H, density) ?: return null
     val img =
         androidx.compose.ui.graphics
-            .ImageBitmap((TapeGrain.W * density).toInt(), (TapeGrain.H * density).toInt())
+            .ImageBitmap(
+                kotlin.math.round(TapeGrain.W * across * density).toInt(),
+                kotlin.math.round(TapeGrain.H * down * density).toInt(),
+            )
+    val ink = inkOf(colors).grain
     androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
         androidx.compose.ui.unit
             .Density(density),
@@ -207,7 +215,20 @@ internal fun grainTile(
         androidx.compose.ui.graphics
             .Canvas(img),
         Size(img.width.toFloat(), img.height.toFloat()),
-    ) { scale(density, Offset.Zero) { drawGrainTile(grain, inkOf(colors).grain, 0f, 0f) } }
+    ) {
+        scale(density, Offset.Zero) {
+            for (j in 0 until down) {
+                for (i in 0 until across) {
+                    drawGrainTile(
+                        grain,
+                        ink,
+                        i * TapeGrain.W,
+                        j * TapeGrain.H,
+                    )
+                }
+            }
+        }
+    }
     return androidx.compose.ui.graphics.ShaderBrush(
         androidx.compose.ui.graphics.ImageShader(
             img,
@@ -216,6 +237,23 @@ internal fun grainTile(
         ),
     )
 }
+
+/** The fewest tiles of [dp] whose span at [density] is whole pixels, within [MAX_GRAIN_PX]; null where there is none. */
+internal fun wholeSpan(
+    dp: Float,
+    density: Float,
+): Int? {
+    var n = 1
+    while (dp * n * density <= MAX_GRAIN_PX) {
+        val px = dp.toDouble() * n * density
+        if (kotlin.math.abs(px - kotlin.math.round(px)) < 1e-3) return n
+        n++
+    }
+    return null
+}
+
+/** The widest block of grain tiles rasterised, in pixels a side. */
+private const val MAX_GRAIN_PX = 2048f
 
 /**
  * The Tape («Лента») over this element: scanlines, a grain stepping eight times a second, a tracking band
