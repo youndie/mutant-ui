@@ -73,6 +73,7 @@ import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
+import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
@@ -136,14 +137,22 @@ internal fun DrawerFrame(
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
     val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    val pick = remember { PickHold(selectedIndex) }
     val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
         val clock = readMutantClock()
-        follow.follow(visible, clock.nowMs)
-        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (visible) IN_MS else OUT_MS, steps)
+        // B-102: a pick that closes the drawer holds it until the venom run has landed on the new row and lingered, then
+        // the drawer goes; a close with no pick goes at once, and under reduce motion everything is at once.
+        pick.follow(selectedIndex, clock.nowMs)
+        val holding = !visible && !reduce && clock.nowMs < pick.pickedAt + MutantMotion.VENOM_MS + LINGER_MS
+        if (holding) clock.frame
+        val showing = visible || holding
+        follow.follow(showing, clock.nowMs)
+        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (showing) IN_MS else OUT_MS, steps)
         if (p < 1) clock.frame
-        val shown = (if (visible) p else 1 - p).toFloat()
-        val gone = !visible && p >= 1
+        val shown = (if (showing) p else 1 - p).toFloat()
+        val gone = !showing && p >= 1
+        pick.showing = !gone
         DisposableEffect(screen, gone) {
             if (!gone) screen.holds++
             onDispose { if (!gone) screen.holds-- }
@@ -468,6 +477,29 @@ private const val LABEL_SIZE = 15
 private const val SLIP = 3.0
 private const val PILL_RADIUS = 8.0
 private const val PILL_CALM = .2
+
+/**
+ * When the drawer took its last pick, and whether it was on screen at the last composition: a pick counts only on a
+ * drawer the user could see, so a selection changed elsewhere while it is gone does not bring it back (B-102).
+ */
+private class PickHold(
+    var at: Int,
+) {
+    var pickedAt = Double.NEGATIVE_INFINITY
+    var showing = false
+
+    fun follow(
+        index: Int,
+        nowMs: Double,
+    ) {
+        if (index == at) return
+        at = index
+        if (showing) pickedAt = nowMs
+    }
+}
+
+/** After the venom run lands, how long the drawer stands with the pill on its new row before it goes (D15, B-102). */
+private const val LINGER_MS = 160.0
 
 /** In and out (designed here, D15): as the sheet's rise and sink. */
 private const val IN_MS = 330.0
