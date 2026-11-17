@@ -81,6 +81,9 @@ measured, not assumed.
 - **Protocol, measures, control, verdict per scene and the Tape's rule: as pre-registered above, unchanged.** Six rounds
   of 8 s a scene, round 1 not counted. On the device the busy-wait is not stretched by throttling, so the control's band
   of 10 ± 1 ms applies as written; a run where it reads outside is void.
+- **A fix found on the phone** is measured on the phone by the paired protocol and the rule for a fix of the amendment
+  above, unchanged: five rounds, `ComponentsRest`, `DemoPage` and `ComponentsReduce` from both builds in one rotation.
+  Written after the device run and its profile, before the paired run.
 
 ## Findings, 2026-11-17
 

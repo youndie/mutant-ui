@@ -1,0 +1,85 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-17T12:30:05.622Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 40; temperature: 313; Capacity level: 2;
+# browser: Chrome/157.0.8103.50, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: c9d66b3
+# build: 47e2610a613256b19079.wasm e939d70b9472e3ba, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 6 (round 1 not counted), 8000 ms a scene, first 1000 ms not counted; scenes ComponentsRest,ComponentsClean,DemoPage,DemoPageClean,DemoLibrary,DemoRecording,DemoSettings,ComponentsReduce,Control,ControlRest
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     37.9 f/s  interval p95   50.0  >16.7  52.98 %  >33  34.44 %  work p50  27.00 p95  63.00  LoAF 63 (3824 ms)
+round 1 ComponentsClean    45.0 f/s  interval p95   49.9  >16.7  44.29 %  >33  24.79 %  work p50  20.10 p95  54.70  LoAF 42 (2345 ms)
+round 1 DemoPage           29.0 f/s  interval p95   83.1  >16.7  49.35 %  >33  28.14 %  work p50  28.60 p95  86.00  LoAF 62 (5256 ms)
+round 1 DemoPageClean      39.0 f/s  interval p95   66.5  >16.7  42.12 %  >33  20.58 %  work p50  22.70 p95  71.20  LoAF 65 (4284 ms)
+round 1 DemoLibrary        17.8 f/s  interval p95   99.8  >16.7  80.85 %  >33  68.09 %  work p50  39.10 p95 108.10  LoAF 59 (5910 ms)
+round 1 DemoRecording      60.5 f/s  interval p95   16.7  >16.7  24.22 %  >33   0.00 %  work p50   6.50 p95  16.60  LoAF 0 (0 ms)
+round 1 DemoSettings       60.5 f/s  interval p95   16.7  >16.7  25.26 %  >33   0.00 %  work p50  10.40 p95  13.60  LoAF 0 (0 ms)
+round 1 ComponentsReduce   60.5 f/s  interval p95   16.7  >16.7  25.05 %  >33   0.00 %  work p50  11.70 p95  26.20  LoAF 0 (0 ms)
+round 1 Control            38.8 f/s  interval p95   49.9  >16.7  62.78 %  >33  46.93 %  work p50  33.40 p95  55.00  LoAF 0 (0 ms)
+round 1 ControlRest        12.8 f/s  interval p95  166.2  >16.7 100.00 %  >33 100.00 %  work p50  90.30 p95 171.00  LoAF 71 (6711 ms)
+round 2 ComponentsClean    28.5 f/s  interval p95   67.0  >16.7  65.64 %  >33  52.86 %  work p50  36.90 p95  77.50  LoAF 71 (4642 ms)
+round 2 DemoPage           21.1 f/s  interval p95   99.7  >16.7  70.24 %  >33  44.64 %  work p50  34.10 p95 101.40  LoAF 61 (5928 ms)
+round 2 DemoPageClean      16.1 f/s  interval p95  100.1  >16.7  85.94 %  >33  72.66 %  work p50  99.80 p95 116.10  LoAF 65 (6583 ms)
+round 2 DemoLibrary        12.5 f/s  interval p95  199.5  >16.7  95.96 %  >33  86.87 %  work p50 103.70 p95 213.80  LoAF 58 (6883 ms)
+round 2 DemoRecording      41.4 f/s  interval p95   66.4  >16.7  36.06 %  >33  20.00 %  work p50  27.00 p95  68.50  LoAF 64 (3679 ms)
+round 2 DemoSettings       60.4 f/s  interval p95   16.7  >16.7  21.99 %  >33   0.00 %  work p50  10.50 p95  13.70  LoAF 0 (0 ms)
+round 2 ComponentsReduce   56.4 f/s  interval p95   33.2  >16.7  29.56 %  >33   6.89 %  work p50  20.80 p95  42.20  LoAF 0 (0 ms)
+round 2 Control            33.6 f/s  interval p95   66.4  >16.7  68.28 %  >33  56.34 %  work p50  35.80 p95  69.00  LoAF 26 (1446 ms)
+round 2 ControlRest         6.6 f/s  interval p95  283.0  >16.7 100.00 %  >33 100.00 %  work p50 138.80 p95 298.50  LoAF 53 (7999 ms)
+round 2 ComponentsRest      7.5 f/s  interval p95  249.0  >16.7 100.00 %  >33 100.00 %  work p50 129.00 p95 252.40  LoAF 57 (7850 ms)
+round 3 DemoPage            7.8 f/s  interval p95  282.8  >16.7 100.00 %  >33 100.00 %  work p50 129.20 p95 288.10  LoAF 58 (8014 ms)
+round 3 DemoPageClean      11.1 f/s  interval p95  116.7  >16.7  96.59 %  >33  94.32 %  work p50 119.20 p95 133.50  LoAF 64 (7350 ms)
+round 3 DemoLibrary         7.3 f/s  interval p95  348.2  >16.7 100.00 %  >33 100.00 %  work p50 134.80 p95 357.80  LoAF 57 (8024 ms)
+round 3 DemoRecording      26.1 f/s  interval p95   83.2  >16.7  66.83 %  >33  50.00 %  work p50  35.20 p95  90.70  LoAF 65 (4981 ms)
+round 3 DemoSettings       60.5 f/s  interval p95   16.7  >16.7  20.29 %  >33   0.00 %  work p50  11.40 p95  15.90  LoAF 0 (0 ms)
+round 3 ComponentsReduce   50.0 f/s  interval p95   49.8  >16.7  34.59 %  >33  14.04 %  work p50  23.50 p95  53.60  LoAF 7 (355 ms)
+round 3 Control            31.6 f/s  interval p95   66.5  >16.7  69.84 %  >33  63.10 %  work p50  37.30 p95  74.00  LoAF 29 (1656 ms)
+round 3 ControlRest         7.6 f/s  interval p95  232.7  >16.7 100.00 %  >33 100.00 %  work p50 126.20 p95 240.00  LoAF 61 (8007 ms)
+round 3 ComponentsRest      9.5 f/s  interval p95  216.1  >16.7 100.00 %  >33 100.00 %  work p50 109.20 p95 217.70  LoAF 65 (7510 ms)
+round 3 ComponentsClean    12.1 f/s  interval p95  132.9  >16.7 100.00 %  >33 100.00 %  work p50  99.70 p95 138.30  LoAF 74 (7045 ms)
+round 4 DemoPageClean      11.4 f/s  interval p95  116.7  >16.7  97.78 %  >33  96.67 %  work p50 116.80 p95 128.00  LoAF 65 (7436 ms)
+round 4 DemoLibrary         8.1 f/s  interval p95  297.8  >16.7 100.00 %  >33 100.00 %  work p50 130.10 p95 312.50  LoAF 57 (7778 ms)
+round 4 DemoRecording      30.1 f/s  interval p95   66.6  >16.7  52.92 %  >33  43.75 %  work p50  32.30 p95  83.20  LoAF 65 (4570 ms)
+round 4 DemoSettings       60.5 f/s  interval p95   16.7  >16.7  21.53 %  >33   0.00 %  work p50  12.10 p95  17.10  LoAF 0 (0 ms)
+round 4 ComponentsReduce   50.8 f/s  interval p95   49.8  >16.7  35.56 %  >33  13.09 %  work p50  20.60 p95  53.60  LoAF 5 (255 ms)
+round 4 Control            31.4 f/s  interval p95   66.5  >16.7  76.00 %  >33  64.40 %  work p50  37.50 p95  77.00  LoAF 31 (1794 ms)
+round 4 ControlRest         7.8 f/s  interval p95  216.4  >16.7 100.00 %  >33 100.00 %  work p50 124.00 p95 218.80  LoAF 61 (8049 ms)
+round 4 ComponentsRest      9.4 f/s  interval p95  215.7  >16.7 100.00 %  >33 100.00 %  work p50 110.00 p95 228.00  LoAF 67 (7603 ms)
+round 4 ComponentsClean    11.6 f/s  interval p95  133.0  >16.7 100.00 %  >33 100.00 %  work p50 101.30 p95 140.90  LoAF 73 (7079 ms)
+round 4 DemoPage            8.6 f/s  interval p95  314.9  >16.7  98.53 %  >33  94.12 %  work p50 124.30 p95 330.30  LoAF 59 (7935 ms)
+round 5 DemoLibrary         7.0 f/s  interval p95  315.8  >16.7 100.00 %  >33 100.00 %  work p50 138.30 p95 332.70  LoAF 56 (8127 ms)
+round 5 DemoRecording      29.3 f/s  interval p95   83.0  >16.7  62.23 %  >33  45.92 %  work p50  33.40 p95  84.50  LoAF 65 (4696 ms)
+round 5 DemoSettings       60.4 f/s  interval p95   16.7  >16.7  22.20 %  >33   0.00 %  work p50  11.30 p95  15.00  LoAF 0 (0 ms)
+round 5 ComponentsReduce   49.8 f/s  interval p95   49.9  >16.7  37.03 %  >33  13.85 %  work p50  22.20 p95  54.80  LoAF 10 (520 ms)
+round 5 Control            27.6 f/s  interval p95   66.5  >16.7  83.18 %  >33  74.09 %  work p50  41.10 p95  81.30  LoAF 45 (2732 ms)
+round 5 ControlRest         7.5 f/s  interval p95  233.2  >16.7 100.00 %  >33 100.00 %  work p50 128.40 p95 236.90  LoAF 60 (7928 ms)
+round 5 ComponentsRest      8.3 f/s  interval p95  232.2  >16.7 100.00 %  >33 100.00 %  work p50 120.40 p95 236.00  LoAF 60 (7620 ms)
+round 5 ComponentsClean    10.3 f/s  interval p95  149.7  >16.7 100.00 %  >33 100.00 %  work p50 110.60 p95 156.80  LoAF 71 (7546 ms)
+round 5 DemoPage            7.4 f/s  interval p95  332.3  >16.7 100.00 %  >33 100.00 %  work p50 133.80 p95 339.70  LoAF 58 (8093 ms)
+round 5 DemoPageClean      10.6 f/s  interval p95  133.0  >16.7  94.05 %  >33  90.48 %  work p50 121.10 p95 135.70  LoAF 64 (7442 ms)
+round 6 DemoRecording      30.4 f/s  interval p95   66.6  >16.7  55.79 %  >33  43.39 %  work p50  32.20 p95  82.90  LoAF 65 (4527 ms)
+round 6 DemoSettings       60.5 f/s  interval p95   16.7  >16.7  23.60 %  >33   0.00 %  work p50  11.40 p95  15.60  LoAF 0 (0 ms)
+round 6 ComponentsReduce   42.3 f/s  interval p95   66.4  >16.7  47.48 %  >33  25.52 %  work p50  29.20 p95  67.30  LoAF 26 (1475 ms)
+round 6 Control            31.6 f/s  interval p95   66.5  >16.7  74.21 %  >33  63.10 %  work p50  37.30 p95  76.00  LoAF 29 (1690 ms)
+round 6 ControlRest         7.6 f/s  interval p95  249.6  >16.7 100.00 %  >33 100.00 %  work p50 127.50 p95 252.70  LoAF 60 (8027 ms)
+round 6 ComponentsRest      9.5 f/s  interval p95  215.7  >16.7 100.00 %  >33 100.00 %  work p50 111.40 p95 219.60  LoAF 67 (7606 ms)
+round 6 ComponentsClean    11.4 f/s  interval p95  133.0  >16.7 100.00 %  >33 100.00 %  work p50 103.40 p95 143.60  LoAF 74 (7270 ms)
+round 6 DemoPage            8.4 f/s  interval p95  266.3  >16.7  98.48 %  >33  96.97 %  work p50 129.00 p95 269.70  LoAF 59 (7864 ms)
+round 6 DemoPageClean       9.8 f/s  interval p95  166.6  >16.7  98.70 %  >33  96.10 %  work p50 121.30 p95 195.50  LoAF 61 (7317 ms)
+round 6 DemoLibrary         6.6 f/s  interval p95  348.7  >16.7 100.00 %  >33 100.00 %  work p50 143.40 p95 354.00  LoAF 52 (8008 ms)
+
+# counted rounds 2..6, pooled
+ComponentsRest      8.8 f/s  interval p95  216.1  >16.7 100.00 %  >33 100.00 %  work p50 116.60 p95 228.00  RED
+ComponentsClean    14.8 f/s  interval p95  132.9  >16.7  86.69 %  >33  81.74 %  work p50  78.30 p95 140.40  RED
+DemoPage           10.7 f/s  interval p95  182.9  >16.7  87.65 %  >33  76.48 %  work p50 120.60 p95 189.70  RED
+DemoPageClean      11.8 f/s  interval p95  132.8  >16.7  93.79 %  >33  88.44 %  work p50 115.70 p95 135.70  RED
+DemoLibrary         8.3 f/s  interval p95  299.3  >16.7  98.78 %  >33  96.02 %  work p50 131.10 p95 315.00  RED
+DemoRecording      31.4 f/s  interval p95   82.9  >16.7  53.07 %  >33  38.87 %  work p50  31.60 p95  84.50  RED
+DemoSettings       60.5 f/s  interval p95   16.7  >16.7  21.92 %  >33   0.00 %  work p50  11.40 p95  15.60  GREY
+ComponentsReduce   49.8 f/s  interval p95   49.8  >16.7  36.32 %  >33  14.13 %  work p50  22.80 p95  53.80  RED
+Control            31.2 f/s  interval p95   66.5  >16.7  73.99 %  >33  63.85 %  work p50  37.60 p95  74.50  RED
+ControlRest         7.4 f/s  interval p95  232.9  >16.7 100.00 %  >33 100.00 %  work p50 130.10 p95 238.90  RED
+# Control: work p50 over ComponentsReduce's, per counted round: 15.00, 13.80, 16.90, 18.90, 8.10 ms against 10 ms
+# ControlRest: work p50 over ComponentsRest's, per counted round: 9.80, 17.00, 14.00, 8.00, 16.10 ms against 10 ms
+exit 0
