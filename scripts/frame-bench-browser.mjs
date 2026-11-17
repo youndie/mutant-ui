@@ -77,7 +77,11 @@ const origin = await serve(DIST);
 const originB = DIST_B ? await serve(DIST_B) : null;
 
 const DEBUG = DEVICE ? 9336 : 9335;
-if (DEVICE) sh(`${ADB} forward tcp:${DEBUG} localabstract:chrome_devtools_remote`);
+// A Chrome in the background is frozen and its DevTools socket accepts but never answers: bring it to the front first.
+if (DEVICE) {
+  sh(`${ADB} shell am start -a android.intent.action.VIEW -d about:blank -n com.android.chrome/com.google.android.apps.chrome.Main`);
+  sh(`${ADB} forward tcp:${DEBUG} localabstract:chrome_devtools_remote`);
+}
 const profile = DEVICE ? null : mkdtempSync(join(tmpdir(), 'b73-'));
 const chrome = DEVICE ? null : spawn(CHROME, ['--headless=new', `--window-size=${WIDTH},${HEIGHT}`, `--force-device-scale-factor=${SCALE}`,
   '--remote-debugging-port=9335', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
@@ -86,11 +90,15 @@ const chrome = DEVICE ? null : spawn(CHROME, ['--headless=new', `--window-size=$
 let version;
 for (let i = 0; i < 50 && !version; i++) {
   await new Promise(r => setTimeout(r, 200));
-  version = await fetch(`http://127.0.0.1:${DEBUG}/json/version`).then(r => r.json()).catch(() => null);
+  version = await fetch(`http://127.0.0.1:${DEBUG}/json/version`, { signal: AbortSignal.timeout(2_000) }).then(r => r.json()).catch(() => null);
 }
+if (!version) throw new Error(`no DevTools on port ${DEBUG}${DEVICE ? ': is Chrome open on the phone?' : ''}`);
+// On the phone, /json/new answers «Could not create new page»: the tab is the blank one the intent above opened in front,
+// and no other tab of the owner's is touched.
 const page = DEVICE
-  ? await fetch(`http://127.0.0.1:${DEBUG}/json/new?about:blank`, { method: 'PUT' }).then(r => r.json())
+  ? (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page' && t.url === 'about:blank')
   : (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page');
+if (!page) throw new Error('no blank tab to measure in');
 const ws = new WebSocket(page.webSocketDebuggerUrl);
 await new Promise(r => { ws.onopen = r; });
 let seq = 0;
@@ -149,7 +157,6 @@ const gpu = await new Promise((res, rej) => {
 const digestOf = dist => readdirSync(dist).filter(f => f.endsWith('.wasm')).sort()
   .map(f => `${f} ${createHash('sha256').update(readFileSync(join(dist, f))).digest('hex').slice(0, 16)}`).join(', ');
 const digest = digestOf(DIST) + (DIST_B ? `; ~b: ${digestOf(DIST_B)}` : '');
-const viewport = DEVICE ? await evaluate('`${innerWidth}x${innerHeight} at ${devicePixelRatio}x`') : null;
 const adbProp = k => sh(`${ADB} shell getprop ${k}`);
 const battery = DEVICE ? sh(`${ADB} shell dumpsys battery | grep -E 'level|AC powered|temperature' | tr -s ' ' | tr '\\n' ';'`) : '';
 const header = [
@@ -157,7 +164,7 @@ const header = [
   ...(DEVICE ? [
     `# device: ${adbProp('ro.product.model')} (${adbProp('ro.product.device')}), Android ${adbProp('ro.build.version.release')}, build ${adbProp('ro.build.id')}`,
     `# device power: ${battery}`,
-    `# browser: ${version.Browser}, on the device, viewport ${viewport}, nothing emulated or throttled`,
+    `# browser: ${version.Browser}, on the device (its viewport in the sample printed below), nothing emulated or throttled`,
   ] : []),
   `# driver host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
   ...(DEVICE ? [] : [`# power: ${sh("pmset -g batt | tail -1 | sed 's/\\t/ /g'")}`,
@@ -186,6 +193,7 @@ for (let round = 1; round <= ROUNDS; round++) {
     // The sample is up once its canvas has drawn: wait for the wasm to start, then settle.
     for (let i = 0; i < 100 && !(await evaluate('!!document.querySelector("canvas")')); i++) await new Promise(r => setTimeout(r, 100));
     await new Promise(r => setTimeout(r, SETTLE_MS));
+    if (DEVICE && load === 1) console.log(`# viewport in the sample: ${await evaluate('`${innerWidth}x${innerHeight} at ${devicePixelRatio}x`')}`);
     await evaluate('window.__bench.recording = true; 0');
     const until = Date.now() + SCENE_MS;
     let down = true;
