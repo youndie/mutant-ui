@@ -1,0 +1,26 @@
+diff --git a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt
+index 7348856..dfcac49 100644
+--- a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt
++++ b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt
+@@ -223,7 +223,7 @@ internal enum class BodyPart { Shadow, Fill, Speckle, Mosaic, DeadPixels, FlowLi
+ 
+ /** What a measurement leaves out of every body's draw (B-78); empty in the kit. */
+ internal val LocalMutantSkipBodyParts =
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Speckle, BodyPart.Mosaic, BodyPart.DeadPixels, BodyPart.FlowLines) }
+ 
+ /** [block] clipped by [path], or unclipped when [unclipped] (B-78's ablation of the clip alone). */
+ private inline fun DrawScope.clipPathUnless(
+diff --git a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt
+index f5222b0..13a9953 100644
+--- a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt
++++ b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt
+@@ -14,7 +14,7 @@ import io.github.youndie.mutant.gen.Slot
+ internal val LocalMutantBodyOnGpu = staticCompositionLocalOf { BODY_ON_GPU }
+ 
+ /** The spike's default, for a build that measures the shader in the browser. */
+-internal const val BODY_ON_GPU: Boolean = false
++internal const val BODY_ON_GPU: Boolean = true
+ 
+ /** Whether this platform can draw a body by shader (B-110): Skia's runtime effects on desktop and in the browser. */
+ internal expect val bodyShaderSupported: Boolean
