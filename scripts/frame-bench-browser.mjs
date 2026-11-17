@@ -8,6 +8,8 @@
 //
 //   node scripts/frame-bench-browser.mjs <out-dir> [rounds] [scene-ms] [Scene,Scene]
 //
+// B-107: DIST_B=<dir> measures a second build beside the first, interleaved: each scene also runs as `<scene>~b` from
+// it, in the same rotation, so a drift of the machine (a fanless Mac heating up) falls on both builds alike.
 // B-107: PHONE=1 stands in for a phone: a 390 × 844 viewport at 3x, emulated as mobile with touch, and the main thread
 // slowed CPU=<rate> times (4 by default) by Chrome's own throttling. It is a proxy, not a phone: the GPU is the Mac's.
 //
@@ -37,7 +39,9 @@ const ALL = ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'De
 // The control is the idle page (reduce motion stops the clock) with the busy-wait; ControlRest is the resting page with
 // it, reported beside, as the first smoke run found the resting page saturated (B-73's amendment).
 const HOST = { Control: 'ComponentsReduce', ControlRest: 'ComponentsRest' };
-const SCENES = scenesArg ? scenesArg.split(',') : ALL;
+const BASE_SCENES = scenesArg ? scenesArg.split(',') : ALL;
+const DIST_B = process.env.DIST_B;
+const SCENES = DIST_B ? BASE_SCENES.flatMap(s => [s, `${s}~b`]) : BASE_SCENES;
 // DIST: another copy of the build to measure, as one built at another commit.
 const DIST = process.env.DIST ?? 'sample/build/dist/wasmJs/productionExecutable';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -48,15 +52,19 @@ mkdirSync(out, { recursive: true });
 // The build, served as the site serves it.
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
   '.css': 'text/css', '.ttf': 'font/ttf', '.png': 'image/png', '.json': 'application/json', '.map': 'application/json' };
-const server = createServer((req, res) => {
-  const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  const file = join(DIST, path === '/' ? 'index.html' : path);
-  if (!file.startsWith(DIST) || !existsSync(file) || statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
-  res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
-  res.end(readFileSync(file));
-});
-await new Promise(r => server.listen(0, '127.0.0.1', r));
-const origin = `http://127.0.0.1:${server.address().port}`;
+const serve = async dist => {
+  const server = createServer((req, res) => {
+    const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    const file = join(dist, path === '/' ? 'index.html' : path);
+    if (!file.startsWith(dist) || !existsSync(file) || statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
+    res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
+    res.end(readFileSync(file));
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  return `http://127.0.0.1:${server.address().port}`;
+};
+const origin = await serve(DIST);
+const originB = DIST_B ? await serve(DIST_B) : null;
 
 const profile = mkdtempSync(join(tmpdir(), 'b73-'));
 const chrome = spawn(CHROME, ['--headless=new', `--window-size=${WIDTH},${HEIGHT}`, `--force-device-scale-factor=${SCALE}`,
@@ -124,8 +132,9 @@ const gpu = await new Promise((res, rej) => {
   b.onopen = () => b.send(JSON.stringify({ id: 1, method: 'SystemInfo.getInfo' }));
   b.onmessage = e => { const m = JSON.parse(e.data); b.close(); m.error ? rej(new Error(m.error.message)) : res(m.result.gpu); };
 });
-const digest = readdirSync(DIST).filter(f => f.endsWith('.wasm')).sort()
-  .map(f => `${f} ${createHash('sha256').update(readFileSync(join(DIST, f))).digest('hex').slice(0, 16)}`).join(', ');
+const digestOf = dist => readdirSync(dist).filter(f => f.endsWith('.wasm')).sort()
+  .map(f => `${f} ${createHash('sha256').update(readFileSync(join(dist, f))).digest('hex').slice(0, 16)}`).join(', ');
+const digest = digestOf(DIST) + (DIST_B ? `; ~b: ${digestOf(DIST_B)}` : '');
 const header = [
   `# B-73 browser frame bench, ${new Date().toISOString()}`,
   `# host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
@@ -146,7 +155,9 @@ let load = 0;
 for (let round = 1; round <= ROUNDS; round++) {
   const order = SCENES.map((_, i) => SCENES[(i + round - 1) % SCENES.length]);
   for (const scene of order) {
-    const url = `${origin}/?scene=${HOST[scene] ?? scene}${HOST[scene] ? '&control=1' : ''}&load=${++load}`;
+    const b = scene.endsWith('~b');
+    const name = b ? scene.slice(0, -2) : scene;
+    const url = `${b ? originB : origin}/?scene=${HOST[name] ?? name}${HOST[name] ? '&control=1' : ''}&load=${++load}`;
     const loaded = event('Page.loadEventFired');
     await send('Page.navigate', { url });
     await loaded;
@@ -216,7 +227,16 @@ for (const [ctl, base] of [['Control', 'ComponentsReduce'], ['ControlRest', 'Com
   console.log(`# ${ctl}: work p50 over ${base}'s, per counted round: ` +
     c.map(r => (r.workP50 - by.get(r.round)).toFixed(2)).join(', ') + ` ms against ${CONTROL_MS} ms`);
 }
+// B-107: the second build against the first, per counted round: work p50 of `<scene>~b` minus `<scene>`.
+if (DIST_B) {
+  for (const scene of BASE_SCENES) {
+    const a = new Map((results[scene] ?? []).filter(r => r.round > 1).map(r => [r.round, r.workP50]));
+    const d = (results[`${scene}~b`] ?? []).filter(r => r.round > 1 && a.has(r.round)).map(r => r.workP50 - a.get(r.round));
+    if (!d.length) continue;
+    const mean = d.reduce((x, y) => x + y, 0) / d.length;
+    console.log(`# ~b minus a, ${scene}: per counted round ${d.map(x => x.toFixed(2)).join(', ')} ms; mean ${mean.toFixed(2)} ms`);
+  }
+}
 ws.close();
 chrome.kill();
-server.close();
 process.exit(0);

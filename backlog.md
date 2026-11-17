@@ -58,9 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (0)
+## Open (1)
 
-No open tasks.
+| Task | | Priority | Size | Blocked by |
+|---|---|---|---|---|
+| [B-107](docs/backlog/B-107-wasm-on-a-phone.md) `[?]` | The sample stutters in a phone's browser | P2 | M | - |
 
 ## Closed (106)
 

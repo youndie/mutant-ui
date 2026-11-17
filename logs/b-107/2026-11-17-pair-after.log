@@ -1,0 +1,47 @@
+# B-73 browser frame bench, 2026-11-17T08:10:59.513Z
+# host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# power: -InternalBattery-0 (id=23658595) 42%; discharging; 1:05 remaining present: true
+# browser: Chrome/157.0.8103.79, headless=new, 390x844 at 3x, phone proxy: mobile, touch, CPU slowed 4x
+# gpu: ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Version 27.0.1 (Build 26A434)); webgl enabled, gpu_compositing enabled
+# commit: f7bb32d (dirty)
+# build: 5efb92caf34faed64613.wasm ccf78a6ee0d193bb, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 5 (round 1 not counted), 8000 ms a scene, first 1000 ms not counted; scenes ComponentsRest,ComponentsClean,DemoPage,DemoPageClean,ComponentsReduce,Control
+round 1 ComponentsRest      5.1 f/s  interval p95  466.7  >16.7 100.00 %  >33 100.00 %  work p50 184.90 p95 470.10  LoAF 41 (7984 ms)
+round 1 ComponentsClean     6.6 f/s  interval p95  183.4  >16.7 100.00 %  >33 100.00 %  work p50 156.30 p95 192.80  LoAF 53 (7961 ms)
+round 1 DemoPage            5.4 f/s  interval p95  466.6  >16.7 100.00 %  >33 100.00 %  work p50 169.40 p95 484.90  LoAF 43 (8066 ms)
+round 1 DemoPageClean       6.0 f/s  interval p95  183.4  >16.7 100.00 %  >33 100.00 %  work p50 179.00 p95 198.80  LoAF 48 (8078 ms)
+round 1 ComponentsReduce   32.4 f/s  interval p95   66.7  >16.7  82.17 %  >33  57.75 %  work p50  37.60 p95  73.10  LoAF 50 (2812 ms)
+round 1 Control            21.1 f/s  interval p95   83.4  >16.7 100.00 %  >33  99.40 %  work p50  52.70 p95  93.30  LoAF 49 (3506 ms)
+round 2 ComponentsClean     5.0 f/s  interval p95  250.0  >16.7 100.00 %  >33 100.00 %  work p50 205.70 p95 258.00  LoAF 40 (7939 ms)
+round 2 DemoPage            4.6 f/s  interval p95  616.7  >16.7 100.00 %  >33 100.00 %  work p50 202.20 p95 627.60  LoAF 37 (8042 ms)
+round 2 DemoPageClean       5.3 f/s  interval p95  216.6  >16.7 100.00 %  >33 100.00 %  work p50 199.30 p95 225.10  LoAF 42 (8003 ms)
+round 2 ComponentsReduce   24.5 f/s  interval p95   83.3  >16.7  93.85 %  >33  87.18 %  work p50  45.10 p95  89.80  LoAF 48 (3336 ms)
+round 2 Control            18.3 f/s  interval p95  100.0  >16.7 100.00 %  >33 100.00 %  work p50  57.10 p95 105.30  LoAF 49 (3936 ms)
+round 2 ComponentsRest      5.5 f/s  interval p95  233.3  >16.7 100.00 %  >33 100.00 %  work p50 181.90 p95 234.80  LoAF 44 (8618 ms)
+round 3 DemoPage            4.9 f/s  interval p95  566.7  >16.7 100.00 %  >33 100.00 %  work p50 200.90 p95 215.20  LoAF 39 (8609 ms)
+round 3 DemoPageClean       5.0 f/s  interval p95  216.7  >16.7 100.00 %  >33 100.00 %  work p50 211.50 p95 226.50  LoAF 40 (7954 ms)
+round 3 ComponentsReduce   23.1 f/s  interval p95   83.3  >16.7  94.02 %  >33  90.76 %  work p50  46.60 p95  94.10  LoAF 47 (3463 ms)
+round 3 Control            17.5 f/s  interval p95  100.0  >16.7 100.00 %  >33 100.00 %  work p50  59.30 p95 107.40  LoAF 47 (3972 ms)
+round 3 ComponentsRest      4.3 f/s  interval p95  466.6  >16.7 100.00 %  >33 100.00 %  work p50 216.70 p95 484.70  LoAF 34 (8051 ms)
+round 3 ComponentsClean     4.6 f/s  interval p95  283.3  >16.7 100.00 %  >33 100.00 %  work p50 221.90 p95 292.40  LoAF 37 (8092 ms)
+round 4 DemoPageClean       4.6 f/s  interval p95  233.4  >16.7 100.00 %  >33 100.00 %  work p50 232.30 p95 244.70  LoAF 37 (8207 ms)
+round 4 ComponentsReduce   21.0 f/s  interval p95   83.4  >16.7 100.00 %  >33  99.40 %  work p50  48.30 p95 100.10  LoAF 46 (3608 ms)
+round 4 Control            17.3 f/s  interval p95  100.0  >16.7 100.00 %  >33 100.00 %  work p50  58.30 p95 107.80  LoAF 45 (3837 ms)
+round 4 ComponentsRest      4.1 f/s  interval p95  433.3  >16.7 100.00 %  >33 100.00 %  work p50 231.60 p95 442.10  LoAF 33 (7946 ms)
+round 4 ComponentsClean     4.8 f/s  interval p95  266.6  >16.7 100.00 %  >33 100.00 %  work p50 217.10 p95 270.60  LoAF 38 (8191 ms)
+round 4 DemoPage            3.8 f/s  interval p95  766.6  >16.7 100.00 %  >33 100.00 %  work p50 237.60 p95 776.30  LoAF 30 (8006 ms)
+round 5 ComponentsReduce   20.5 f/s  interval p95   83.4  >16.7  99.39 %  >33  99.39 %  work p50  49.10 p95 100.30  LoAF 48 (3816 ms)
+round 5 Control            16.4 f/s  interval p95  100.1  >16.7 100.00 %  >33 100.00 %  work p50  60.00 p95 115.70  LoAF 45 (4080 ms)
+round 5 ComponentsRest      4.0 f/s  interval p95  433.3  >16.7 100.00 %  >33 100.00 %  work p50 238.10 p95 446.80  LoAF 32 (7965 ms)
+round 5 ComponentsClean     4.6 f/s  interval p95  266.7  >16.7 100.00 %  >33 100.00 %  work p50 221.50 p95 280.20  LoAF 37 (8044 ms)
+round 5 DemoPage            3.8 f/s  interval p95  766.7  >16.7 100.00 %  >33 100.00 %  work p50 242.70 p95 781.30  LoAF 30 (8179 ms)
+round 5 DemoPageClean       4.4 f/s  interval p95  250.0  >16.7 100.00 %  >33 100.00 %  work p50 241.50 p95 261.80  LoAF 35 (8059 ms)
+
+# counted rounds 2..5, pooled
+ComponentsRest      4.5 f/s  interval p95  433.3  >16.7 100.00 %  >33 100.00 %  work p50 218.30 p95 437.60  RED
+ComponentsClean     4.8 f/s  interval p95  266.7  >16.7 100.00 %  >33 100.00 %  work p50 218.90 p95 273.60  RED
+DemoPage            4.3 f/s  interval p95  616.6  >16.7 100.00 %  >33 100.00 %  work p50 215.20 p95 626.70  RED
+DemoPageClean       4.8 f/s  interval p95  233.4  >16.7 100.00 %  >33 100.00 %  work p50 221.00 p95 248.70  RED
+ComponentsReduce   22.3 f/s  interval p95   83.4  >16.7  96.61 %  >33  93.79 %  work p50  47.40 p95  97.10  RED
+Control            17.3 f/s  interval p95  100.0  >16.7 100.00 %  >33 100.00 %  work p50  58.70 p95 109.40  RED
+# Control: work p50 over ComponentsReduce's, per counted round: 12.00, 12.70, 10.00, 10.90 ms against 10 ms

@@ -48,7 +48,15 @@ const send = (method, params = {}) => new Promise((res, rej) => {
   ws.send(JSON.stringify({ id, method, params }));
 });
 await send('Page.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 814, deviceScaleFactor: 2, mobile: false });
+// B-107: PHONE=1 profiles on the phone proxy of frame-bench-browser.mjs: 390 × 844 at 3x, mobile, touch, CPU slowed.
+const PHONE = process.env.PHONE === '1';
+await send('Emulation.setDeviceMetricsOverride', PHONE
+  ? { width: 390, height: 844, deviceScaleFactor: 3, mobile: true }
+  : { width: 1280, height: 814, deviceScaleFactor: 2, mobile: false });
+if (PHONE) {
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  await send('Emulation.setCPUThrottlingRate', { rate: +(process.env.CPU ?? 4) });
+}
 await send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/?scene=${scene}` });
 // WAIT_MS: how long the page runs before the profile starts (4 s by default).
 await new Promise(r => setTimeout(r, +(process.env.WAIT_MS ?? 4000)));
