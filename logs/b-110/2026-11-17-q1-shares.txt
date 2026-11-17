@@ -1,0 +1,12 @@
+card-efir-1.0 2.17 %
+button-efir-1.0 3.48 %
+fab-efir-1.0 2.69 %
+card-efir-2.625 1.86 %
+button-efir-2.625 2.73 %
+fab-efir-2.625 2.08 %
+card-kopiya-1.0 2.97 %
+button-kopiya-1.0 3.55 %
+fab-kopiya-1.0 2.74 %
+card-kopiya-2.625 2.37 %
+button-kopiya-2.625 2.83 %
+fab-kopiya-2.625 2.15 %

@@ -220,6 +220,8 @@ internal fun MutantSurface(
     val ahead = remember { FrameAhead() }
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
+    // B-110, a spike: the body's silhouette drawn by a shader from its field, where the platform has one.
+    val onGpu = LocalMutantBodyOnGpu.current && bodyShaderSupported
     val bodyAsImage = LocalMutantBodyAsImage.current
     val rasterProbe = LocalMutantRasterProbe.current
     val scope = rememberCoroutineScope()
@@ -568,10 +570,12 @@ internal fun MutantSurface(
                 // A resting tick's frame depends on its time alone, and the next tick's time is known: it is built
                 // ahead on a background thread and taken here (B-75). A pressed or heated body, a frozen clock and a
                 // frame not ready in time build in the frame, as before.
-                val resting = offFrame && !hot && !boil.on && k == 0.0
+                val resting = offFrame && !hot && !boil.on && k == 0.0 && !onGpu
                 val early = if (resting) ahead.take(g, t) else null
 
-                val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                var frame =
+                    early?.frame
+                        ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs, paths = !onGpu)
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
                 if (resting && cache.settledFor(g)) {
@@ -591,9 +595,33 @@ internal fun MutantSurface(
                 // A running transition is evaluated on every frame, as the engine does, so its steps keep to the event.
                 if (pourP < 1 || slideP < 1) clock.frame
                 val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
-                // B-82: a resting body's picture changes only at a tick. Rasterised ahead with its frame, the image is
-                // drawn until the next tick; a pouring, sliding or heated body, or one whose inputs moved since, draws
-                // as vectors.
+                // B-110: a pouring or sliding body is drawn by paths, as before.
+                if (onGpu && (pour != null || slideP < 1)) {
+                    frame = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                } else if (onGpu) {
+                    val shaded = bodyShaderBrush(frame.field, slot, pictureOf(g, frame, t, k).look, d)
+                    if (shaded != null) {
+                        view.drawn = null
+                        frameProbe?.invoke(false, false, frame.steadyWebs)
+                        val ox = slot.ox.toFloat()
+                        val oy = slot.oy.toFloat()
+                        return@drawWithCache moshBehind(moshScene, moshBody) {
+                            scale(d, Offset.Zero) {
+                                translate(-ox, -oy) {
+                                    drawRect(
+                                        shaded,
+                                        Offset(ox - 16, oy - 19),
+                                        androidx.compose.ui.geometry.Size(
+                                            slot.w.toFloat() + 34,
+                                            (slot.h + slot.over).toFloat() + 55,
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    frame = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                }
                 val imageInputs = imageInputsOf(dead)
                 val image =
                     early?.image?.takeIf {

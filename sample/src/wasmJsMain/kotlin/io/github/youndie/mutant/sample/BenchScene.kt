@@ -81,6 +81,11 @@ internal fun benchScene(name: String?): (@Composable () -> Unit)? =
             { TenCards8() }
         }
 
+        // B-110's ruler: the ground and the Tape with every frame drawn, and no body.
+        "Blank" -> {
+            { TenCards8(cards = false) }
+        }
+
         else -> {
             null
         }
@@ -120,7 +125,7 @@ private fun Alone(
  * ticks a second), with a layer that reads the frame time in its draw, so every frame is drawn as on Android.
  */
 @Composable
-private fun TenCards8() {
+private fun TenCards8(cards: Boolean = true) {
     var frame by remember { mutableLongStateOf(0L) }
     LaunchedEffect(Unit) { while (true) withFrameNanos { frame = it } }
     val read = { frame }
@@ -130,10 +135,12 @@ private fun TenCards8() {
                 Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                repeat(10) { i ->
-                    MutantCard(Modifier.size(328.dp, 80.dp), key = "card/b49/$i") {
-                        MutantCardTitle("Кассета ${(i + 1).toString().padStart(2, '0')}")
-                        MutantCardSubtitle("Запись ${12 + i}:0$i")
+                if (cards) {
+                    repeat(10) { i ->
+                        MutantCard(Modifier.size(328.dp, 80.dp), key = "card/b49/$i") {
+                            MutantCardTitle("Кассета ${(i + 1).toString().padStart(2, '0')}")
+                            MutantCardSubtitle("Запись ${12 + i}:0$i")
+                        }
                     }
                 }
             }
