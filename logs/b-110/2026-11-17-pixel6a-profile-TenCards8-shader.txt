@@ -1,0 +1,94 @@
+# B-73 profile of TenCards8, 2026-11-17T18:12:35.040Z, 8000 ms sampled every 100 µs, on Pixel 6a in Chrome, nothing emulated
+# sampled 8007 ms, idle 2790 ms, busy 5217 ms (65.2 %)
+
+## self time by where its code lives (share of busy)
+   2445.1 ms  46.9 %  1444250bbffe51d8f9cd.wasm
+   1118.8 ms  21.4 %  bfa5198fb2fe683c613a.wasm
+    850.3 ms  16.3 %  (browser)
+    517.8 ms   9.9 %  sample.js
+    214.9 ms   4.1 %  (program)
+     69.7 ms   1.3 %  (garbage collector)
+
+## self time, top 40 (share of busy)
+    742.5 ms  14.2 %  wasm-function[10992]
+    737.2 ms  14.1 %  wasm-to-js
+    436.5 ms   8.4 %  y
+    435.1 ms   8.3 %  js-to-wasm:ii:
+    394.3 ms   7.6 %  wasm-function[1413]
+    244.3 ms   4.7 %  wasm-function[1407]
+    214.9 ms   4.1 %  (program)
+    131.3 ms   2.5 %  wasm-function[4360]
+    126.9 ms   2.4 %  wasm-function[713]
+    110.3 ms   2.1 %  wasm-function[11323]
+     69.7 ms   1.3 %  (garbage collector)
+     60.5 ms   1.2 %  wasm-function[1065]
+     49.3 ms   0.9 %  wasm-function[11029]
+     39.3 ms   0.8 %  wasm-function[1451]
+     36.7 ms   0.7 %  wasm-function[755]
+     32.3 ms   0.6 %  wasm-function[11009]
+     23.9 ms   0.5 %  wasm-function[1408]
+     20.9 ms   0.4 %  wasm-function[11250]
+     19.6 ms   0.4 %  wasm-function[753]
+     18.5 ms   0.4 %  wasm-function[14255]
+     16.1 ms   0.3 %  wasm-function[2550]
+     14.2 ms   0.3 %  requestAnimationFrame
+     12.5 ms   0.2 %  wasm-function[1494]
+     11.7 ms   0.2 %  wasm-function[1406]
+     11.3 ms   0.2 %  bufferSubData
+     10.9 ms   0.2 %  texSubImage2D
+     10.5 ms   0.2 %  wasm-function[10135]
+     10.4 ms   0.2 %  kotlin.createJsError
+      9.6 ms   0.2 %  clock_time_get
+      9.5 ms   0.2 %  uniform4fv
+      9.4 ms   0.2 %  wasm-function[2782]
+      9.4 ms   0.2 %  wasm-function[8811]
+      9.0 ms   0.2 %  uniformMatrix3fv
+      9.0 ms   0.2 %  clear
+      8.8 ms   0.2 %  wasm-function[1639]
+      8.7 ms   0.2 %  postTask
+      8.6 ms   0.2 %  wasm-function[1641]
+      8.5 ms   0.2 %  wasm-function[11236]
+      8.2 ms   0.2 %  js-to-wasm:nd:
+      7.9 ms   0.2 %  org.w3c.performance.performance_$external_prop_getter
+
+## total time, top 40 (share of busy)
+   5216.6 ms 100.0 %  (root)
+   4809.6 ms  92.2 %  (sample.js)
+   3728.4 ms  71.5 %  js-to-wasm:nd:
+   3687.1 ms  70.7 %  wasm-function[1520]
+   3682.8 ms  70.6 %  wasm-function[2477]
+   3677.8 ms  70.5 %  wasm-function[1623]
+   3667.2 ms  70.3 %  wasm-function[1629]
+   3666.5 ms  70.3 %  wasm-function[1627]
+   3665.3 ms  70.3 %  wasm-function[1924]
+   3625.2 ms  69.5 %  e.postTask.priority
+   3622.6 ms  69.4 %  wasm-function[1592]
+   3622.0 ms  69.4 %  wasm-function[11321]
+   3615.1 ms  69.3 %  wasm-function[11246]
+   3614.4 ms  69.3 %  wasm-function[11232]
+   3612.6 ms  69.3 %  wasm-function[11250]
+   2443.1 ms  46.8 %  wasm-to-js
+   1899.7 ms  36.4 %  wasm-function[11323]
+   1689.0 ms  32.4 %  wasm-function[4360]
+   1515.3 ms  29.0 %  wasm-function[10992]
+   1111.2 ms  21.3 %  wasm-function[2654]
+   1110.4 ms  21.3 %  wasm-function[1120]
+   1109.9 ms  21.3 %  wasm-function[4386]
+   1087.7 ms  20.9 %  js-to-wasm:n:
+    884.8 ms  17.0 %  y
+    772.5 ms  14.8 %  js-to-wasm:ii:
+    722.9 ms  13.9 %  wasm-function[7825]
+    538.2 ms  10.3 %  wasm-function[7536]
+    490.7 ms   9.4 %  wasm-function[6901]
+    484.3 ms   9.3 %  wasm-function[6636]
+    484.1 ms   9.3 %  wasm-function[6900]
+    480.7 ms   9.2 %  wasm-function[6579]
+    478.9 ms   9.2 %  wasm-function[6536]
+    394.3 ms   7.6 %  wasm-function[1413]
+    340.8 ms   6.5 %  Na
+    339.2 ms   6.5 %  wasm-function[464]
+    338.7 ms   6.5 %  wasm-function[8744]
+    336.1 ms   6.4 %  wasm-function[8741]
+    335.4 ms   6.4 %  wasm-function[8713]
+    289.1 ms   5.5 %  wasm-function[7291]
+    289.0 ms   5.5 %  wasm-function[4676]
