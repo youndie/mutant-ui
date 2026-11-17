@@ -8,6 +8,9 @@
 //
 //   node scripts/frame-bench-browser.mjs <out-dir> [rounds] [scene-ms] [Scene,Scene]
 //
+// B-107: PHONE=1 stands in for a phone: a 390 × 844 viewport at 3x, emulated as mobile with touch, and the main thread
+// slowed CPU=<rate> times (4 by default) by Chrome's own throttling. It is a proxy, not a phone: the GPU is the Mac's.
+//
 // Needs `./gradlew :sample:wasmJsBrowserDistribution` first and Google Chrome. Not part of `make check`.
 import { spawn, execSync } from 'node:child_process';
 import { createServer } from 'node:http';
@@ -24,11 +27,13 @@ const SETTLE_MS = 1_000;
 const CONTROL_MS = 10;
 const WHEEL_EVERY_MS = 32;
 const WHEEL_FLIP_MS = 2_500;
-const WIDTH = 1280;
-const HEIGHT = 814;
-const SCALE = 2;
+const PHONE = process.env.PHONE === '1';
+const CPU = PHONE ? +(process.env.CPU ?? 4) : 1;
+const WIDTH = PHONE ? 390 : 1280;
+const HEIGHT = PHONE ? 844 : 814;
+const SCALE = PHONE ? 3 : 2;
 const ALL = ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'DemoRecording', 'DemoSettings',
-  'ComponentsClean', 'ComponentsReduce', 'Control', 'ControlRest'];
+  'ComponentsClean', 'ComponentsReduce', 'Control', 'ControlRest', 'DemoPageClean'];
 // The control is the idle page (reduce motion stops the clock) with the busy-wait; ControlRest is the resting page with
 // it, reported beside, as the first smoke run found the resting page saturated (B-73's amendment).
 const HOST = { Control: 'ComponentsReduce', ControlRest: 'ComponentsRest' };
@@ -87,7 +92,11 @@ const evaluate = async expr => (await send('Runtime.evaluate', { expression: exp
 
 await send('Page.enable');
 await send('Runtime.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: false });
+await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: PHONE });
+if (PHONE) {
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  await send('Emulation.setCPUThrottlingRate', { rate: CPU });
+}
 // The recorder, in the page before the sample's own script.
 await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
   const control = new URLSearchParams(location.search).get('control') === '1';
@@ -121,7 +130,7 @@ const header = [
   `# B-73 browser frame bench, ${new Date().toISOString()}`,
   `# host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
   `# power: ${sh("pmset -g batt | tail -1 | sed 's/\\t/ /g'")}`,
-  `# browser: ${version.Browser}, headless=new, ${WIDTH}x${HEIGHT} at ${SCALE}x`,
+  `# browser: ${version.Browser}, headless=new, ${WIDTH}x${HEIGHT} at ${SCALE}x${PHONE ? `, phone proxy: mobile, touch, CPU slowed ${CPU}x` : ''}`,
   `# gpu: ${gpu.devices.map(d => d.deviceString).join('; ')}; webgl ${gpu.featureStatus.webgl}, gpu_compositing ${gpu.featureStatus.gpu_compositing}`,
   `# commit: ${sh('git rev-parse --short HEAD')}${sh('git status --porcelain -- sample mutant-core') ? ' (dirty)' : ''}`,
   `# build: ${digest}`,
@@ -152,7 +161,7 @@ for (let round = 1; round <= ROUNDS; round++) {
     while (Date.now() < until) {
       if (scene === 'ComponentsWheel') {
         if (Date.now() > flipAt) { down = !down; flipAt += WHEEL_FLIP_MS; }
-        await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 450, deltaX: 0, deltaY: down ? 100 : -100 });
+        await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: WIDTH / 2, y: HEIGHT / 2, deltaX: 0, deltaY: down ? 100 : -100 });
         wheels++;
         await new Promise(r => setTimeout(r, WHEEL_EVERY_MS));
       } else {
