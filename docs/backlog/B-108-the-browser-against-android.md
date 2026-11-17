@@ -1,7 +1,7 @@
 ---
 id: B-108
 title: "What the browser costs against Android, on one phone"
-status: wip
+status: done
 priority: P2
 size: M
 stage: stage-6-later
@@ -43,3 +43,56 @@ filed as a question, a phone's budget for the boil.
   to the owner's question.
 - Anchors: `scripts/frame-bench-browser.mjs`, `scripts/frame-profile-browser.mjs`, `scripts/device-bench.sh`,
   `sample/src/wasmJsMain/kotlin/io/github/youndie/mutant/sample/BenchScene.kt`
+
+## Findings, 2026-11-17
+
+Logs: [natively](../../logs/b-108/2026-11-17-native/), [in Chrome](../../logs/b-108/2026-11-17-chrome.log), the
+profiles of [`TenCards8`](../../logs/b-108/2026-11-17-profile-TenCards8.txt) and of
+[the resting Components page](../../logs/b-108/2026-11-17-profile-ComponentsRest.txt). Same phone, same commit
+(361b39f), one after the other; battery at 100 %, on mains, 27.7 °C before the native run, 28.4 before Chrome, 31.0
+after. Rounds 2–5 counted. The first attempt died when the phone slept and adb lost it; nothing of it was kept.
+
+**The same ten cards, on one phone:**
+
+| | Natively | In Chrome |
+|---|---|---|
+| Frames a second | 59 (473 in 8 s, every round) | 22.3 |
+| Main thread a frame, p50 / p95 | 0.38 / 3.37 ms (animation + layout + draw) | 36.4 / 101.4 ms (work) |
+| Render thread a frame, p50 / p95 | 3.76 / 17.1 ms (sync + command issue) | — the page has none |
+| Bodies rasterised ahead | 76 a second, 12.9 ms each at p50, on `Dispatchers.Default`: about one core | the same work, on the main thread |
+
+- **Natively the main thread does almost nothing.** The bodies are built and rasterised ahead on background threads
+  (about 980 ms of work a second) and the render thread issues the frame; the main thread's share is under half a
+  millisecond. Summed over threads that is about 21 ms of CPU a frame at 59 frames a second.
+- **In the browser all of it is one thread**, and at 22 frames a second it is busy 36 ms a frame, about 80 % of the
+  thread. Per frame that is about 1.7 times the CPU Android spends over all its threads (a rough sum: the two sides
+  are not measured by one instrument). The gap in frames a second is the threads more than the code.
+- **Where Chrome's main thread goes**, self time by module:
+
+| | Skia (skiko's module) | the app's Kotlin | the browser (WebGL, the engine) | page JS | GC | other |
+|---|---|---|---|---|---|---|
+| `TenCards8` | **64.9 %** | 28.7 % | 3.4 % | 1.2 % | 1.1 % | 0.7 % |
+| Components, resting | 41.5 % | 41.2 % | 4.8 % | 4.0 % | 3.8 % | 4.7 % |
+
+  The WebGL calls themselves are a few per cent; Skia's own CPU work is the largest share, the Kotlin side (Compose and
+  the generator) the second. That the Skia share is mostly the software raster of the bodies' images is the likely
+  reading, not a measured one: the kit rasterises a resting body into an `ImageBitmap` once per tick (B-82), and in the
+  browser an `ImageBitmap` is a CPU raster. That is the route worth measuring next, [B-109](B-109-bodies-as-vectors-in-the-browser.md).
+- **A correction to B-107's phone numbers.** The resting Components page read work p50 18.1 ms here (45.9 frames a
+  second; 8.4 ms in its first two rounds, 20–23 in the last two) against 116.6 ms in B-107's device run earlier the
+  same day, with the code changed only by B-107's own Tape fixes, which moved it by about 6 ms. B-107's runs were
+  taken with the battery at 33–58 % and charging, and the phone warming from 31 to 41 °C; this one at 100 %, 28–31 °C.
+  The phone's state, not the code, explains most of it. B-107's comparisons were paired within one run and stand; its
+  absolute frame rates are those of a throttled phone and are not what this phone does when cool.
+
+## Answer to the owner
+
+- **Why the browser is slower.** Not Compose's code: on Android this kit's work runs on three kinds of thread (main,
+  render, background builds), and the main thread is nearly idle; in the browser Kotlin/Wasm has one thread, so the
+  bodies' builds and raster, Skia's CPU work and the frame all queue on it. JetBrains' comparison is of the code's
+  speed and of ordinary interfaces; this kit's work is mostly geometry and raster that Android takes off the main
+  thread. The per-frame CPU is within about 2× of Android's; the threads are not.
+- **Can WebGL help.** Skia already draws the page through WebGL, and those calls are a few per cent. What can move is
+  the CPU raster: drawing a resting body as vectors each frame, which Skia's WebGL backend fills on the GPU, instead of
+  a CPU image per tick. That is B-109. A worker thread is not open to Kotlin/Wasm's Compose today (no shared memory);
+  WebGPU is not a Compose web backend.
