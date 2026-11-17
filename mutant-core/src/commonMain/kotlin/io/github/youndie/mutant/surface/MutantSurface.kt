@@ -447,7 +447,26 @@ internal fun MutantSurface(
                     band: Rect?,
                 ): Ahead {
                     // Built off the frame's thread: the field's grid is not grown here (B-97).
-                    val f = gen.frame(g, cache, next, 0.0, pressed = false, steadyWebs = steadyWebs, grow = false)
+                    val f =
+                        gen.frame(
+                            g,
+                            cache,
+                            next,
+                            0.0,
+                            pressed = false,
+                            steadyWebs = steadyWebs,
+                            grow = false,
+                            paths = !onGpu,
+                        )
+                    // B-110: a body the shader draws gets its brush ahead, with its frame, and no image.
+                    if (onGpu) {
+                        return Ahead(
+                            f,
+                            null,
+                            null,
+                            bodyShaderBrush(f.field, slot, pictureOf(g, f, next, 0.0).look, d),
+                        )
+                    }
                     val inputs = imageInputsOf(dead)
                     val image =
                         inputs?.let {
@@ -570,7 +589,7 @@ internal fun MutantSurface(
                 // A resting tick's frame depends on its time alone, and the next tick's time is known: it is built
                 // ahead on a background thread and taken here (B-75). A pressed or heated body, a frozen clock and a
                 // frame not ready in time build in the frame, as before.
-                val resting = offFrame && !hot && !boil.on && k == 0.0 && !onGpu
+                val resting = offFrame && !hot && !boil.on && k == 0.0
                 val early = if (resting) ahead.take(g, t) else null
 
                 var frame =
@@ -599,7 +618,9 @@ internal fun MutantSurface(
                 if (onGpu && (pour != null || slideP < 1)) {
                     frame = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
                 } else if (onGpu) {
-                    val shaded = bodyShaderBrush(frame.field, slot, pictureOf(g, frame, t, k).look, d)
+                    val shaded =
+                        early?.shaded.takeIf { early?.frame === frame }
+                            ?: bodyShaderBrush(frame.field, slot, pictureOf(g, frame, t, k).look, d)
                     if (shaded != null) {
                         view.drawn = null
                         frameProbe?.invoke(false, false, frame.steadyWebs)
@@ -854,6 +875,8 @@ internal class Ahead(
     val frame: BodyFrame,
     val image: RasterisedBody?,
     val inputs: List<Any?>?,
+    /** B-110: the shader's brush, built ahead with the frame, for a body the shader draws. */
+    val shaded: androidx.compose.ui.graphics.Brush? = null,
 )
 
 /** What one frame of a body is drawn with. */
