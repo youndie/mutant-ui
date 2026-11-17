@@ -1,0 +1,25 @@
+== kit
+== none4
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Speckle, BodyPart.Mosaic, BodyPart.DeadPixels, BodyPart.FlowLines) }
+== noSpeckle
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Speckle) }
+== noMosaic
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Mosaic) }
+== noDead
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.DeadPixels) }
+== noFlow
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.FlowLines) }
+== noClip
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.ContourClip) }
+== onlySpeckle
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Mosaic, BodyPart.DeadPixels, BodyPart.FlowLines) }
+== onlyMosaic
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Speckle, BodyPart.DeadPixels, BodyPart.FlowLines) }

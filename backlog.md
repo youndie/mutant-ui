@@ -63,9 +63,9 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-111](docs/backlog/B-111-what-the-decorations-cost-on-a-phone.md) `[~]` | What a body's decorations cost on a phone | P2 | S | - |
+| [B-112](docs/backlog/B-112-static-decorations-drawn-once.md) `[ ]` | A body's still decorations drawn once, and painted without the clip | P2 | M | - |
 
-## Closed (109)
+## Closed (110)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -180,6 +180,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-107](docs/backlog/B-107-wasm-on-a-phone.md) `[x]` - The sample stutters in a phone's browser
 - [B-108](docs/backlog/B-108-a-phones-budget-for-the-boil.md) `[x]` - What the browser costs against Android, on one phone
 - [B-110](docs/backlog/B-110-a-body-as-a-shader.md) `[x]` - A body drawn by a GPU shader: a spike
+- [B-111](docs/backlog/B-111-what-the-decorations-cost-on-a-phone.md) `[x]` - What a body's decorations cost on a phone
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
