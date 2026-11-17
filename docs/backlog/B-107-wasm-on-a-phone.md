@@ -210,3 +210,10 @@ attached a phone, and the question is now asked with its numbers:
 3. **Stop here**, the grain fix kept or dropped.
 
 Which of these, if any?
+
+## Correction, 2026-11-17, from B-108
+
+The absolute numbers of the device runs above are those of a phone charging from 33–58 % and warming to 41 °C. Cool and
+full, the same phone ran the resting Components page at 45.9 frames a second, work p50 18.1 ms, against 116.6 ms here
+([B-108](B-108-a-phones-budget-for-the-boil.md)). The paired comparisons stand, each measured within one run; «8–11
+frames a second» does not describe this phone in its usual state.

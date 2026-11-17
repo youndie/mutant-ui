@@ -1,0 +1,94 @@
+# B-73 profile of ComponentsRest, 2026-11-17T15:46:25.258Z, 8000 ms sampled every 100 µs, on Pixel 6a in Chrome, nothing emulated
+# sampled 8011 ms, idle 9 ms, busy 8002 ms (99.9 %)
+
+## self time by where its code lives (share of busy)
+   3322.1 ms  41.5 %  bfa5198fb2fe683c613a.wasm
+   3296.9 ms  41.2 %  9635daf383fb8a43a1ee.wasm
+    386.3 ms   4.8 %  (browser)
+    373.7 ms   4.7 %  (program)
+    318.9 ms   4.0 %  sample.js
+    303.8 ms   3.8 %  (garbage collector)
+
+## self time, top 40 (share of busy)
+    494.8 ms   6.2 %  wasm-function[10964]
+    373.7 ms   4.7 %  (program)
+    303.8 ms   3.8 %  (garbage collector)
+    258.2 ms   3.2 %  wasm-function[1399]
+    210.1 ms   2.6 %  wasm-to-js
+    176.6 ms   2.2 %  wasm-function[1626]
+    146.5 ms   1.8 %  wasm-function[1393]
+    136.5 ms   1.7 %  wasm-function[10955]
+    114.9 ms   1.4 %  wasm-function[14255]
+    109.4 ms   1.4 %  wasm-function[3109]
+    107.8 ms   1.3 %  wasm-function[3110]
+     80.8 ms   1.0 %  wasm-function[3111]
+     79.3 ms   1.0 %  wasm-function[699]
+     76.0 ms   0.9 %  wasm-function[5131]
+     74.5 ms   0.9 %  wasm-function[5363]
+     74.5 ms   0.9 %  wasm-function[6508]
+     72.6 ms   0.9 %  wasm-function[4086]
+     57.3 ms   0.7 %  wasm-function[10311]
+     54.3 ms   0.7 %  wasm-function[1645]
+     52.4 ms   0.7 %  wasm-function[10664]
+     50.4 ms   0.6 %  org.jetbrains.skia.impl.register_$external_fun
+     49.4 ms   0.6 %  wasm-function[11001]
+     49.0 ms   0.6 %  wasm-function[2550]
+     46.1 ms   0.6 %  wasm-function[6873]
+     43.7 ms   0.5 %  wasm-function[5134]
+     42.8 ms   0.5 %  wasm-function[3778]
+     42.8 ms   0.5 %  wasm-function[3598]
+     41.9 ms   0.5 %  wasm-function[5338]
+     41.4 ms   0.5 %  wasm-function[5350]
+     39.6 ms   0.5 %  wasm-function[4399]
+     37.5 ms   0.5 %  wasm-function[1389]
+     37.4 ms   0.5 %  wasm-function[14256]
+     35.4 ms   0.4 %  wasm-function[14126]
+     35.1 ms   0.4 %  replaceChildren
+     34.6 ms   0.4 %  wasm-function[1480]
+     34.3 ms   0.4 %  wasm-function[11567]
+     34.0 ms   0.4 %  js-to-wasm:i:i
+     33.9 ms   0.4 %  androidx.compose.ui.platform.accessibility.setSizeAndPosition
+     32.5 ms   0.4 %  wasm-function[6647]
+     32.3 ms   0.4 %  wasm-function[2508]
+
+## total time, top 40 (share of busy)
+   8001.7 ms 100.0 %  (root)
+   7247.9 ms  90.6 %  (sample.js)
+   6460.0 ms  80.7 %  js-to-wasm:nn:n
+   5846.0 ms  73.1 %  wasm-function[1106]
+   5845.2 ms  73.0 %  wasm-function[2639]
+   5844.4 ms  73.0 %  wasm-function[4358]
+   5432.1 ms  67.9 %  wasm-function[7797]
+   4769.8 ms  59.6 %  wasm-function[7508]
+   4709.8 ms  58.9 %  wasm-function[6873]
+   4708.7 ms  58.8 %  wasm-function[6551]
+   4706.5 ms  58.8 %  wasm-function[6508]
+   4005.7 ms  50.1 %  wasm-to-js
+   3834.2 ms  47.9 %  wasm-function[605]
+   3832.9 ms  47.9 %  wasm-function[3903]
+   3586.3 ms  44.8 %  wasm-function[7264]
+   3585.8 ms  44.8 %  wasm-function[4799]
+   3535.8 ms  44.2 %  wasm-function[4805]
+   3535.0 ms  44.2 %  wasm-function[7274]
+   3534.5 ms  44.2 %  wasm-function[6913]
+   3532.0 ms  44.1 %  wasm-function[6912]
+   3505.6 ms  43.8 %  wasm-function[6647]
+   2090.3 ms  26.1 %  wasm-function[6645]
+   2067.3 ms  25.8 %  wasm-function[5725]
+   1967.7 ms  24.6 %  wasm-function[8330]
+   1565.3 ms  19.6 %  wasm-function[5728]
+   1563.2 ms  19.5 %  wasm-function[11204]
+   1552.0 ms  19.4 %  wasm-function[10964]
+   1374.4 ms  17.2 %  wasm-function[10965]
+   1330.5 ms  16.6 %  wasm-function[1506]
+   1329.8 ms  16.6 %  wasm-function[6608]
+   1329.6 ms  16.6 %  wasm-function[6872]
+   1326.9 ms  16.6 %  wasm-function[6932]
+   1315.4 ms  16.4 %  wasm-function[2462]
+   1307.3 ms  16.3 %  wasm-function[1608]
+   1291.0 ms  16.1 %  js-to-wasm:ii:
+   1286.3 ms  16.1 %  wasm-function[1614]
+   1284.2 ms  16.0 %  wasm-function[1612]
+   1282.0 ms  16.0 %  wasm-function[1909]
+   1192.5 ms  14.9 %  wasm-function[7263]
+   1184.9 ms  14.8 %  wasm-function[4648]
