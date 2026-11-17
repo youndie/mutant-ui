@@ -118,6 +118,43 @@ that limit.
   between two runs; the harness now interleaves two builds in one run (`DIST_B`) and the profiler and the bench both
   take the phone proxy (`PHONE=1`).
 
+## Findings on the Pixel 6a, 2026-11-17
+
+Logs: [the device run](../../logs/b-107/2026-11-17-pixel6a.log), its profiles of the resting Components page with the
+Tape ([on](../../logs/b-107/2026-11-17-pixel6a-profile-ComponentsRest-named.txt),
+[off](../../logs/b-107/2026-11-17-pixel6a-profile-ComponentsClean-named.txt); the build with names is the one before
+B-103…B-106, the code they profile is the same), and [the paired run](../../logs/b-107/2026-11-17-pixel6a-paired.log).
+The sample gets 411 × 784 at 2.625x. The phone warmed from 31.3 °C to 39.9 °C over the first run, and its numbers
+drift with it: the first counted round ran faster than the four after it on every page.
+
+- **The control read out of its band again**: 8.1–18.9 ms over the reduce page against 10 ± 1, on the phone as well,
+  so the run is void by the rule and no verdict per scene is claimed. The busy-wait is not stretched on the phone; the
+  reduce page itself is not idle there (49.8 frames a second, work p50 22.8 ms), and a frame of 10 ms more lands on a
+  thread already past its budget.
+- **On the phone the sample runs at 8–11 frames a second** on the pages with motion (Components 8.8, Demo 10.7, its
+  library tab 8.3, settings 60.5), work p50 116–131 ms. The proxy's order held, its scale did not.
+- **The Tape: below resolution by the rule, and it costs.** Work p50 of the resting Components page minus the clean one,
+  per counted round: 92.1, 9.5, 8.7, 9.8, 8.0 ms, all positive, mean 25.6 against twice the clean page's spread of
+  73.7 (the warm-up between the first counted round and the rest). On the Demo page: −65.7, 10.0, 7.5, 12.7, 7.7. In
+  the four rounds after the warm-up it is 8–13 ms a frame on both pages, its p95 218–340 ms against 128–196 clean,
+  and the clean Components page runs at 10–12 frames a second against 8–9.5. The rule is kept and its verdict stands;
+  the numbers are reported beside it.
+- **What the profile shows on the phone**, against the proxy: the body generator is 19–20 % of the main thread, not
+  59 %; drawing is 77 % (`CanvasRenderer.needRedraw`). The Tape's draw is 13.1 % of the resting Components page
+  (`DrawBackgroundModifier.draw`, absent with the Tape off). The cause in the code: B-77 fills the grain from a tile
+  only at a whole density, and at 2.625 a tile is 236.25 × 472.5 px, so every frame drew about 1 600 strokes and 36
+  clips. The proxy ran at 3x and never took that path.
+- **The fix**: at a fractional density the fill repeats the fewest tiles whose span is whole pixels, four across by
+  two down at 2.625 (945 × 945 px). `TapeGrainTileTest`: the block exists at 2.625, and at ticks whose offset is whole
+  pixels it draws the strokes' own pixels, 0 off in both themes; at other ticks about 0.5 % of a 640 × 400 dp frame's
+  pixels differ (up to 18 of 255 on a channel), the strokes moved by a part of a pixel, the frame's ink equal to
+  0.001 %.
+- **The fix, paired on the phone: below resolution.** New minus old work p50 per counted round, Components −6.1,
+  −13.5, +6.3, +2.2 ms; Demo −4.1, −5.1, −7.4, −9.4 ms, all negative, mean −6.5 against twice the ruler's spread of
+  5.7. A limit of the ruler: the reduce page draws the Tape too, so this fix reaches it (−2.0…−7.7 ms) and it is not
+  the independent ruler it was for the `sin` change. The frame rate moved 8.8 → 9.2 on Components and 7.8 → 8.8 on
+  Demo.
+
 ## Question for the owner
 
 The cost is the generator itself, built for every visible body on its tick, and on a phone's thread it does not fit.
