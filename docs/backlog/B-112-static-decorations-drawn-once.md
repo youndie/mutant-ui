@@ -22,3 +22,12 @@ a tick under the clip. The speckle, the mosaic's tiles and the dead pixels do no
   the phone, by B-111's protocol, the build against the kit and against the build without the four decorations, in ms a
   frame; the cost moved to building the image, in the first frame of a body (B-50).
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt`
+
+## The measurement, set before it ran (2026-11-17)
+
+The owner asked for the Mac rather than the phone: B-107's phone proxy (`PHONE=1`, Chrome headless at 390 × 844 and 3x,
+the main thread slowed four times), on mains. Three builds in one rotation: the kit before this item (`ebf6d4c`), this
+item, and the kit without the four decorations (B-111's arm); `TenCards8` and `Blank`, six rounds of ten seconds, round 1
+not counted. The reading is ms a frame, `1000 / fps`, per counted round, beside the frame's work and the busy share.
+**This item buys its cost back** if every counted round of it is cheaper than the kit, by more than twice the spread of
+`Blank`'s rounds, and **all of it** if its mean is within that spread of the build without the decorations.
