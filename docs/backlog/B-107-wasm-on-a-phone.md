@@ -155,6 +155,17 @@ drift with it: the first counted round ran faster than the four after it on ever
   the independent ruler it was for the `sin` change. The frame rate moved 8.8 → 9.2 on Components and 7.8 → 8.8 on
   Demo.
 
+## Amendment, 2026-11-17, the scanlines too, before their paired run
+
+- **The owner chose option 1** of the question below: the scanlines as a fill too. Done (`scanlineFill`, held by
+  `TapeScanlineFillTest`: 0 pixels off against the rects at density 1, 2, 3 and 2.625, the band passing and away).
+- **The ruler, late and narrow.** The rule for a fix named `ComponentsReduce` as the ruler because the `sin` change
+  could not touch it. A Tape fix does: the reduce page draws the Tape, and the grain's paired run moved it −2.0…−7.7 ms.
+  For the Tape's fix the ruler is `ComponentsClean`, the same page under «Чистый сигнал», which draws no Tape;
+  `ComponentsReduce` is reported beside. Declared before the run it governs; nothing else moves.
+- **The run.** The build before both Tape fixes against the build with both, on the phone, the paired protocol: five
+  rounds, `ComponentsRest`, `DemoPage`, `ComponentsClean`, `ComponentsReduce`.
+
 ## Question for the owner
 
 Asked first after the proxy (options: the Tape's tail, a phone's budget for the boil, leave it until a phone). The owner
