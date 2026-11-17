@@ -58,11 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (1)
+## Open (2)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
+| [B-110](docs/backlog/B-110-a-body-as-a-shader.md) `[~]` | A body drawn by a GPU shader: a spike | P2 | M | - |
 
 ## Closed (108)
 
