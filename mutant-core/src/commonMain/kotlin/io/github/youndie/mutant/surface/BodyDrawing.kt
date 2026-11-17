@@ -147,7 +147,7 @@ internal fun DrawScope.drawBody(
     decor: BodyDecor = BodyDecor(),
     pour: Pair<Path, Color>? = null,
     skip: Set<BodyPart> = emptySet(),
-    still: ImageBitmap? = null,
+    still: StillImage? = null,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -165,10 +165,14 @@ internal fun DrawScope.drawBody(
             if (BodyPart.Fill !in skip) drawRect(look.fill, bb.topLeft, bb.size)
             pour?.let { (path, from) -> drawPath(path, from) }
             if (still != null && decor.runningMosaic == null) {
-                // B-112: the still layers, drawn once into an image on this raster's own pixel grid, are one draw under
-                // the clip instead of hundreds. Undo the slip and the scale, so the image's pixels land on the raster's.
-                val at = rasterOrigin(g)
-                translate(at.x - look.slip, at.y - look.slip) { scale(1 / density, Offset.Zero) { drawImage(still) } }
+                // B-112: the still layers, drawn once into an image on this canvas's own pixel grid, are one draw under
+                // the clip instead of hundreds. Undo the slip and the scale, so the image's pixels land on the canvas's.
+                translate(still.gridX - look.slip, still.gridY - look.slip) {
+                    scale(
+                        1 / density,
+                        Offset.Zero,
+                    ) { drawImage(still.image, Offset(still.at.x.toFloat(), still.at.y.toFloat())) }
+                }
             } else {
                 drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, decor, skip)
             }
@@ -246,8 +250,20 @@ internal fun DrawScope.drawStillLayers(
 }
 
 /**
- * B-112: a body's still layers ([drawStillLayers]) drawn once, into an image on the grid [rasterisedBody] draws the
- * body on, so the body's image of every tick takes them as one draw. The mosaic of a hot body moves and is not in it.
+ * B-112: a body's still layers drawn once, on the pixel grid of a canvas that draws the scene at [density] with the
+ * scene's point ([gridX], [gridY]) at its pixel (0, 0); the image stands at [at] on that grid.
+ */
+internal class StillImage(
+    val image: ImageBitmap,
+    val gridX: Float,
+    val gridY: Float,
+    val at: androidx.compose.ui.unit.IntOffset,
+)
+
+/**
+ * B-112: a body's still layers ([drawStillLayers]) drawn once, into an image covering what [rasterisedBody]'s image
+ * covers, on the grid of a canvas whose pixel (0, 0) is the scene's point ([gridX], [gridY]): the body's tick image
+ * (its raster origin) or the surface a frame draws on (the slot's origin). The mosaic of a hot body moves and is not in it.
  */
 internal fun stillLayersImage(
     g: Instance,
@@ -259,10 +275,39 @@ internal fun stillLayersImage(
     skip: Set<BodyPart>,
     density: Float,
     direction: androidx.compose.ui.unit.LayoutDirection,
-): ImageBitmap =
-    rasterisedBody(g, 0.0, 0.0, density, direction) {
-        translate(slip, slip) { drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, BodyDecor(), skip) }
-    }.image
+    gridX: Float,
+    gridY: Float,
+): StillImage {
+    val box = rasterBox(g)
+    val x0 = floor((box.left - gridX) * density).toInt()
+    val y0 = floor((box.top - gridY) * density).toInt()
+    val x1 = kotlin.math.ceil((box.right - gridX) * density).toInt()
+    val y1 = kotlin.math.ceil((box.bottom - gridY) * density).toInt()
+    val image = ImageBitmap(maxOf(1, x1 - x0), maxOf(1, y1 - y0))
+    androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
+        androidx.compose.ui.unit
+            .Density(density),
+        direction,
+        androidx.compose.ui.graphics
+            .Canvas(image),
+        Size(image.width.toFloat(), image.height.toFloat()),
+    ) {
+        translate(-x0.toFloat(), -y0.toFloat()) {
+            scale(density, Offset.Zero) {
+                translate(slip - gridX, slip - gridY) {
+                    drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, BodyDecor(), skip)
+                }
+            }
+        }
+    }
+    return StillImage(
+        image,
+        gridX,
+        gridY,
+        androidx.compose.ui.unit
+            .IntOffset(x0, y0),
+    )
+}
 
 /**
  * The parts of a body, each of which a measurement can leave out of the draw (B-78). The kit draws them all;

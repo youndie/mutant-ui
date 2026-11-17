@@ -31,7 +31,8 @@ import kotlin.test.assertTrue
 /**
  * B-112: resting bodies under a running clock, drawn from their image of each tick (B-82), with the speckle, mosaic and
  * dead pixels drawn into it each tick and drawn once into an image of their own, at density 1 and the Pixel 6a's 2.625,
- * in both themes. The line, set before the first render: on every tick compared, at most 0.2 % of the stage's pixels
+ * in both themes; and the same under a frozen clock, where a body is drawn in the frame, as it is when its tick's image
+ * is not ready. The line, set before the first render: on every tick compared, at most 0.2 % of the stage's pixels
  * differ by more than 16 levels in any channel. A sheet of the last tick of both goes to `build/b-112/`.
  */
 @OptIn(ExperimentalTestApi::class)
@@ -70,6 +71,7 @@ class StillLayersOnceTest {
         density: Float,
         print: Boolean,
         count: Count,
+        frozen: Boolean,
     ): List<BufferedImage> {
         var out = emptyList<BufferedImage>()
         runComposeUiTest {
@@ -81,7 +83,9 @@ class StillLayersOnceTest {
                     LocalMutantFrameProbe provides { _, image, _ -> if (image) count.asImage++ },
                     LocalMutantColors provides if (print) MutantPalettes.Kopiya else MutantPalettes.Efir,
                 ) {
-                    ProvideMutantClock(remember { MutantClock() }) {
+                    ProvideMutantClock(
+                        remember { if (frozen) MutantClock(startMs = 5000.0, frozen = true) else MutantClock() },
+                    ) {
                         Box(Modifier.size((case.w + 48).dp, (case.h + 80).dp).testTag("stage")) {
                             MutantSurface(
                                 case.body,
@@ -119,25 +123,33 @@ class StillLayersOnceTest {
         val dir = File("build/b-112").apply { mkdirs() }
         val lines = ArrayList<String>()
         var worst = 0.0
-        for (print in listOf(false, true)) {
-            for (d in listOf(1f, 2.625f)) {
-                for (c in cases) {
-                    val counted = Count()
-                    val each = render(c, once = false, d, print, Count())
-                    val once = render(c, once = true, d, print, counted)
-                    assertTrue(counted.asImage >= 4, "${c.name} at $d: ticks drawn from an image ${counted.asImage}")
-                    // The first tick of an off-frame body draws no body yet (B-50); every tick after it is compared.
-                    val shares = (1 until each.size).map { farShare(each[it], once[it]) }
-                    worst = maxOf(worst, shares.max())
-                    val tag = "${c.name}-${if (print) "kopiya" else "efir"}-$d"
-                    lines += "$tag by more than 16, per tick: ${shares.joinToString(" ") { "%.3f".format(it) }} %"
-                    val a = each.last()
-                    val sheet = BufferedImage(a.width * 2 + 8, a.height, BufferedImage.TYPE_INT_ARGB)
-                    sheet.graphics.apply {
-                        drawImage(a, 0, 0, null)
-                        drawImage(once.last(), a.width + 8, 0, null)
+        for (frozen in listOf(false, true)) {
+            for (print in listOf(false, true)) {
+                for (d in listOf(1f, 2.625f)) {
+                    for (c in cases) {
+                        val counted = Count()
+                        val each = render(c, once = false, d, print, Count(), frozen)
+                        val once = render(c, once = true, d, print, counted, frozen)
+                        // A frozen clock draws in the frame (fixtures, references); a running one from its tick's image.
+                        if (!frozen) {
+                            assertTrue(
+                                counted.asImage >= 4,
+                                "${c.name} at $d: ticks drawn from an image ${counted.asImage}",
+                            )
+                        }
+                        // The first tick of an off-frame body draws no body yet (B-50); every tick after it is compared.
+                        val shares = (1 until each.size).map { farShare(each[it], once[it]) }
+                        worst = maxOf(worst, shares.max())
+                        val tag = "${c.name}-${if (print) "kopiya" else "efir"}-$d${if (frozen) "-frozen" else ""}"
+                        lines += "$tag by more than 16, per tick: ${shares.joinToString(" ") { "%.3f".format(it) }} %"
+                        val a = each.last()
+                        val sheet = BufferedImage(a.width * 2 + 8, a.height, BufferedImage.TYPE_INT_ARGB)
+                        sheet.graphics.apply {
+                            drawImage(a, 0, 0, null)
+                            drawImage(once.last(), a.width + 8, 0, null)
+                        }
+                        ImageIO.write(sheet, "png", File(dir, "$tag.png"))
                     }
-                    ImageIO.write(sheet, "png", File(dir, "$tag.png"))
                 }
             }
         }
