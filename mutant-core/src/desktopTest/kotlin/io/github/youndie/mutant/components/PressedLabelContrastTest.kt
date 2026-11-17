@@ -3,6 +3,7 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -33,7 +34,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * B-91: a press boils a body's fill to amber; the words and the icon on it stay readable on every frame of the press and
+ * B-91 (and B-104, the carousel's cards): a press boils a body's fill to amber; the words and the icon on it stay readable on every frame of the press and
  * the release, by a real press, in both themes. The ground is read beside the label, inside the body; the ink is the
  * label's pixel that stands furthest from it.
  */
@@ -45,6 +46,8 @@ class PressedLabelContrastTest {
         val label: ComposeUiTest.() -> Rect,
         /** Where the ground is read, dp left of the label's box, at its vertical middle. */
         val groundLeft: Float,
+        /** The stage's height, dp: tall enough that nothing of the body is cut. */
+        val height: Int = 160,
         val content: @Composable () -> Unit,
     )
 
@@ -55,6 +58,9 @@ class PressedLabelContrastTest {
             Case("card", { text("Кассета 07") }, 8f) {
                 MutantCard(Modifier.size(328.dp, 80.dp), onClick = {}) { MutantCardTitle("Кассета 07") }
             },
+            Case("carousel title", { text("Без подписи №3") }, 8f, 260) { Shelf() },
+            Case("carousel subtitle", { text("Сторона A · 46 мин") }, 8f, 260) { Shelf() },
+            Case("carousel status", { text("CH 03 · SP") }, 8f, 260) { Shelf() },
             Case("icon button", { icon("Поделиться") }, 4f) {
                 MutantIconButton(MutantIcons.Share, "Поделиться", {})
             },
@@ -85,7 +91,7 @@ class PressedLabelContrastTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(D)) {
                     MutantTheme(colors = colors, reduceMotion = false) {
-                        Box(Modifier.size(400.dp, 160.dp).testTag("stage")) {
+                        Box(Modifier.size(400.dp, case.height.dp).testTag("stage")) {
                             Box(Modifier.padding(24.dp)) { case.content() }
                         }
                     }
@@ -156,3 +162,11 @@ class PressedLabelContrastTest {
         const val D = 2f
     }
 }
+
+/** One card on a shelf, with its three lines. */
+@Composable
+private fun Shelf() =
+    MutantCarousel(
+        listOf(MutantCarouselItem("Без подписи №3", "Сторона A · 46 мин", "CH 03 · SP")),
+        Modifier.width(352.dp),
+    )
