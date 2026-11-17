@@ -52,7 +52,8 @@ class SampleSettings(
 /**
  * The sample's root, shared by the desktop window and the browser: a header that switches the theme («Эфир» or
  * «Копия»), reduce motion, «Чистый сигнал», the language (English first, research D11) and the page, over the page.
- * The Tape runs over the whole of it. [scroll] is the page's, handed in by a host that reads it (B-72's recorder).
+ * The Tape runs over the Components page; on the Demo page each phone carries its own (B-101). [scroll] is the
+ * page's, handed in by a host that reads it (B-72's recorder).
  */
 @Composable
 fun MutantUiSample(
@@ -71,7 +72,8 @@ fun MutantUiSample(
             Modifier
                 .fillMaxSize()
                 .background(colors.page)
-                .mutantTape()
+                // B-101: on the Demo page each phone is a screen and carries its own Tape; the page's over it doubled it.
+                .then(if (settings.page == SamplePage.Demo) Modifier else Modifier.mutantTape())
                 .testTag("sample-root"),
         ) {
             Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(24.dp)) {
