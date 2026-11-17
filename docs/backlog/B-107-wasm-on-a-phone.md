@@ -67,6 +67,21 @@ measured, not assumed.
   negative and the mean difference is more than twice the spread (max − min) of the same difference on
   `ComponentsReduce`. Otherwise it is below resolution, reported with that spread. No threshold above moved.
 
+## Amendment, 2026-11-17, a real phone, before its first number
+
+- **The owner attached a phone** after the question below: a Pixel 6a over USB, Android 17, Chrome 157, on mains power,
+  the screen kept on while plugged in. Option 3 of the question becomes measurable, so the device runs first.
+- **Stand.** The same harness with `DEVICE=1`: the production wasm build of this branch rebased on `main` after B-103…B-106,
+  served from the Mac through `adb reverse`, opened as a new tab of the phone's own Chrome over its DevTools socket;
+  nothing emulated, nothing throttled. The device, its build, its battery and temperature, the browser and its viewport
+  go into each log's header.
+- **Scenes.** The pre-registered ones (`ComponentsRest`, `ComponentsClean`, `DemoPage`, `DemoPageClean`,
+  `ComponentsReduce` and the control), with `ControlRest` and the other Demo tabs reported beside. The wheel scene is
+  left out: a phone scrolls by touch.
+- **Protocol, measures, control, verdict per scene and the Tape's rule: as pre-registered above, unchanged.** Six rounds
+  of 8 s a scene, round 1 not counted. On the device the busy-wait is not stretched by throttling, so the control's band
+  of 10 ± 1 ms applies as written; a run where it reads outside is void.
+
 ## Findings, 2026-11-17
 
 Logs: [the first run](../../logs/b-107/2026-11-17-before.log), the two runs one after the other

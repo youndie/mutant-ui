@@ -13,6 +13,10 @@
 // B-107: PHONE=1 stands in for a phone: a 390 × 844 viewport at 3x, emulated as mobile with touch, and the main thread
 // slowed CPU=<rate> times (4 by default) by Chrome's own throttling. It is a proxy, not a phone: the GPU is the Mac's.
 //
+// B-107: DEVICE=1 measures in Chrome on a phone attached over adb instead: the build is served through `adb reverse`,
+// the page opened as a new tab of the phone's Chrome through its DevTools socket, nothing emulated or throttled. The phone
+// keeps its screen on while plugged in, and Chrome must be open on it. The wheel scene has no meaning there.
+//
 // Needs `./gradlew :sample:wasmJsBrowserDistribution` first and Google Chrome. Not part of `make check`.
 import { spawn, execSync } from 'node:child_process';
 import { createServer } from 'node:http';
@@ -29,12 +33,14 @@ const SETTLE_MS = 1_000;
 const CONTROL_MS = 10;
 const WHEEL_EVERY_MS = 32;
 const WHEEL_FLIP_MS = 2_500;
-const PHONE = process.env.PHONE === '1';
+const DEVICE = process.env.DEVICE === '1';
+const PHONE = process.env.PHONE === '1' && !DEVICE;
 const CPU = PHONE ? +(process.env.CPU ?? 4) : 1;
 const WIDTH = PHONE ? 390 : 1280;
 const HEIGHT = PHONE ? 844 : 814;
 const SCALE = PHONE ? 3 : 2;
-const ALL = ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'DemoRecording', 'DemoSettings',
+const ALL = DEVICE ? ['ComponentsRest', 'ComponentsClean', 'DemoPage', 'DemoPageClean', 'DemoLibrary', 'DemoRecording',
+  'DemoSettings', 'ComponentsReduce', 'Control', 'ControlRest'] : ['ComponentsRest', 'ComponentsWheel', 'DemoPage', 'DemoLibrary', 'DemoRecording', 'DemoSettings',
   'ComponentsClean', 'ComponentsReduce', 'Control', 'ControlRest', 'DemoPageClean'];
 // The control is the idle page (reduce motion stops the clock) with the busy-wait; ControlRest is the resting page with
 // it, reported beside, as the first smoke run found the resting page saturated (B-73's amendment).
@@ -52,6 +58,9 @@ mkdirSync(out, { recursive: true });
 // The build, served as the site serves it.
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
   '.css': 'text/css', '.ttf': 'font/ttf', '.png': 'image/png', '.json': 'application/json', '.map': 'application/json' };
+const ADB = process.env.ADB ?? `${process.env.HOME}/Library/Android/sdk/platform-tools/adb`;
+const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
+let nextPort = 8761;
 const serve = async dist => {
   const server = createServer((req, res) => {
     const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
@@ -60,23 +69,28 @@ const serve = async dist => {
     res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
     res.end(readFileSync(file));
   });
-  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  await new Promise(r => server.listen(DEVICE ? nextPort++ : 0, '127.0.0.1', r));
+  if (DEVICE) sh(`${ADB} reverse tcp:${server.address().port} tcp:${server.address().port}`);
   return `http://127.0.0.1:${server.address().port}`;
 };
 const origin = await serve(DIST);
 const originB = DIST_B ? await serve(DIST_B) : null;
 
-const profile = mkdtempSync(join(tmpdir(), 'b73-'));
-const chrome = spawn(CHROME, ['--headless=new', `--window-size=${WIDTH},${HEIGHT}`, `--force-device-scale-factor=${SCALE}`,
+const DEBUG = DEVICE ? 9336 : 9335;
+if (DEVICE) sh(`${ADB} forward tcp:${DEBUG} localabstract:chrome_devtools_remote`);
+const profile = DEVICE ? null : mkdtempSync(join(tmpdir(), 'b73-'));
+const chrome = DEVICE ? null : spawn(CHROME, ['--headless=new', `--window-size=${WIDTH},${HEIGHT}`, `--force-device-scale-factor=${SCALE}`,
   '--remote-debugging-port=9335', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
   'about:blank'], { stdio: 'ignore' });
 let version;
 for (let i = 0; i < 50 && !version; i++) {
   await new Promise(r => setTimeout(r, 200));
-  version = await fetch('http://127.0.0.1:9335/json/version').then(r => r.json()).catch(() => null);
+  version = await fetch(`http://127.0.0.1:${DEBUG}/json/version`).then(r => r.json()).catch(() => null);
 }
-const page = (await fetch('http://127.0.0.1:9335/json/list').then(r => r.json())).find(t => t.type === 'page');
+const page = DEVICE
+  ? await fetch(`http://127.0.0.1:${DEBUG}/json/new?about:blank`, { method: 'PUT' }).then(r => r.json())
+  : (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page');
 const ws = new WebSocket(page.webSocketDebuggerUrl);
 await new Promise(r => { ws.onopen = r; });
 let seq = 0;
@@ -100,7 +114,7 @@ const evaluate = async expr => (await send('Runtime.evaluate', { expression: exp
 
 await send('Page.enable');
 await send('Runtime.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: PHONE });
+if (!DEVICE) await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: PHONE });
 if (PHONE) {
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   await send('Emulation.setCPUThrottlingRate', { rate: CPU });
@@ -125,9 +139,9 @@ await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
     .observe({ type: 'long-animation-frame' });
 })();` });
 
-const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
 // The GPU is the browser target's to report, not the page's.
 const gpu = await new Promise((res, rej) => {
+  if (DEVICE) { res(null); return; }
   const b = new WebSocket(version.webSocketDebuggerUrl);
   b.onopen = () => b.send(JSON.stringify({ id: 1, method: 'SystemInfo.getInfo' }));
   b.onmessage = e => { const m = JSON.parse(e.data); b.close(); m.error ? rej(new Error(m.error.message)) : res(m.result.gpu); };
@@ -135,12 +149,20 @@ const gpu = await new Promise((res, rej) => {
 const digestOf = dist => readdirSync(dist).filter(f => f.endsWith('.wasm')).sort()
   .map(f => `${f} ${createHash('sha256').update(readFileSync(join(dist, f))).digest('hex').slice(0, 16)}`).join(', ');
 const digest = digestOf(DIST) + (DIST_B ? `; ~b: ${digestOf(DIST_B)}` : '');
+const viewport = DEVICE ? await evaluate('`${innerWidth}x${innerHeight} at ${devicePixelRatio}x`') : null;
+const adbProp = k => sh(`${ADB} shell getprop ${k}`);
+const battery = DEVICE ? sh(`${ADB} shell dumpsys battery | grep -E 'level|AC powered|temperature' | tr -s ' ' | tr '\\n' ';'`) : '';
 const header = [
   `# B-73 browser frame bench, ${new Date().toISOString()}`,
-  `# host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
-  `# power: ${sh("pmset -g batt | tail -1 | sed 's/\\t/ /g'")}`,
+  ...(DEVICE ? [
+    `# device: ${adbProp('ro.product.model')} (${adbProp('ro.product.device')}), Android ${adbProp('ro.build.version.release')}, build ${adbProp('ro.build.id')}`,
+    `# device power: ${battery}`,
+    `# browser: ${version.Browser}, on the device, viewport ${viewport}, nothing emulated or throttled`,
+  ] : []),
+  `# driver host: ${sh('sysctl -n hw.model')}, ${sh('sysctl -n hw.ncpu')} cores, ${sh('sysctl -n hw.memsize') / 2 ** 30} GB, macOS ${sh('sw_vers -productVersion')}`,
+  ...(DEVICE ? [] : [`# power: ${sh("pmset -g batt | tail -1 | sed 's/\\t/ /g'")}`,
   `# browser: ${version.Browser}, headless=new, ${WIDTH}x${HEIGHT} at ${SCALE}x${PHONE ? `, phone proxy: mobile, touch, CPU slowed ${CPU}x` : ''}`,
-  `# gpu: ${gpu.devices.map(d => d.deviceString).join('; ')}; webgl ${gpu.featureStatus.webgl}, gpu_compositing ${gpu.featureStatus.gpu_compositing}`,
+  `# gpu: ${gpu.devices.map(d => d.deviceString).join('; ')}; webgl ${gpu.featureStatus.webgl}, gpu_compositing ${gpu.featureStatus.gpu_compositing}`]),
   `# commit: ${sh('git rev-parse --short HEAD')}${sh('git status --porcelain -- sample mutant-core') ? ' (dirty)' : ''}`,
   `# build: ${digest}`,
   `# rounds ${ROUNDS} (round 1 not counted), ${SCENE_MS} ms a scene, first ${SETTLE_MS} ms not counted; scenes ${SCENES.join(',')}`,
@@ -238,5 +260,9 @@ if (DIST_B) {
   }
 }
 ws.close();
-chrome.kill();
+if (DEVICE) {
+  await fetch(`http://127.0.0.1:${DEBUG}/json/close/${page.id}`).catch(() => null);
+  sh(`${ADB} forward --remove tcp:${DEBUG}`);
+  sh(`${ADB} reverse --remove-all`);
+} else chrome.kill();
 process.exit(0);
