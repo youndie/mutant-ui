@@ -10,7 +10,7 @@ blocked_by: []
 
 # B-109 — Resting bodies as vectors in the browser
 
-Found by [B-108](B-108-the-browser-against-android.md): in Chrome on a Pixel 6a, ten boiling cards spend 64.9 % of the
+Found by [B-108](B-108-a-phones-budget-for-the-boil.md): in Chrome on a Pixel 6a, ten boiling cards spend 64.9 % of the
 main thread in Skia's own module and 3.4 % in the browser's WebGL. The kit rasterises a resting body into an
 `ImageBitmap` once per tick (B-82, `LocalMutantBodyAsImage`), which on Android is done ahead on background threads,
 about one core's worth; in the browser an `ImageBitmap` is a CPU raster on the only thread.
