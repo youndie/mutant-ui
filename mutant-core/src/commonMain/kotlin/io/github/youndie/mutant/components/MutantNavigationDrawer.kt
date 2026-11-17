@@ -400,12 +400,15 @@ private fun DrawerRow(
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
 
-    fun ink() =
+    // A lambda, not a reference to a local function: two references to `ink` compare equal whatever selection they
+    // captured, so the words' node kept the first one and coloured the rows by the selection it was composed with (B-103).
+    val ink = {
         when {
             hidden -> Color.Transparent
             run.labelOn(index, clock, selectedIndex) -> colors.onPrimary
             else -> colors.text
         }
+    }
     Row(
         moves
             .pointerInput(index) {
@@ -435,7 +438,7 @@ private fun DrawerRow(
         horizontalArrangement = Arrangement.spacedBy(ROW_GAP.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(item.code, Modifier.mutantCleanZone(), style = code, maxLines = 1, softWrap = false, color = ::ink)
+        BasicText(item.code, Modifier.mutantCleanZone(), style = code, maxLines = 1, softWrap = false, color = ink)
         BasicText(
             item.label,
             Modifier.weight(1f, fill = false).mutantCleanZone(),
@@ -443,7 +446,7 @@ private fun DrawerRow(
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Ellipsis,
-            color = ::ink,
+            color = ink,
         )
     }
 }
