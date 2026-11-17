@@ -31,3 +31,7 @@ item, and the kit without the four decorations (B-111's arm); `TenCards8` and `B
 not counted. The reading is ms a frame, `1000 / fps`, per counted round, beside the frame's work and the busy share.
 **This item buys its cost back** if every counted round of it is cheaper than the kit, by more than twice the spread of
 `Blank`'s rounds, and **all of it** if its mean is within that spread of the build without the decorations.
+
+**Amendment, before the first number:** the Mac was on battery (94 %, discharging) when the run was due, and the research
+records that on battery its render cost moved between runs of identical code. The run goes ahead on battery, the builds
+paired within it as above, and says so; a run on mains is what would confirm it.
