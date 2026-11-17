@@ -157,13 +157,15 @@ drift with it: the first counted round ran faster than the four after it on ever
 
 ## Question for the owner
 
-The cost is the generator itself, built for every visible body on its tick, and on a phone's thread it does not fit.
-What it would take is a decision about the kit, not a fix found by a profile:
+Asked first after the proxy (options: the Tape's tail, a phone's budget for the boil, leave it until a phone). The owner
+attached a phone, and the question is now asked with its numbers:
 
-1. **The Tape at the tail.** Draw its scanlines as one repeating fill and record it once per tick, so the frames it
-   steps on stop being the longest (a measured item against the p95 above).
-2. **A phone's budget for the boil.** Fewer bodies boiling at once, or a slower resting tick, under a narrow window or
-   a coarse pointer, as toon-ui's idle budget does; it changes what a phone shows.
-3. **Leave it** until a real phone can be measured.
+1. **Keep the grain fix and take the rest of the Tape.** The scanlines are still 261 rects a frame at 2.625, and the
+   band and the noise a few dozen more; one repeating fill for the scanlines is the same move as the grain's. The
+   Tape off is worth 8–13 ms a frame on this phone; the grain fix took a part of it, below resolution.
+2. **A phone's budget for the boil.** Drawing is three quarters of the main thread and the generator a fifth; with
+   the Tape off the Components page still runs at 10–12 frames a second, so the Tape alone cannot bring it to 60.
+   Fewer bodies boiling at once on a narrow window or a coarse pointer is what would; it changes what a phone shows.
+3. **Stop here**, the grain fix kept or dropped.
 
 Which of these, if any?
