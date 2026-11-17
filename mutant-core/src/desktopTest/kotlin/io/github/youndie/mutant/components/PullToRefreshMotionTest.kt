@@ -136,16 +136,17 @@ class PullToRefreshMotionTest {
         }
 
     @Test
-    fun `after its second the pill rides back up with the list, and no tongue grows in the closing gap`() =
+    fun `after its second the pill goes back up with the list, and no tongue grows in the closing gap`() =
         runComposeUiTest {
             val set = screen()
             set(true)
             mainClock.advanceTimeBy(GLIDE_MS.toLong() * 2)
             set(false)
-            mainClock.advanceTimeBy(DONE_MS.toLong() + 6 * FRAME_MS.toLong())
+            // B-105: it is drawn back into the line as the gap closes, its word fading in the first 40 % of the way.
+            mainClock.advanceTimeBy(DONE_MS.toLong() + 2 * FRAME_MS.toLong())
             val riding = gap()
             assertTrue(riding > 0f && riding < DONE_GAP, "on the way back: $riding")
-            assertTrue(shows("ОБНОВЛЕНО"), "the pill rides up with the list")
+            assertTrue(shows("ОБНОВЛЕНО"), "the pill goes back up with the list")
             mainClock.advanceTimeBy(GLIDE_MS.toLong())
             assertEquals(0f, gap())
             assertTrue(!shows("ОБНОВЛЕНО"), "gone once back")
