@@ -285,8 +285,10 @@ internal fun MutantSurface(
     val ground =
         remember(boil, clock) {
             androidx.compose.runtime.derivedStateOf {
-                // The clock's time is not state; its frame count is, so this follows every frame.
-                clock.frame
+                // The clock's time is not state; its ticks are. A boiling body is redrawn on the hot tick, with the heat
+                // of that frame, so the ground follows the hot tick too: followed on every frame, it ran ahead of the
+                // fill on screen between two ticks, and a dim word turned black on a ground still dark (B-104).
+                clock.hotTick
                 val now = clock.nowMs
                 val k = heatNow ?: boil.at(now)
                 val from = moves.pourFrom
@@ -294,6 +296,8 @@ internal fun MutantSurface(
                 val p = g?.let { stepped(now - moves.pourSince, pourDuration(it.slot.h), steps) } ?: 1.0
                 // A pour asked for before the body first draws starts when it does: the old fill stands until then.
                 val pouring = from != null && !instantNow && (g == null || p < 1)
+                // A pour is drawn on every frame, and its front read on every frame with it.
+                if (pouring) clock.frame
                 val under =
                     if (pouring && g == null) {
                         from

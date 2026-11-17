@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -189,6 +190,10 @@ private fun CarouselCard(
         interactionSource = source,
         calm = if (current) 1.0 else SIDE_CALM,
     ) {
+        // The words follow the body's fill as a card's do: boiled amber under a press, they turn black (B-104).
+        val titleInk = inkOnBody(colors.text)
+        val subtitleInk = inkOnBody(colors.textSecondary)
+        val statusInk = inkOnBody(colors.textOsd)
         Box(Modifier.padding(horizontal = PADDING_X, vertical = PADDING_Y)) {
             // The words' own box is the clean zone; with a status at the foot it reaches down to it.
             Column(
@@ -197,7 +202,7 @@ private fun CarouselCard(
             ) {
                 BasicText(
                     item.title,
-                    style = rubik(TITLE_SIZE, FontWeight.Medium, colors.text),
+                    style = rubik(TITLE_SIZE, FontWeight.Medium, titleInk),
                     maxLines = 1,
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis,
@@ -205,7 +210,7 @@ private fun CarouselCard(
                 if (item.subtitle != null) {
                     BasicText(
                         item.subtitle,
-                        style = rubik(SUBTITLE_SIZE, FontWeight.Normal, colors.textSecondary),
+                        style = rubik(SUBTITLE_SIZE, FontWeight.Normal, subtitleInk),
                         maxLines = 1,
                         softWrap = false,
                         overflow = TextOverflow.Ellipsis,
@@ -218,7 +223,7 @@ private fun CarouselCard(
                         style =
                             MutantTheme.textStyles
                                 .display(STATUS_SIZE.sp)
-                                .copy(color = ink(colors.textOsd), platformStyle = raster),
+                                .copy(color = ink(statusInk), platformStyle = raster),
                         maxLines = 1,
                         softWrap = false,
                         overflow = TextOverflow.Ellipsis,
