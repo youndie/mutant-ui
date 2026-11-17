@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 No open tasks.
 
-## Closed (102)
+## Closed (103)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -170,6 +170,7 @@ No open tasks.
 - [B-100](docs/backlog/B-100-motion-on-every-frame.md) `[x]` - Movement runs on every frame by default; the boil keeps its tick
 - [B-101](docs/backlog/B-101-demo-tape-twice.md) `[x]` - On the Demo page the phones carry the Tape twice
 - [B-102](docs/backlog/B-102-drawer-shows-its-venom.md) `[x]` - The drawer closes before its venom run is seen
+- [B-103](docs/backlog/B-103-drawer-words-follow-the-pick.md) `[x]` - The drawer's words stay on the row picked before
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
