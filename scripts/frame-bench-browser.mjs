@@ -49,7 +49,9 @@ const BASE_SCENES = scenesArg ? scenesArg.split(',') : ALL;
 // B-111: DIST_B may name several builds, comma-separated; they run as `~b`, `~c`, … in the same rotation.
 const DIST_B = process.env.DIST_B;
 const OTHERS = DIST_B ? DIST_B.split(',').map((dir, i) => ({ tag: `~${String.fromCharCode(98 + i)}`, dir })) : [];
-const SCENES = BASE_SCENES.flatMap(s => [s, ...OTHERS.map(o => `${s}${o.tag}`)]);
+// Build-major, so that a light scene follows each heavy one: scene-major ran six heavy builds back to back, and on the
+// phone the later ones in a streak lost half their frames to heat while the first after the light block never did.
+const SCENES = ['', ...OTHERS.map(o => o.tag)].flatMap(t => BASE_SCENES.map(s => `${s}${t}`));
 // DIST: another copy of the build to measure, as one built at another commit.
 const DIST = process.env.DIST ?? 'sample/build/dist/wasmJs/productionExecutable';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -219,6 +221,8 @@ for (let round = 1; round <= ROUNDS; round++) {
     }
     const m1 = await metrics();
     const busy = (m1.TaskDuration - m0.TaskDuration) / (m1.Timestamp - m0.Timestamp);
+    // B-111: the battery's temperature after the scene, in °C, as heat costs the phone frames.
+    const temp = DEVICE ? +sh(`${ADB} shell dumpsys battery | grep temperature`).replace(/\D/g, '') / 10 : NaN;
     const got = await evaluate('window.__bench.recording = false; JSON.stringify({ f: window.__bench.frames, l: window.__bench.long, s: window.__scrolled ?? -1 })');
     const { f, l, s } = JSON.parse(got);
     const intervals = [];
@@ -244,7 +248,7 @@ for (let round = 1; round <= ROUNDS; round++) {
       busy,
     };
     (results[scene] ??= []).push({ round, ...r });
-    console.log(`round ${round} ${scene.padEnd(17)} ${r.fps.toFixed(1).padStart(5)} f/s  interval p95 ${r.ivP95.toFixed(1).padStart(6)}  >16.7 ${(100 * r.over17).toFixed(2).padStart(6)} %  >33 ${(100 * r.over33).toFixed(2).padStart(6)} %  work p50 ${r.workP50.toFixed(2).padStart(6)} p95 ${r.workP95.toFixed(2).padStart(6)}  LoAF ${r.loaf} (${r.loafMs.toFixed(0)} ms)  busy ${(100 * busy).toFixed(1).padStart(5)} %${scene === 'ComponentsWheel' ? `  wheel ${wheels} events, scrolled ${s} px` : ''}`);
+    console.log(`round ${round} ${scene.padEnd(17)} ${r.fps.toFixed(1).padStart(5)} f/s  interval p95 ${r.ivP95.toFixed(1).padStart(6)}  >16.7 ${(100 * r.over17).toFixed(2).padStart(6)} %  >33 ${(100 * r.over33).toFixed(2).padStart(6)} %  work p50 ${r.workP50.toFixed(2).padStart(6)} p95 ${r.workP95.toFixed(2).padStart(6)}  LoAF ${r.loaf} (${r.loafMs.toFixed(0)} ms)  busy ${(100 * busy).toFixed(1).padStart(5)} %${DEVICE ? `  ${temp.toFixed(1)} °C` : ''}${scene === 'ComponentsWheel' ? `  wheel ${wheels} events, scrolled ${s} px` : ''}`);
   }
 }
 writeFileSync(join(out, 'frames.csv'), csv.join('\n') + '\n');

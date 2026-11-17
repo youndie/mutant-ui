@@ -1,0 +1,23 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-17T20:36:50.790Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 100; temperature: 275; Capacity level: 5;
+# browser: Chrome/157.0.8103.50, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: ebf6d4c (dirty)
+# build: a23a5facef995f53b5fa.wasm 5ce6d10912661230, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 4 (round 1 not counted), 8000 ms a scene, first 1000 ms not counted; scenes Control,ComponentsReduce
+# viewport in the sample: 411x784 at 2.625x
+round 1 Control            53.0 f/s  interval p95   33.3  >16.7  37.59 %  >33  14.42 %  work p50  28.00 p95  44.30  LoAF 0 (0 ms)  busy  99.7 %
+round 1 ComponentsReduce   60.8 f/s  interval p95   16.7  >16.7  23.92 %  >33   0.00 %  work p50  10.50 p95  24.60  LoAF 0 (0 ms)  busy  67.7 %
+round 2 ComponentsReduce   60.9 f/s  interval p95   16.7  >16.7  25.10 %  >33   0.00 %  work p50  10.20 p95  25.30  LoAF 0 (0 ms)  busy  66.9 %
+round 2 Control            52.8 f/s  interval p95   33.3  >16.7  34.44 %  >33  14.73 %  work p50  28.10 p95  43.00  LoAF 0 (0 ms)  busy  99.8 %
+round 3 Control            52.1 f/s  interval p95   33.3  >16.7  35.58 %  >33  16.35 %  work p50  28.30 p95  44.80  LoAF 1 (54 ms)  busy  99.8 %
+round 3 ComponentsReduce   60.9 f/s  interval p95   16.7  >16.7  23.66 %  >33   0.00 %  work p50  10.20 p95  25.00  LoAF 0 (0 ms)  busy  66.8 %
+round 4 ComponentsReduce   58.6 f/s  interval p95   16.7  >16.7  23.93 %  >33   1.92 %  work p50  10.20 p95  25.50  LoAF 6 (407 ms)  busy  69.1 %
+round 4 Control            49.9 f/s  interval p95   33.3  >16.7  35.18 %  >33  20.35 %  work p50  29.40 p95  46.20  LoAF 0 (0 ms)  busy  99.8 %
+
+# counted rounds 2..4, pooled
+Control            51.6 f/s  interval p95   33.3  >16.7  35.06 %  >33  17.09 %  work p50  28.40 p95  45.00  RED
+ComponentsReduce   60.1 f/s  interval p95   16.7  >16.7  24.24 %  >33   0.63 %  work p50  10.20 p95  25.40  GREY
+# Control: work p50 over ComponentsReduce's, per counted round: 17.90, 18.10, 19.20 ms against 10 ms
