@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.components.MutantSwitch
+import io.github.youndie.mutant.components.MutantTooltipBox
 import io.github.youndie.mutant.surface.mutantTape
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
@@ -130,12 +131,15 @@ private fun Header(
                 label = strings.cleanSignal,
                 key = "clean",
             )
-            MutantSwitch(
-                settings.steppedMotion,
-                { settings.steppedMotion = it },
-                label = strings.designSteps,
-                key = "steps",
-            )
+            // B-106: what the switch does, on hover, keyboard focus or a long press.
+            MutantTooltipBox(strings.steppedMotionTitle, supportingText = strings.steppedMotionHint) {
+                MutantSwitch(
+                    settings.steppedMotion,
+                    { settings.steppedMotion = it },
+                    label = strings.steppedMotion,
+                    key = "steps",
+                )
+            }
         }
     }
 }

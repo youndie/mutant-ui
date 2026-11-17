@@ -21,7 +21,15 @@ class SampleStrings(
     val themeKopiya = t("Copy", "Копия")
     val reduceMotion = t("Reduce motion", "Без движения")
     val cleanSignal = t("Clean signal", "Чистый сигнал")
-    val designSteps = t("Design's steps", "Шаги дизайна")
+    val steppedMotion = t("Stepped motion", "Движение рывками")
+    val steppedMotionTitle = t("Motion as the design steps it", "Движение, как в дизайне")
+    val steppedMotionHint =
+        t(
+            "On, transitions move 12 times a second and the venom 24, as the design's engine draws them. Off, they " +
+                "move on every frame. The boil and the drips keep their own tick either way.",
+            "Включено — переходы сменяются 12 раз в секунду, а venom 24, как их рисует движок дизайна. Выключено — " +
+                "движутся каждый кадр. Кипение и капли в любом случае идут своим тиком.",
+        )
     val languageName = t("EN", "RU")
     val pageComponents = t("Components", "Компоненты")
     val pageDemo = t("Demo", "Демо")
