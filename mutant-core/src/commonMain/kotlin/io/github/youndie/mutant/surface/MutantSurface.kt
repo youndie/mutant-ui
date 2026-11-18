@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -322,7 +323,10 @@ internal fun MutantSurface(
                 registry.surface = it
                 moshBody.coords = it
                 view.place(it, reach)
-            }.drawWithCache {
+            }
+            // B-123: a layer of its own, so a frame between two ticks replays the body's recorded picture.
+            .graphicsLayer()
+            .drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
                 // B-87: a body off the screen builds no tick and reads no clock; its layout tells it when it shows
