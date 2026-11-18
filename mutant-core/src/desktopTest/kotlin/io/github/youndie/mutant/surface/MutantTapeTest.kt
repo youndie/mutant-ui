@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
@@ -28,7 +29,8 @@ import kotlin.test.assertTrue
 
 /**
  * B-13: the Tape's band passes on the engine's cycle, the Tape is off under «Чистый сигнал», stands still under
- * reduce motion, steps on the scene's tick while running, and draws in dp at any density. Its pixels against
+ * reduce motion, steps on the scene's tick at rest, and draws in dp at any density. B-136: its band moves on every frame
+ * while it passes, and steps with the grain under the theme's stepped motion. Its pixels against
  * the engine are [BodyParityTest]'s drift frames.
  */
 @OptIn(ExperimentalTestApi::class)
@@ -103,21 +105,40 @@ class MutantTapeTest {
         assertTrue(!stepsOver3s(reduceMotion = true), "paused, the Tape keeps its picture")
     }
 
-    @Test
-    fun `a running Tape changes on the scene's tick and not between`() {
-        val clock = MutantClock(fps = 24.0)
-        val shots = ArrayList<List<Color>>()
+    /** One frame of a running Tape: its pixels, how many times its layer was drawn so far, the clock's time and tick. */
+    private class TapeFrame(
+        val px: List<Color>?,
+        val draws: Int,
+        val ms: Double,
+        val tick: Long,
+    )
+
+    /**
+     * Runs a 250 × 130 dp Tape on a clock of 24 resting ticks a second from [startMs] for [frames] frames of 16 ms, with
+     * the theme's [steppedMotion], and records each frame; [capture] takes its pixels too (a separate run counts draws,
+     * so a capture never draws the layer it counts).
+     */
+    private fun runTape(
+        startMs: Double,
+        frames: Int,
+        steppedMotion: Boolean = false,
+        capture: Boolean,
+    ): List<TapeFrame> {
+        val clock = MutantClock(fps = 24.0, startMs = startMs)
+        var draws = 0
+        val out = ArrayList<TapeFrame>()
         runComposeUiTest {
             mainClock.autoAdvance = false
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                    MutantTheme {
+                    MutantTheme(reduceMotion = false, steppedMotion = steppedMotion) {
                         ProvideMutantClock(clock) {
                             Box(
                                 Modifier
                                     .size(250.dp, 130.dp)
                                     .testTag("s")
                                     .background(Color.Black)
+                                    .drawBehind { draws++ }
                                     .mutantTape(),
                             )
                         }
@@ -125,25 +146,76 @@ class MutantTapeTest {
                 }
             }
             mainClock.advanceTimeByFrame()
-
-            fun shot() =
-                onNodeWithTag("s").captureToImage().toPixelMap().let { px ->
-                    List(px.width * px.height) { px[it % px.width, it / px.width] }
-                }
-            // Stand just past a scene tick, then step under 125 ms at a resting tick of 24 a second.
-            repeat(10) { if (clock.nowMs % MutantClock.SCENE_TICK_MS > 20) mainClock.advanceTimeByFrame() }
-            val tick = clock.sceneTick
-            shots += shot()
-            repeat(5) { mainClock.advanceTimeByFrame() }
-            assertEquals(tick, clock.sceneTick, "still inside the tick at ${clock.nowMs}")
-            shots += shot()
-            // Bounded: a tick that never publishes fails here instead of hanging the test JVM.
-            repeat(10) { if (clock.sceneTick == tick) mainClock.advanceTimeByFrame() }
-            assertNotEquals(tick, clock.sceneTick, "the scene's tick moved by ${clock.nowMs}")
-            shots += shot()
+            repeat(frames) {
+                mainClock.advanceTimeByFrame()
+                val px =
+                    if (!capture) {
+                        null
+                    } else {
+                        onNodeWithTag("s").captureToImage().toPixelMap().let { m ->
+                            List(m.width * m.height) { m[it % m.width, it / m.width] }
+                        }
+                    }
+                out += TapeFrame(px, draws, clock.nowMs, clock.sceneTick)
+            }
         }
-        assertEquals(shots[0], shots[1], "the 24 fps resting tick passed, the scene's did not")
-        assertNotEquals(shots[1], shots[2], "the scene's tick passed")
+        return out
+    }
+
+    @Test
+    fun `at rest the Tape changes and is drawn on the scene's tick and not between`() {
+        // From 2000 ms the band passes for one more frame or so, then is gone until 7000: the grain and noise alone.
+        val shots = runTape(startMs = 2000.0, frames = 40, capture = true)
+        val draws = runTape(startMs = 2000.0, frames = 40, capture = false)
+        var within = 0
+        var across = 0
+        for (k in 1 until shots.size) {
+            val (a, b) = shots[k - 1] to shots[k]
+            if (a.ms % 7000 < 2100) continue
+            if (a.tick == b.tick) {
+                within++
+                assertEquals(a.px, b.px, "inside the tick ${a.tick}, ${a.ms} → ${b.ms} ms")
+                assertEquals(draws[k - 1].draws, draws[k].draws, "drawn again inside the tick, ${a.ms} → ${b.ms} ms")
+            } else {
+                across++
+                assertNotEquals(a.px, b.px, "the scene's tick passed, ${a.ms} → ${b.ms} ms")
+            }
+        }
+        assertTrue(within >= 20 && across >= 4, "frames inside a tick $within, ticks passed $across")
+    }
+
+    @Test
+    fun `while the band passes the Tape moves and is drawn on every frame`() {
+        // From 200 ms to about 840 the band rises 1.2 dp a frame over 130 dp: every frame moves it by a whole dp or two.
+        val shots = runTape(startMs = 200.0, frames = 40, capture = true)
+        val draws = runTape(startMs = 200.0, frames = 40, capture = false)
+        var within = 0
+        for (k in 1 until shots.size) {
+            val (a, b) = shots[k - 1] to shots[k]
+            assertTrue(tapeBandTop(b.ms, 130f) != null, "the band still passes at ${b.ms} ms")
+            assertNotEquals(a.px, b.px, "the band stood still, ${a.ms} → ${b.ms} ms")
+            assertTrue(draws[k].draws > draws[k - 1].draws, "not drawn again, ${a.ms} → ${b.ms} ms")
+            if (a.tick == b.tick) within++
+        }
+        assertTrue(within >= 20, "frames inside a scene tick: $within")
+    }
+
+    @Test
+    fun `under stepped motion the band steps with the grain on the scene's tick`() {
+        val shots = runTape(startMs = 200.0, frames = 40, steppedMotion = true, capture = true)
+        var within = 0
+        var across = 0
+        for (k in 1 until shots.size) {
+            val (a, b) = shots[k - 1] to shots[k]
+            if (a.tick == b.tick) {
+                within++
+                assertEquals(a.px, b.px, "inside the tick ${a.tick}, ${a.ms} → ${b.ms} ms")
+            } else {
+                across++
+                assertNotEquals(a.px, b.px, "the scene's tick passed, ${a.ms} → ${b.ms} ms")
+            }
+        }
+        assertTrue(within >= 20 && across >= 4, "frames inside a tick $within, ticks passed $across")
     }
 
     @Test

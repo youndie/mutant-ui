@@ -19,6 +19,7 @@ import io.github.youndie.mutant.gen.jsToFixed
 import io.github.youndie.mutant.theme.LocalMutantCleanSignal
 import io.github.youndie.mutant.theme.LocalMutantColors
 import io.github.youndie.mutant.theme.LocalMutantStage
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantMotion
@@ -27,8 +28,9 @@ import kotlin.math.floor
 /*
  * The Tape («Лента», research D10): one layer over the screen, as the engine's `tapeHtml` and `stageStep` draw
  * it — scanlines, the tracking band passing for 2100 ms every 7000 ms, the grain stepping per tick, the head's
- * noise at the bottom edge. It steps on the resting tick, stands still under the pause, and is off under clean
- * signal.
+ * noise at the bottom edge. The grain and the noise step on the scene's tick; the band glides on every frame while it
+ * passes, unless the theme steps motion as the design does (B-136). It stands still under the pause, and is off under
+ * clean signal.
  */
 
 /** The grain's tile: 44 strokes in 90 × 180 dp, seeded by the stage (`rng('tape', stage)`). */
@@ -303,13 +305,39 @@ internal fun wholeSpan(
 private const val MAX_GRAIN_PX = 2048f
 
 /**
+ * The time the Tape is drawn at on [clock] over a screen [h] dp tall (B-136), read in the draw so the Tape is drawn
+ * again when it changes:
+ * - frozen, the clock's own time (the engine's `data-mu-t`);
+ * - with the theme's [steps] (`steppedMotion`), the scene's tick, as the engine's `stageStep` draws the whole Tape;
+ * - else the time now: on the scene's tick at rest, and on every frame while the band passes, so the band glides
+ *   instead of jumping a 16th of the screen at a time. The grain and the noise keep the scene's tick either way:
+ *   `floor(t / 125)` of the time now is that tick.
+ */
+internal fun tapeTimeMs(
+    clock: MutantClock,
+    steps: Boolean,
+    h: Float,
+): Double {
+    if (clock.frozen) return clock.nowMs
+    val tick = clock.sceneTick
+    if (steps) return tick * MutantClock.SCENE_TICK_MS
+    val now = clock.nowMs
+    // The band starts on a scene tick (7000 ms is 56 of them), which is read above; while it passes it reads every
+    // frame, and gone it reads nothing more, so a Tape at rest is drawn once a tick.
+    if (tapeBandTop(now, h) != null) clock.frame
+    return now
+}
+
+/**
  * The Tape («Лента») over this element: scanlines, a grain stepping eight times a second, a tracking band
  * passing for 2.1 s every 7 s and the head's noise at the bottom edge, as the design draws them over a screen
  * (research D10). Put it once on the screen's root, not on each component; it is drawn over the content and
  * takes no input.
  *
- * It steps on the theme's clock, so it stands still under reduce motion, and it is not drawn under
- * «Чистый сигнал» ([MutantTheme]'s `cleanSignal`). Its grain and noise are seeded by the screen.
+ * It runs on the theme's clock, so it stands still under reduce motion, and it is not drawn under
+ * «Чистый сигнал» ([MutantTheme]'s `cleanSignal`). Its grain and noise are seeded by the screen. The band moves on
+ * every frame while it passes; under [MutantTheme]'s `steppedMotion` it steps eight times a second with the grain, as
+ * the design draws it.
  */
 public fun Modifier.mutantTape(): Modifier =
     composed {
@@ -322,14 +350,13 @@ public fun Modifier.mutantTape(): Modifier =
         val density = androidx.compose.ui.platform.LocalDensity.current.density
         val tile = remember(grain, colors.print, density) { grainTile(grain, colors, density) }
         val lines = remember(colors.print, density) { scanlineFill(colors, density) }
+        val steps = LocalMutantSteppedMotion.current
         drawWithContent {
             drawContent()
-            // A frozen clock is the engine's `data-mu-t`, drawn at that very time; a running one steps the Tape on
-            // the scene's tick, which the engine draws at the first frame past it, within a frame of this.
-            val t = if (clock.frozen) clock.nowMs else clock.sceneTick * MutantClock.SCENE_TICK_MS
             val d = density
             val w = size.width / d
             val h = size.height / d
+            val t = tapeTimeMs(clock, steps, h)
             scale(d, Offset.Zero) {
                 clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain, skip, tile, lines) }
             }
