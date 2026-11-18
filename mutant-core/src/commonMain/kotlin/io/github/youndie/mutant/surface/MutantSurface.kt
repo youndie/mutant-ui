@@ -412,7 +412,11 @@ internal fun MutantSurface(
                             look.shadow,
                             p.outline.toFloat(),
                         )
-                    return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
+                    val paths =
+                        BodyPaths.of(f).also { ps ->
+                            ps.outline = ps.contour.outlineFill(outline, d)?.let { outline to it }
+                        }
+                    return BodyPicture(paths, frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
                 }
 
                 // B-117: the body's still layers, drawn once for its instance and what they are drawn with.
