@@ -1,0 +1,64 @@
+# B-73 profile of TenCards8, 2026-11-17T23:46:13.409Z, 8000 ms sampled every 100 µs, phone proxy
+# sampled 8130 ms, idle 1 ms, busy 8129 ms (100.0 %)
+
+## self time by where its code lives (share of busy)
+   3876.2 ms  47.7 %  bfa5198fb2fe683c613a.wasm
+   3848.5 ms  47.3 %  711d465a053e4bd037a8.wasm
+    197.7 ms   2.4 %  (browser)
+     95.9 ms   1.2 %  sample.js
+     76.3 ms   0.9 %  (garbage collector)
+     34.3 ms   0.4 %  (program)
+
+## self time, top 25 (share of busy)
+    671.2 ms   8.3 %  wasm-function[1640]
+    572.8 ms   7.0 %  wasm-function[5131]
+    571.5 ms   7.0 %  wasm-function[10992]
+    467.9 ms   5.8 %  wasm-function[1412]
+    386.7 ms   4.8 %  wasm-function[5363]
+    330.4 ms   4.1 %  wasm-function[5124]
+    321.3 ms   4.0 %  wasm-function[1659]
+    304.1 ms   3.7 %  wasm-function[5134]
+    293.6 ms   3.6 %  wasm-function[5133]
+    261.9 ms   3.2 %  wasm-function[5128]
+    196.4 ms   2.4 %  wasm-function[1642]
+    192.1 ms   2.4 %  wasm-function[5129]
+    163.6 ms   2.0 %  wasm-function[10983]
+    152.8 ms   1.9 %  wasm-function[11025]
+    116.2 ms   1.4 %  wasm-function[1406]
+    114.0 ms   1.4 %  wasm-function[1644]
+     97.6 ms   1.2 %  wasm-function[1402]
+     97.2 ms   1.2 %  wasm-function[712]
+     95.3 ms   1.2 %  wasm-function[1405]
+     93.4 ms   1.1 %  wasm-function[5102]
+     89.1 ms   1.1 %  texSubImage2D
+     89.1 ms   1.1 %  wasm-function[1450]
+     84.0 ms   1.0 %  wasm-function[2550]
+     82.4 ms   1.0 %  wasm-function[11133]
+     79.0 ms   1.0 %  wasm-function[14129]
+
+## total time, top 25 (share of busy)
+   8128.9 ms 100.0 %  (root)
+   7607.6 ms  93.6 %  (sample.js)
+   7598.5 ms  93.5 %  js-to-wasm:nn:n
+   7574.0 ms  93.2 %  wasm-function[1119]
+   7573.1 ms  93.2 %  wasm-function[4385]
+   7573.1 ms  93.2 %  wasm-function[2653]
+   7501.4 ms  92.3 %  wasm-function[7825]
+   7346.7 ms  90.4 %  wasm-function[7536]
+   7334.7 ms  90.2 %  wasm-function[6901]
+   7334.0 ms  90.2 %  wasm-function[6900]
+   7334.0 ms  90.2 %  wasm-function[6579]
+   7334.0 ms  90.2 %  wasm-function[6636]
+   7333.7 ms  90.2 %  wasm-function[6536]
+   4025.1 ms  49.5 %  wasm-to-js
+   3939.9 ms  48.5 %  wasm-function[3917]
+   3937.5 ms  48.4 %  wasm-function[618]
+   3862.6 ms  47.5 %  wasm-function[7292]
+   3862.0 ms  47.5 %  wasm-function[4827]
+   3854.6 ms  47.4 %  wasm-function[4833]
+   3854.1 ms  47.4 %  wasm-function[7302]
+   3853.6 ms  47.4 %  wasm-function[6941]
+   3852.6 ms  47.4 %  wasm-function[6675]
+   3852.6 ms  47.4 %  wasm-function[6940]
+   3851.5 ms  47.4 %  wasm-function[8358]
+   3850.1 ms  47.4 %  wasm-function[6673]
