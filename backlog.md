@@ -58,15 +58,14 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (3)
+## Open (2)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-113](docs/backlog/B-113-an-image-not-copied-each-frame.md) `[~]` | A body's image not copied each frame it is drawn | P2 | S | - |
-| [B-119](docs/backlog/B-119-the-still-image-marked-finished.md) `[~]` | The still layers' image marked finished | P2 | S | - |
 
-## Closed (116)
+## Closed (117)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -188,6 +187,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-116](docs/backlog/B-116-the-proxy-calibrated-to-the-phone.md) `[x]` - The phone proxy calibrated to the phone, and the cuts measured again on it
 - [B-117](docs/backlog/B-117-still-layers-once-on-the-surface-grid.md) `[x]` - A body's still layers drawn once, on the surface's grid
 - [B-118](docs/backlog/B-118-what-the-decorations-still-cost.md) `[x]` - What the decorations still cost, over B-117
+- [B-119](docs/backlog/B-119-the-still-image-marked-finished.md) `[x]` - The still layers' image marked finished
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
