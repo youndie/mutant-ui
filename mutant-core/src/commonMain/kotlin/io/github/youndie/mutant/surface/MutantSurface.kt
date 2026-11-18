@@ -725,7 +725,7 @@ internal fun MutantSurface(
                             ?: shaderOf(g, frame, dead, t, k)
                     if (shaded != null) {
                         view.drawn = null
-                        frameProbe?.invoke(false, false, frame.steadyWebs)
+                        frameProbe?.invoke(early != null, false, frame.steadyWebs)
                         val ox = slot.ox.toFloat()
                         val oy = slot.oy.toFloat()
                         // B-133: the keyframe loss's snapshot is a CPU bitmap, where the shader would run pixel by pixel;
