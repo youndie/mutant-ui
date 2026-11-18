@@ -63,11 +63,12 @@ uniform float2 flowDims;
 
 half4 node(float2 ij) { return field.eval(clamp(ij, float2(0.0), dims - 1.0) + 0.5); }
 
-float val(half4 t) {
-    float hi = floor(float(t.r) * 255.0 + 0.5);
-    float lo = floor(float(t.g) * 255.0 + 0.5);
-    return (hi * 256.0 + lo) / 65535.0 * 64.0 - 32.0;
+// A node's 16-bit word from its 5-6-5 channels.
+float word(half4 t) {
+    return floor(float(t.r) * 31.0 + 0.5) * 2048.0 + floor(float(t.g) * 63.0 + 0.5) * 32.0 + floor(float(t.b) * 31.0 + 0.5);
 }
+
+float val(half4 t) { return floor(word(t) / 4.0) / ${FIELD_STEPS} * 64.0 - 32.0; }
 
 float texel(float2 ij) { return val(node(ij)); }
 
@@ -125,7 +126,8 @@ float sdist(float2 p, float iso, float r, float bit) {
     if (g.x < 0.0 || g.y < 0.0 || g.x > dims.x - 1.0 || g.y > dims.y - 1.0) return 1000.0;
     float v = bil(g) - iso;
     float2 c0 = floor(g);
-    float flags = floor(float(node(c0).b) * 255.0 + 0.5);
+    float w = word(node(c0));
+    float flags = w - floor(w / 4.0) * 4.0;
     bool near = bit == 1.0 ? mod(flags, 2.0) >= 1.0 : flags >= 2.0;
     float best = 1000.0;
     if (near) {

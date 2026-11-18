@@ -10,10 +10,11 @@ import kotlin.math.roundToInt
 internal const val HIGHLIGHT_ISO: Float = -3.4f
 
 /**
- * B-130: [field] as the body shader reads it, an opaque RGBA texture: its value in red and green (16 bits over ±32), and
- * in blue whether the node is within reach of a crossing of the contour (1: two cells, for the outline) and of the
- * highlight (2: one cell), so a pixel far from both reads one texel. A shader reads a texel premultiplied by its alpha,
- * so the alpha carries nothing.
+ * B-130: [field] as the body shader reads it, an `RGB_565` texture, two bytes a node (B-134: Skiko in the browser
+ * hands Skia a byte a call; its `R8G8_UNORM` makes no image): a 16-bit word, little-endian, red its top five bits, green
+ * the next six, blue the low five. The word holds the value in its top 14 bits over ±32, and in the low two whether the
+ * node is within reach of a crossing of the contour (1: two cells, for the outline) and of the highlight (2: one cell), so
+ * a pixel far from both reads one texel.
  */
 internal fun fieldTexels(field: DistanceField): ByteArray {
     val nx = field.nx
@@ -42,13 +43,11 @@ internal fun fieldTexels(field: DistanceField): ByteArray {
     }
     mark(0f, 2, 1)
     mark(HIGHLIGHT_ISO, 1, 2)
-    val bytes = ByteArray(nx * ny * 4)
+    val bytes = ByteArray(nx * ny * 2)
     for (k in 0 until nx * ny) {
-        val u = ((v[k].coerceIn(-32f, 32f) + 32f) / 64f * 65535f).roundToInt()
-        bytes[4 * k] = (u shr 8).toByte()
-        bytes[4 * k + 1] = (u and 255).toByte()
-        bytes[4 * k + 2] = near[k].toByte()
-        bytes[4 * k + 3] = 255.toByte()
+        val u = ((v[k].coerceIn(-32f, 32f) + 32f) / 64f * FIELD_STEPS).roundToInt() shl 2 or near[k]
+        bytes[2 * k] = (u and 255).toByte()
+        bytes[2 * k + 1] = (u shr 8).toByte()
     }
     return bytes
 }
@@ -65,10 +64,14 @@ internal class FlowBins(
     val binsW: Int,
     val binsH: Int,
     val segs: ByteArray,
+    val segsW: Int,
     val rows: Int,
     val originX: Float,
     val originY: Float,
 )
+
+/** Steps of a field value over ±32: 14 bits. */
+internal const val FIELD_STEPS: Float = 16383f
 
 /** Texels a row of the flow segments' texture, a multiple of three. */
 internal const val FLOW_W: Int = 1023
@@ -198,7 +201,9 @@ internal fun flowBins(
         }
     }
     val rows = max(1, (total * 3 + FLOW_W - 1) / FLOW_W)
-    val segs = ByteArray(FLOW_W * rows * 4) { if (it % 4 == 3) 255.toByte() else 0 }
+    // B-134: one row is only as wide as its entries; the shader indexes a texel by FLOW_W either way.
+    val segsW = if (rows == 1) max(3, total * 3) else FLOW_W
+    val segs = ByteArray(segsW * rows * 4) { if (it % 4 == 3) 255.toByte() else 0 }
     val slots = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9)
     for (e in 0 until total) {
         val k = entries[e]
@@ -209,7 +214,7 @@ internal fun flowBins(
             segs[t + slots[2 * c + 1]] = (u and 255).toByte()
         }
     }
-    return FlowBins(bins, bw, bh, segs, rows, ox, oy)
+    return FlowBins(bins, bw, bh, segs, segsW, rows, ox, oy)
 }
 
 /** One loop of a [GenPath] as segments x0, y0, x1, y1 in its order, closed back to its start. */

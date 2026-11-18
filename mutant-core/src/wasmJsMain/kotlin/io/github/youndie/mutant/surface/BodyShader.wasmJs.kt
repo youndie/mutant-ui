@@ -40,9 +40,9 @@ internal actual fun bodyShaderBrush(
     val ny = field.ny
     val image =
         Image.makeRaster(
-            ImageInfo(nx, ny, ColorType.RGBA_8888, ColorAlphaType.OPAQUE, ColorSpace.sRGB),
+            ImageInfo(nx, ny, ColorType.RGB_565, ColorAlphaType.OPAQUE, ColorSpace.sRGB),
             fieldTexels(field),
-            nx * 4,
+            nx * 2,
         )
     val texture = image.makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, nearest)
     val ox = slot.ox.toFloat()
@@ -89,7 +89,7 @@ internal actual fun bodyShaderBrush(
     b.uniform("dens", density)
     if (flows != null) {
         b.child("flowBins", raster(flows.bins, flows.binsW, flows.binsH))
-        b.child("flow", raster(flows.segs, FLOW_W, flows.rows))
+        b.child("flow", raster(flows.segs, flows.segsW, flows.rows))
         b.uniform("hasFlow", 1f)
         b.uniform("flowOrigin", flows.originX, flows.originY)
         b.uniform("flowDims", flows.binsW.toFloat(), flows.binsH.toFloat())
