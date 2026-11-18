@@ -40,3 +40,6 @@ all three ([diff](../../logs/b-128/gpu-none4.diff)): paths 61.2 frames a second 
 **this item's shader 3.7 (291 ms)**. A pixel near the edge walks its bin's segments, dozens of them, three texture reads
 each, for every query: hundreds of reads a pixel, which a Mac's GPU hides and a phone's does not. The curve stays; the walk
 moves to the CPU, once a tick, in [B-129](B-129-the-contour-distance-once-a-tick.md).
+
+**Corrected by [B-129](B-129-the-contour-distance-once-a-tick.md):** the slowness above is more likely the binning on the
+CPU each tick than the GPU's walk; not measured apart.
