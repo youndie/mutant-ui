@@ -41,3 +41,21 @@ cannot part frames from the builds ahead that fill an idle page.
 without them at 47.3: about 20 ms a frame sit in the loop's own code, as the proxy hinted (B-118, a floor of some 12 ms).
 What the loop's code draws every frame that the kit did not is the still layers' image, the size of the body's box, under
 the contour's clip, drawn even when it holds nothing.
+
+## Why the image costs: two diagnostic runs, the phone hot (38.4–38.6 °C)
+
+Builds of the loop's code with all four decorations left out, differing as [none4-no-image.diff](../../logs/b-125/none4-no-image.diff)
+and the lines below say; not kept.
+
+[First run](../../logs/b-125/2026-11-18-pixel6a-image-floor.log), pooled frames a second: with the empty image 18.7,
+without it 29.4, the kit before the loop without the decorations 29.7. Per round the builds swung from 10 to 62 frames a
+second: at this heat the phone's own throttling moves more than any build does, and no round order holds.
+
+[Second run](../../logs/b-125/2026-11-18-pixel6a-image-why.log), pooled: the empty image 24.7; drawn without the contour's
+clip 21.0; drawn with nearest sampling 22.1; not drawn 33.0 (rounds 24.3, 23.1, 34.0, 21.8, 61.6). Neither the clip nor the
+sampling is what costs; not drawing the image is the only change that moves the mean, and it moves it within the heat's
+noise.
+
+**What this leaves.** Hot, the phone runs ten cards at 21–33 frames a second whatever the decorations, and the kit without
+them at 30–47: the bodies themselves, built and drawn on the CPU on one thread, are over a 16.7 ms frame before any
+decoration. Skia's own code is two thirds of that thread with the decorations or without them.

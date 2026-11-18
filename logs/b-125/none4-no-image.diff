@@ -1,0 +1,26 @@
+diff --git a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt
+index d181282..168423b 100644
+--- a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt
++++ b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt
+@@ -319,7 +319,7 @@ internal enum class BodyPart { Shadow, Fill, Speckle, Mosaic, DeadPixels, FlowLi
+ 
+ /** What a measurement leaves out of every body's draw (B-78); empty in the kit. */
+ internal val LocalMutantSkipBodyParts =
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Speckle, BodyPart.Mosaic, BodyPart.DeadPixels, BodyPart.FlowLines) }
+ 
+ /** [block] clipped by [path], or unclipped when [unclipped] (B-78's ablation of the clip alone). */
+ private inline fun DrawScope.clipPathUnless(
+diff --git a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt
+index 16cd6c7..0aa24e2 100644
+--- a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt
++++ b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt
+@@ -1020,7 +1020,7 @@ internal fun rasterisedBody(
+ private const val RASTER_MARGIN = 20.0
+ 
+ /** B-117: whether a body's still layers are drawn once per instance; off only to measure against drawing them each tick. */
+-internal val LocalMutantStillLayersOnce = staticCompositionLocalOf { true }
++internal val LocalMutantStillLayersOnce = staticCompositionLocalOf { false }
+ 
+ /**
+  * B-117: a body's still layers drawn once ([stillLayersImage]), kept for as long as its instance and the inputs of its
