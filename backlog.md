@@ -58,10 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (4)
+## Open (5)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-134](docs/backlog/B-134-the-shader-hands-over-half-the-bytes.md) `[~]` | The body shader hands Skia half the bytes | P1 | S | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[?]` | Bodies on the GPU, with every decoration | P2 | L | - |
 | [B-130](docs/backlog/B-130-the-shader-marches-its-cells.md) `[~]` | The body shader marches its own cells | P2 | M | - |
