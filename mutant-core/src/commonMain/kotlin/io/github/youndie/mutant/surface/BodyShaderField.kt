@@ -150,20 +150,44 @@ internal fun flowBins(
             }
         }
     }
+    // The winding at each bin's centre, by a ray to the right (up through it +1, down −1): each row's crossings found
+    // once, sorted, and summed from the right.
     val bins = ByteArray(bw * bh * 4)
+    val xs = FloatArray(n)
+    val ds = IntArray(n)
+    val order = IntArray(n)
     for (j in 0 until bh) {
         val y = oy + (j + .5f) * FLOW_BIN_DP
+        var m = 0
+        for (k in 0 until n) {
+            val ay = s[4 * k + 1]
+            val by = s[4 * k + 3]
+            if ((ay > y) == (by > y)) continue
+            val ax = s[4 * k]
+            val bx = s[4 * k + 2]
+            xs[m] = ax + (y - ay) / (by - ay) * (bx - ax)
+            ds[m] = if (by > ay) 1 else -1
+            order[m] = m
+            m++
+        }
+        // Insertion sort: a row crosses a few lines.
+        for (a in 1 until m) {
+            val v = order[a]
+            var b = a - 1
+            while (b >= 0 && xs[order[b]] > xs[v]) {
+                order[b + 1] = order[b]
+                b--
+            }
+            order[b + 1] = v
+        }
+        var w = 0
+        for (q in 0 until m) w += ds[q]
+        var q = 0
         for (i in 0 until bw) {
             val x = ox + (i + .5f) * FLOW_BIN_DP
-            // The winding at the bin's centre, by a ray to the right: up through it +1, down −1.
-            var w = 0
-            for (k in 0 until n) {
-                val ay = s[4 * k + 1]
-                val by = s[4 * k + 3]
-                if ((ay > y) == (by > y)) continue
-                val ax = s[4 * k]
-                val bx = s[4 * k + 2]
-                if (ax + (y - ay) / (by - ay) * (bx - ax) > x) w += if (by > ay) 1 else -1
+            while (q < m && xs[order[q]] <= x) {
+                w -= ds[order[q]]
+                q++
             }
             if (w < -4 || w > 3) return null
             val b = j * bw + i
@@ -190,7 +214,9 @@ internal fun flowBins(
 
 /** One loop of a [GenPath] as segments x0, y0, x1, y1 in its order, closed back to its start. */
 private fun flattenLoop(loop: IntArray): FloatArray {
-    val s = ArrayList<Float>()
+    val quads = (loop.size - 2) / 4
+    val out = FloatArray(4 * (quads * SEGMENTS_A_QUADRATIC + 1))
+    var o = 0
     var px = loop[0] / 10f
     var py = loop[1] / 10f
     val sx = px
@@ -208,10 +234,10 @@ private fun flattenLoop(loop: IntArray): FloatArray {
             val u = 1 - t
             val qx = u * u * px + 2 * u * t * cx + t * t * ex
             val qy = u * u * py + 2 * u * t * cy + t * t * ey
-            s += lx
-            s += ly
-            s += qx
-            s += qy
+            out[o++] = lx
+            out[o++] = ly
+            out[o++] = qx
+            out[o++] = qy
             lx = qx
             ly = qy
         }
@@ -220,10 +246,10 @@ private fun flattenLoop(loop: IntArray): FloatArray {
         i += 4
     }
     if (px != sx || py != sy) {
-        s += px
-        s += py
-        s += sx
-        s += sy
+        out[o++] = px
+        out[o++] = py
+        out[o++] = sx
+        out[o++] = sy
     }
-    return s.toFloatArray()
+    return out.copyOf(o)
 }
