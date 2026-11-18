@@ -29,3 +29,11 @@ Both gates green with the layer, and a mutant clipping it to the body's box fail
 On [the run](../../logs/b-123/2026-11-18-proxy-x2.log), the proxy slowed ×2: −0.2, 0.2, 0.4, 0.5, 0.0 ms a frame against
 B-119's build (23.4 and 23.5 frames a second), under the line of 2.2. Reverted (`49d08a7`). It is the third cut in a row that
 bought nothing (B-121, B-122), so the loop that ran B-113 to B-123 stops here.
+
+## The loop's end, measured on its last commit
+
+[The run](../../logs/b-123/2026-11-18-final-against-kit-x2.log), the proxy slowed ×2, on mains, `bdc5f76` (B-115, B-117,
+B-119 kept, everything else reverted) against the kit before the loop (B-111's build): **21.1–23.6 frames a second against
+15.8–16.0** (one round of the kit dipped to 10.0), 15.5 to 20.5 ms a frame saved in every counted round; the kit without the
+four decorations ran at 25.6–25.9 in the same run. Every decoration is kept, and a frozen clock draws the same pixels as
+before. The phone has not seen it.
