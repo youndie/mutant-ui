@@ -44,6 +44,7 @@ class BodyAsImageTest {
         count: Count,
         density: Float = 1f,
         print: Boolean = false,
+        ahead: Boolean = true,
     ) {
         // Before the content: the kit's clock asks for frames for ever, so the content never goes idle.
         mainClock.autoAdvance = false
@@ -51,6 +52,7 @@ class BodyAsImageTest {
             CompositionLocalProvider(
                 LocalDensity provides Density(density),
                 LocalMutantBodyAsImage provides asImage,
+                LocalMutantBuildAhead provides ahead,
                 LocalMutantFrameProbe provides { _, image, _ -> if (image) count.asImage++ else count.asVectors++ },
                 LocalMutantRasterProbe provides { _, _ -> count.rasters++ },
             ) {
@@ -115,23 +117,44 @@ class BodyAsImageTest {
         }
 
     @Test
+    fun `a body whose image ahead is late draws one rasterised in the frame, once a tick`() =
+        runComposeUiTest {
+            val count = Count()
+            card(asImage = true, count, ahead = false)
+            ticks()
+            // B-114: no build ahead at all, as on a thread too busy for them; the ticks are still drawn from images.
+            assertTrue(count.asImage >= 8, "ticks drawn from an image: ${count.asImage}, as vectors ${count.asVectors}")
+            // Built in the frame once a tick, not once a frame: sixteen ticks in two seconds, 120 frames.
+            assertTrue(count.rasters in count.asImage..20, "images rasterised: ${count.rasters}")
+        }
+
+    @Test
     fun `a body drawn from its image draws exactly what the vector body draws`() {
         fun run(
             asImage: Boolean,
             density: Float,
             print: Boolean,
+            ahead: Boolean = true,
         ): Pair<List<List<Color>>, Count> {
             val count = Count()
             var shots = emptyList<List<Color>>()
             runComposeUiTest {
-                card(asImage, count, density, print)
+                card(asImage, count, density, print, ahead)
                 shots = ticks()
             }
             return shots to count
         }
-        for ((density, print) in listOf(1f to false, 2f to false, 1f to true)) {
-            val (image, used) = run(asImage = true, density, print)
-            val (vectors, none) = run(asImage = false, density, print)
+        // B-114: the image built in the frame, when none comes ahead, held to the vectors as the one built ahead is.
+        for ((density, print, ahead) in listOf(
+            Triple(1f, false, true),
+            Triple(2f, false, true),
+            Triple(1f, true, true),
+            Triple(2.625f, true, true),
+            Triple(2.625f, true, false),
+            Triple(1f, false, false),
+        )) {
+            val (image, used) = run(asImage = true, density, print, ahead)
+            val (vectors, none) = run(asImage = false, density, print, ahead)
             assertEquals(0, none.asImage, "no image with the switch off")
             assertTrue(used.asImage >= 8, "the ticks compared were drawn from images: ${used.asImage}")
             // The first tick of an off-frame body draws no body yet (B-50); every tick after it is compared.
