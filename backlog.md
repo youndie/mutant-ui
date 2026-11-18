@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (2)
+## Open (1)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-124](docs/backlog/B-124-the-loop-on-the-phone.md) `[~]` | The performance loop's result on the phone | P2 | S | - |
 
-## Closed (122)
+## Closed (123)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -193,6 +192,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-121](docs/backlog/B-121-the-outline-stroked-once-a-tick.md) `[-]` - A body's outline stroked once a tick
 - [B-122](docs/backlog/B-122-builds-ahead-at-user-visible-priority.md) `[-]` - A body's builds ahead posted at user-visible priority in the browser
 - [B-123](docs/backlog/B-123-each-body-in-its-own-layer.md) `[-]` - Each body drawn in a layer of its own
+- [B-124](docs/backlog/B-124-the-loop-on-the-phone.md) `[x]` - The performance loop's result on the phone
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
