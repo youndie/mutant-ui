@@ -34,7 +34,8 @@ internal actual fun bodyShaderBrush(
     still: StillImage?,
     flow: GenPath,
 ): Brush? {
-    val flows = flowSegments(flow) ?: return null
+    // The flow lines' coverage reaches half a pixel past their edge, and a little.
+    val flows = if (flow.isEmpty) null else flowBins(flow, .5f / density + .25f) ?: return null
     val nx = field.nx
     val ny = field.ny
     val image =
@@ -86,21 +87,30 @@ internal actual fun bodyShaderBrush(
         b.uniform("stillAt", 0f, 0f)
     }
     b.uniform("dens", density)
-    b.child(
-        "flow",
-        Image
-            .makeRaster(
-                ImageInfo(FLOW_W, flows.rows, ColorType.RGBA_8888, ColorAlphaType.OPAQUE, ColorSpace.sRGB),
-                flows.segs,
-                FLOW_W * 4,
-            ).makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, nearest),
-    )
-    b.uniform("flowCount", flows.loops.toFloat())
-    b.uniform("flowOrigin", flows.originX, flows.originY)
-    b.uniform("flowBox", flows.boxes)
-    b.uniform("flowRange", flows.ranges)
+    if (flows != null) {
+        b.child("flowBins", raster(flows.bins, flows.binsW, flows.binsH))
+        b.child("flow", raster(flows.segs, FLOW_W, flows.rows))
+        b.uniform("hasFlow", 1f)
+        b.uniform("flowOrigin", flows.originX, flows.originY)
+        b.uniform("flowDims", flows.binsW.toFloat(), flows.binsH.toFloat())
+    } else {
+        b.child("flowBins", texture)
+        b.child("flow", texture)
+        b.uniform("hasFlow", 0f)
+        b.uniform("flowOrigin", 0f, 0f)
+        b.uniform("flowDims", 0f, 0f)
+    }
     return ShaderBrush(b.makeShader().asComposeShader())
 }
+
+/** Opaque RGBA bytes as a texture read texel by texel. */
+private fun raster(
+    bytes: ByteArray,
+    w: Int,
+    h: Int,
+) = Image
+    .makeRaster(ImageInfo(w, h, ColorType.RGBA_8888, ColorAlphaType.OPAQUE, ColorSpace.sRGB), bytes, w * 4)
+    .makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, nearest)
 
 /** A colour as the shader's premultiplied `half4`. */
 private fun RuntimeShaderBuilder.color(

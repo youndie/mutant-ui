@@ -54,88 +54,138 @@ internal fun fieldTexels(field: DistanceField): ByteArray {
 }
 
 /**
- * B-131: a body's flow lines for its shader, loop by loop: [segs], an opaque RGBA texture of three texels a segment (its
- * two ends, each coordinate in two bytes, [FLOW_SCALE] to the dp from [originX], [originY]); [boxes], each loop's box
- * grown by a dp; [ranges], each loop's first segment and count.
+ * B-131: a body's flow lines for its shader, their segments sorted into bins of [FLOW_BIN_DP] over the lines' box, so a
+ * pixel reads its own bin's few. Two opaque RGBA textures, the data in red, green and blue: [bins], a texel a bin (the
+ * first entry in two bytes; the entry count plus 32 · (winding + 4) at the bin's centre, by the non-zero rule as the paths
+ * fill the lines); [segs], three texels an entry (its two ends in the order the path runs, each coordinate in two bytes,
+ * [FLOW_SCALE] to the dp from the box's origin).
  */
-internal class FlowSegments(
+internal class FlowBins(
+    val bins: ByteArray,
+    val binsW: Int,
+    val binsH: Int,
     val segs: ByteArray,
     val rows: Int,
     val originX: Float,
     val originY: Float,
-    val boxes: FloatArray,
-    val ranges: FloatArray,
-    val loops: Int,
 )
 
-/** Texels a row of the flow texture, a multiple of three. */
+/** Texels a row of the flow segments' texture, a multiple of three. */
 internal const val FLOW_W: Int = 1023
 
 /** Units of a flow coordinate a dp. */
 internal const val FLOW_SCALE: Float = 64f
 
-/** The loops and the segments a loop the shader reads at most. */
-internal const val MAX_FLOW_LOOPS: Int = 8
-internal const val MAX_FLOW_SEGS: Int = 192
+/** The side of a flow bin, dp. */
+internal const val FLOW_BIN_DP: Float = 2f
+
+/** The entries a flow bin holds at most: its count shares a byte with the winding. */
+internal const val MAX_FLOW_ENTRIES: Int = 31
 
 /** Segments a quadratic of a flow line is cut into: its points lie close, so two hold the curve within a few hundredths of a dp. */
 private const val SEGMENTS_A_QUADRATIC: Int = 2
 
-/** [path]'s loops as [FlowSegments], or null where there are more than the shader reads. */
-internal fun flowSegments(path: GenPath): FlowSegments? {
-    if (path.loops.size > MAX_FLOW_LOOPS) return null
-    val perLoop = path.loops.map { flattenLoop(it) }
-    if (perLoop.any { it.size / 4 > MAX_FLOW_SEGS }) return null
-    var minX = Float.MAX_VALUE
-    var minY = Float.MAX_VALUE
-    for (s in perLoop) {
-        for (k in s.indices step 2) {
-            minX = min(minX, s[k])
-            minY = min(minY, s[k + 1])
+/**
+ * [path]'s segments binned, each listed in every bin within [reach] of it; null where the path is empty, or a bin would
+ * hold more than [MAX_FLOW_ENTRIES], or a centre's winding is out of −4…3.
+ */
+internal fun flowBins(
+    path: GenPath,
+    reach: Float,
+): FlowBins? {
+    if (path.isEmpty) return null
+    var n = 0
+    val parts = path.loops.map { flattenLoop(it) }
+    for (p in parts) n += p.size / 4
+    val s = FloatArray(4 * n)
+    var at = 0
+    for (p in parts) {
+        p.copyInto(s, at)
+        at += p.size
+    }
+    var x0 = Float.MAX_VALUE
+    var y0 = Float.MAX_VALUE
+    var x1 = -Float.MAX_VALUE
+    var y1 = -Float.MAX_VALUE
+    for (k in 0 until n) {
+        x0 = min(x0, min(s[4 * k], s[4 * k + 2]))
+        y0 = min(y0, min(s[4 * k + 1], s[4 * k + 3]))
+        x1 = max(x1, max(s[4 * k], s[4 * k + 2]))
+        y1 = max(y1, max(s[4 * k + 1], s[4 * k + 3]))
+    }
+    val ox = x0 - reach - 1
+    val oy = y0 - reach - 1
+    val bw = max(1, ((x1 + reach + 1 - ox) / FLOW_BIN_DP).toInt() + 1)
+    val bh = max(1, ((y1 + reach + 1 - oy) / FLOW_BIN_DP).toInt() + 1)
+
+    fun range(
+        lo: Float,
+        hi: Float,
+        o: Float,
+        count: Int,
+    ): IntRange =
+        max(0, kotlin.math.floor((lo - reach - o) / FLOW_BIN_DP).toInt())..min(
+            count - 1,
+            kotlin.math.floor((hi + reach - o) / FLOW_BIN_DP).toInt(),
+        )
+
+    val counts = IntArray(bw * bh)
+    for (k in 0 until n) {
+        for (j in range(min(s[4 * k + 1], s[4 * k + 3]), max(s[4 * k + 1], s[4 * k + 3]), oy, bh)) {
+            for (i in range(min(s[4 * k], s[4 * k + 2]), max(s[4 * k], s[4 * k + 2]), ox, bw)) counts[j * bw + i]++
         }
     }
-    val ox = if (minX == Float.MAX_VALUE) 0f else minX - 1
-    val oy = if (minY == Float.MAX_VALUE) 0f else minY - 1
-    val total = perLoop.sumOf { it.size / 4 }
+    if ((counts.maxOrNull() ?: 0) > MAX_FLOW_ENTRIES) return null
+    val start = IntArray(bw * bh + 1)
+    for (b in 0 until bw * bh) start[b + 1] = start[b] + counts[b]
+    val total = start[bw * bh]
+    if (total > 65535) return null
+    val entries = IntArray(total)
+    val fill = start.copyOf()
+    for (k in 0 until n) {
+        for (j in range(min(s[4 * k + 1], s[4 * k + 3]), max(s[4 * k + 1], s[4 * k + 3]), oy, bh)) {
+            for (i in range(min(s[4 * k], s[4 * k + 2]), max(s[4 * k], s[4 * k + 2]), ox, bw)) {
+                entries[fill[j * bw + i]++] =
+                    k
+            }
+        }
+    }
+    val bins = ByteArray(bw * bh * 4)
+    for (j in 0 until bh) {
+        val y = oy + (j + .5f) * FLOW_BIN_DP
+        for (i in 0 until bw) {
+            val x = ox + (i + .5f) * FLOW_BIN_DP
+            // The winding at the bin's centre, by a ray to the right: up through it +1, down −1.
+            var w = 0
+            for (k in 0 until n) {
+                val ay = s[4 * k + 1]
+                val by = s[4 * k + 3]
+                if ((ay > y) == (by > y)) continue
+                val ax = s[4 * k]
+                val bx = s[4 * k + 2]
+                if (ax + (y - ay) / (by - ay) * (bx - ax) > x) w += if (by > ay) 1 else -1
+            }
+            if (w < -4 || w > 3) return null
+            val b = j * bw + i
+            bins[4 * b] = (start[b] shr 8).toByte()
+            bins[4 * b + 1] = (start[b] and 255).toByte()
+            bins[4 * b + 2] = (counts[b] + 32 * (w + 4)).toByte()
+            bins[4 * b + 3] = 255.toByte()
+        }
+    }
     val rows = max(1, (total * 3 + FLOW_W - 1) / FLOW_W)
     val segs = ByteArray(FLOW_W * rows * 4) { if (it % 4 == 3) 255.toByte() else 0 }
-    val boxes = FloatArray(4 * MAX_FLOW_LOOPS)
-    val ranges = FloatArray(2 * MAX_FLOW_LOOPS)
     val slots = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9)
-
-    fun put(
-        hi: Int,
-        lo: Int,
-        v: Float,
-        o: Float,
-    ) {
-        val u = ((v - o) * FLOW_SCALE).roundToInt().coerceIn(0, 65535)
-        segs[hi] = (u shr 8).toByte()
-        segs[lo] = (u and 255).toByte()
-    }
-    var e = 0
-    for ((l, s) in perLoop.withIndex()) {
-        var x0 = Float.MAX_VALUE
-        var y0 = Float.MAX_VALUE
-        var x1 = -Float.MAX_VALUE
-        var y1 = -Float.MAX_VALUE
-        ranges[2 * l] = e.toFloat()
-        ranges[2 * l + 1] = (s.size / 4).toFloat()
-        for (k in 0 until s.size / 4) {
-            val t = 12 * e
-            for (c in 0 until 4) put(t + slots[2 * c], t + slots[2 * c + 1], s[4 * k + c], if (c % 2 == 0) ox else oy)
-            x0 = min(x0, min(s[4 * k], s[4 * k + 2]))
-            y0 = min(y0, min(s[4 * k + 1], s[4 * k + 3]))
-            x1 = max(x1, max(s[4 * k], s[4 * k + 2]))
-            y1 = max(y1, max(s[4 * k + 1], s[4 * k + 3]))
-            e++
+    for (e in 0 until total) {
+        val k = entries[e]
+        val t = 12 * e
+        for (c in 0 until 4) {
+            val u = ((s[4 * k + c] - (if (c % 2 == 0) ox else oy)) * FLOW_SCALE).roundToInt().coerceIn(0, 65535)
+            segs[t + slots[2 * c]] = (u shr 8).toByte()
+            segs[t + slots[2 * c + 1]] = (u and 255).toByte()
         }
-        boxes[4 * l] = x0 - 1
-        boxes[4 * l + 1] = y0 - 1
-        boxes[4 * l + 2] = x1 + 1
-        boxes[4 * l + 3] = y1 + 1
     }
-    return FlowSegments(segs, rows, ox, oy, boxes, ranges, perLoop.size)
+    return FlowBins(bins, bw, bh, segs, rows, ox, oy)
 }
 
 /** One loop of a [GenPath] as segments x0, y0, x1, y1 in its order, closed back to its start. */

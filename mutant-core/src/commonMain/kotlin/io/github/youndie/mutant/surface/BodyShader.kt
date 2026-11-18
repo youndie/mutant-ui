@@ -55,11 +55,11 @@ uniform float hasStill;
 uniform float2 stillGrid;
 uniform float2 stillAt;
 uniform float dens;
+uniform shader flowBins;
 uniform shader flow;
-uniform float flowCount;
+uniform float hasFlow;
 uniform float2 flowOrigin;
-uniform float4 flowBox[${MAX_FLOW_LOOPS}];
-uniform float2 flowRange[${MAX_FLOW_LOOPS}];
+uniform float2 flowDims;
 
 half4 node(float2 ij) { return field.eval(clamp(ij, float2(0.0), dims - 1.0) + 0.5); }
 
@@ -142,30 +142,36 @@ float sdist(float2 p, float iso, float r, float bit) {
 
 float u16(half hi, half lo) { return floor(float(hi) * 255.0 + 0.5) * 256.0 + floor(float(lo) * 255.0 + 0.5); }
 
-// The signed distance to the flow lines, negative inside by the non-zero rule; each loop read only inside its box.
+// The signed distance to the flow lines, negative inside by the non-zero rule: the winding at the bin's centre, changed at
+// every segment the line from the centre to p crosses, and the nearest of the bin's segments.
 float flowSd(float2 p) {
+    float2 b = floor((p - flowOrigin) / ${FLOW_BIN_DP});
+    if (b.x < 0.0 || b.y < 0.0 || b.x >= flowDims.x || b.y >= flowDims.y) return 1000.0;
+    half4 h = flowBins.eval(b + 0.5);
+    float first = u16(h.r, h.g);
+    float cb = floor(float(h.b) * 255.0 + 0.5);
+    float wind = floor(cb / 32.0) - 4.0;
+    float count = cb - floor(cb / 32.0) * 32.0;
+    float2 c = flowOrigin + (b + 0.5) * ${FLOW_BIN_DP};
+    float2 r = p - c;
     float best = 1000.0;
-    float wind = 0.0;
-    for (int l = 0; l < ${MAX_FLOW_LOOPS}; l++) {
-        if (float(l) >= flowCount) break;
-        float4 bb = flowBox[l];
-        if (p.x >= bb.x && p.y >= bb.y && p.x <= bb.z && p.y <= bb.w) {
-            float2 rg = flowRange[l];
-            for (int k = 0; k < ${MAX_FLOW_SEGS}; k++) {
-                if (float(k) >= rg.y) break;
-                float t = (rg.x + float(k)) * 3.0;
-                float2 at = float2(mod(t, ${FLOW_W}.0), floor(t / ${FLOW_W}.0)) + 0.5;
-                half4 e0 = flow.eval(at);
-                half4 e1 = flow.eval(at + float2(1.0, 0.0));
-                half4 e2 = flow.eval(at + float2(2.0, 0.0));
-                float2 a = flowOrigin + float2(u16(e0.r, e0.g), u16(e0.b, e1.r)) / ${FLOW_SCALE};
-                float2 z = flowOrigin + float2(u16(e1.g, e1.b), u16(e2.r, e2.g)) / ${FLOW_SCALE};
-                best = min(best, segD(p, a, z));
-                if ((a.y > p.y) != (z.y > p.y)) {
-                    float x = a.x + (p.y - a.y) / (z.y - a.y) * (z.x - a.x);
-                    if (x > p.x) wind += z.y > a.y ? 1.0 : -1.0;
-                }
-            }
+    for (int k = 0; k < ${MAX_FLOW_ENTRIES}; k++) {
+        if (float(k) >= count) break;
+        float t = (first + float(k)) * 3.0;
+        float2 at = float2(mod(t, ${FLOW_W}.0), floor(t / ${FLOW_W}.0)) + 0.5;
+        half4 e0 = flow.eval(at);
+        half4 e1 = flow.eval(at + float2(1.0, 0.0));
+        half4 e2 = flow.eval(at + float2(2.0, 0.0));
+        float2 a = flowOrigin + float2(u16(e0.r, e0.g), u16(e0.b, e1.r)) / ${FLOW_SCALE};
+        float2 z = flowOrigin + float2(u16(e1.g, e1.b), u16(e2.r, e2.g)) / ${FLOW_SCALE};
+        float2 ba = z - a;
+        best = min(best, segD(p, a, z));
+        float den = r.x * ba.y - r.y * ba.x;
+        if (abs(den) > 1e-9) {
+            float2 ac = a - c;
+            float tc = (ac.x * ba.y - ac.y * ba.x) / den;
+            float ts = (ac.x * r.y - ac.y * r.x) / den;
+            if (tc >= 0.0 && tc < 1.0 && ts >= 0.0 && ts < 1.0) wind += ba.x * r.y - ba.y * r.x > 0.0 ? 1.0 : -1.0;
         }
     }
     return wind != 0.0 ? -best : best;
@@ -187,7 +193,7 @@ half4 main(float2 p) {
     col = over(fillC * clip, col);
     if (clip > 0.0) {
         if (hasStill > 0.5) col = over(still.eval((p - stillGrid) * dens - stillAt) * clip, col);
-        if (flowCount > 0.0) col = over(inkC * half(cov(flowSd(p - slip))) * clip, col);
+        if (hasFlow > 0.5) col = over(inkC * half(cov(flowSd(p - slip))) * clip, col);
     }
     if (inRect(p, clipA) || inRect(p, clipB)) {
         col = over(hlC * half(cov(sdist(p, ${HIGHLIGHT_ISO}, 1.0, 2.0))), col);
