@@ -1,7 +1,7 @@
 ---
 id: B-123
 title: "Each body drawn in a layer of its own"
-status: wip
+status: dropped
 priority: P2
 size: S
 stage: stage-6-later
@@ -22,3 +22,10 @@ the screen asks for a frame.
   rounds of ten seconds, round 1 not counted. It **buys its cost** if every counted round is cheaper than B-119's build in
   ms a frame by more than twice the largest move of `Blank`'s work between the same builds.
 - AC: both gates green with nothing raised (the drips hang outside the body's box, and a layer must not cut them).
+
+## Results, 2026-11-18: nothing, and reverted
+
+Both gates green with the layer, and a mutant clipping it to the body's box failed `CardParityTest` and `ButtonParityTest`.
+On [the run](../../logs/b-123/2026-11-18-proxy-x2.log), the proxy slowed ×2: −0.2, 0.2, 0.4, 0.5, 0.0 ms a frame against
+B-119's build (23.4 and 23.5 frames a second), under the line of 2.2. Reverted (`49d08a7`). It is the third cut in a row that
+bought nothing (B-121, B-122), so the loop that ran B-113 to B-123 stops here.

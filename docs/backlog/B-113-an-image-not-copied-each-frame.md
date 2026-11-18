@@ -1,7 +1,7 @@
 ---
 id: B-113
 title: "A body's image not copied each frame it is drawn"
-status: wip
+status: dropped
 priority: P2
 size: S
 stage: stage-6-later
@@ -37,3 +37,10 @@ from its tick's image as a red box answers why: unslowed, every card is red; slo
 On a saturated thread the builds ahead, queued at background priority, never finish in time, so every body is drawn as
 vectors in the frame, which saturates the thread further. Neither this item nor B-112 could act there. This item stays on the
 branch, to be measured again over [B-114](B-114-a-tick-image-built-in-the-frame.md), which makes the image path reachable.
+
+## Results, 2026-11-18: nothing at the phone's load, and taken out of the tick image
+
+Measured again on the proxy calibrated to the phone ([B-116](B-116-the-proxy-calibrated-to-the-phone.md)): 0.4, 0.7, 0.4,
+−0.7, 0.0 ms a frame, below resolution, as no body reaches its tick image there ([B-121](B-121-the-outline-stroked-once-a-tick.md)).
+The call on the tick image is removed (`59de93f`); `freeze` itself stays, as the still layers' image needs it
+([B-119](B-119-the-still-image-marked-finished.md), 11–12 ms a frame).

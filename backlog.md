@@ -58,15 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (3)
+## Open (1)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-113](docs/backlog/B-113-an-image-not-copied-each-frame.md) `[~]` | A body's image not copied each frame it is drawn | P2 | S | - |
-| [B-123](docs/backlog/B-123-each-body-in-its-own-layer.md) `[~]` | Each body drawn in a layer of its own | P2 | S | - |
 
-## Closed (120)
+## Closed (122)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -183,6 +181,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-110](docs/backlog/B-110-a-body-as-a-shader.md) `[x]` - A body drawn by a GPU shader: a spike
 - [B-111](docs/backlog/B-111-what-the-decorations-cost-on-a-phone.md) `[x]` - What a body's decorations cost on a phone
 - [B-112](docs/backlog/B-112-static-decorations-drawn-once.md) `[-]` - A body's still decorations drawn once, and painted without the clip
+- [B-113](docs/backlog/B-113-an-image-not-copied-each-frame.md) `[-]` - A body's image not copied each frame it is drawn
 - [B-114](docs/backlog/B-114-a-tick-image-built-in-the-frame.md) `[-]` - A resting body's tick image built in the frame when the one ahead is late
 - [B-115](docs/backlog/B-115-a-body-image-on-the-surface-grid.md) `[x]` - A body's image rasterised on the surface's pixel grid
 - [B-116](docs/backlog/B-116-the-proxy-calibrated-to-the-phone.md) `[x]` - The phone proxy calibrated to the phone, and the cuts measured again on it
@@ -192,6 +191,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-120](docs/backlog/B-120-what-a-body-costs-over-b-119.md) `[x]` - What a body's parts cost, over B-119
 - [B-121](docs/backlog/B-121-the-outline-stroked-once-a-tick.md) `[-]` - A body's outline stroked once a tick
 - [B-122](docs/backlog/B-122-builds-ahead-at-user-visible-priority.md) `[-]` - A body's builds ahead posted at user-visible priority in the browser
+- [B-123](docs/backlog/B-123-each-body-in-its-own-layer.md) `[-]` - Each body drawn in a layer of its own
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
