@@ -2,7 +2,6 @@ package io.github.youndie.mutant.surface
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Brush
-import io.github.youndie.mutant.gen.DistanceField
 import io.github.youndie.mutant.gen.Slot
 
 /**
@@ -20,12 +19,14 @@ internal const val BODY_ON_GPU: Boolean = false
 internal expect val bodyShaderSupported: Boolean
 
 /**
- * The body's silhouette as a brush over scene coordinates (the generator's, in dp), from [field] at [density] device
- * pixels a dp: the field is handed to the shader as a texture, read bilinearly and thresholded per pixel. Null where
- * the platform has no shader.
+ * The body's silhouette as a brush over scene coordinates (the generator's, in dp), drawn from [contour] and [highlight],
+ * the paths' own curves, binned over [box] (B-128), at [density] device pixels a dp. Null where the platform has no
+ * shader.
  */
 internal expect fun bodyShaderBrush(
-    field: DistanceField,
+    contour: io.github.youndie.mutant.gen.GenPath,
+    highlight: io.github.youndie.mutant.gen.GenPath,
+    box: androidx.compose.ui.geometry.Rect,
     slot: Slot,
     look: BodyLook,
     density: Float,
@@ -33,10 +34,12 @@ internal expect fun bodyShaderBrush(
 
 /** The SkSL of [bodyShaderBrush], shared by the platforms that run it. */
 internal const val BODY_SKSL: String = """
-uniform shader field;
-uniform float2 origin;
-uniform float stepDp;
-uniform float2 dims;
+uniform shader cBins;
+uniform shader cSegs;
+uniform shader hBins;
+uniform shader hSegs;
+uniform float2 binOrigin;
+uniform float2 binDims;
 uniform float pxDp;
 uniform float slip;
 uniform float outlineW;
@@ -47,33 +50,84 @@ uniform half4 shadowC;
 uniform float4 clipA;
 uniform float4 clipB;
 
-float texel(float2 ij) {
-    ij = clamp(ij, float2(0.0), dims - 1.0);
-    half4 c = field.eval(ij + 0.5);
-    float hi = floor(float(c.r) * 255.0 + 0.5);
-    float lo = floor(float(c.g) * 255.0 + 0.5);
-    return (hi * 256.0 + lo) / 65535.0 * 64.0 - 32.0;
+float u16(half hi, half lo) { return floor(float(hi) * 255.0 + 0.5) * 256.0 + floor(float(lo) * 255.0 + 0.5); }
+
+float2 contourAt(float2 p) {
+    float2 b = floor((p - binOrigin) / ${BIN_DP});
+    if (b.x < 0.0 || b.y < 0.0 || b.x >= binDims.x || b.y >= binDims.y) return float2(1000.0, 0.0);
+    half4 h = cBins.eval(b + 0.5);
+    float first = u16(h.r, h.g);
+    float cb = floor(float(h.b) * 255.0 + 0.5);
+    float inside = cb >= 128.0 ? 1.0 : 0.0;
+    float count = cb - inside * 128.0;
+    float2 c = binOrigin + (b + 0.5) * ${BIN_DP};
+    float best = 1000.0;
+    for (int k = 0; k < ${MAX_BIN_ENTRIES}; k++) {
+        if (float(k) >= count) break;
+        float t = (first + float(k)) * 3.0;
+        float2 at = float2(mod(t, ${SEGS_W}.0), floor(t / ${SEGS_W}.0)) + 0.5;
+        half4 e0 = cSegs.eval(at);
+        half4 e1 = cSegs.eval(at + float2(1.0, 0.0));
+        half4 e2 = cSegs.eval(at + float2(2.0, 0.0));
+        float2 a = binOrigin + float2(u16(e0.r, e0.g), u16(e0.b, e1.r)) / ${SEG_SCALE};
+        float2 z = binOrigin + float2(u16(e1.g, e1.b), u16(e2.r, e2.g)) / ${SEG_SCALE};
+        float2 pa = p - a;
+        float2 ba = z - a;
+        float hh = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-8), 0.0, 1.0);
+        best = min(best, length(pa - ba * hh));
+        // Does the line from the bin's centre to p cross this segment? Each crossing flips inside.
+        float2 r = p - c;
+        float den = r.x * ba.y - r.y * ba.x;
+        if (abs(den) > 1e-9) {
+            float2 ac = a - c;
+            float tc = (ac.x * ba.y - ac.y * ba.x) / den;
+            float ts = (ac.x * r.y - ac.y * r.x) / den;
+            if (tc >= 0.0 && tc < 1.0 && ts >= 0.0 && ts < 1.0) inside = 1.0 - inside;
+        }
+    }
+    return float2(best, inside);
 }
 
-// The field at p, as a distance: the bilinear value over the length of its gradient in the cell, where that is under 1.
-// A distance field's gradient is about 1 and this changes little; inside a mosaic block, whose cells hold one value,
-// there is none, so no outline fills the block. A steeper gradient (a block's border, a seam of the field) is left as
-// it is, or a seam far outside the body would read as an edge.
-float F(float2 p) {
-    float2 g = (p - origin) / stepDp;
-    if (g.x < 0.0 || g.y < 0.0 || g.x > dims.x - 1.0 || g.y > dims.y - 1.0) return 32.0;
-    float2 i0 = floor(g);
-    float2 f = g - i0;
-    float a = texel(i0);
-    float b = texel(i0 + float2(1.0, 0.0));
-    float c = texel(i0 + float2(0.0, 1.0));
-    float d = texel(i0 + float2(1.0, 1.0));
-    float v = mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
-    float2 grad = float2(mix(b - a, d - c, f.y), mix(c - a, d - b, f.x)) / stepDp;
-    return v / clamp(length(grad), 0.05, 1.0);
+float2 highlightAt(float2 p) {
+    float2 b = floor((p - binOrigin) / ${BIN_DP});
+    if (b.x < 0.0 || b.y < 0.0 || b.x >= binDims.x || b.y >= binDims.y) return float2(1000.0, 0.0);
+    half4 h = hBins.eval(b + 0.5);
+    float first = u16(h.r, h.g);
+    float cb = floor(float(h.b) * 255.0 + 0.5);
+    float inside = cb >= 128.0 ? 1.0 : 0.0;
+    float count = cb - inside * 128.0;
+    float2 c = binOrigin + (b + 0.5) * ${BIN_DP};
+    float best = 1000.0;
+    for (int k = 0; k < ${MAX_BIN_ENTRIES}; k++) {
+        if (float(k) >= count) break;
+        float t = (first + float(k)) * 3.0;
+        float2 at = float2(mod(t, ${SEGS_W}.0), floor(t / ${SEGS_W}.0)) + 0.5;
+        half4 e0 = hSegs.eval(at);
+        half4 e1 = hSegs.eval(at + float2(1.0, 0.0));
+        half4 e2 = hSegs.eval(at + float2(2.0, 0.0));
+        float2 a = binOrigin + float2(u16(e0.r, e0.g), u16(e0.b, e1.r)) / ${SEG_SCALE};
+        float2 z = binOrigin + float2(u16(e1.g, e1.b), u16(e2.r, e2.g)) / ${SEG_SCALE};
+        float2 pa = p - a;
+        float2 ba = z - a;
+        float hh = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-8), 0.0, 1.0);
+        best = min(best, length(pa - ba * hh));
+        // Does the line from the bin's centre to p cross this segment? Each crossing flips inside.
+        float2 r = p - c;
+        float den = r.x * ba.y - r.y * ba.x;
+        if (abs(den) > 1e-9) {
+            float2 ac = a - c;
+            float tc = (ac.x * ba.y - ac.y * ba.x) / den;
+            float ts = (ac.x * r.y - ac.y * r.x) / den;
+            if (tc >= 0.0 && tc < 1.0 && ts >= 0.0 && ts < 1.0) inside = 1.0 - inside;
+        }
+    }
+    return float2(best, inside);
 }
 
-float cov(float dist) { return clamp(0.5 - dist / pxDp, 0.0, 1.0); }
+// Signed distance, negative inside.
+float sd(float2 q) { return q.y > 0.5 ? -q.x : q.x; }
+
+float cov(float d) { return clamp(0.5 - d / pxDp, 0.0, 1.0); }
 
 bool inRect(float2 p, float4 r) { return p.x >= r.x && p.y >= r.y && p.x < r.z && p.y < r.w; }
 
@@ -81,14 +135,15 @@ half4 over(half4 src, half4 dst) { return src + dst * (1.0 - src.a); }
 
 half4 main(float2 p) {
     half4 col = half4(0.0);
-    float d0 = F(p);
-    if (shadowC.a > 0.0) col = over(shadowC * half(cov(F(p - 4.0))), col);
-    col = over(fillC * half(cov(F(p - slip))), col);
+    float2 at0 = contourAt(p);
+    if (shadowC.a > 0.0) col = over(shadowC * half(cov(sd(contourAt(p - 4.0)))), col);
+    float2 atSlip = slip == 0.0 ? at0 : contourAt(p - slip);
+    col = over(fillC * half(cov(sd(atSlip))), col);
     if (inRect(p, clipA) || inRect(p, clipB)) {
-        col = over(hlC * half(cov(d0 + 3.4)), col);
-        col = over(fillC * half(cov(F(p - 1.5) + 3.4)), col);
+        col = over(hlC * half(cov(sd(highlightAt(p)))), col);
+        col = over(fillC * half(cov(sd(highlightAt(p - 1.5)))), col);
     }
-    col = over(inkC * half(cov(abs(d0) - outlineW * 0.5)), col);
+    col = over(inkC * half(cov(at0.x - outlineW * 0.5)), col);
     return col;
 }
 """
