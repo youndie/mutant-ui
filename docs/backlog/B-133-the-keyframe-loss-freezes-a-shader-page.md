@@ -42,4 +42,7 @@ Skiko.
   the build before froze 11 times. In the proxy, three rounds, the paths build against the shader
   ([after](../../logs/b-133/2026-11-18-proxy-wheel-after.log)): scrolling 44.4 against 51.5 frames a second, at rest 40.8
   against 51.6, no interval over 500 ms in either; same host, same run.
-- **Not measured**: the phone itself, where the owner looks at the fixed build.
+- **The phone, set before it ran.** Chrome on the Pixel 6a, hot as it is, on mains, one rotation: the paths build (the
+  loop's), then the fixed shader build; `ComponentsWheel` and `ComponentsRest`, six rounds of ten seconds, round 1 not
+  counted. **It holds** if no frame interval of the shader build is over 1 s and its pooled frames a second are at least
+  the paths' in both scenes.
