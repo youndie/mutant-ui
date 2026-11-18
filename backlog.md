@@ -58,12 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (2)
+## Open (3)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-113](docs/backlog/B-113-an-image-not-copied-each-frame.md) `[~]` | A body's image not copied each frame it is drawn | P2 | S | - |
+| [B-120](docs/backlog/B-120-what-a-body-costs-over-b-119.md) `[~]` | What a body's parts cost, over B-119 | P2 | S | - |
 
 ## Closed (117)
 
