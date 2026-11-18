@@ -220,6 +220,7 @@ internal fun MutantSurface(
     val held = remember { HeldInstance() }
     val ahead = remember { FrameAhead() }
     val stillLayers = remember { StillLayers() }
+    val fillTiles = remember { FillTiles() }
     val stillOnce = LocalMutantStillLayersOnce.current
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
@@ -416,6 +417,33 @@ internal fun MutantSurface(
                 }
 
                 // B-117: the body's still layers, drawn once for its instance and what they are drawn with.
+                // B-127: the body's fill and speckle as one tile the GPU repeats; the same guards as the still image.
+                fun tileOf(
+                    fill: androidx.compose.ui.graphics.Color,
+                    inFrame: Boolean,
+                ): FillTile? {
+                    if (!stillOnce) return null
+                    if (inFrame && (clock.frozen || moshScene != null || !onWholePixels(registry.surface))) return null
+                    val grid = Offset(slot.ox.toFloat(), slot.oy.toFloat())
+                    val skipSpeckle = BodyPart.Speckle in skipParts
+                    return fillTiles.of(
+                        listOf(
+                            fill,
+                            colors.ink,
+                            look.slip,
+                            d,
+                            layoutDirection,
+                            skipSpeckle,
+                            cassette,
+                            stage,
+                            wear,
+                            grid,
+                        ),
+                    ) {
+                        fillTile(fill, colors.ink, speckle, skipSpeckle, look.slip, grid.x, grid.y, d, layoutDirection)
+                    }
+                }
+
                 fun stillOf(
                     g: Instance,
                     dead: io.github.youndie.mutant.gen.DeadPixels?,
@@ -509,7 +537,8 @@ internal fun MutantSurface(
                                 kotlin.time.TimeSource.Monotonic
                                     .markNow()
                             val pic = pictureOf(g, f, next, 0.0)
-                            val still = stillOf(g, dead, inFrame = false)
+                            val tile = tileOf(pic.look.fill, inFrame = false)
+                            val still = if (tile != null) null else stillOf(g, dead, inFrame = false)
                             rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection, band) {
                                 drawBody(
                                     g,
@@ -523,6 +552,7 @@ internal fun MutantSurface(
                                     null,
                                     skipParts,
                                     still,
+                                    tile,
                                 )
                             }.also {
                                 rasterProbe?.invoke(
@@ -703,7 +733,8 @@ internal fun MutantSurface(
                 val (paths, frameLook, decor) = pictureOf(g, frame, t, k)
                 // B-117: drawn in the frame too, where a body is drawn when its tick's image is not ready (a thread too
                 // busy to build ahead), on the surface's own grid. Not mid-slide.
-                val stillLayer = if (slideP >= 1) stillOf(g, dead, inFrame = true) else null
+                val fillTile = if (slideP >= 1) tileOf(frameLook.fill, inFrame = true) else null
+                val stillLayer = if (slideP >= 1 && fillTile == null) stillOf(g, dead, inFrame = true) else null
                 moshBehind(moshScene, moshBody) {
                     scale(d, Offset.Zero) {
                         translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
@@ -725,6 +756,7 @@ internal fun MutantSurface(
                                     pour,
                                     skipParts,
                                     stillLayer,
+                                    fillTile,
                                 )
                             }
                         }
@@ -1037,6 +1069,20 @@ internal class StillLayers {
         val h = held
         if (h != null && h.first === g && h.second == inputs) return h.third
         return make().also { held = Triple(g, inputs, it) }
+    }
+}
+
+/** B-127: a body's fill tile, kept for as long as what it is drawn with is what it was. */
+internal class FillTiles {
+    private var held: Pair<List<Any?>, FillTile?>? = null
+
+    fun of(
+        inputs: List<Any?>,
+        make: () -> FillTile?,
+    ): FillTile? {
+        val h = held
+        if (h != null && h.first == inputs) return h.second
+        return make().also { held = inputs to it }
     }
 }
 

@@ -148,6 +148,7 @@ internal fun DrawScope.drawBody(
     pour: Pair<Path, Color>? = null,
     skip: Set<BodyPart> = emptySet(),
     still: StillImage? = null,
+    tile: FillTile? = null,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -162,19 +163,37 @@ internal fun DrawScope.drawBody(
     }
     translate(look.slip, look.slip) {
         clipPathUnless(BodyPart.ContourClip in skip, paths.contour) {
-            if (BodyPart.Fill !in skip) drawRect(look.fill, bb.topLeft, bb.size)
-            pour?.let { (path, from) -> drawPath(path, from) }
-            if (still != null && decor.runningMosaic == null) {
-                // B-117: the still layers, drawn once into an image on this canvas's own pixel grid, are one draw under
-                // the clip instead of hundreds. Undo the slip and the scale, so the image's pixels land on the canvas's.
-                translate(still.gridX - look.slip, still.gridY - look.slip) {
-                    scale(
-                        1 / density,
-                        Offset.Zero,
-                    ) { drawImage(still.image, Offset(still.at.x.toFloat(), still.at.y.toFloat())) }
+            val tiled = tile != null && pour == null && BodyPart.Fill !in skip
+            if (tiled) {
+                // B-127: the fill and the speckle as one rectangle, painted by a tile the GPU repeats, on the canvas's
+                // own pixel grid: undo the slip and the scale, so a pixel of the tile is a pixel of the canvas.
+                translate(tile.gridX - look.slip, tile.gridY - look.slip) {
+                    scale(1 / density, Offset.Zero) {
+                        drawRect(
+                            tile.brush,
+                            Offset(
+                                (bb.left + look.slip - tile.gridX) * density,
+                                (bb.top + look.slip - tile.gridY) * density,
+                            ),
+                            Size(bb.width * density, bb.height * density),
+                        )
+                    }
                 }
+                drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, decor, skip + BodyPart.Speckle)
             } else {
-                drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, decor, skip)
+                if (BodyPart.Fill !in skip) drawRect(look.fill, bb.topLeft, bb.size)
+                pour?.let { (path, from) -> drawPath(path, from) }
+                if (still != null && decor.runningMosaic == null) {
+                    // B-117: the still layers, drawn once into an image on this canvas's own pixel grid, are one draw
+                    // under the clip instead of hundreds. Undo the slip and the scale, so its pixels land on the canvas's.
+                    translate(still.gridX - look.slip, still.gridY - look.slip) {
+                        scale(1 / density, Offset.Zero) {
+                            drawImage(still.image, Offset(still.at.x.toFloat(), still.at.y.toFloat()))
+                        }
+                    }
+                } else {
+                    drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, decor, skip)
+                }
             }
             for ((r, c) in decor.errorBlocks) drawRect(c, r.topLeft, r.size)
             if (BodyPart.FlowLines !in skip) drawPath(paths.flowLines, colors.ink)
@@ -247,6 +266,73 @@ internal fun DrawScope.drawStillLayers(
         )
     }
     if (deadPixels != null && BodyPart.DeadPixels !in skip) drawDeadPixels(deadPixels, colors)
+}
+
+/**
+ * B-127: a resting body's fill with its speckle, as a square tile of whole device pixels the GPU repeats over the body's
+ * box, on the grid of a canvas whose pixel (0, 0) is the scene's point ([gridX], [gridY]).
+ */
+internal class FillTile(
+    val brush: androidx.compose.ui.graphics.ShaderBrush,
+    val gridX: Float,
+    val gridY: Float,
+)
+
+/**
+ * B-127: [fill] and [speckle] in one tile of the speckle's period, a whole number of device pixels a side
+ * ([wholeSpan]), drawn at the phase the canvas's grid puts the speckle's squares at, so repeated from the canvas's pixel
+ * (0, 0) every square lands where [drawStillLayers] draws it. Null where no whole span is short enough.
+ */
+internal fun fillTile(
+    fill: Color,
+    ink: Color,
+    speckle: Speckle,
+    skipSpeckle: Boolean,
+    slip: Float,
+    gridX: Float,
+    gridY: Float,
+    density: Float,
+    direction: androidx.compose.ui.unit.LayoutDirection,
+): FillTile? {
+    val n = wholeSpan(Speckle.TILE, density) ?: return null
+    val period = kotlin.math.round(Speckle.TILE * n * density).toInt()
+
+    // Where the speckle's grid (its squares at slip + k · TILE in the scene) falls on the canvas's pixels, modulo the tile.
+    fun phase(v: Float) = ((v % period) + period) % period
+    val tx = phase((slip - gridX) * density)
+    val ty = phase((slip - gridY) * density)
+    val image = ImageBitmap(period, period)
+    androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
+        androidx.compose.ui.unit
+            .Density(density),
+        direction,
+        androidx.compose.ui.graphics
+            .Canvas(image),
+        Size(period.toFloat(), period.toFloat()),
+    ) {
+        drawRect(fill)
+        if (!skipSpeckle) {
+            translate(tx, ty) {
+                scale(density, Offset.Zero) {
+                    val reach = Speckle.TILE * (n + 1)
+                    drawSpeckle(speckle, Offset.Zero, Rect(-reach, -reach, reach, reach), ink)
+                }
+            }
+        }
+    }
+    image.freeze()
+    val shader =
+        androidx.compose.ui.graphics.ImageShader(
+            image,
+            androidx.compose.ui.graphics.TileMode.Repeated,
+            androidx.compose.ui.graphics.TileMode.Repeated,
+        )
+    return FillTile(
+        androidx.compose.ui.graphics
+            .ShaderBrush(shader),
+        gridX,
+        gridY,
+    )
 }
 
 /**
