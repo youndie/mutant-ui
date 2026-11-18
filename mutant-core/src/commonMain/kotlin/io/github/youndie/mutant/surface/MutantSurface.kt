@@ -226,7 +226,10 @@ internal fun MutantSurface(
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
     // B-110, a spike: the body's silhouette drawn by a shader from its field, where the platform has one.
-    val onGpu = LocalMutantBodyOnGpu.current && bodyShaderSupported
+    // B-137: the mosaic past the contour is drawn by paths over the outline; such a body keeps its paths.
+    val onGpu =
+        LocalMutantBodyOnGpu.current && bodyShaderSupported &&
+            !io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
     val bodyAsImage = LocalMutantBodyAsImage.current
     val rasterProbe = LocalMutantRasterProbe.current
     val scope = rememberCoroutineScope()
@@ -270,6 +273,7 @@ internal fun MutantSurface(
     val reach = with(androidx.compose.ui.platform.LocalDensity.current) { OFF_SCREEN_REACH.dp.toPx() }
     val bodyFill = fill ?: colors.fillOf(p.fill)
     val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
+    val pastContour = io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
     moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps)
     val look =
         BodyLook(
@@ -592,6 +596,7 @@ internal fun MutantSurface(
                                     null,
                                     skipParts,
                                     still,
+                                    pastContour,
                                 )
                             }.also {
                                 rasterProbe?.invoke(
@@ -805,6 +810,7 @@ internal fun MutantSurface(
                                     pour,
                                     skipParts,
                                     stillLayer,
+                                    pastContour,
                                 )
                             }
                         }

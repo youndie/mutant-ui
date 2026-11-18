@@ -87,6 +87,11 @@ internal class MosaicTile(
     val size: Double,
     val black: Boolean,
     val opacity: Double,
+    /**
+     * The tile's row from the body's side: 0 at the edge, 1 and 2 further in; -1 and -2 past it, the rows B-137 adds
+     * outside the contour ([Instance.spillTiles]).
+     */
+    val row: Int = 0,
 )
 
 /** The colours a dead pixel takes, by the theme's role (`deadPx`). */
@@ -132,6 +137,12 @@ internal class Instance(
     var flowLines: List<FlowLine> = emptyList()
     var mosaic: List<Block> = emptyList()
     var mosaicTiles: List<MosaicTile> = emptyList()
+
+    /**
+     * B-137: the tiles past the contour, drawn only under `MutantTheme(mosaicPastContour = true)`. From a stream of their
+     * own (`edge:spill`), so the design's tiles, blocks and field are the same with or without them.
+     */
+    var spillTiles: List<MosaicTile> = emptyList()
     var mosaicSide: MosaicSide? = null
 
     /** `dz`: the dead-pixel zone `[cx, cy, r]`. */

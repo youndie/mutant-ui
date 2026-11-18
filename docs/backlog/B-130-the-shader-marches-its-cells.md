@@ -1,7 +1,7 @@
 ---
 id: B-130
 title: "The body shader marches its own cells"
-status: wip
+status: done
 priority: P2
 size: M
 stage: stage-6-later
