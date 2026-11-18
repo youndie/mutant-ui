@@ -1,0 +1,12 @@
+== noFlow
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.FlowLines) }
+== noSpeckle
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Speckle) }
+== noMosDead
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Mosaic, BodyPart.DeadPixels) }
+== none4
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Speckle, BodyPart.Mosaic, BodyPart.DeadPixels, BodyPart.FlowLines) }
