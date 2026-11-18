@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Mulberry32
@@ -28,8 +29,8 @@ import kotlin.math.floor
 /*
  * The Tape («Лента», research D10): one layer over the screen, as the engine's `tapeHtml` and `stageStep` draw
  * it — scanlines, the tracking band passing for 2100 ms every 7000 ms, the grain stepping per tick, the head's
- * noise at the bottom edge. The grain and the noise step on the scene's tick; the band glides on every frame while it
- * passes, unless the theme steps motion as the design does (B-136). It stands still under the pause, and is off under
+ * noise at the bottom edge. The grain steps on the scene's tick; the band glides and the head's noise flickers on every
+ * frame, unless the theme steps motion as the design does (B-136). It stands still under the pause, and is off under
  * clean signal.
  */
 
@@ -104,7 +105,7 @@ private const val TRACKING_SHARE = .3
 /**
  * Draws the Tape over [size] at time [t] for [stage]. The band's top is `round(H − (phase / 0.3) · (H + 30))`
  * during the first 30 % of each 7 s cycle; the grain's tile moves by (37, 71) per tick; the noise comes from the
- * stream `hd` of the stage and the tick, as `stageStep` draws it.
+ * stream `hd` of the stage and [noiseKey], the tick by default, as `stageStep` draws it.
  */
 internal fun DrawScope.drawTape(
     stage: String,
@@ -116,6 +117,7 @@ internal fun DrawScope.drawTape(
     skip: Set<TapePart> = emptySet(),
     tile: androidx.compose.ui.graphics.ShaderBrush? = null,
     lines: androidx.compose.ui.graphics.ShaderBrush? = null,
+    noiseKey: String = floor(t / MutantClock.SCENE_TICK_MS).toLong().toString(),
 ) {
     val ink = inkOf(colors)
     if (ink.scanline > 0 && TapePart.Lines !in skip && lines != null) {
@@ -159,7 +161,7 @@ internal fun DrawScope.drawTape(
             j++
         }
     }
-    val r = Mulberry32("hd", "$stage$fi")
+    val r = Mulberry32("hd", "$stage$noiseKey")
 
     fun noise(
         y0: Float,
@@ -304,28 +306,36 @@ internal fun wholeSpan(
 /** The widest block of grain tiles rasterised, in pixels a side. */
 private const val MAX_GRAIN_PX = 2048f
 
+/** When the Tape is drawn (B-136): the time of its band and grain, and the key of its head's noise. */
+internal class TapeMoment(
+    val t: Double,
+    val noiseKey: String,
+)
+
 /**
- * The time the Tape is drawn at on [clock] over a screen [h] dp tall (B-136), read in the draw so the Tape is drawn
- * again when it changes:
- * - frozen, the clock's own time (the engine's `data-mu-t`);
- * - with the theme's [steps] (`steppedMotion`), the scene's tick, as the engine's `stageStep` draws the whole Tape;
- * - else the time now: on the scene's tick at rest, and on every frame while the band passes, so the band glides
- *   instead of jumping a 16th of the screen at a time. The grain and the noise keep the scene's tick either way:
+ * The moment the Tape is drawn at on [clock], read in the draw so the Tape is drawn again when it changes:
+ * - frozen, the clock's own time and its scene tick (the engine's `data-mu-t`);
+ * - with the theme's [steps] (`steppedMotion`), the scene's tick for all of it, as the engine's `stageStep` draws it;
+ * - else every frame: the band at the time now, and the head's noise drawn anew from the whole millisecond, so it
+ *   flickers at the display's rate instead of eight times a second. The grain keeps the scene's tick either way:
  *   `floor(t / 125)` of the time now is that tick.
  */
-internal fun tapeTimeMs(
+internal fun tapeMoment(
     clock: MutantClock,
     steps: Boolean,
-    h: Float,
-): Double {
-    if (clock.frozen) return clock.nowMs
+): TapeMoment {
+    if (clock.frozen) {
+        return TapeMoment(
+            clock.nowMs,
+            MutantClock.tickOf(clock.nowMs, MutantClock.SCENE_TICK_MS).toString(),
+        )
+    }
     val tick = clock.sceneTick
-    if (steps) return tick * MutantClock.SCENE_TICK_MS
+    if (steps) return TapeMoment(tick * MutantClock.SCENE_TICK_MS, tick.toString())
+    clock.frame
     val now = clock.nowMs
-    // The band starts on a scene tick (7000 ms is 56 of them), which is read above; while it passes it reads every
-    // frame, and gone it reads nothing more, so a Tape at rest is drawn once a tick.
-    if (tapeBandTop(now, h) != null) clock.frame
-    return now
+    // `@` keeps the frame's keys apart from the ticks'; a Long prints alike on every target, a Double does not.
+    return TapeMoment(now, "@" + floor(now).toLong())
 }
 
 /**
@@ -335,9 +345,10 @@ internal fun tapeTimeMs(
  * takes no input.
  *
  * It runs on the theme's clock, so it stands still under reduce motion, and it is not drawn under
- * «Чистый сигнал» ([MutantTheme]'s `cleanSignal`). Its grain and noise are seeded by the screen. The band moves on
- * every frame while it passes; under [MutantTheme]'s `steppedMotion` it steps eight times a second with the grain, as
- * the design draws it.
+ * «Чистый сигнал» ([MutantTheme]'s `cleanSignal`). Its grain and noise are seeded by the screen. The band moves and
+ * the head's noise flickers on every frame; under [MutantTheme]'s `steppedMotion` they step eight times a second with
+ * the grain, as the design draws them. What it covers is drawn in a layer of its own, so a frame of the Tape replays
+ * the content rather than drawing it again.
  */
 public fun Modifier.mutantTape(): Modifier =
     composed {
@@ -356,9 +367,9 @@ public fun Modifier.mutantTape(): Modifier =
             val d = density
             val w = size.width / d
             val h = size.height / d
-            val t = tapeTimeMs(clock, steps, h)
+            val m = tapeMoment(clock, steps)
             scale(d, Offset.Zero) {
-                clipRect(0f, 0f, w, h) { drawTape(stage, t, colors, w, h, grain, skip, tile, lines) }
+                clipRect(0f, 0f, w, h) { drawTape(stage, m.t, colors, w, h, grain, skip, tile, lines, m.noiseKey) }
             }
-        }
+        }.graphicsLayer()
     }

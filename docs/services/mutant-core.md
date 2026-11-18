@@ -141,11 +141,12 @@ or any Material artefact; and its generator package does not depend on Compose.
   fills the body — and so does its clean zone.
 - A composable lambda that captures nothing becomes a public `ComposableSingletons` class in the ABI
   dump; the kit keeps such literals out of its files.
-- The Tape's grain and noise step on the clock's scene tick, a fixed 125 ms (`MutantClock.sceneTick`), as the
-  engine's `stageStep` does, not on the resting tick, whose rate the genome may change. Its tracking band moves on
-  every frame while it passes (`tapeTimeMs`, [B-136](../backlog/B-136-the-tape-band-on-every-frame.md)); under the
-  theme's `steppedMotion` it steps with the grain, drawn at the tick's start, where the engine draws it at the first
-  frame past it, within a frame of that. At rest, between bands, the Tape is drawn once a tick.
+- The Tape's grain steps on the clock's scene tick, a fixed 125 ms (`MutantClock.sceneTick`), as the engine's
+  `stageStep` does, not on the resting tick, whose rate the genome may change. Its tracking band and head noise move
+  on every frame (`tapeMoment`, [B-136](../backlog/B-136-the-tape-band-on-every-frame.md)), so the Tape draws on every
+  frame while the clock runs, over its content in a layer of its own. Under the theme's `steppedMotion` all of it steps
+  with the grain, drawn at the tick's start, where the engine draws it at the first frame past it, within a frame of
+  that.
 - `MutantSurface` builds its instance and the field's static layers in its draw cache on the main
   thread, so a body's first frame costs about ten times a warm one; ten bodies appearing together cost
   tens of ms ([B-50](../backlog/B-50-first-frame-off-the-frame.md)).
