@@ -1,7 +1,7 @@
 ---
 id: B-126
 title: "Bodies on the GPU, with every decoration"
-status: question
+status: done
 priority: P2
 size: L
 stage: stage-6-later
@@ -52,3 +52,20 @@ paths' 26.9), the drips' residual angularity is **accepted as a known departure*
 ([B-132](B-132-the-shader-rounds-its-contour.md)): the silhouette test holds four «Копия» cases at 0.6 % each (0.537–0.587 %
 when accepted), the other eight at 0.5 %. Still open: `BODY_ON_GPU` is off by default; a pressed or hot body, a pour, an
 error and focus keep their paths; iOS is not run. The owner looks at the shader build on the phone next.
+
+### The owner's decision on the default, 2026-11-18
+
+**The shader by default in the browser only** (`bodyOnGpuByDefault`: true on wasm, false on the desktop, Android and iOS).
+The browser is where the cost was: hot, ten cards run at 60.8 frames a second by the shader against 26.9 by paths
+([B-131](B-131-decorations-in-the-shader.md)). The desktop keeps paths, so no golden and no parity cell recorded on the Mac
+moves; Android holds 59 by paths and has no shader ([B-108](B-108-a-phones-budget-for-the-boil.md)); iOS has none either.
+
+- **What it moves.** Only what a browser draws: four «Копия» cases of `BodyShaderParityTest` at 0.6 % against the paths
+  (B-132's known entries), the drips a shade more angular. A pressed or hot body, a pour, a slide, an error, focus and the
+  mosaic past the contour ([B-137](B-137-mosaic-past-the-contour.md)) are drawn by paths there as before.
+- **Rejected:**
+  - the shader on the desktop too, which re-records the components' goldens for a host that holds its frame by paths;
+  - a public switch in `MutantTheme`, an API for a choice a consumer has no number to make;
+  - leaving it off, which leaves the browser at half the frame rate on a phone.
+- **It engages.** The sample's wasm build makes about 164 runtime shaders a second on its first page in headless Chrome,
+  and the kit before the loop none ([the count](../../logs/b-126/2026-11-18-default-on-in-the-browser.txt)).
