@@ -1,7 +1,7 @@
 ---
 id: B-127
 title: "A body's fill and speckle as one tile the GPU repeats"
-status: wip
+status: dropped
 priority: P2
 size: M
 stage: stage-6-later
@@ -25,3 +25,16 @@ box, costs about as much as it saves. The owner's first idea for the speckle: a 
   38 °C are reported with their temperature.
 - AC: the same pixels as drawing each square each tick, within `StillLayersOnceTest`'s line (0.2 % of pixels over 16
   levels) at 1 and 2.625; the frozen clock's pixels unchanged; a one-pixel phase error fails a test; both gates green.
+
+## Results, 2026-11-18: no faster, and reverted
+
+The tile drew the same pixels: `StillLayersOnceTest` at 0.000 % in «Эфир» and at most 0.021 % in «Копия» at 1 and 2.625, the
+frozen clock's pixels unchanged, both gates green, a one-pixel phase error failing the test. On
+[the run](../../logs/b-127/2026-11-18-pixel6a.log), the phone at 37.6–38.3 °C: the loop's build 24.9 frames a second, this
+item 22.2, the kit before the loop 15.6; this item slower in every counted round (by 1.0 to 15.8 ms a frame). It does not buy
+its cost. Reverted (`e464288`).
+
+**What the heat leaves** ([one run, 38.1–38.4 °C](../../logs/b-127/2026-11-18-pixel6a-against-none.log)): this item with
+every decoration 25.9 frames a second (work p50 32.0 ms); bodies by paths without decorations 51.2 (rounds 61, 35, 61, 38,
+61); **the GPU silhouette of B-110 without decorations 61.1, at 60.8–61.2 in every round** (work p50 4.6 ms). On a hot phone
+only the silhouette on the GPU holds 60, so the decorations have to go there with it ([B-126](B-126-bodies-on-the-gpu.md)).

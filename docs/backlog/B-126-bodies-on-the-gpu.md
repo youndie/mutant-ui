@@ -37,3 +37,10 @@ second drawn by paths**, so the GPU silhouette has nothing to win there, and B-1
 over the frame was taken at 38.2–38.6 °C, where the phone throttles in steps (one build swung from 10 to 62 frames a
 second). It is corrected there. What keeps the page from 60 at this heat is the decorations and the still layers' image.
 The silhouette on the GPU is set aside; the decorations go first ([B-127](B-127-speckle-and-fill-as-one-tile.md)).
+
+### After B-127, 2026-11-18
+
+Hot (38 °C), the silhouette on the GPU holds 60 frames a second in every round where paths without decorations drop to
+35–38 in two rounds of five ([B-127](B-127-speckle-and-fill-as-one-tile.md)). The way stays open, on two conditions: the
+decorations drawn with it, on the GPU, and its edge brought to the paths' (B-110: 1.9–3.6 % of pixels more than 32 levels
+apart, ragged where the mosaic quantises the field).
