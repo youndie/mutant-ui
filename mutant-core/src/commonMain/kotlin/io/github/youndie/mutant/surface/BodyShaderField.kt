@@ -123,11 +123,11 @@ internal fun flowBins(
         hi: Float,
         o: Float,
         count: Int,
-    ): IntRange =
-        max(0, kotlin.math.floor((lo - reach - o) / FLOW_BIN_DP).toInt())..min(
-            count - 1,
-            kotlin.math.floor((hi + reach - o) / FLOW_BIN_DP).toInt(),
-        )
+    ): IntRange {
+        val first = max(0, kotlin.math.floor((lo - reach - o) / FLOW_BIN_DP).toInt())
+        val last = min(count - 1, kotlin.math.floor((hi + reach - o) / FLOW_BIN_DP).toInt())
+        return first..last
+    }
 
     val counts = IntArray(bw * bh)
     for (k in 0 until n) {
