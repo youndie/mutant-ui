@@ -27,3 +27,13 @@ why one image for the still layers bought nothing.
 - AC: the logs; `BodyAsImageTest` and the goldens unchanged; a mutant that freezes the image before it is drawn into fails
   a test.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt`
+
+## Run 1, 2026-11-18: the lever is not reached on the proxy
+
+[The run](../../logs/b-113/2026-11-18-proxy.log), the Mac charging: the frame's work moved by +2.1, +2.2, −0.6, −0.3,
++2.0 ms against the kit, `Blank` by up to 1.2; it does not buy its cost by the rule. A build drawing every body that comes
+from its tick's image as a red box answers why: unslowed, every card is red; slowed four times, **none is**
+([×1](../../logs/b-113/2026-11-18-proxy-image-path-cpu1.png), [×4](../../logs/b-113/2026-11-18-proxy-image-path-cpu4.png)).
+On a saturated thread the builds ahead, queued at background priority, never finish in time, so every body is drawn as
+vectors in the frame, which saturates the thread further. Neither this item nor B-112 could act there. This item stays on the
+branch, to be measured again over [B-114](B-114-a-tick-image-built-in-the-frame.md), which makes the image path reachable.
