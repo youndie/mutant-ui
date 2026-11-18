@@ -54,27 +54,46 @@ internal fun fieldTexels(field: DistanceField): ByteArray {
 
 /**
  * B-131: a body's flow lines for its shader, their segments sorted into bins of [FLOW_BIN_DP] over the lines' box, so a
- * pixel reads its own bin's few. Two opaque RGBA textures, the data in red, green and blue: [bins], a texel a bin (the
- * first entry in two bytes; the entry count plus 32 · (winding + 4) at the bin's centre, by the non-zero rule as the paths
- * fill the lines); [segs], three texels an entry (its two ends in the order the path runs, each coordinate in two bytes,
- * [FLOW_SCALE] to the dp from the box's origin).
+ * pixel reads its own bin's few. [bins], an opaque RGBA texture, a texel a bin, the data in red, green and blue (the first
+ * entry in two bytes; the entry count plus 32 · (winding + 4) at the bin's centre, by the non-zero rule as the paths fill
+ * the lines). B-134: [entries] and [segs] are 16-bit words in `RGB_565` texels (as the field's), [FLOW_W] a row:
+ * [entries], a word an entry, the segment it names; [segs], four words a segment, each segment once (its two ends in the
+ * order the path runs, [FLOW_SCALE] to the dp from the box's origin). A segment is no longer copied into every bin it
+ * reaches: a card's 28 kB a tick were mostly that.
  */
 internal class FlowBins(
     val bins: ByteArray,
     val binsW: Int,
     val binsH: Int,
-    val segs: ByteArray,
-    val segsW: Int,
-    val rows: Int,
+    val entries: Words,
+    val segs: Words,
     val originX: Float,
     val originY: Float,
 )
 
+/** 16-bit words as `RGB_565` texels, [FLOW_W] a row, a row only as wide as it needs where there is one. */
+internal class Words(
+    val bytes: ByteArray,
+    val w: Int,
+    val h: Int,
+)
+
+private fun words(values: IntArray): Words {
+    val h = max(1, (values.size + FLOW_W - 1) / FLOW_W)
+    val w = if (h == 1) max(1, values.size) else FLOW_W
+    val bytes = ByteArray(w * h * 2)
+    for (i in values.indices) {
+        bytes[2 * i] = (values[i] and 255).toByte()
+        bytes[2 * i + 1] = (values[i] shr 8).toByte()
+    }
+    return Words(bytes, w, h)
+}
+
 /** Steps of a field value over ±32: 14 bits. */
 internal const val FIELD_STEPS: Float = 16383f
 
-/** Texels a row of the flow segments' texture, a multiple of three. */
-internal const val FLOW_W: Int = 1023
+/** Texels a row of the flow lines' word textures, a multiple of four. */
+internal const val FLOW_W: Int = 1024
 
 /** Units of a flow coordinate a dp. */
 internal const val FLOW_SCALE: Float = 64f
@@ -200,21 +219,15 @@ internal fun flowBins(
             bins[4 * b + 3] = 255.toByte()
         }
     }
-    val rows = max(1, (total * 3 + FLOW_W - 1) / FLOW_W)
-    // B-134: one row is only as wide as its entries; the shader indexes a texel by FLOW_W either way.
-    val segsW = if (rows == 1) max(3, total * 3) else FLOW_W
-    val segs = ByteArray(segsW * rows * 4) { if (it % 4 == 3) 255.toByte() else 0 }
-    val slots = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9)
-    for (e in 0 until total) {
-        val k = entries[e]
-        val t = 12 * e
+    if (n > 65535) return null
+    val seg = IntArray(4 * n)
+    for (k in 0 until n) {
         for (c in 0 until 4) {
-            val u = ((s[4 * k + c] - (if (c % 2 == 0) ox else oy)) * FLOW_SCALE).roundToInt().coerceIn(0, 65535)
-            segs[t + slots[2 * c]] = (u shr 8).toByte()
-            segs[t + slots[2 * c + 1]] = (u and 255).toByte()
+            seg[4 * k + c] =
+                ((s[4 * k + c] - (if (c % 2 == 0) ox else oy)) * FLOW_SCALE).roundToInt().coerceIn(0, 65535)
         }
     }
-    return FlowBins(bins, bw, bh, segs, segsW, rows, ox, oy)
+    return FlowBins(bins, bw, bh, words(entries), words(seg), ox, oy)
 }
 
 /** One loop of a [GenPath] as segments x0, y0, x1, y1 in its order, closed back to its start. */

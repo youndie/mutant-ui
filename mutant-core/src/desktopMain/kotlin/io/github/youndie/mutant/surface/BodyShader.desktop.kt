@@ -89,19 +89,30 @@ internal actual fun bodyShaderBrush(
     b.uniform("dens", density)
     if (flows != null) {
         b.child("flowBins", raster(flows.bins, flows.binsW, flows.binsH))
-        b.child("flow", raster(flows.segs, flows.segsW, flows.rows))
+        b.child("flow", words565(flows.entries))
+        b.child("flowSegs", words565(flows.segs))
         b.uniform("hasFlow", 1f)
         b.uniform("flowOrigin", flows.originX, flows.originY)
         b.uniform("flowDims", flows.binsW.toFloat(), flows.binsH.toFloat())
     } else {
         b.child("flowBins", texture)
         b.child("flow", texture)
+        b.child("flowSegs", texture)
         b.uniform("hasFlow", 0f)
         b.uniform("flowOrigin", 0f, 0f)
         b.uniform("flowDims", 0f, 0f)
     }
     return ShaderBrush(b.makeShader().asComposeShader())
 }
+
+/** 16-bit words as `RGB_565` texels, read texel by texel. */
+private fun words565(words: Words) =
+    Image
+        .makeRaster(
+            ImageInfo(words.w, words.h, ColorType.RGB_565, ColorAlphaType.OPAQUE, ColorSpace.sRGB),
+            words.bytes,
+            words.w * 2,
+        ).makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, nearest)
 
 /** Opaque RGBA bytes as a texture read texel by texel. */
 private fun raster(

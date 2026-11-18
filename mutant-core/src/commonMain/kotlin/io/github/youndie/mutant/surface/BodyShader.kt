@@ -57,6 +57,7 @@ uniform float2 stillAt;
 uniform float dens;
 uniform shader flowBins;
 uniform shader flow;
+uniform shader flowSegs;
 uniform float hasFlow;
 uniform float2 flowOrigin;
 uniform float2 flowDims;
@@ -159,13 +160,12 @@ float flowSd(float2 p) {
     float best = 1000.0;
     for (int k = 0; k < ${MAX_FLOW_ENTRIES}; k++) {
         if (float(k) >= count) break;
-        float t = (first + float(k)) * 3.0;
+        float e = first + float(k);
+        float t = word(flow.eval(float2(mod(e, ${FLOW_W}.0), floor(e / ${FLOW_W}.0)) + 0.5)) * 4.0;
         float2 at = float2(mod(t, ${FLOW_W}.0), floor(t / ${FLOW_W}.0)) + 0.5;
-        half4 e0 = flow.eval(at);
-        half4 e1 = flow.eval(at + float2(1.0, 0.0));
-        half4 e2 = flow.eval(at + float2(2.0, 0.0));
-        float2 a = flowOrigin + float2(u16(e0.r, e0.g), u16(e0.b, e1.r)) / ${FLOW_SCALE};
-        float2 z = flowOrigin + float2(u16(e1.g, e1.b), u16(e2.r, e2.g)) / ${FLOW_SCALE};
+        float2 a = flowOrigin + float2(word(flowSegs.eval(at)), word(flowSegs.eval(at + float2(1.0, 0.0)))) / ${FLOW_SCALE};
+        float2 z = flowOrigin +
+            float2(word(flowSegs.eval(at + float2(2.0, 0.0))), word(flowSegs.eval(at + float2(3.0, 0.0)))) / ${FLOW_SCALE};
         float2 ba = z - a;
         best = min(best, segD(p, a, z));
         float den = r.x * ba.y - r.y * ba.x;
