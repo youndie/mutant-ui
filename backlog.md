@@ -64,9 +64,9 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[?]` | Bodies on the GPU, with every decoration | P2 | L | - |
-| [B-128](docs/backlog/B-128-the-shader-edge-from-the-contour.md) `[~]` | The body shader's edge from the contour itself | P2 | M | - |
+| [B-129](docs/backlog/B-129-the-contour-distance-once-a-tick.md) `[~]` | The contour's distance computed once a tick, read by the shader | P2 | M | - |
 
-## Closed (125)
+## Closed (126)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -197,6 +197,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-124](docs/backlog/B-124-the-loop-on-the-phone.md) `[x]` - The performance loop's result on the phone
 - [B-125](docs/backlog/B-125-what-the-decorations-cost-on-the-phone-now.md) `[x]` - What the decorations cost on the phone, over the loop's build
 - [B-127](docs/backlog/B-127-speckle-and-fill-as-one-tile.md) `[-]` - A body's fill and speckle as one tile the GPU repeats
+- [B-128](docs/backlog/B-128-the-shader-edge-from-the-contour.md) `[x]` - The body shader's edge from the contour itself
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
