@@ -32,6 +32,15 @@ class SampleStrings(
                 "дизайна. Выключено — движутся каждый кадр. Кипение, капли и зерно ленты в любом случае идут своим " +
                 "тиком.",
         )
+    val mosaicPastContour = t("Mosaic past the edge", "Мозаика за контуром")
+    val mosaicPastContourTitle = t("An experiment, B-137", "Эксперимент, B-137")
+    val mosaicPastContourHint =
+        t(
+            "On, the edge mosaic's blocks cross the outline and stand outside the body. Off, they stay inside it, as " +
+                "the design draws them.",
+            "Включено — блоки мозаики края перекрывают обводку и выходят за тело. Выключено — остаются внутри, как в " +
+                "дизайне.",
+        )
     val languageName = t("EN", "RU")
     val pageComponents = t("Components", "Компоненты")
     val pageDemo = t("Demo", "Демо")

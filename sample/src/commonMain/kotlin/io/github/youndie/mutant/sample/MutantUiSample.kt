@@ -39,6 +39,7 @@ class SampleSettings(
     reduceMotion: Boolean = false,
     cleanSignal: Boolean = false,
     steppedMotion: Boolean = false,
+    mosaicPastContour: Boolean = false,
     language: SampleLanguage = SampleLanguage.English,
     page: SamplePage = SamplePage.Components,
 ) {
@@ -46,6 +47,7 @@ class SampleSettings(
     var reduceMotion by mutableStateOf(reduceMotion)
     var cleanSignal by mutableStateOf(cleanSignal)
     var steppedMotion by mutableStateOf(steppedMotion)
+    var mosaicPastContour by mutableStateOf(mosaicPastContour)
     var language by mutableStateOf(language)
     var page by mutableStateOf(page)
 }
@@ -67,6 +69,7 @@ fun MutantUiSample(
         reduceMotion = settings.reduceMotion,
         cleanSignal = settings.cleanSignal,
         steppedMotion = settings.steppedMotion,
+        mosaicPastContour = settings.mosaicPastContour,
     ) {
         val colors = MutantTheme.colors
         Box(
@@ -138,6 +141,15 @@ private fun Header(
                     { settings.steppedMotion = it },
                     label = strings.steppedMotion,
                     key = "steps",
+                )
+            }
+            // B-137: an experiment the owner looks at; off as the design draws it.
+            MutantTooltipBox(strings.mosaicPastContourTitle, supportingText = strings.mosaicPastContourHint) {
+                MutantSwitch(
+                    settings.mosaicPastContour,
+                    { settings.mosaicPastContour = it },
+                    label = strings.mosaicPastContour,
+                    key = "mosaic-past",
                 )
             }
         }
