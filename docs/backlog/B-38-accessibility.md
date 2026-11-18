@@ -28,3 +28,21 @@ The brief asks for 4.5:1 for glyphs after the Tape at the worst tick, its own fl
 - Noted, the design's own: «Копия»'s outlined button casts a misregistered shadow in a saturated red that comes and goes (2–157 px, under 0.1 % of the screen); the Tape's grain strokes are 1 dp thin and up to 3 dp long.
 - Tests (the sample): `AccessibilityTest`, `DisabledContrastTest`, `StatesAndSemanticsTest` (2). Mutants, each failing its test: «Эфир»'s secondary text darker, «Копия»'s lighter, the disabled text darker, the switch's role a checkbox's, the progress without its value.
 - Not covered: a device's recording through the flash rule (the Pixel 6a, B-49), and screen readers on a device.
+
+## The band's borders, 2026-11-18
+
+Since [B-136](B-136-the-tape-band-on-every-frame.md) the Tape's band moves on every frame and passes every row, so for a
+few frames of each cycle one of its 1 dp borders crosses a disabled word's box. The measure's ground, the commonest
+colour of the box, is then the border, and «Эфир»'s disabled button reads 3.89. The owner, 2026-11-18: «Край
+отдельно» — those frames are measured and printed apart, without the floor; every other frame of the cycle is held at
+4.3.
+
+- `DisabledContrastTest` moved from the sample to `mutant-core`, where it drives the screen's clock and knows the
+  band's place (`tapeBandTop`) on each frame, and it now measures every frame of a 7 s cycle instead of the 56 ticks.
+- **The 4.38 above was itself read under a border.** With the band stepped again (`steppedMotion`) and the same split,
+  that tick has the band's top border at 21 dp inside the button's word box (15–34); off the borders the stepped band's
+  worst is 5.09.
+- Now, per frame: off the borders «Эфир» 4.83 (the button, under the band's body) to 6.33, «Копия» 4.43 to 4.52
+  (12.22 the button); under a border «Эфир» 3.89 (the button) and «Копия» 4.30.
+- Mutants, each failing the test: the disabled text darker (`8A90A6` → `6E7488`, 3.91); the split dropped (its guard:
+  no frame under a border); the bottom border not counted (3.89).

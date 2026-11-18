@@ -72,7 +72,9 @@ engine's `stageStep` does:
 - **B-38's floor.** With the band on every frame its 1 dp bright edge crosses the disabled button's word «Отключено»
   in «Эфир» for about six frames of each 7 s cycle, and `DisabledContrastTest` reads 3.89 there: it takes the most
   common colour in the word's box as its ground, and for those frames that is the edge. Under the band's body the
-  worst is 4.38, as before; the stepped band never stopped with its edge in that box. Left to the owner.
+  worst is 4.83; the stepped band's 4.38, B-38's figure, was itself read with its top border in that box. The owner,
+  2026-11-18: «Край отдельно» — frames with a border across a word are measured apart, the rest held at 4.3; the test
+  moved to `mutant-core` to know the band's place ([B-38](B-38-accessibility.md), «The band's borders»).
 - **Mutants**, each run after the commit and each killed:
   - the band and noise on the scene's tick again (`steps` taken as always on): «while the band passes…» fails;
   - `steps` ignored (never stepped): «under stepped motion…» fails;

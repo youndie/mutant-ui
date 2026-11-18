@@ -345,7 +345,7 @@ darker side under 0.8, counted as a share of the screen.
 | Measure | «Эфир» | «Копия» | Rule | Held by |
 |---|---|---|---|---|
 | Active words' contrast, worst tick: library / recording / settings form / dialog | 5.81 / 6.29 / 6.48 / 7.44 | 4.70 / 5.36 / 4.70 / 5.43 | ≥ 4.5 (brief) | `AccessibilityTest` |
-| Disabled words' contrast, worst tick | 4.38 (button) – 6.33 | 4.49 – 4.52 (12.22 the button) | exempt (WCAG 1.4.3, the owner's answer), held ≥ 4.3 | `DisabledContrastTest` |
+| Disabled words' contrast, worst frame off the band's borders (B-136; under a border, recorded apart: down to 3.89 «Эфир», 4.30 «Копия») | 4.83 (button) – 6.33 | 4.43 – 4.52 (12.22 the button) | exempt (WCAG 1.4.3, the owner's answer), held ≥ 4.3 off the borders | `DisabledContrastTest` |
 | Largest change between ticks, share of a screen | 1.8 / 2.1 / 1.1 / 0.2 % | 7.3 / 4.3 / 4.1 / 0.3 % | ≤ 25 %, once a second (the kit's rule) | `AccessibilityTest` |
 | Saturated red, tick by tick | the settings form's 559–653 px: the error's offset outline and the radio's dot move with their bodies, never on and off | 448–520 px likewise; the recording screen's outlined button casts a misregistered shadow in red that comes and goes, 2–157 px, under 0.1 % of the screen — the design's print effect, drawn as the engine draws it | the red never flashes | `AccessibilityTest` (the form's area within a quarter of its peak) |
 | States in grey (pixels more than 16 levels apart) | every pair ≥ 99 px but a loading button against one at rest, 8 px | every pair ≥ 86 px but loading against rest, 30 px | distinguishable in grey (brief) | `StatesAndSemanticsTest` (the loading pair listed) |
