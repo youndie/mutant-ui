@@ -61,4 +61,5 @@ its 2.1 s pass. On every frame at 60 Hz it rises 6.6 dp a frame.
   - the band on the scene's tick again (`steps` taken as always on): «while the band passes…» fails;
   - `clock.frame` read at rest too: «at rest…» fails on its draw count;
   - `steps` ignored (never stepped): «under stepped motion…» fails;
-  - the time now without reading `clock.frame`: «while the band passes…» fails on its draw count.
+  - the time now without reading `clock.frame`: «while the band passes…» fails, the band standing still between
+    ticks.
