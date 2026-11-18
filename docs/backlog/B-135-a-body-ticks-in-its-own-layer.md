@@ -1,7 +1,7 @@
 ---
 id: B-135
 title: "A body ticks in its own layer"
-status: question
+status: done
 priority: P1
 size: S
 stage: stage-6-later
@@ -59,9 +59,12 @@ that layer and nothing beside it. Rejected: a layer for the pattern alone (it fi
   warmed through the run and the order moves more than the build does. **Not held.** Scrolled, both builds now stand at
   35–48 frames a second where B-133's stood at 20–33, a degree or two hotter; not one run, so not a comparison.
 
-## Question
+## The question, answered
 
 The layer does what it was for — a tick no longer records the page, and the phone's main thread is 6 points less busy — but
 by the rule set before it, it is not shown in frames a second on the phone: grey. Keep it, or take it out? The protocol
 for scrolling needs more pairs than two to read a difference of a few frames a second through the phone's warming.
+
+**The owner, 2026-11-18: keep the layer.** The item is done on that decision, its rule not met on the phone (grey), the
+numbers above as they are.
 
