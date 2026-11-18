@@ -25,10 +25,12 @@ class SampleStrings(
     val steppedMotionTitle = t("Motion as the design steps it", "Движение, как в дизайне")
     val steppedMotionHint =
         t(
-            "On, transitions move 12 times a second and the venom 24, as the design's engine draws them. Off, they " +
-                "move on every frame. The boil and the drips keep their own tick either way.",
-            "Включено — переходы сменяются 12 раз в секунду, а venom 24, как их рисует движок дизайна. Выключено — " +
-                "движутся каждый кадр. Кипение и капли в любом случае идут своим тиком.",
+            "On, transitions move 12 times a second, the venom 24, the Tape's band and noise 8, as the " +
+                "design's engine draws them. Off, they move on every frame. The boil, the drips and the Tape's " +
+                "grain keep their own tick either way.",
+            "Включено — переходы сменяются 12 раз в секунду, venom 24, полоса и рябь ленты 8, как их рисует движок " +
+                "дизайна. Выключено — движутся каждый кадр. Кипение, капли и зерно ленты в любом случае идут своим " +
+                "тиком.",
         )
     val languageName = t("EN", "RU")
     val pageComponents = t("Components", "Компоненты")

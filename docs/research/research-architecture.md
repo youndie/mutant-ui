@@ -345,7 +345,7 @@ darker side under 0.8, counted as a share of the screen.
 | Measure | «Эфир» | «Копия» | Rule | Held by |
 |---|---|---|---|---|
 | Active words' contrast, worst tick: library / recording / settings form / dialog | 5.81 / 6.29 / 6.48 / 7.44 | 4.70 / 5.36 / 4.70 / 5.43 | ≥ 4.5 (brief) | `AccessibilityTest` |
-| Disabled words' contrast, worst tick | 4.38 (button) – 6.33 | 4.49 – 4.52 (12.22 the button) | exempt (WCAG 1.4.3, the owner's answer), held ≥ 4.3 | `DisabledContrastTest` |
+| Disabled words' contrast, worst frame off the band's borders (B-136; under a border, recorded apart: down to 3.89 «Эфир», 4.30 «Копия») | 4.83 (button) – 6.33 | 4.43 – 4.52 (12.22 the button) | exempt (WCAG 1.4.3, the owner's answer), held ≥ 4.3 off the borders | `DisabledContrastTest` |
 | Largest change between ticks, share of a screen | 1.8 / 2.1 / 1.1 / 0.2 % | 7.3 / 4.3 / 4.1 / 0.3 % | ≤ 25 %, once a second (the kit's rule) | `AccessibilityTest` |
 | Saturated red, tick by tick | the settings form's 559–653 px: the error's offset outline and the radio's dot move with their bodies, never on and off | 448–520 px likewise; the recording screen's outlined button casts a misregistered shadow in red that comes and goes, 2–157 px, under 0.1 % of the screen — the design's print effect, drawn as the engine draws it | the red never flashes | `AccessibilityTest` (the form's area within a quarter of its peak) |
 | States in grey (pixels more than 16 levels apart) | every pair ≥ 99 px but a loading button against one at rest, 8 px | every pair ≥ 86 px but loading against rest, 30 px | distinguishable in grey (brief) | `StatesAndSemanticsTest` (the loading pair listed) |
@@ -604,6 +604,7 @@ The design steps every transition at the hot tick (83.33 ms, 12 a second: pour, 
 
 - **The design's steps.** `steppedMotion = true` brings them back, and the sample's header switches it. Over the first 300 ms of each of eleven kinds, 14 to 19 of 19 frames change on every frame, and 3 to 7 under the steps (`MotionEveryFrameTest`).
 - **What it moves.** No golden or parity cell: they draw at rest or at frozen times. One behaviour test held the tabs' bar to a step, and now holds it to the frame.
+- **The Tape's band and head noise** ([B-136](../backlog/B-136-the-tape-band-on-every-frame.md), 2026-11-18). On the owner's word they run on every frame too: the band rises and the noise is drawn anew each frame, so the Tape draws on every frame while the clock runs, over its content held in a layer of its own. Its grain keeps the tick; under `steppedMotion` the band and the noise step with it.
 - **Rejected:**
   - the design's steps as the default with a switch off, which keeps the motion the owner found limited;
   - per-frame movement of the bodies' shapes too, which would rebuild every body's field on every frame against D6.

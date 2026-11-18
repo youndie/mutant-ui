@@ -35,8 +35,9 @@ internal val LocalMutantCleanSignal = staticCompositionLocalOf { false }
 
 /**
  * Whether movement steps at the hot tick as the design draws it (B-100). Off by default: a pour, a slide, a melt, a
- * venom run and an overlay's rise move on every frame of the screen's clock, while the boil, the drips and the mosaic keep
- * their tick (D6).
+ * venom run, an overlay's rise and the Tape's tracking band and head noise (B-136) move on every frame of the screen's
+ * clock, while the boil, the drips, the mosaic and the Tape's grain keep their tick (D6). Set, the band and the noise step
+ * with the grain, eight times a second.
  */
 internal val LocalMutantSteppedMotion = staticCompositionLocalOf { false }
 
