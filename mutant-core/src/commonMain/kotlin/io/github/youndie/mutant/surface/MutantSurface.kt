@@ -218,7 +218,6 @@ internal fun MutantSurface(
     val registry = remember { CleanZoneRegistry() }
     val held = remember { HeldInstance() }
     val ahead = remember { FrameAhead() }
-    val buildAhead = LocalMutantBuildAhead.current
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
     // B-110, a spike: the body's silhouette drawn by a shader from its field, where the platform has one.
@@ -598,7 +597,7 @@ internal fun MutantSurface(
                         ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs, paths = !onGpu)
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
-                if (resting && buildAhead && cache.settledFor(g)) {
+                if (resting && cache.settledFor(g)) {
                     // B-89: the next tick's time as the clock will read it, so the frame built for it is found.
                     val next = clock.nextRestTimeMs()
                     ahead.prepare(g, next, shown, scope) { band -> buildAhead(g, cache, dead, next, band) }
@@ -649,35 +648,6 @@ internal fun MutantSurface(
                     early?.image?.takeIf {
                         imageInputs != null && early.inputs == imageInputs && pour == null &&
                             slideP >= 1 && it.covers(shown)
-                    } ?: if (resting && imageInputs != null && pour == null && slideP >= 1 && !onGpu) {
-                        // B-114: the image ahead is late (a thread too busy for builds ahead never has one): rasterise
-                        // it here, once for the tick, as this block runs once a tick, so the tick's other frames draw
-                        // one image and not the vectors again.
-                        val pic = pictureOf(g, frame, t, k)
-                        val t0 =
-                            kotlin.time.TimeSource.Monotonic
-                                .markNow()
-                        rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection, shown?.let { bandAround(it) }) {
-                            drawBody(
-                                g,
-                                pic.paths,
-                                pic.look,
-                                colors,
-                                speckle,
-                                Offset.Zero,
-                                dead,
-                                pic.decor,
-                                null,
-                                skipParts,
-                            )
-                        }.also {
-                            rasterProbe?.invoke(
-                                t0.elapsedNow().inWholeNanoseconds,
-                                it.image.width * it.image.height * 4L,
-                            )
-                        }.takeIf { it.covers(shown) }
-                    } else {
-                        null
                     }
                 view.drawn = image
                 frameProbe?.invoke(early != null, image != null, frame.steadyWebs)
@@ -922,9 +892,6 @@ internal data class BodyPicture(
  */
 internal val LocalMutantBodyAsImage = staticCompositionLocalOf { true }
 
-/** B-114: whether resting frames are built ahead off the frame; off only in a test, to stand for a thread too busy for them. */
-internal val LocalMutantBuildAhead = staticCompositionLocalOf { true }
-
 /** Told the time and the bytes of every body rasterised (B-82): the bench reads it. */
 internal val LocalMutantRasterProbe = staticCompositionLocalOf<((nanos: Long, bytes: Long) -> Unit)?> { null }
 
@@ -973,16 +940,13 @@ internal fun rasterisedBody(
     val top = kotlin.math.floor(el.oy - RASTER_MARGIN - 4).toFloat()
     val right = kotlin.math.ceil(el.ox + el.w + RASTER_MARGIN).toFloat()
     val bottom = kotlin.math.ceil(el.oy + el.h + el.over + RASTER_MARGIN + 16).toFloat()
-    // On the surface's own pixel grid (B-114): the scene's point (ox, oy) is the surface's pixel (0, 0), and the image's
-    // pixels are the surface's, so drawn at [at] nothing is resampled. Cut on whole scene units, a fractional density put
-    // the image up to half a pixel off the body's vectors (2.9 % of pixels at 2.625).
-    val ax = kotlin.math.floor((left - ox) * density).toInt()
-    val ay = kotlin.math.floor((top - oy) * density).toInt()
-    val w = kotlin.math.ceil((right - ox) * density).toInt() - ax
-    val h = kotlin.math.ceil((bottom - oy) * density).toInt() - ay
+    val w = kotlin.math.ceil((right - left) * density).toInt()
+    val h = kotlin.math.ceil((bottom - top) * density).toInt()
     val at =
-        androidx.compose.ui.unit
-            .IntOffset(ax, ay)
+        androidx.compose.ui.unit.IntOffset(
+            kotlin.math.round((left - ox) * density).toInt(),
+            kotlin.math.round((top - oy) * density).toInt(),
+        )
     val whole = Rect(at.x.toFloat(), at.y.toFloat(), (at.x + w).toFloat(), (at.y + h).toFloat())
     // The band, on the whole image's pixel grid: whole pixels of it, so a cut image is the whole one's pixels.
     val x0 = band?.let { (kotlin.math.floor(it.left) - at.x).toInt().coerceIn(0, w) } ?: 0
@@ -1001,8 +965,8 @@ internal fun rasterisedBody(
         androidx.compose.ui.geometry
             .Size(image.width.toFloat(), image.height.toFloat()),
     ) {
-        translate(-(x0 + ax).toFloat(), -(y0 + ay).toFloat()) {
-            scale(density, Offset.Zero) { translate(-ox.toFloat(), -oy.toFloat()) { draw() } }
+        translate(-x0.toFloat(), -y0.toFloat()) {
+            scale(density, Offset.Zero) { translate(-left, -top) { draw() } }
         }
     }
     // B-113: finished, so a frame drawing it shares its pixels instead of copying them.
