@@ -1,0 +1,29 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-18T15:57:32.552Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 100; temperature: 316; Capacity level: 5;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 66cc1f0
+# build: b1bf98289d75637bac56.wasm 0d80f6232b495648, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8; ~b: bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8, c64ceef81e965436ea3b.wasm 31029a6aaddbdee5
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes ComponentsRest,ComponentsRest~b
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     54.2 f/s  interval p95   16.7  >16.7  25.69 %  >33   4.25 %  work p50   5.50 p95  28.70  LoAF 17 (1554 ms)  busy  78.3 %  31.6 °C
+round 1 ComponentsRest~b   56.8 f/s  interval p95   16.7  >16.7  26.28 %  >33   2.82 %  work p50   5.50 p95  24.30  LoAF 15 (1229 ms)  busy  73.9 %  31.6 °C
+round 2 ComponentsRest~b   56.3 f/s  interval p95   16.7  >16.7  24.02 %  >33   3.20 %  work p50   6.00 p95  25.20  LoAF 12 (1073 ms)  busy  73.7 %  31.8 °C
+round 2 ComponentsRest     51.3 f/s  interval p95   33.2  >16.7  27.15 %  >33   5.08 %  work p50   5.90 p95  33.80  LoAF 21 (2140 ms)  busy  82.1 %  31.8 °C
+round 3 ComponentsRest     54.1 f/s  interval p95   16.7  >16.7  29.63 %  >33   3.70 %  work p50   5.90 p95  31.20  LoAF 12 (1277 ms)  busy  79.9 %  32.2 °C
+round 3 ComponentsRest~b   52.9 f/s  interval p95   16.8  >16.7  29.36 %  >33   4.55 %  work p50   5.80 p95  31.80  LoAF 17 (1674 ms)  busy  76.7 %  32.2 °C
+round 4 ComponentsRest~b   54.9 f/s  interval p95   16.7  >16.7  29.20 %  >33   2.92 %  work p50   5.50 p95  25.20  LoAF 13 (1259 ms)  busy  75.0 %  32.2 °C
+round 4 ComponentsRest     50.5 f/s  interval p95   33.3  >16.7  30.56 %  >33   5.36 %  work p50   6.20 p95  40.00  LoAF 21 (2196 ms)  busy  82.3 %  33.1 °C
+round 5 ComponentsRest     53.1 f/s  interval p95   16.7  >16.7  29.25 %  >33   4.53 %  work p50   6.40 p95  32.70  LoAF 15 (1524 ms)  busy  83.0 %  33.1 °C
+round 5 ComponentsRest~b   51.1 f/s  interval p95   16.7  >16.7  27.65 %  >33   4.31 %  work p50   6.30 p95  32.50  LoAF 17 (1793 ms)  busy  82.6 %  33.8 °C
+round 6 ComponentsRest~b   52.5 f/s  interval p95   16.7  >16.7  26.34 %  >33   3.24 %  work p50   6.10 p95  27.20  LoAF 15 (1611 ms)  busy  80.6 %  33.8 °C
+round 6 ComponentsRest     48.2 f/s  interval p95   33.2  >16.7  30.77 %  >33   5.61 %  work p50   7.40 p95  43.40  LoAF 20 (2167 ms)  busy  90.8 %  34.5 °C
+
+# counted rounds 2..6, pooled
+ComponentsRest     51.4 f/s  interval p95   16.8  >16.7  29.45 %  >33   4.83 %  work p50   6.40 p95  33.90  GREY
+ComponentsRest~b   53.5 f/s  interval p95   16.7  >16.7  27.28 %  >33   3.63 %  work p50   5.90 p95  28.20  GREY
+# ~b minus a, ComponentsRest, work p50: per counted round 0.10, -0.10, -0.70, -0.10, -1.30ms; mean -0.42ms
+# ~b minus a, ComponentsRest, f/s: per counted round 5.00, -1.20, 4.40, -2.00, 4.30; mean 2.10
+# ~b minus a, ComponentsRest, busy: per counted round -8.32, -3.16, -7.33, -0.35, -10.17 pt; mean -5.87 pt

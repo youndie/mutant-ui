@@ -1,7 +1,7 @@
 ---
 id: B-135
 title: "A body ticks in its own layer"
-status: wip
+status: question
 priority: P1
 size: S
 stage: stage-6-later
@@ -45,3 +45,23 @@ that layer and nothing beside it. Rejected: a layer for the pattern alone (it fi
   counted; then the touch scroll of `scripts/phone-touch-scroll.mjs`, each build twice, alternating. **It holds** if this
   build's pooled frames a second at rest are higher and its work p50 lower in every counted round, and its frames a second
   scrolled are higher in both pairs.
+
+## Results, 2026-11-18
+
+- **The code.** `TickInOwnLayerTest`: a box beside a ticking body is drawn once, where it was drawn again at each of the
+  body's 8 ticks before; a mutant taking the layer away fails it. The code gate is green as it stood, every golden and
+  parity test unchanged.
+- **The phone at rest** ([run](../../logs/b-135/2026-11-18-pixel6a.log)), 31.6–34.5 °C: B-134's build 51.4 frames a second
+  pooled, **this one 53.5**, the main thread 5.9 points less busy on average (0.4 to 10.2 a round); but work p50 lower in four
+  counted rounds of five, 0.1 ms higher in the other. **Not held**: the rule asked every round.
+- **The phone scrolled by touch** ([run](../../logs/b-135/2026-11-18-pixel6a-touch-scroll.log)), 34.5–36.0 °C, B-134 then
+  this build then this build then B-134: 47.6 and 45.5, then 40.6 and 35.0 frames a second. One pair each way; the phone
+  warmed through the run and the order moves more than the build does. **Not held.** Scrolled, both builds now stand at
+  35–48 frames a second where B-133's stood at 20–33, a degree or two hotter; not one run, so not a comparison.
+
+## Question
+
+The layer does what it was for — a tick no longer records the page, and the phone's main thread is 6 points less busy — but
+by the rule set before it, it is not shown in frames a second on the phone: grey. Keep it, or take it out? The protocol
+for scrolling needs more pairs than two to read a difference of a few frames a second through the phone's warming.
+

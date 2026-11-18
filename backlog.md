@@ -62,7 +62,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-135](docs/backlog/B-135-a-body-ticks-in-its-own-layer.md) `[~]` | A body ticks in its own layer | P1 | S | - |
+| [B-135](docs/backlog/B-135-a-body-ticks-in-its-own-layer.md) `[?]` | A body ticks in its own layer | P1 | S | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[?]` | Bodies on the GPU, with every decoration | P2 | L | - |
 | [B-130](docs/backlog/B-130-the-shader-marches-its-cells.md) `[~]` | The body shader marches its own cells | P2 | M | - |
