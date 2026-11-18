@@ -1,3 +1,6 @@
+// B-134: counts skia_memSetByte calls a second on a build whose sample.js was patched to count them (wrap the glue's
+// `skia_memSetByte` export in a counter on globalThis.__mb). Usage: node scripts/count-skia-byte-copies.mjs <url>
+
 import { spawn } from 'node:child_process'; import { mkdtempSync } from 'node:fs'; import { tmpdir } from 'node:os'; import { join } from 'node:path';
 const port = 9347;
 const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--headless=new', '--window-size=390,844', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'ct-'))}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' });
