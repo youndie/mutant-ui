@@ -64,9 +64,9 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-113](docs/backlog/B-113-an-image-not-copied-each-frame.md) `[~]` | A body's image not copied each frame it is drawn | P2 | S | - |
-| [B-116](docs/backlog/B-116-the-proxy-calibrated-to-the-phone.md) `[~]` | The phone proxy calibrated to the phone, and the cuts measured again on it | P2 | S | - |
+| [B-117](docs/backlog/B-117-still-layers-once-on-the-surface-grid.md) `[~]` | A body's still layers drawn once, on the surface's grid | P2 | S | - |
 
-## Closed (113)
+## Closed (114)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -185,6 +185,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-112](docs/backlog/B-112-static-decorations-drawn-once.md) `[-]` - A body's still decorations drawn once, and painted without the clip
 - [B-114](docs/backlog/B-114-a-tick-image-built-in-the-frame.md) `[-]` - A resting body's tick image built in the frame when the one ahead is late
 - [B-115](docs/backlog/B-115-a-body-image-on-the-surface-grid.md) `[x]` - A body's image rasterised on the surface's pixel grid
+- [B-116](docs/backlog/B-116-the-proxy-calibrated-to-the-phone.md) `[x]` - The phone proxy calibrated to the phone, and the cuts measured again on it
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection

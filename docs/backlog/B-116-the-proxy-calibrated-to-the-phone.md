@@ -1,7 +1,7 @@
 ---
 id: B-116
 title: "The phone proxy calibrated to the phone, and the cuts measured again on it"
-status: wip
+status: done
 priority: P2
 size: S
 stage: stage-6-later
@@ -24,3 +24,20 @@ stands at that edge.**
   decorations; `TenCards8` and `Blank`, six rounds of ten seconds, round 1 not counted. A build **buys its cost** if every
   counted round is cheaper than the kit, in work p50 and in ms a frame, by more than twice the largest move of `Blank`'s
   work between the same builds. A build that buys it is taken up again as its own item; the rest stay reverted.
+
+## Results, 2026-11-18
+
+[The run](../../logs/b-116/2026-11-18-proxy-x2.log), the Mac on mains. `Blank`'s work moved by at most 1.2 ms between any
+two builds, so the line is 2.4 ms. Per counted round, against the kit at 16.4 frames a second:
+
+| Build | ms a frame saved | work p50 saved | Verdict |
+|---|---|---|---|
+| B-113, the image frozen | 0.4, 0.7, 0.4, −0.7, 0.0 | 62.3, −0.1, −0.6, 0.4, −5.6 | does not buy it |
+| **B-112, the still layers once** | **6.4, 6.7, 6.1, 6.6, 6.0** | **69.8, 8.2, 6.4, 8.1, 8.1** | **buys it**: 18.3 frames a second |
+| B-114, the tick image in the frame | −77.5 to −78.3 | −48.2 to −110.8 | dearer: it pushes the frame over the edge, 7.2 a second |
+| the kit without the four decorations | 22.1–23.0 | 11.3–74.1 | 26.1 a second |
+
+So on the calibrated proxy the still layers drawn once buy back about 6.4 of the 61 ms a frame and of the 23 the
+decorations cost; on the proxy slowed four times, past the edge, they bought nothing. B-112 is taken up again as
+[B-117](B-117-still-layers-once-on-the-surface-grid.md), with its four parity failures to answer. B-113 and B-114 stay
+reverted.
