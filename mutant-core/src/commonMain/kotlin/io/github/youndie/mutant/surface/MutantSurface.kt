@@ -263,6 +263,7 @@ internal fun MutantSurface(
     val reach = with(androidx.compose.ui.platform.LocalDensity.current) { OFF_SCREEN_REACH.dp.toPx() }
     val bodyFill = fill ?: colors.fillOf(p.fill)
     val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
+    val pastContour = io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
     moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps)
     val look =
         BodyLook(
@@ -465,6 +466,7 @@ internal fun MutantSurface(
                                     pic.decor,
                                     null,
                                     skipParts,
+                                    pastContour,
                                 )
                             }.also {
                                 rasterProbe?.invoke(
@@ -635,6 +637,7 @@ internal fun MutantSurface(
                                     decor,
                                     pour,
                                     skipParts,
+                                    pastContour,
                                 )
                             }
                         }

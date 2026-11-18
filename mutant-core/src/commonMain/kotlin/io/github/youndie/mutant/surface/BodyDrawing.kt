@@ -3,6 +3,7 @@ package io.github.youndie.mutant.surface
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
@@ -145,6 +146,7 @@ internal fun DrawScope.drawBody(
     decor: BodyDecor = BodyDecor(),
     pour: Pair<Path, Color>? = null,
     skip: Set<BodyPart> = emptySet(),
+    pastContour: Boolean = false,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -212,8 +214,50 @@ internal fun DrawScope.drawBody(
     if (BodyPart.Outline !in skip) {
         drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
     }
+    if (pastContour &&
+        BodyPart.Mosaic !in skip
+    ) {
+        drawMosaicPastContour(g, paths.contour, look, colors.page, decor)
+    }
     decor.brackets?.let { drawBrackets(g, it) }
 }
+
+/**
+ * B-137, a departure from the design (D20): the edge mosaic past the contour. The edge row (row 0) and the blocks
+ * outside the side ([Instance.spillTiles]) are drawn over the outline, unclipped, so the compression's blocks cross the
+ * ink line and stand outside the body. Each block takes the colour of what it stands on, under its tile's tint: the
+ * body's fill inside the contour, the [ground] outside it, so where a block crosses the outline the ink is gone. The
+ * ground is the theme's page: a body does not know what lies behind it. The rows further in stay inside the clip, as
+ * the design draws them. A pressed body's edge row runs as [BodyDecor.runningMosaic] does; the blocks outside keep
+ * their rest.
+ */
+private fun DrawScope.drawMosaicPastContour(
+    g: Instance,
+    contour: Path,
+    look: BodyLook,
+    ground: Color,
+    decor: BodyDecor,
+) {
+    val running = decor.runningMosaic
+    val edge =
+        running?.let { g.mosaicTiles.zip(it) { d, r -> if (d.row == 0) r else null } }
+            ?: g.mosaicTiles.map { if (it.row == 0) it to tint(it) else null }
+    val tiles = edge.filterNotNull() + g.spillTiles.map { it to tint(it) }
+
+    fun squares(color: Color?) =
+        translate(look.slip, look.slip) {
+            for ((t, c) in tiles) {
+                val at = Offset(t.x.toFloat(), t.y.toFloat())
+                val size = Size(t.size.toFloat(), t.size.toFloat())
+                if (color == null) drawRect(c, at, size, alpha = t.opacity.toFloat()) else drawRect(color, at, size)
+            }
+        }
+    clipPath(contour) { squares(look.fill) }
+    clipPath(contour, ClipOp.Difference) { squares(ground) }
+    squares(null)
+}
+
+private fun tint(t: io.github.youndie.mutant.gen.MosaicTile): Color = if (t.black) Color.Black else Color.White
 
 /**
  * The parts of a body, each of which a measurement can leave out of the draw (B-78). The kit draws them all;

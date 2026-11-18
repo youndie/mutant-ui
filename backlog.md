@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 
-## Closed (109)
+## Closed (110)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -179,6 +179,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-107](docs/backlog/B-107-wasm-on-a-phone.md) `[x]` - The sample stutters in a phone's browser
 - [B-108](docs/backlog/B-108-a-phones-budget-for-the-boil.md) `[x]` - What the browser costs against Android, on one phone
 - [B-136](docs/backlog/B-136-the-tape-band-on-every-frame.md) `[x]` - The Tape's band and head noise move on every frame
+- [B-137](docs/backlog/B-137-mosaic-past-the-contour.md) `[x]` - The edge mosaic's blocks past the body's contour, as an experiment
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
