@@ -940,13 +940,16 @@ internal fun rasterisedBody(
     val top = kotlin.math.floor(el.oy - RASTER_MARGIN - 4).toFloat()
     val right = kotlin.math.ceil(el.ox + el.w + RASTER_MARGIN).toFloat()
     val bottom = kotlin.math.ceil(el.oy + el.h + el.over + RASTER_MARGIN + 16).toFloat()
-    val w = kotlin.math.ceil((right - left) * density).toInt()
-    val h = kotlin.math.ceil((bottom - top) * density).toInt()
+    // On the surface's own pixel grid (B-115): the scene's point (ox, oy) is the surface's pixel (0, 0), and the image's
+    // pixels are the surface's, so drawn at [at] nothing is resampled. Cut on whole scene units, a fractional density put
+    // the image up to half a pixel off the body's vectors (2.9 % of pixels at 2.625).
+    val ax = kotlin.math.floor((left - ox) * density).toInt()
+    val ay = kotlin.math.floor((top - oy) * density).toInt()
+    val w = kotlin.math.ceil((right - ox) * density).toInt() - ax
+    val h = kotlin.math.ceil((bottom - oy) * density).toInt() - ay
     val at =
-        androidx.compose.ui.unit.IntOffset(
-            kotlin.math.round((left - ox) * density).toInt(),
-            kotlin.math.round((top - oy) * density).toInt(),
-        )
+        androidx.compose.ui.unit
+            .IntOffset(ax, ay)
     val whole = Rect(at.x.toFloat(), at.y.toFloat(), (at.x + w).toFloat(), (at.y + h).toFloat())
     // The band, on the whole image's pixel grid: whole pixels of it, so a cut image is the whole one's pixels.
     val x0 = band?.let { (kotlin.math.floor(it.left) - at.x).toInt().coerceIn(0, w) } ?: 0
@@ -965,8 +968,8 @@ internal fun rasterisedBody(
         androidx.compose.ui.geometry
             .Size(image.width.toFloat(), image.height.toFloat()),
     ) {
-        translate(-x0.toFloat(), -y0.toFloat()) {
-            scale(density, Offset.Zero) { translate(-left, -top) { draw() } }
+        translate(-(x0 + ax).toFloat(), -(y0 + ay).toFloat()) {
+            scale(density, Offset.Zero) { translate(-ox.toFloat(), -oy.toFloat()) { draw() } }
         }
     }
     // B-113: finished, so a frame drawing it shares its pixels instead of copying them.
