@@ -58,11 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (1)
+## Open (2)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
+| [B-125](docs/backlog/B-125-what-the-decorations-cost-on-the-phone-now.md) `[~]` | What the decorations cost on the phone, over the loop's build | P2 | S | - |
 
 ## Closed (123)
 
