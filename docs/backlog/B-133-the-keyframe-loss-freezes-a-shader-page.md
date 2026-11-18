@@ -46,3 +46,15 @@ Skiko.
   loop's), then the fixed shader build; `ComponentsWheel` and `ComponentsRest`, six rounds of ten seconds, round 1 not
   counted. **It holds** if no frame interval of the shader build is over 1 s and its pooled frames a second are at least
   the paths' in both scenes.
+
+  **[The run](../../logs/b-133/2026-11-18-pixel6a.log)**, 28.2–35.4 °C: no frame interval over 500 ms in either build
+  ([long frames](../../logs/b-133/2026-11-18-pixel6a-long-frames.csv): none). Pooled, the paths 33.2 frames a second in
+  `ComponentsWheel` and 31.4 in `ComponentsRest`, the shader 38.6 and 42.6. **It holds.** On the phone the wheel scrolls
+  nothing (`scrolled 0 px`), so both scenes are the page at rest.
+- **Scrolled by touch, on the phone.** [`scripts/phone-touch-scroll.mjs`](../../scripts/phone-touch-scroll.mjs) opens a build
+  in a new tab and flings the page with `Input.synthesizeScrollGesture` (a screenshot after one fling showed it scrolled),
+  16 flings in 32 s: [the run](../../logs/b-133/2026-11-18-pixel6a-touch-scroll.log), 36.8–37.4 °C, paths 33.1 and 21.0
+  frames a second, the shader 20.5 and 19.7, the longest interval 466 ms. No freeze; the phone stepped down between the
+  first two builds, so the order of the two is not read from it. **Scrolling the components page is not smooth in either
+  build** (a third to two fifths of intervals over 33 ms): a finding for its own item, not this one's.
+
