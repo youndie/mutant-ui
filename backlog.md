@@ -64,9 +64,9 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-113](docs/backlog/B-113-an-image-not-copied-each-frame.md) `[~]` | A body's image not copied each frame it is drawn | P2 | S | - |
-| [B-122](docs/backlog/B-122-builds-ahead-at-user-visible-priority.md) `[~]` | A body's builds ahead posted at user-visible priority in the browser | P2 | S | - |
+| [B-123](docs/backlog/B-123-each-body-in-its-own-layer.md) `[~]` | Each body drawn in a layer of its own | P2 | S | - |
 
-## Closed (119)
+## Closed (120)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -191,6 +191,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-119](docs/backlog/B-119-the-still-image-marked-finished.md) `[x]` - The still layers' image marked finished
 - [B-120](docs/backlog/B-120-what-a-body-costs-over-b-119.md) `[x]` - What a body's parts cost, over B-119
 - [B-121](docs/backlog/B-121-the-outline-stroked-once-a-tick.md) `[-]` - A body's outline stroked once a tick
+- [B-122](docs/backlog/B-122-builds-ahead-at-user-visible-priority.md) `[-]` - A body's builds ahead posted at user-visible priority in the browser
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
