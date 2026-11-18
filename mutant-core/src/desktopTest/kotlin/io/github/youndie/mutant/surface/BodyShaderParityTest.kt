@@ -99,20 +99,34 @@ class BodyShaderParityTest {
         return 100.0 * n / (a.width * a.height)
     }
 
+    /**
+     * B-132: the cases the owner accepted over the line of 0.5 % on 2026-11-18, each with its own ceiling. The shader draws
+     * the marched polyline, the paths smooth it (quadratics through the midpoints, near points dropped), so a drip's end is
+     * a little more angular there: 0.50–0.59 % when accepted. A case not listed is still held at 0.5 %; a listed one may not
+     * grow past 0.6 %, and leaves the list once B-132 brings it back under the line.
+     */
+    private val known =
+        mapOf(
+            "button-kopiya-1.0" to 0.6,
+            "card-kopiya-2.625" to 0.6,
+            "button-kopiya-2.625" to 0.6,
+            "fab-kopiya-2.625" to 0.6,
+        )
+
     @Test
     fun `the shader draws what the paths draw, within half a percent`() {
         val dir = File("build/b-110").apply { mkdirs() }
         val lines = ArrayList<String>()
-        var worst = 0.0
+        val over = ArrayList<String>()
         for (print in listOf(false, true)) {
             for (d in listOf(1f, 2.625f)) {
                 for (c in cases) {
                     val paths = render(c, onGpu = false, d, print)
                     val shader = render(c, onGpu = true, d, print)
                     val s = share(paths, shader)
-                    worst = maxOf(worst, s)
                     val tag = "${c.name}-${if (print) "kopiya" else "efir"}-$d"
-                    lines += "$tag ${"%.2f".format(s)} %"
+                    lines += "$tag ${"%.3f".format(s)} %"
+                    if (s > (known[tag] ?: 0.5)) over += "$tag ${"%.3f".format(s)} % over ${known[tag] ?: 0.5} %"
                     val sheet = BufferedImage(paths.width * 2 + 8, paths.height, BufferedImage.TYPE_INT_ARGB)
                     sheet.graphics.apply {
                         drawImage(paths, 0, 0, null)
@@ -124,7 +138,7 @@ class BodyShaderParityTest {
         }
         File(dir, "shares.txt").writeText(lines.joinToString("\n") + "\n")
         println(lines.joinToString("\n"))
-        assertTrue(worst <= 0.5, "a case over the line of 0.5 %: ${lines.joinToString("; ")}")
+        assertTrue(over.isEmpty(), "cases over their line: ${over.joinToString("; ")}")
     }
 
     /** B-131: the same, every decoration drawn by both; the line, set before the first render, 0.8 %. */

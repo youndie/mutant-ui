@@ -44,3 +44,11 @@ Hot (38 °C), the silhouette on the GPU holds 60 frames a second in every round 
 35–38 in two rounds of five ([B-127](B-127-speckle-and-fill-as-one-tile.md)). The way stays open, on two conditions: the
 decorations drawn with it, on the GPU, and its edge brought to the paths' (B-110: 1.9–3.6 % of pixels more than 32 levels
 apart, ragged where the mosaic quantises the field).
+
+### The owner's decision on the edge, 2026-11-18
+
+After [B-131](B-131-decorations-in-the-shader.md) (every decoration in the shader, 60.8 frames a second hot against the
+paths' 26.9), the drips' residual angularity is **accepted as a known departure** and the rounding is the direction
+([B-132](B-132-the-shader-rounds-its-contour.md)): the silhouette test holds four «Копия» cases at 0.6 % each (0.537–0.587 %
+when accepted), the other eight at 0.5 %. Still open: `BODY_ON_GPU` is off by default; a pressed or hot body, a pour, an
+error and focus keep their paths; iOS is not run. The owner looks at the shader build on the phone next.

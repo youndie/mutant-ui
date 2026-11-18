@@ -34,3 +34,7 @@ under the line of 0.5 %, five of «Копия» over it (0.50–0.59). The mosai
 ([edge](../../logs/b-130/2026-11-18-mosaic-edge-paths-vs-shader.png)); the drips are a shade more angular
 ([drips](../../logs/b-130/2026-11-18-drips-paths-vs-shader.png)): the shader draws the marched polyline, and the paths round it
 through `smoothPath`'s quadratics and drop the points closer than its step. That rounding is what is left to match.
+
+**Accepted, 2026-11-18.** Read to three places ([shares](../../logs/b-132/2026-11-18-shares.txt)), four of the five are over
+the line (0.537–0.587 %; card-kopiya-1.0 is 0.495). The owner accepted them as a known departure; the test's `known` list
+holds each at 0.6 %, and [B-132](B-132-the-shader-rounds-its-contour.md) is the way back under 0.5 %.
