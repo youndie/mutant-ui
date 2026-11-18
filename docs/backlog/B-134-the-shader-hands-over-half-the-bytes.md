@@ -1,7 +1,7 @@
 ---
 id: B-134
 title: "The body shader hands Skia half the bytes"
-status: wip
+status: done
 priority: P1
 size: S
 stage: stage-6-later
@@ -25,7 +25,11 @@ calls a second** on that page, about 730 kB a tick. A body's field is most of it
 
 - **The field in two bytes a node**, an `R8G8_UNORM` texture: the value in 14 bits over ±32 (0.004 dp, a tenth of a pixel
   at 2.625 is 0.038 dp) and the two near flags in the low bits. Eight bits a channel stay exact in half precision.
-- **The segments texture as wide as its entries** when they fit one row.
+  *Built as `RGB_565`*: Skiko's `R8G8_UNORM` makes no image with any alpha type, `RGB_565` does; the same 16-bit word in
+  5-6-5 channels, which round back exactly.
+- **The segments texture as wide as its entries** when they fit one row. *Then, on the numbers below*: each segment listed
+  once, in a table of 16-bit words, and the bins' entries naming it by index; a bin held a full copy of every segment it
+  reached, a card's segments texture was 28 kB a tick, the field 41 kB and the bins 14 kB.
 - Rejected: copying in one piece through either module's memory (neither glue exposes it to the kit's JavaScript; a patch
   of Skiko's internals); one byte a node (8 bits over ±32 is 0.25 dp, too coarse at the crossings).
 
@@ -38,3 +42,16 @@ calls a second** on that page, about 730 kB a tick. A body's field is most of it
 - **On the phone, hot**, one rotation, B-133's shader build then this one, `ComponentsRest` six rounds of ten seconds, round
   1 not counted: **it holds** if this build's pooled frames a second are higher, and its work p50 lower in every counted
   round.
+
+## Results, 2026-11-18
+
+- **The picture.** `BodyShaderParityTest` as it stood: the silhouette 0.266–0.586 %, the four known cases under their 0.6 %
+  (button-kopiya-1.0 moved from 0.567 to 0.575), the decorated 0.27–0.59 % under 0.8 %
+  ([silhouette](../../logs/b-134/2026-11-18-silhouette-shares.txt), [decorated](../../logs/b-134/2026-11-18-decorated-shares.txt)).
+  Mutants swapping the word's bytes (40–49 % of pixels apart) and reading a segment at the wrong stride (to 1.17 %) fail it.
+- **The calls** ([counts](../../logs/b-134/2026-11-18-byte-copies.txt), [the counter](../../scripts/count-skia-byte-copies.mjs)
+  over a copy of each build whose glue counts them): B-133's build 5.82 million a second; **the first cut, the field alone in
+  two bytes, 3.03 million, 52 %: over the line**; with the segments listed once, **2.88 million, 49.4 %: under it.**
+- **The phone** ([run](../../logs/b-134/2026-11-18-pixel6a.log)), 31.6–34.3 °C, on mains: B-133's build 48.3 frames a second
+  pooled, **this one 51.6**, work p50 lower in every counted round (by 0.5 to 2.3 ms, 1.08 on average), the main thread 8 points
+  less busy. **It holds.**
