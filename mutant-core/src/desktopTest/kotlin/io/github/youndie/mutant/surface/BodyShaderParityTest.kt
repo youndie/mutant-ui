@@ -28,10 +28,10 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * B-110, Q1 of the spike: the same bodies at a frozen time drawn by paths and by the shader, with the same parts (the
- * decorations left out of both), at density 1 and 2.625, in both themes. The measure is the share of the stage's
- * pixels differing by more than 32 in any channel; green at 2 % or less in every case, red over 6 % in any. A sheet
- * of both renders goes to `build/b-110/`.
+ * B-110, Q1 of the spike, held since B-128 to the line set before its first render: the same bodies at a frozen time
+ * drawn by paths and by the shader, with the same parts (the decorations left out of both), at density 1 and 2.625, in
+ * both themes; at most 0.5 % of the stage's pixels differ by more than 32 in any channel, in every case. B-110's shader,
+ * reading its edge off the field, was at 1.86–3.55 %. A sheet of both renders goes to `build/b-110/`.
  */
 @OptIn(ExperimentalTestApi::class)
 class BodyShaderParityTest {
@@ -99,7 +99,7 @@ class BodyShaderParityTest {
     }
 
     @Test
-    fun `the shader draws what the paths draw, within the spike's line`() {
+    fun `the shader draws what the paths draw, within half a percent`() {
         val dir = File("build/b-110").apply { mkdirs() }
         val lines = ArrayList<String>()
         var worst = 0.0
@@ -123,6 +123,6 @@ class BodyShaderParityTest {
         }
         File(dir, "shares.txt").writeText(lines.joinToString("\n") + "\n")
         println(lines.joinToString("\n"))
-        assertTrue(worst <= 6.0, "a case over the red line of 6 %: ${lines.joinToString("; ")}")
+        assertTrue(worst <= 0.5, "a case over the line of 0.5 %: ${lines.joinToString("; ")}")
     }
 }
