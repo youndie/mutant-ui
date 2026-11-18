@@ -318,6 +318,7 @@ internal fun stillLayersImage(
     )
 }
 
+/**
  * B-137, a departure from the design (D20): the edge mosaic past the contour. The edge row (row 0) and the blocks
  * outside the side ([Instance.spillTiles]) are drawn over the outline, unclipped, so the compression's blocks cross the
  * ink line and stand outside the body. Each block takes the colour of what it stands on, under its tile's tint: the
