@@ -123,9 +123,6 @@ internal class BodyPaths(
     val highlight: Path,
     val flowLines: Path,
 ) {
-    /** B-121: the outline's stroke as a path to fill, with the width it was stroked at; built once a tick. */
-    var outline: Pair<Float, Path>? = null
-
     companion object {
         fun of(frame: BodyFrame): BodyPaths =
             BodyPaths(frame.contour.toPath(), frame.highlight.toPath(), frame.flowLines.toPath(evenOdd = false))
@@ -211,12 +208,7 @@ internal fun DrawScope.drawBody(
         }
     }
     if (BodyPart.Outline !in skip) {
-        val filled = paths.outline
-        if (filled != null && filled.first == look.outline) {
-            drawPath(filled.second, look.ink)
-        } else {
-            drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
-        }
+        drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
     }
     decor.brackets?.let { drawBrackets(g, it) }
 }
