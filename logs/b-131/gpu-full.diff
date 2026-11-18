@@ -1,0 +1,13 @@
+diff --git a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt
+index e3b35a0..017d099 100644
+--- a/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt
++++ b/mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt
+@@ -13,7 +13,7 @@ import io.github.youndie.mutant.gen.Slot
+ internal val LocalMutantBodyOnGpu = staticCompositionLocalOf { BODY_ON_GPU }
+ 
+ /** The spike's default, for a build that measures the shader in the browser. */
+-internal const val BODY_ON_GPU: Boolean = false
++internal const val BODY_ON_GPU: Boolean = true
+ 
+ /** Whether this platform can draw a body by shader (B-110): Skia's runtime effects on desktop and in the browser. */
+ internal expect val bodyShaderSupported: Boolean

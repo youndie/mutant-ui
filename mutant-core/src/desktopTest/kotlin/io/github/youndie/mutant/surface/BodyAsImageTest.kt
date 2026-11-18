@@ -129,7 +129,8 @@ class BodyAsImageTest {
             }
             return shots to count
         }
-        for ((density, print) in listOf(1f to false, 2f to false, 1f to true)) {
+        // B-115: and the Pixel 6a's 2.625, where an image cut on whole scene units stood off the vectors by up to half a pixel.
+        for ((density, print) in listOf(1f to false, 2f to false, 1f to true, 2.625f to true)) {
             val (image, used) = run(asImage = true, density, print)
             val (vectors, none) = run(asImage = false, density, print)
             assertEquals(0, none.asImage, "no image with the switch off")

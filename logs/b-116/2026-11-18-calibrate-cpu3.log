@@ -1,0 +1,14 @@
+# B-73 browser frame bench, 2026-11-18T01:43:58.549Z
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# power: -InternalBattery-0 (id=23658595) 98%; charging; 0:16 remaining present: true
+# browser: Chrome/157.0.8103.79, headless=new, 390x844 at 3x, phone proxy: mobile, touch, CPU slowed 3x
+# gpu: ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Version 27.0.1 (Build 26A434)); webgl enabled, gpu_compositing enabled
+# commit: b7eb6df
+# build: a23a5facef995f53b5fa.wasm 5ce6d10912661230, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 3 (round 1 not counted), 8000 ms a scene, first 1000 ms not counted; scenes TenCards8
+round 1 TenCards8           6.5 f/s  interval p95  166.7  >16.7 100.00 %  >33 100.00 %  work p50 167.30 p95 177.60  LoAF 52 (8079 ms)  busy  99.9 %
+round 2 TenCards8           6.8 f/s  interval p95  166.7  >16.7 100.00 %  >33 100.00 %  work p50 160.80 p95 169.40  LoAF 54 (8170 ms)  busy 100.0 %
+round 3 TenCards8           6.8 f/s  interval p95  166.7  >16.7 100.00 %  >33 100.00 %  work p50 159.80 p95 172.30  LoAF 54 (8142 ms)  busy 100.0 %
+
+# counted rounds 2..3, pooled
+TenCards8           6.8 f/s  interval p95  166.7  >16.7 100.00 %  >33 100.00 %  work p50 160.20 p95 171.30  RED

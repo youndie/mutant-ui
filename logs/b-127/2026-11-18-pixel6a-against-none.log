@@ -1,0 +1,66 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-18T09:05:27.426Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 100; temperature: 383; Capacity level: 2;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: dc8f5d4
+# build: bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8, c975ea7193ea37022980.wasm b795ecbde5a0fe42; ~b: 41d39b1a2c52de7d6806.wasm 82c50b58f24f463e, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8; ~c: 1cf3869bff0c9439c43e.wasm 70547bcebecb1eb1, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes TenCards8,Blank,TenCards8~b,Blank~b,TenCards8~c,Blank~c
+# viewport in the sample: 411x784 at 2.625x
+round 1 TenCards8           7.6 f/s  interval p95  149.7  >16.7 100.00 %  >33 100.00 %  work p50 144.00 p95 154.00  LoAF 76 (10196 ms)  busy  99.9 %  38.3 °C
+round 1 Blank              61.3 f/s  interval p95   16.7  >16.7  24.67 %  >33   0.00 %  work p50   4.40 p95   8.20  LoAF 0 (0 ms)  busy  21.4 %  38.3 °C
+round 1 TenCards8~b        16.6 f/s  interval p95  116.4  >16.7  84.24 %  >33  65.45 %  work p50  37.30 p95 122.00  LoAF 82 (8565 ms)  busy  99.9 %  38.4 °C
+round 1 Blank~b            61.1 f/s  interval p95   16.7  >16.7  23.28 %  >33   0.16 %  work p50   3.60 p95   7.30  LoAF 0 (0 ms)  busy  19.4 %  38.4 °C
+round 1 TenCards8~c        61.1 f/s  interval p95   16.7  >16.7  25.25 %  >33   0.00 %  work p50   4.30 p95   9.60  LoAF 0 (0 ms)  busy  62.9 %  38.3 °C
+round 1 Blank~c            61.1 f/s  interval p95   16.7  >16.7  24.10 %  >33   0.00 %  work p50   4.40 p95   8.30  LoAF 0 (0 ms)  busy  22.3 %  38.3 °C
+round 2 Blank              61.3 f/s  interval p95   16.7  >16.7  26.80 %  >33   0.00 %  work p50   4.00 p95   7.60  LoAF 0 (0 ms)  busy  21.2 %  38.3 °C
+round 2 TenCards8~b        61.2 f/s  interval p95   16.7  >16.7  25.20 %  >33   0.00 %  work p50   6.60 p95  14.10  LoAF 0 (0 ms)  busy  82.1 %  38.2 °C
+round 2 Blank~b            61.2 f/s  interval p95   16.7  >16.7  24.55 %  >33   0.00 %  work p50   4.10 p95   7.00  LoAF 0 (0 ms)  busy  19.6 %  38.2 °C
+round 2 TenCards8~c        61.2 f/s  interval p95   16.7  >16.7  24.06 %  >33   0.00 %  work p50   4.30 p95   9.30  LoAF 0 (0 ms)  busy  62.0 %  38.2 °C
+round 2 Blank~c            61.3 f/s  interval p95   16.7  >16.7  24.18 %  >33   0.00 %  work p50   3.60 p95   6.00  LoAF 0 (0 ms)  busy  17.2 %  38.1 °C
+round 2 TenCards8          26.0 f/s  interval p95   83.7  >16.7  64.48 %  >33  39.77 %  work p50  31.90 p95  98.30  LoAF 82 (6902 ms)  busy  99.9 %  38.1 °C
+round 3 TenCards8~b        34.8 f/s  interval p95   66.6  >16.7  47.55 %  >33  28.82 %  work p50  22.80 p95  81.30  LoAF 82 (6022 ms)  busy  99.9 %  38.1 °C
+round 3 Blank~b            61.1 f/s  interval p95   16.7  >16.7  24.75 %  >33   0.16 %  work p50   3.60 p95   6.20  LoAF 1 (71 ms)  busy  18.4 %  38.1 °C
+round 3 TenCards8~c        61.1 f/s  interval p95   16.7  >16.7  24.26 %  >33   0.00 %  work p50   4.70 p95   9.50  LoAF 0 (0 ms)  busy  62.7 %  38.1 °C
+round 3 Blank~c            61.1 f/s  interval p95   16.7  >16.7  25.57 %  >33   0.00 %  work p50   4.50 p95   7.40  LoAF 0 (0 ms)  busy  22.0 %  38.1 °C
+round 3 TenCards8          26.1 f/s  interval p95   83.7  >16.7  61.15 %  >33  38.08 %  work p50  31.40 p95  98.90  LoAF 82 (6893 ms)  busy  99.9 %  38.1 °C
+round 3 Blank              61.2 f/s  interval p95   16.7  >16.7  22.26 %  >33   0.16 %  work p50   3.80 p95   6.60  LoAF 1 (53 ms)  busy  18.2 %  38.1 °C
+round 4 Blank~b            61.2 f/s  interval p95   16.7  >16.7  24.71 %  >33   0.00 %  work p50   4.20 p95   7.50  LoAF 0 (0 ms)  busy  20.4 %  38.1 °C
+round 4 TenCards8~c        61.1 f/s  interval p95   16.7  >16.7  26.39 %  >33   0.00 %  work p50   4.60 p95   9.50  LoAF 0 (0 ms)  busy  63.6 %  38.1 °C
+round 4 Blank~c            61.3 f/s  interval p95   16.7  >16.7  22.39 %  >33   0.00 %  work p50   3.40 p95   5.30  LoAF 0 (0 ms)  busy  16.3 %  38.1 °C
+round 4 TenCards8          26.2 f/s  interval p95   83.7  >16.7  61.30 %  >33  39.08 %  work p50  32.10 p95  97.90  LoAF 82 (6857 ms)  busy  99.9 %  38.1 °C
+round 4 Blank              61.0 f/s  interval p95   16.7  >16.7  23.81 %  >33   0.16 %  work p50   3.30 p95   6.20  LoAF 0 (0 ms)  busy  16.7 %  38.1 °C
+round 4 TenCards8~b        61.3 f/s  interval p95   16.7  >16.7  24.84 %  >33   0.00 %  work p50   6.50 p95  14.10  LoAF 0 (0 ms)  busy  81.7 %  38.1 °C
+round 5 TenCards8~c        61.2 f/s  interval p95   16.7  >16.7  21.44 %  >33   0.00 %  work p50   4.60 p95   9.50  LoAF 0 (0 ms)  busy  62.3 %  38.1 °C
+round 5 Blank~c            61.3 f/s  interval p95   16.7  >16.7  25.00 %  >33   0.00 %  work p50   4.40 p95   8.40  LoAF 0 (0 ms)  busy  23.8 %  38.1 °C
+round 5 TenCards8          26.0 f/s  interval p95   83.7  >16.7  63.32 %  >33  39.00 %  work p50  32.10 p95  97.40  LoAF 82 (6884 ms)  busy  99.9 %  38.1 °C
+round 5 Blank              61.3 f/s  interval p95   16.7  >16.7  22.55 %  >33   0.00 %  work p50   3.60 p95   6.80  LoAF 0 (0 ms)  busy  18.0 %  38.1 °C
+round 5 TenCards8~b        37.6 f/s  interval p95   66.5  >16.7  43.47 %  >33  24.80 %  work p50  21.00 p95  73.80  LoAF 81 (5650 ms)  busy  99.9 %  38.1 °C
+round 5 Blank~b            61.1 f/s  interval p95   16.7  >16.7  21.80 %  >33   0.00 %  work p50   4.30 p95   7.90  LoAF 0 (0 ms)  busy  22.1 %  38.1 °C
+round 6 Blank~c            61.2 f/s  interval p95   16.7  >16.7  20.46 %  >33   0.00 %  work p50   6.70 p95  11.70  LoAF 0 (0 ms)  busy  21.1 %  38.1 °C
+round 6 TenCards8          25.0 f/s  interval p95   83.8  >16.7  68.67 %  >33  42.57 %  work p50  32.70 p95  99.60  LoAF 82 (6989 ms)  busy  99.9 %  38.4 °C
+round 6 Blank              61.2 f/s  interval p95   16.7  >16.7  23.24 %  >33   0.00 %  work p50   8.10 p95  11.60  LoAF 0 (0 ms)  busy  17.9 %  38.4 °C
+round 6 TenCards8~b        61.3 f/s  interval p95   16.7  >16.7  27.45 %  >33   0.00 %  work p50   6.50 p95  14.70  LoAF 0 (0 ms)  busy  83.1 %  38.3 °C
+round 6 Blank~b            61.2 f/s  interval p95   16.7  >16.7  23.24 %  >33   0.00 %  work p50   3.70 p95   7.40  LoAF 0 (0 ms)  busy  18.7 %  38.3 °C
+round 6 TenCards8~c        60.8 f/s  interval p95   16.7  >16.7  23.06 %  >33   0.00 %  work p50   4.70 p95   9.70  LoAF 0 (0 ms)  busy  62.2 %  38.3 °C
+
+# counted rounds 2..6, pooled
+TenCards8          25.9 f/s  interval p95   83.7  >16.7  63.74 %  >33  39.67 %  work p50  32.00 p95  98.50  RED
+Blank              61.2 f/s  interval p95   16.7  >16.7  23.73 %  >33   0.07 %  work p50   4.00 p95   9.50  GREY
+TenCards8~b        51.2 f/s  interval p95   66.4  >16.7  31.36 %  >33   7.55 %  work p50   8.50 p95  67.80  RED
+Blank~b            61.2 f/s  interval p95   16.7  >16.7  23.81 %  >33   0.03 %  work p50   4.00 p95   7.30  GREY
+TenCards8~c        61.1 f/s  interval p95   16.7  >16.7  23.84 %  >33   0.00 %  work p50   4.60 p95   9.50  GREY
+Blank~c            61.2 f/s  interval p95   16.7  >16.7  23.52 %  >33   0.00 %  work p50   4.10 p95   9.10  GREY
+# ~b minus a, TenCards8, work p50: per counted round -25.30, -8.60, -25.60, -11.10, -26.20ms; mean -19.36ms
+# ~b minus a, TenCards8, f/s: per counted round 35.20, 8.70, 35.10, 11.60, 36.30; mean 25.38
+# ~b minus a, TenCards8, busy: per counted round -17.79, -0.04, -18.23, -0.05, -16.77 pt; mean -10.58 pt
+# ~b minus a, Blank, work p50: per counted round 0.10, -0.20, 0.90, 0.70, -4.40ms; mean -0.58ms
+# ~b minus a, Blank, f/s: per counted round -0.10, -0.10, 0.20, -0.20, 0.00; mean -0.04
+# ~b minus a, Blank, busy: per counted round -1.58, 0.20, 3.72, 4.17, 0.73 pt; mean 1.45 pt
+# ~c minus a, TenCards8, work p50: per counted round -27.60, -26.70, -27.50, -27.50, -28.00ms; mean -27.46ms
+# ~c minus a, TenCards8, f/s: per counted round 35.20, 35.00, 34.90, 35.20, 35.80; mean 35.22
+# ~c minus a, TenCards8, busy: per counted round -37.94, -37.23, -36.33, -37.59, -37.68 pt; mean -37.36 pt
+# ~c minus a, Blank, work p50: per counted round -0.40, 0.70, 0.10, 0.80, -1.40ms; mean -0.04ms
+# ~c minus a, Blank, f/s: per counted round 0.00, -0.10, 0.30, 0.00, 0.00; mean 0.04
+# ~c minus a, Blank, busy: per counted round -3.99, 3.78, -0.43, 5.77, 3.15 pt; mean 1.66 pt

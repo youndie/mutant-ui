@@ -22,8 +22,11 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -218,8 +221,15 @@ internal fun MutantSurface(
     val registry = remember { CleanZoneRegistry() }
     val held = remember { HeldInstance() }
     val ahead = remember { FrameAhead() }
+    val stillLayers = remember { StillLayers() }
+    val stillOnce = LocalMutantStillLayersOnce.current
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
+    // B-110, a spike: the body's silhouette drawn by a shader from its field, where the platform has one.
+    // B-137: the mosaic past the contour is drawn by paths over the outline; such a body keeps its paths.
+    val onGpu =
+        LocalMutantBodyOnGpu.current && bodyShaderSupported &&
+            !io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
     val bodyAsImage = LocalMutantBodyAsImage.current
     val rasterProbe = LocalMutantRasterProbe.current
     val scope = rememberCoroutineScope()
@@ -318,7 +328,10 @@ internal fun MutantSurface(
                 registry.surface = it
                 moshBody.coords = it
                 view.place(it, reach)
-            }.drawWithCache {
+            }
+            // B-135: a layer of its own, so a tick records the body and its content and nothing beside it.
+            .graphicsLayer()
+            .drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
                 // B-87: a body off the screen builds no tick and reads no clock; its layout tells it when it shows
@@ -329,7 +342,7 @@ internal fun MutantSurface(
                 val where = view.whereNow(registry.surface, reach)
                 if (last != null && where != SHOWN) {
                     if (where == OFF_WINDOW) return@drawWithCache onDrawBehind {}
-                    return@drawWithCache moshBehind(moshScene, moshBody, last)
+                    return@drawWithCache moshBehind(moshScene, moshBody, snapshot = moshBody.snapshot, block = last)
                 }
                 val d = density
                 val zone = registry.union(d)
@@ -411,6 +424,102 @@ internal fun MutantSurface(
                     return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
                 }
 
+                // B-131: the shader's brush with every decoration, or null where the body keeps its paths: anything else
+                // drawn under the clip, or a surface off whole pixels, whose grid the still layers' image would miss.
+                fun shaderOf(
+                    g: Instance,
+                    f: io.github.youndie.mutant.gen.BodyFrame,
+                    dead: io.github.youndie.mutant.gen.DeadPixels?,
+                    tt: Double,
+                    kk: Double,
+                ): androidx.compose.ui.graphics.Brush? {
+                    val pic = pictureOf(g, f, tt, kk)
+                    val decor = pic.decor
+                    if (decor.runningMosaic != null || decor.errorBlocks.isNotEmpty() || decor.bands.isNotEmpty() ||
+                        decor.errorOutline != null || decor.brackets != null
+                    ) {
+                        return null
+                    }
+                    val layers = listOf(BodyPart.Speckle, BodyPart.Mosaic, BodyPart.DeadPixels).any { it !in skipParts }
+                    val still =
+                        if (!layers) {
+                            null
+                        } else {
+                            if (!onWholePixels(registry.surface)) return null
+                            val grid = Offset(slot.ox.toFloat(), slot.oy.toFloat())
+                            stillLayers.of(
+                                g,
+                                listOf(
+                                    look.slip,
+                                    colors,
+                                    d,
+                                    layoutDirection,
+                                    skipParts,
+                                    cassette,
+                                    stage,
+                                    wear,
+                                    dead,
+                                    grid,
+                                ),
+                            ) {
+                                stillLayersImage(
+                                    g,
+                                    look.slip,
+                                    colors,
+                                    speckle,
+                                    Offset.Zero,
+                                    dead,
+                                    skipParts,
+                                    d,
+                                    layoutDirection,
+                                    grid.x,
+                                    grid.y,
+                                )
+                            }
+                        }
+                    val flow =
+                        if (BodyPart.FlowLines in
+                            skipParts
+                        ) {
+                            io.github.youndie.mutant.gen.GenPath.Empty
+                        } else {
+                            f.flowLines
+                        }
+                    return bodyShaderBrush(f.field, slot, pic.look, d, still, flow)
+                }
+
+                // B-117: the body's still layers, drawn once for its instance and what they are drawn with.
+                fun stillOf(
+                    g: Instance,
+                    dead: io.github.youndie.mutant.gen.DeadPixels?,
+                    inFrame: Boolean,
+                ): StillImage? {
+                    if (!stillOnce) return null
+                    // The surface's grid, the slot's origin at its pixel (0, 0): the tick's image is drawn on it (B-115), and
+                    // so is the frame, where the surface stands on whole pixels; elsewhere the layers are drawn as before.
+                    // A frozen clock (fixtures, references) draws them as before, as it draws vectors and no tick image (B-82).
+                    if (inFrame && (clock.frozen || moshScene != null || !onWholePixels(registry.surface))) return null
+                    val grid = Offset(slot.ox.toFloat(), slot.oy.toFloat())
+                    return stillLayers.of(
+                        g,
+                        listOf(look.slip, colors, d, layoutDirection, skipParts, cassette, stage, wear, dead, grid),
+                    ) {
+                        stillLayersImage(
+                            g,
+                            look.slip,
+                            colors,
+                            speckle,
+                            Offset.Zero,
+                            dead,
+                            skipParts,
+                            d,
+                            layoutDirection,
+                            grid.x,
+                            grid.y,
+                        )
+                    }
+                }
+
                 // B-82: everything the image of a resting body depends on besides its frame. An image built ahead is
                 // used only if these are still what they were when it was prepared.
                 fun imageInputsOf(dead: io.github.youndie.mutant.gen.DeadPixels?): List<Any?>? =
@@ -446,7 +555,26 @@ internal fun MutantSurface(
                     band: Rect?,
                 ): Ahead {
                     // Built off the frame's thread: the field's grid is not grown here (B-97).
-                    val f = gen.frame(g, cache, next, 0.0, pressed = false, steadyWebs = steadyWebs, grow = false)
+                    val f =
+                        gen.frame(
+                            g,
+                            cache,
+                            next,
+                            0.0,
+                            pressed = false,
+                            steadyWebs = steadyWebs,
+                            grow = false,
+                            paths = !onGpu,
+                        )
+                    // B-110: a body the shader draws gets its brush ahead, with its frame, and no image.
+                    if (onGpu) {
+                        return Ahead(
+                            f,
+                            null,
+                            null,
+                            shaderOf(g, f, dead, next, 0.0),
+                        )
+                    }
                     val inputs = imageInputsOf(dead)
                     val image =
                         inputs?.let {
@@ -454,6 +582,7 @@ internal fun MutantSurface(
                                 kotlin.time.TimeSource.Monotonic
                                     .markNow()
                             val pic = pictureOf(g, f, next, 0.0)
+                            val still = stillOf(g, dead, inFrame = false)
                             rasterisedBody(g, slot.ox, slot.oy, d, layoutDirection, band) {
                                 drawBody(
                                     g,
@@ -466,6 +595,7 @@ internal fun MutantSurface(
                                     pic.decor,
                                     null,
                                     skipParts,
+                                    still,
                                     pastContour,
                                 )
                             }.also {
@@ -573,7 +703,9 @@ internal fun MutantSurface(
                 val resting = offFrame && !hot && !boil.on && k == 0.0
                 val early = if (resting) ahead.take(g, t) else null
 
-                val frame = early?.frame ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                var frame =
+                    early?.frame
+                        ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs, paths = !onGpu)
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
                 if (resting && cache.settledFor(g)) {
@@ -593,9 +725,46 @@ internal fun MutantSurface(
                 // A running transition is evaluated on every frame, as the engine does, so its steps keep to the event.
                 if (pourP < 1 || slideP < 1) clock.frame
                 val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
-                // B-82: a resting body's picture changes only at a tick. Rasterised ahead with its frame, the image is
-                // drawn until the next tick; a pouring, sliding or heated body, or one whose inputs moved since, draws
-                // as vectors.
+                // B-110: a pouring or sliding body is drawn by paths, as before.
+                if (onGpu && (pour != null || slideP < 1)) {
+                    frame = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                } else if (onGpu) {
+                    val shaded =
+                        early?.shaded.takeIf { early?.frame === frame }
+                            ?: shaderOf(g, frame, dead, t, k)
+                    if (shaded != null) {
+                        view.drawn = null
+                        frameProbe?.invoke(early != null, false, frame.steadyWebs)
+                        val ox = slot.ox.toFloat()
+                        val oy = slot.oy.toFloat()
+                        // B-133: the keyframe loss's snapshot is a CPU bitmap, where the shader would run pixel by pixel;
+                        // there the body draws by paths, built only when a loss takes its snapshot.
+                        val byPaths: DrawScope.() -> Unit = {
+                            val pf = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                            val (pp, pl, pd) = pictureOf(g, pf, t, k)
+                            scale(d, Offset.Zero) {
+                                translate(-ox, -oy) {
+                                    drawBody(g, pp, pl, colors, speckle, Offset.Zero, dead, pd, null, skipParts, null)
+                                }
+                            }
+                        }
+                        return@drawWithCache moshBehind(moshScene, moshBody, snapshot = byPaths) {
+                            scale(d, Offset.Zero) {
+                                translate(-ox, -oy) {
+                                    drawRect(
+                                        shaded,
+                                        Offset(ox - 16, oy - 19),
+                                        androidx.compose.ui.geometry.Size(
+                                            slot.w.toFloat() + 34,
+                                            (slot.h + slot.over).toFloat() + 55,
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    frame = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                }
                 val imageInputs = imageInputsOf(dead)
                 val image =
                     early?.image?.takeIf {
@@ -617,6 +786,9 @@ internal fun MutantSurface(
                     }
                 }
                 val (paths, frameLook, decor) = pictureOf(g, frame, t, k)
+                // B-117: drawn in the frame too, where a body is drawn when its tick's image is not ready (a thread too
+                // busy to build ahead), on the surface's own grid. Not mid-slide.
+                val stillLayer = if (slideP >= 1) stillOf(g, dead, inFrame = true) else null
                 moshBehind(moshScene, moshBody) {
                     scale(d, Offset.Zero) {
                         translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
@@ -637,6 +809,7 @@ internal fun MutantSurface(
                                     decor,
                                     pour,
                                     skipParts,
+                                    stillLayer,
                                     pastContour,
                                 )
                             }
@@ -829,6 +1002,8 @@ internal class Ahead(
     val frame: BodyFrame,
     val image: RasterisedBody?,
     val inputs: List<Any?>?,
+    /** B-110: the shader's brush, built ahead with the frame, for a body the shader draws. */
+    val shaded: androidx.compose.ui.graphics.Brush? = null,
 )
 
 /** What one frame of a body is drawn with. */
@@ -887,18 +1062,17 @@ internal fun rasterisedBody(
     band: Rect? = null,
     draw: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit,
 ): RasterisedBody {
-    val el = g.slot
-    val left = kotlin.math.floor(el.ox - RASTER_MARGIN).toFloat()
-    val top = kotlin.math.floor(el.oy - RASTER_MARGIN - 4).toFloat()
-    val right = kotlin.math.ceil(el.ox + el.w + RASTER_MARGIN).toFloat()
-    val bottom = kotlin.math.ceil(el.oy + el.h + el.over + RASTER_MARGIN + 16).toFloat()
-    val w = kotlin.math.ceil((right - left) * density).toInt()
-    val h = kotlin.math.ceil((bottom - top) * density).toInt()
+    val (left, top, right, bottom) = rasterBox(g)
+    // On the surface's own pixel grid (B-115): the scene's point (ox, oy) is the surface's pixel (0, 0), and the image's
+    // pixels are the surface's, so drawn at [at] nothing is resampled. Cut on whole scene units, a fractional density put
+    // the image up to half a pixel off the body's vectors (2.9 % of pixels at 2.625).
+    val ax = kotlin.math.floor((left - ox) * density).toInt()
+    val ay = kotlin.math.floor((top - oy) * density).toInt()
+    val w = kotlin.math.ceil((right - ox) * density).toInt() - ax
+    val h = kotlin.math.ceil((bottom - oy) * density).toInt() - ay
     val at =
-        androidx.compose.ui.unit.IntOffset(
-            kotlin.math.round((left - ox) * density).toInt(),
-            kotlin.math.round((top - oy) * density).toInt(),
-        )
+        androidx.compose.ui.unit
+            .IntOffset(ax, ay)
     val whole = Rect(at.x.toFloat(), at.y.toFloat(), (at.x + w).toFloat(), (at.y + h).toFloat())
     // The band, on the whole image's pixel grid: whole pixels of it, so a cut image is the whole one's pixels.
     val x0 = band?.let { (kotlin.math.floor(it.left) - at.x).toInt().coerceIn(0, w) } ?: 0
@@ -917,8 +1091,8 @@ internal fun rasterisedBody(
         androidx.compose.ui.geometry
             .Size(image.width.toFloat(), image.height.toFloat()),
     ) {
-        translate(-x0.toFloat(), -y0.toFloat()) {
-            scale(density, Offset.Zero) { translate(-left, -top) { draw() } }
+        translate(-(x0 + ax).toFloat(), -(y0 + ay).toFloat()) {
+            scale(density, Offset.Zero) { translate(-ox.toFloat(), -oy.toFloat()) { draw() } }
         }
     }
     return RasterisedBody(
@@ -930,6 +1104,46 @@ internal fun rasterisedBody(
 }
 
 private const val RASTER_MARGIN = 20.0
+
+/** B-117: whether a body's still layers are drawn once per instance; off only to measure against drawing them each tick. */
+internal val LocalMutantStillLayersOnce = staticCompositionLocalOf { true }
+
+/**
+ * B-117: a body's still layers drawn once ([stillLayersImage]), kept for as long as its instance and the inputs of its
+ * image are what they were. Built ahead off the frame's thread, so the three are held as one reference.
+ */
+internal class StillLayers {
+    private var held: Triple<Instance, List<Any?>, StillImage>? = null
+
+    fun of(
+        g: Instance,
+        inputs: List<Any?>,
+        make: () -> StillImage,
+    ): StillImage {
+        val h = held
+        if (h != null && h.first === g && h.second == inputs) return h.third
+        return make().also { held = Triple(g, inputs, it) }
+    }
+}
+
+/** Whether [surface] stands on whole pixels of the window, so an image on its grid is drawn without resampling (B-117). */
+internal fun onWholePixels(surface: androidx.compose.ui.layout.LayoutCoordinates?): Boolean {
+    if (surface == null || !surface.isAttached) return false
+    val p = surface.localToWindow(Offset.Zero)
+    return kotlin.math.abs(p.x - kotlin.math.round(p.x)) < 0.01f &&
+        kotlin.math.abs(p.y - kotlin.math.round(p.y)) < 0.01f
+}
+
+/** What [rasterisedBody]'s image of [g] covers, in whole scene units. */
+internal fun rasterBox(g: Instance): Rect {
+    val el = g.slot
+    return Rect(
+        kotlin.math.floor(el.ox - RASTER_MARGIN).toFloat(),
+        kotlin.math.floor(el.oy - RASTER_MARGIN - 4).toFloat(),
+        kotlin.math.ceil(el.ox + el.w + RASTER_MARGIN).toFloat(),
+        kotlin.math.ceil(el.oy + el.h + el.over + RASTER_MARGIN + 16).toFloat(),
+    )
+}
 
 /**
  * The next resting tick's frame of one body, built on a background thread (B-75): [prepare] starts it for an

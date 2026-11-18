@@ -58,13 +58,15 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (1)
+## Open (3)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
+| [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[?]` | Bodies on the GPU, with every decoration | P2 | L | - |
+| [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 
-## Closed (110)
+## Closed (134)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -178,6 +180,30 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-106](docs/backlog/B-106-stepped-motion-named-plainly.md) `[x]` - The header's «Шаги дизайна» switch says nothing of what it does
 - [B-107](docs/backlog/B-107-wasm-on-a-phone.md) `[x]` - The sample stutters in a phone's browser
 - [B-108](docs/backlog/B-108-a-phones-budget-for-the-boil.md) `[x]` - What the browser costs against Android, on one phone
+- [B-110](docs/backlog/B-110-a-body-as-a-shader.md) `[x]` - A body drawn by a GPU shader: a spike
+- [B-111](docs/backlog/B-111-what-the-decorations-cost-on-a-phone.md) `[x]` - What a body's decorations cost on a phone
+- [B-112](docs/backlog/B-112-static-decorations-drawn-once.md) `[-]` - A body's still decorations drawn once, and painted without the clip
+- [B-113](docs/backlog/B-113-an-image-not-copied-each-frame.md) `[-]` - A body's image not copied each frame it is drawn
+- [B-114](docs/backlog/B-114-a-tick-image-built-in-the-frame.md) `[-]` - A resting body's tick image built in the frame when the one ahead is late
+- [B-115](docs/backlog/B-115-a-body-image-on-the-surface-grid.md) `[x]` - A body's image rasterised on the surface's pixel grid
+- [B-116](docs/backlog/B-116-the-proxy-calibrated-to-the-phone.md) `[x]` - The phone proxy calibrated to the phone, and the cuts measured again on it
+- [B-117](docs/backlog/B-117-still-layers-once-on-the-surface-grid.md) `[x]` - A body's still layers drawn once, on the surface's grid
+- [B-118](docs/backlog/B-118-what-the-decorations-still-cost.md) `[x]` - What the decorations still cost, over B-117
+- [B-119](docs/backlog/B-119-the-still-image-marked-finished.md) `[x]` - The still layers' image marked finished
+- [B-120](docs/backlog/B-120-what-a-body-costs-over-b-119.md) `[x]` - What a body's parts cost, over B-119
+- [B-121](docs/backlog/B-121-the-outline-stroked-once-a-tick.md) `[-]` - A body's outline stroked once a tick
+- [B-122](docs/backlog/B-122-builds-ahead-at-user-visible-priority.md) `[-]` - A body's builds ahead posted at user-visible priority in the browser
+- [B-123](docs/backlog/B-123-each-body-in-its-own-layer.md) `[-]` - Each body drawn in a layer of its own
+- [B-124](docs/backlog/B-124-the-loop-on-the-phone.md) `[x]` - The performance loop's result on the phone
+- [B-125](docs/backlog/B-125-what-the-decorations-cost-on-the-phone-now.md) `[x]` - What the decorations cost on the phone, over the loop's build
+- [B-127](docs/backlog/B-127-speckle-and-fill-as-one-tile.md) `[-]` - A body's fill and speckle as one tile the GPU repeats
+- [B-128](docs/backlog/B-128-the-shader-edge-from-the-contour.md) `[x]` - The body shader's edge from the contour itself
+- [B-129](docs/backlog/B-129-the-contour-distance-once-a-tick.md) `[-]` - The contour's distance computed once a tick, read by the shader
+- [B-130](docs/backlog/B-130-the-shader-marches-its-cells.md) `[x]` - The body shader marches its own cells
+- [B-131](docs/backlog/B-131-decorations-in-the-shader.md) `[x]` - A body's decorations drawn by its shader
+- [B-133](docs/backlog/B-133-the-keyframe-loss-freezes-a-shader-page.md) `[x]` - The keyframe loss freezes a page the shader draws
+- [B-134](docs/backlog/B-134-the-shader-hands-over-half-the-bytes.md) `[x]` - The body shader hands Skia half the bytes
+- [B-135](docs/backlog/B-135-a-body-ticks-in-its-own-layer.md) `[x]` - A body ticks in its own layer
 - [B-136](docs/backlog/B-136-the-tape-band-on-every-frame.md) `[x]` - The Tape's band and head noise move on every frame
 - [B-137](docs/backlog/B-137-mosaic-past-the-contour.md) `[x]` - The edge mosaic's blocks past the body's contour, as an experiment
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows

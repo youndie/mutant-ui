@@ -46,8 +46,12 @@ const ALL = DEVICE ? ['ComponentsRest', 'ComponentsClean', 'DemoPage', 'DemoPage
 // it, reported beside, as the first smoke run found the resting page saturated (B-73's amendment).
 const HOST = { Control: 'ComponentsReduce', ControlRest: 'ComponentsRest' };
 const BASE_SCENES = scenesArg ? scenesArg.split(',') : ALL;
+// B-111: DIST_B may name several builds, comma-separated; they run as `~b`, `~c`, … in the same rotation.
 const DIST_B = process.env.DIST_B;
-const SCENES = DIST_B ? BASE_SCENES.flatMap(s => [s, `${s}~b`]) : BASE_SCENES;
+const OTHERS = DIST_B ? DIST_B.split(',').map((dir, i) => ({ tag: `~${String.fromCharCode(98 + i)}`, dir })) : [];
+// Build-major, so that a light scene follows each heavy one: scene-major ran six heavy builds back to back, and on the
+// phone the later ones in a streak lost half their frames to heat while the first after the light block never did.
+const SCENES = ['', ...OTHERS.map(o => o.tag)].flatMap(t => BASE_SCENES.map(s => `${s}${t}`));
 // DIST: another copy of the build to measure, as one built at another commit.
 const DIST = process.env.DIST ?? 'sample/build/dist/wasmJs/productionExecutable';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -74,7 +78,9 @@ const serve = async dist => {
   return `http://127.0.0.1:${server.address().port}`;
 };
 const origin = await serve(DIST);
-const originB = DIST_B ? await serve(DIST_B) : null;
+const origins = { '': origin };
+for (const o of OTHERS) origins[o.tag] = await serve(o.dir);
+const armOf = scene => { const m = scene.match(/^(.*?)(~[a-z])?$/); return { name: m[1], tag: m[2] ?? '' }; };
 
 const DEBUG = DEVICE ? 9336 : 9335;
 // A Chrome in the background is frozen and its DevTools socket accepts but never answers: bring it to the front first.
@@ -122,6 +128,8 @@ const evaluate = async expr => (await send('Runtime.evaluate', { expression: exp
 
 await send('Page.enable');
 await send('Runtime.enable');
+await send('Performance.enable', { timeDomain: 'timeTicks' });
+const metrics = async () => Object.fromEntries((await send('Performance.getMetrics')).metrics.map(m => [m.name, m.value]));
 if (!DEVICE) await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE, mobile: PHONE });
 if (PHONE) {
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
@@ -156,7 +164,7 @@ const gpu = await new Promise((res, rej) => {
 });
 const digestOf = dist => readdirSync(dist).filter(f => f.endsWith('.wasm')).sort()
   .map(f => `${f} ${createHash('sha256').update(readFileSync(join(dist, f))).digest('hex').slice(0, 16)}`).join(', ');
-const digest = digestOf(DIST) + (DIST_B ? `; ~b: ${digestOf(DIST_B)}` : '');
+const digest = digestOf(DIST) + OTHERS.map(o => `; ${o.tag}: ${digestOf(o.dir)}`).join('');
 const adbProp = k => sh(`${ADB} shell getprop ${k}`);
 const battery = DEVICE ? sh(`${ADB} shell dumpsys battery | grep -E 'level|AC powered|temperature' | tr -s ' ' | tr '\\n' ';'`) : '';
 const header = [
@@ -184,9 +192,8 @@ let load = 0;
 for (let round = 1; round <= ROUNDS; round++) {
   const order = SCENES.map((_, i) => SCENES[(i + round - 1) % SCENES.length]);
   for (const scene of order) {
-    const b = scene.endsWith('~b');
-    const name = b ? scene.slice(0, -2) : scene;
-    const url = `${b ? originB : origin}/?scene=${HOST[name] ?? name}${HOST[name] ? '&control=1' : ''}&load=${++load}`;
+    const { name, tag } = armOf(scene);
+    const url = `${origins[tag]}/?scene=${HOST[name] ?? name}${HOST[name] ? '&control=1' : ''}&load=${++load}`;
     const loaded = event('Page.loadEventFired');
     await send('Page.navigate', { url });
     await loaded;
@@ -195,6 +202,9 @@ for (let round = 1; round <= ROUNDS; round++) {
     await new Promise(r => setTimeout(r, SETTLE_MS));
     if (DEVICE && load === 1) console.log(`# viewport in the sample: ${await evaluate('`${innerWidth}x${innerHeight} at ${devicePixelRatio}x`')}`);
     await evaluate('window.__bench.recording = true; 0');
+    // B-111: the main thread's busy share over the scene, from the renderer's own task time: it sees what is built
+    // between frames, which a frame's work does not (B-110).
+    const m0 = await metrics();
     const until = Date.now() + SCENE_MS;
     let down = true;
     let flipAt = Date.now() + WHEEL_FLIP_MS;
@@ -209,6 +219,10 @@ for (let round = 1; round <= ROUNDS; round++) {
         await new Promise(r => setTimeout(r, 100));
       }
     }
+    const m1 = await metrics();
+    const busy = (m1.TaskDuration - m0.TaskDuration) / (m1.Timestamp - m0.Timestamp);
+    // B-111: the battery's temperature after the scene, in °C, as heat costs the phone frames.
+    const temp = DEVICE ? +sh(`${ADB} shell dumpsys battery | grep temperature`).replace(/\D/g, '') / 10 : NaN;
     const got = await evaluate('window.__bench.recording = false; JSON.stringify({ f: window.__bench.frames, l: window.__bench.long, s: window.__scrolled ?? -1 })');
     const { f, l, s } = JSON.parse(got);
     const intervals = [];
@@ -231,9 +245,10 @@ for (let round = 1; round <= ROUNDS; round++) {
       over17: intervals.filter(x => x > 16.7).length / Math.max(1, intervals.length),
       over33: intervals.filter(x => x > 33).length / Math.max(1, intervals.length),
       workP50: q(work, .5), workP95: q(work, .95), loaf: l.length, loafMs: l.reduce((a, e) => a + e[1], 0), wheels, scrolled: s,
+      busy,
     };
     (results[scene] ??= []).push({ round, ...r });
-    console.log(`round ${round} ${scene.padEnd(17)} ${r.fps.toFixed(1).padStart(5)} f/s  interval p95 ${r.ivP95.toFixed(1).padStart(6)}  >16.7 ${(100 * r.over17).toFixed(2).padStart(6)} %  >33 ${(100 * r.over33).toFixed(2).padStart(6)} %  work p50 ${r.workP50.toFixed(2).padStart(6)} p95 ${r.workP95.toFixed(2).padStart(6)}  LoAF ${r.loaf} (${r.loafMs.toFixed(0)} ms)${scene === 'ComponentsWheel' ? `  wheel ${wheels} events, scrolled ${s} px` : ''}`);
+    console.log(`round ${round} ${scene.padEnd(17)} ${r.fps.toFixed(1).padStart(5)} f/s  interval p95 ${r.ivP95.toFixed(1).padStart(6)}  >16.7 ${(100 * r.over17).toFixed(2).padStart(6)} %  >33 ${(100 * r.over33).toFixed(2).padStart(6)} %  work p50 ${r.workP50.toFixed(2).padStart(6)} p95 ${r.workP95.toFixed(2).padStart(6)}  LoAF ${r.loaf} (${r.loafMs.toFixed(0)} ms)  busy ${(100 * busy).toFixed(1).padStart(5)} %${DEVICE ? `  ${temp.toFixed(1)} °C` : ''}${scene === 'ComponentsWheel' ? `  wheel ${wheels} events, scrolled ${s} px` : ''}`);
   }
 }
 writeFileSync(join(out, 'frames.csv'), csv.join('\n') + '\n');
@@ -257,14 +272,18 @@ for (const [ctl, base] of [['Control', 'ComponentsReduce'], ['ControlRest', 'Com
   console.log(`# ${ctl}: work p50 over ${base}'s, per counted round: ` +
     c.map(r => (r.workP50 - by.get(r.round)).toFixed(2)).join(', ') + ` ms against ${CONTROL_MS} ms`);
 }
-// B-107: the second build against the first, per counted round: work p50 of `<scene>~b` minus `<scene>`.
-if (DIST_B) {
+// B-107: each other build against the first, per counted round: work p50 of `<scene>~b` minus `<scene>`; B-111 adds
+// frames a second and the busy share, in points.
+const KEYS = [['workP50', 'work p50', 1, 'ms'], ['fps', 'f/s', 1, ''], ['busy', 'busy', 100, ' pt']];
+for (const { tag } of OTHERS) {
   for (const scene of BASE_SCENES) {
-    const a = new Map((results[scene] ?? []).filter(r => r.round > 1).map(r => [r.round, r.workP50]));
-    const d = (results[`${scene}~b`] ?? []).filter(r => r.round > 1 && a.has(r.round)).map(r => r.workP50 - a.get(r.round));
-    if (!d.length) continue;
-    const mean = d.reduce((x, y) => x + y, 0) / d.length;
-    console.log(`# ~b minus a, ${scene}: per counted round ${d.map(x => x.toFixed(2)).join(', ')} ms; mean ${mean.toFixed(2)} ms`);
+    for (const [k, label, scale, unit] of KEYS) {
+      const a = new Map((results[scene] ?? []).filter(r => r.round > 1).map(r => [r.round, r[k]]));
+      const d = (results[`${scene}${tag}`] ?? []).filter(r => r.round > 1 && a.has(r.round)).map(r => scale * (r[k] - a.get(r.round)));
+      if (!d.length) continue;
+      const mean = d.reduce((x, y) => x + y, 0) / d.length;
+      console.log(`# ${tag} minus a, ${scene}, ${label}: per counted round ${d.map(x => x.toFixed(2)).join(', ')}${unit}; mean ${mean.toFixed(2)}${unit}`);
+    }
   }
 }
 ws.close();

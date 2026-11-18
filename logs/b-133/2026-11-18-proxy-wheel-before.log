@@ -1,0 +1,14 @@
+# B-73 browser frame bench, 2026-11-18T13:54:44.134Z
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# power: -InternalBattery-0 (id=23658595) 100%; charged; 0:00 remaining present: true
+# browser: Chrome/157.0.8103.79, headless=new, 390x844 at 3x, phone proxy: mobile, touch, CPU slowed 2x
+# gpu: ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Version 27.0.1 (Build 26A434)); webgl enabled, gpu_compositing enabled
+# commit: 901c8df
+# build: a53039780df1e9c5fb6b.wasm c9ba86f0c8c96729, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 2 (round 1 not counted), 8000 ms a scene, first 1000 ms not counted; scenes ComponentsWheel
+round 1 ComponentsWheel    35.9 f/s  interval p95   50.0  >16.7  26.92 %  >33  10.14 %  work p50   9.90 p95  26.90  LoAF 14 (1067 ms)  busy  98.2 %  wheel 76 events, scrolled 21302 px
+round 2 ComponentsWheel    51.3 f/s  interval p95   33.4  >16.7  23.96 %  >33   9.05 %  work p50   9.70 p95  35.20  LoAF 22 (30603 ms)  busy  87.5 %  wheel 110 events, scrolled 30133 px
+
+# counted rounds 2..2, pooled
+ComponentsWheel    51.3 f/s  interval p95   33.4  >16.7  23.96 %  >33   9.05 %  work p50   9.70 p95  35.20  RED
+EXIT 0

@@ -1,0 +1,15 @@
+== noOutline
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Outline) }
+== noHighlight
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Highlight) }
+== noShadow
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.Shadow) }
+== noClip
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.ContourClip) }
+== noFlow
+-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
++    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { setOf(BodyPart.FlowLines) }

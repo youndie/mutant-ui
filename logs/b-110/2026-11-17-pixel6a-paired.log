@@ -1,0 +1,38 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-17T18:05:29.290Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 99; temperature: 269; Capacity level: 4;
+# browser: Chrome/157.0.8103.50, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 881d5ba (dirty)
+# build: bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8, f88d15378b939c11ed2a.wasm 7787374af6509c15; ~b: 1444250bbffe51d8f9cd.wasm 599f9c4d48b996f1, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 5 (round 1 not counted), 8000 ms a scene, first 1000 ms not counted; scenes TenCards8,TenCards8~b,Blank,Blank~b
+# viewport in the sample: 411x784 at 2.625x
+round 1 TenCards8          60.8 f/s  interval p95   16.7  >16.7  26.80 %  >33   0.00 %  work p50   5.60 p95  14.40  LoAF 0 (0 ms)
+round 1 TenCards8~b        60.8 f/s  interval p95   16.7  >16.7  26.80 %  >33   0.00 %  work p50   4.30 p95   9.10  LoAF 0 (0 ms)
+round 1 Blank              60.8 f/s  interval p95   16.7  >16.7  25.98 %  >33   0.21 %  work p50   3.90 p95   7.00  LoAF 1 (52 ms)
+round 1 Blank~b            60.8 f/s  interval p95   16.7  >16.7  27.22 %  >33   0.00 %  work p50   4.10 p95   7.50  LoAF 0 (0 ms)
+round 2 TenCards8~b        60.9 f/s  interval p95   16.7  >16.7  23.05 %  >33   0.00 %  work p50   4.50 p95   9.60  LoAF 0 (0 ms)
+round 2 Blank              60.8 f/s  interval p95   16.7  >16.7  26.19 %  >33   0.00 %  work p50   4.20 p95   7.30  LoAF 0 (0 ms)
+round 2 Blank~b            60.8 f/s  interval p95   16.7  >16.7  21.65 %  >33   0.00 %  work p50   3.50 p95   6.20  LoAF 0 (0 ms)
+round 2 TenCards8          60.9 f/s  interval p95   16.7  >16.7  23.66 %  >33   0.00 %  work p50   4.90 p95  14.70  LoAF 0 (0 ms)
+round 3 Blank              60.8 f/s  interval p95   16.7  >16.7  26.60 %  >33   0.00 %  work p50   5.90 p95  10.80  LoAF 0 (0 ms)
+round 3 Blank~b            60.8 f/s  interval p95   16.7  >16.7  21.44 %  >33   0.00 %  work p50   4.00 p95   7.30  LoAF 0 (0 ms)
+round 3 TenCards8          60.9 f/s  interval p95   16.7  >16.7  21.19 %  >33   0.00 %  work p50   4.90 p95  13.50  LoAF 0 (0 ms)
+round 3 TenCards8~b        60.8 f/s  interval p95   16.7  >16.7  26.80 %  >33   0.00 %  work p50   4.50 p95   9.70  LoAF 0 (0 ms)
+round 4 Blank~b            60.8 f/s  interval p95   16.7  >16.7  24.12 %  >33   0.00 %  work p50   3.30 p95   5.70  LoAF 0 (0 ms)
+round 4 TenCards8          60.8 f/s  interval p95   16.7  >16.7  23.51 %  >33   0.00 %  work p50   4.70 p95  14.60  LoAF 0 (0 ms)
+round 4 TenCards8~b        60.4 f/s  interval p95   16.7  >16.7  21.37 %  >33   0.00 %  work p50   4.10 p95   9.60  LoAF 0 (0 ms)
+round 4 Blank              60.5 f/s  interval p95   16.7  >16.7  18.63 %  >33   0.00 %  work p50   4.10 p95   6.70  LoAF 0 (0 ms)
+round 5 TenCards8          60.5 f/s  interval p95   16.7  >16.7  20.29 %  >33   0.00 %  work p50   5.90 p95  15.50  LoAF 0 (0 ms)
+round 5 TenCards8~b        60.5 f/s  interval p95   16.7  >16.7  19.67 %  >33   0.00 %  work p50   4.80 p95  10.50  LoAF 0 (0 ms)
+round 5 Blank              60.5 f/s  interval p95   16.7  >16.7  23.19 %  >33   0.00 %  work p50   6.80 p95  12.00  LoAF 0 (0 ms)
+round 5 Blank~b            60.5 f/s  interval p95   16.7  >16.7  23.19 %  >33   0.00 %  work p50   4.50 p95   8.10  LoAF 0 (0 ms)
+
+# counted rounds 2..5, pooled
+TenCards8          60.8 f/s  interval p95   16.7  >16.7  22.16 %  >33   0.00 %  work p50   5.00 p95  14.50  GREY
+TenCards8~b        60.6 f/s  interval p95   16.7  >16.7  22.73 %  >33   0.00 %  work p50   4.50 p95   9.90  GREY
+Blank              60.6 f/s  interval p95   16.7  >16.7  23.66 %  >33   0.00 %  work p50   5.00 p95  10.00  GREY
+Blank~b            60.7 f/s  interval p95   16.7  >16.7  22.60 %  >33   0.00 %  work p50   3.80 p95   7.00  GREY
+# ~b minus a, TenCards8: per counted round -0.40, -0.40, -0.60, -1.10 ms; mean -0.62 ms
+# ~b minus a, Blank: per counted round -0.70, -1.90, -0.80, -2.30 ms; mean -1.43 ms
