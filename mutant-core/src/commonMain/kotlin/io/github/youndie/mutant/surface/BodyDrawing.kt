@@ -4,14 +4,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import io.github.youndie.mutant.gen.BodyFrame
 import io.github.youndie.mutant.gen.DeadPixelColor
@@ -147,7 +145,6 @@ internal fun DrawScope.drawBody(
     decor: BodyDecor = BodyDecor(),
     pour: Pair<Path, Color>? = null,
     skip: Set<BodyPart> = emptySet(),
-    still: StillImage? = null,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -164,18 +161,23 @@ internal fun DrawScope.drawBody(
         clipPathUnless(BodyPart.ContourClip in skip, paths.contour) {
             if (BodyPart.Fill !in skip) drawRect(look.fill, bb.topLeft, bb.size)
             pour?.let { (path, from) -> drawPath(path, from) }
-            if (still != null && decor.runningMosaic == null) {
-                // B-112: the still layers, drawn once into an image on this canvas's own pixel grid, are one draw under
-                // the clip instead of hundreds. Undo the slip and the scale, so the image's pixels land on the canvas's.
-                translate(still.gridX - look.slip, still.gridY - look.slip) {
-                    scale(
-                        1 / density,
-                        Offset.Zero,
-                    ) { drawImage(still.image, Offset(still.at.x.toFloat(), still.at.y.toFloat())) }
+            // Speckle and flow lines are the theme's ink whatever the outline's colour (the engine's `C.ink`).
+            if (BodyPart.Speckle !in skip) drawSpeckle(speckle, speckleOrigin, bb, colors.ink)
+            val tiles =
+                if (BodyPart.Mosaic in skip) {
+                    emptyList()
+                } else {
+                    decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
                 }
-            } else {
-                drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, decor, skip)
+            for ((t, c) in tiles) {
+                drawRect(
+                    c,
+                    Offset(t.x.toFloat(), t.y.toFloat()),
+                    Size(t.size.toFloat(), t.size.toFloat()),
+                    alpha = t.opacity.toFloat(),
+                )
             }
+            if (deadPixels != null && BodyPart.DeadPixels !in skip) drawDeadPixels(deadPixels, colors)
             for ((r, c) in decor.errorBlocks) drawRect(c, r.topLeft, r.size)
             if (BodyPart.FlowLines !in skip) drawPath(paths.flowLines, colors.ink)
             for ((i, b) in decor.bands.withIndex()) {
@@ -211,102 +213,6 @@ internal fun DrawScope.drawBody(
         drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
     }
     decor.brackets?.let { drawBrackets(g, it) }
-}
-
-/**
- * The layers under a body's clip that do not move with the tick, in the order [drawBody] draws them: the stage's speckle,
- * the edge mosaic, the dead pixels. Coordinates are the scene's, inside the slip.
- */
-internal fun DrawScope.drawStillLayers(
-    g: Instance,
-    colors: MutantColors,
-    speckle: Speckle,
-    speckleOrigin: Offset,
-    deadPixels: DeadPixels?,
-    decor: BodyDecor,
-    skip: Set<BodyPart>,
-) {
-    val el = g.slot
-    val ox = el.ox.toFloat()
-    val oy = el.oy.toFloat()
-    val bb = Rect(ox - 12, oy - 15, ox + el.w.toFloat() + 12, oy + el.h.toFloat() + el.over.toFloat() + 30)
-    // Speckle and flow lines are the theme's ink whatever the outline's colour (the engine's `C.ink`).
-    if (BodyPart.Speckle !in skip) drawSpeckle(speckle, speckleOrigin, bb, colors.ink)
-    val tiles =
-        if (BodyPart.Mosaic in skip) {
-            emptyList()
-        } else {
-            decor.runningMosaic ?: g.mosaicTiles.map { it to (if (it.black) Color.Black else Color.White) }
-        }
-    for ((t, c) in tiles) {
-        drawRect(
-            c,
-            Offset(t.x.toFloat(), t.y.toFloat()),
-            Size(t.size.toFloat(), t.size.toFloat()),
-            alpha = t.opacity.toFloat(),
-        )
-    }
-    if (deadPixels != null && BodyPart.DeadPixels !in skip) drawDeadPixels(deadPixels, colors)
-}
-
-/**
- * B-112: a body's still layers drawn once, on the pixel grid of a canvas that draws the scene at [density] with the
- * scene's point ([gridX], [gridY]) at its pixel (0, 0); the image stands at [at] on that grid.
- */
-internal class StillImage(
-    val image: ImageBitmap,
-    val gridX: Float,
-    val gridY: Float,
-    val at: androidx.compose.ui.unit.IntOffset,
-)
-
-/**
- * B-112: a body's still layers ([drawStillLayers]) drawn once, into an image covering what [rasterisedBody]'s image
- * covers, on the grid of a canvas whose pixel (0, 0) is the scene's point ([gridX], [gridY]): the body's tick image
- * (its raster origin) or the surface a frame draws on (the slot's origin). The mosaic of a hot body moves and is not in it.
- */
-internal fun stillLayersImage(
-    g: Instance,
-    slip: Float,
-    colors: MutantColors,
-    speckle: Speckle,
-    speckleOrigin: Offset,
-    deadPixels: DeadPixels?,
-    skip: Set<BodyPart>,
-    density: Float,
-    direction: androidx.compose.ui.unit.LayoutDirection,
-    gridX: Float,
-    gridY: Float,
-): StillImage {
-    val box = rasterBox(g)
-    val x0 = floor((box.left - gridX) * density).toInt()
-    val y0 = floor((box.top - gridY) * density).toInt()
-    val x1 = kotlin.math.ceil((box.right - gridX) * density).toInt()
-    val y1 = kotlin.math.ceil((box.bottom - gridY) * density).toInt()
-    val image = ImageBitmap(maxOf(1, x1 - x0), maxOf(1, y1 - y0))
-    androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
-        androidx.compose.ui.unit
-            .Density(density),
-        direction,
-        androidx.compose.ui.graphics
-            .Canvas(image),
-        Size(image.width.toFloat(), image.height.toFloat()),
-    ) {
-        translate(-x0.toFloat(), -y0.toFloat()) {
-            scale(density, Offset.Zero) {
-                translate(slip - gridX, slip - gridY) {
-                    drawStillLayers(g, colors, speckle, speckleOrigin, deadPixels, BodyDecor(), skip)
-                }
-            }
-        }
-    }
-    return StillImage(
-        image,
-        gridX,
-        gridY,
-        androidx.compose.ui.unit
-            .IntOffset(x0, y0),
-    )
 }
 
 /**
