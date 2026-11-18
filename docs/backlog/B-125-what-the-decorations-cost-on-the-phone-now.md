@@ -59,3 +59,7 @@ noise.
 **What this leaves.** Hot, the phone runs ten cards at 21–33 frames a second whatever the decorations, and the kit without
 them at 30–47: the bodies themselves, built and drawn on the CPU on one thread, are over a 16.7 ms frame before any
 decoration. Skia's own code is two thirds of that thread with the decorations or without them.
+
+**Corrected by [B-126](B-126-bodies-on-the-gpu.md)'s stage 0:** at 36 °C, minutes later, the loop's code without the
+decorations and without the still image ran at 61.2, the kit without them at 60.0. The paragraph above holds for the
+phone above 38 °C, not for a warm phone: there the bodies hold 60, and the decorations with their image are what is over.

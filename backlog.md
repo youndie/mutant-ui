@@ -58,12 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (2)
+## Open (3)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[~]` | Bodies on the GPU, with every decoration | P2 | L | - |
+| [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[?]` | Bodies on the GPU, with every decoration | P2 | L | - |
+| [B-127](docs/backlog/B-127-speckle-and-fill-as-one-tile.md) `[~]` | A body's fill and speckle as one tile the GPU repeats | P2 | M | - |
 
 ## Closed (124)
 
