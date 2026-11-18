@@ -300,6 +300,8 @@ internal fun stillLayersImage(
             }
         }
     }
+    // B-119: finished, so a frame drawing it shares its pixels instead of copying them (B-113).
+    image.freeze()
     return StillImage(
         image,
         gridX,
