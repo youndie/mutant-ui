@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -333,7 +334,7 @@ internal fun MutantSurface(
                 val where = view.whereNow(registry.surface, reach)
                 if (last != null && where != SHOWN) {
                     if (where == OFF_WINDOW) return@drawWithCache onDrawBehind {}
-                    return@drawWithCache moshBehind(moshScene, moshBody, last)
+                    return@drawWithCache moshBehind(moshScene, moshBody, snapshot = moshBody.snapshot, block = last)
                 }
                 val d = density
                 val zone = registry.union(d)
@@ -727,7 +728,18 @@ internal fun MutantSurface(
                         frameProbe?.invoke(false, false, frame.steadyWebs)
                         val ox = slot.ox.toFloat()
                         val oy = slot.oy.toFloat()
-                        return@drawWithCache moshBehind(moshScene, moshBody) {
+                        // B-133: the keyframe loss's snapshot is a CPU bitmap, where the shader would run pixel by pixel;
+                        // there the body draws by paths, built only when a loss takes its snapshot.
+                        val byPaths: DrawScope.() -> Unit = {
+                            val pf = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                            val (pp, pl, pd) = pictureOf(g, pf, t, k)
+                            scale(d, Offset.Zero) {
+                                translate(-ox, -oy) {
+                                    drawBody(g, pp, pl, colors, speckle, Offset.Zero, dead, pd, null, skipParts, null)
+                                }
+                            }
+                        }
+                        return@drawWithCache moshBehind(moshScene, moshBody, snapshot = byPaths) {
                             scale(d, Offset.Zero) {
                                 translate(-ox, -oy) {
                                     drawRect(

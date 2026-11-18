@@ -113,7 +113,16 @@ internal val LocalMutantMoshScene = staticCompositionLocalOf<MoshScene?> { null 
 internal class MoshBody {
     var coords: LayoutCoordinates? = null
     var draw: (DrawScope.() -> Unit)? = null
+
+    /**
+     * How it draws into the scene's snapshot, where that differs from [draw]: the snapshot is a bitmap on the CPU, and a
+     * body the shader draws would run it there pixel by pixel (seconds a body in the browser); it draws by paths instead.
+     */
+    var snapshot: (DrawScope.() -> Unit)? = null
     var zone: DoubleArray? = null
+
+    /** What the scene's snapshot draws of it. */
+    val inSnapshot: (DrawScope.() -> Unit)? get() = snapshot ?: draw
 }
 
 /** Registers a surface's body with the scene for as long as it is composed. */
@@ -135,11 +144,13 @@ internal fun rememberMoshBody(scene: MoshScene?): MoshBody {
 internal fun CacheDrawScope.moshBehind(
     scene: MoshScene?,
     body: MoshBody,
+    snapshot: (DrawScope.() -> Unit)? = null,
     block: DrawScope.() -> Unit,
 ): DrawResult =
     onDrawBehind {
         // Kept with or without a scene: a body off the screen draws it again rather than build a frame (B-87).
         body.draw = block
+        body.snapshot = snapshot
         if (scene == null) return@onDrawBehind block()
         val cut = scene.cutIn(body.coords)
         if (cut == null) {
@@ -286,7 +297,7 @@ internal class MoshScene(
                 val at = me.offsetOf(c) ?: continue
                 val saved = drawContext.size
                 drawContext.size = c.size.toSize()
-                translate(at.x, at.y) { b.draw?.invoke(this) }
+                translate(at.x, at.y) { b.inSnapshot?.invoke(this) }
                 drawContext.size = saved
             }
             // Only the band is the loss's: what the bodies drew above and below it is not.
