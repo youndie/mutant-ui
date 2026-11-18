@@ -1,0 +1,47 @@
+---
+id: B-135
+title: "A body ticks in its own layer"
+status: wip
+priority: P1
+size: S
+stage: stage-6-later
+blocked_by: []
+---
+
+# B-135 — A body ticks in its own layer
+
+Part of [B-126](B-126-bodies-on-the-gpu.md), after [B-134](B-134-the-shader-hands-over-half-the-bytes.md): the components page
+scrolls jerkily in the shader build as in the paths' (20–33 frames a second hot, [B-133](B-133-the-keyframe-loss-freezes-a-shader-page.md)).
+
+## What the profile says
+
+The shader build of B-134, its wasm with names kept, in the phone proxy (Chrome, CPU ×2): **recording graphics layers is
+33 % of the busy time at rest and 47 % scrolling.** The page's content is one layer (`MutantKeyframeLoss` puts it in one, so
+a loss's step redraws its band only), and Compose records every child of a scrolling column into it, seen or not. A body's
+tick invalidates its drawing, so every tick of any body records the whole page again: every paragraph of text, every
+pattern swatch of the foundations (6–7 % of the busy time, hundreds of rectangles each, nowhere near the screen), every
+other body's cached drawing.
+
+Two things found on the way:
+
+- **The frame probe lied for a body the shader draws**: it reported every tick as built in the frame. Fixed;
+  `ScrolledShaderTicksAheadTest` holds it, a mutant restoring the lie fails it (0 ticks ahead, 8 in the frame).
+- **Refuted: scrolling cancels the builds ahead.** A build ahead is given a window band and rebuilt when the window leaves
+  it (B-86); a body the shader draws has no image for the band to shape, so that looked like waste. The same test scrolls a
+  body back and forth 30 px a frame on the desktop: every tick is still taken ahead. In the browser, ticks scrolled are built
+  in the frame (14 % of the busy time) because the one thread is full and builds ahead run as tasks of lower priority
+  ([B-111](B-111-what-the-decorations-cost-on-a-phone.md)'s finding): the load is the cause, not the band.
+
+## The decision
+
+A body's drawing and its content in a layer of their own (`graphicsLayer()` before its `drawWithCache`), so a tick records
+that layer and nothing beside it. Rejected: a layer for the pattern alone (it fixes one sibling of many).
+
+## Set before the first render
+
+- The code gate as it stands: every golden and parity test unchanged.
+- A test: a body's ticks do not redraw what is drawn beside it.
+- **On the phone, hot**, one rotation, B-134's build then this one: `ComponentsRest`, six rounds of ten seconds, round 1 not
+  counted; then the touch scroll of `scripts/phone-touch-scroll.mjs`, each build twice, alternating. **It holds** if this
+  build's pooled frames a second at rest are higher and its work p50 lower in every counted round, and its frames a second
+  scrolled are higher in both pairs.
