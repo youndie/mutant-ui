@@ -32,11 +32,11 @@ internal actual fun bodyShaderBrush(
     look: BodyLook,
     density: Float,
 ): Brush? {
-    // Within reach of a pixel: half the outline, the pixel its coverage spreads over, and a little.
-    val reach = look.outline / 2 + 1 / density + .25f
-    val c = segmentBins(contour, box, reach)
-    val h = segmentBins(highlight, box, reach)
-    if (c.fullest > MAX_BIN_ENTRIES || h.fullest > MAX_BIN_ENTRIES) return null
+    // Exact where a pixel can tell: half the outline, the pixel its coverage spreads over, and a grid cell's diagonal more,
+    // so that bilinear reads inside that reach use exact nodes only.
+    val band = look.outline / 2 + 1 / density + GRID_DP * 1.5f + .25f
+    val c = distanceGrid(contour, box, band)
+    val h = distanceGrid(highlight, box, band)
     val ox = slot.ox.toFloat()
     val oy = slot.oy.toFloat()
     val w = slot.w.toFloat()
@@ -44,12 +44,11 @@ internal actual fun bodyShaderBrush(
     val r = slot.r.toFloat()
     val over = slot.over.toFloat()
     val b = RuntimeShaderBuilder(effect)
-    b.child("cBins", texture(c.bins, c.binsW, c.binsH))
-    b.child("cSegs", texture(c.segs, SEGS_W, c.segsH))
-    b.child("hBins", texture(h.bins, h.binsW, h.binsH))
-    b.child("hSegs", texture(h.segs, SEGS_W, h.segsH))
-    b.uniform("binOrigin", c.originX, c.originY)
-    b.uniform("binDims", c.binsW.toFloat(), c.binsH.toFloat())
+    b.child("cDist", texture(c.texels, c.nx, c.ny))
+    b.child("hDist", texture(h.texels, h.nx, h.ny))
+    b.uniform("gridOrigin", c.originX, c.originY)
+    b.uniform("gridDims", c.nx.toFloat(), c.ny.toFloat())
+    b.uniform("band", band)
     b.uniform("pxDp", 1f / density)
     b.uniform("slip", look.slip)
     b.uniform("outlineW", look.outline)
