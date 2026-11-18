@@ -11,4 +11,6 @@ internal actual fun bodyShaderBrush(
     slot: Slot,
     look: BodyLook,
     density: Float,
+    still: StillImage?,
+    flow: io.github.youndie.mutant.gen.GenPath,
 ): Brush? = null

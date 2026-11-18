@@ -39,7 +39,7 @@ internal fun MutantGenerator.frame(
     pressed: Boolean = false,
     steadyWebs: Boolean = false,
     grow: Boolean = true,
-    /** B-110: false leaves the outline, highlight and flow lines empty, for a body a shader draws from the field. */
+    /** B-110: false leaves the outline and highlight empty, for a body a shader draws from the field; not the flow lines (B-131). */
     paths: Boolean = true,
 ): BodyFrame {
     val el = g.slot
@@ -50,14 +50,14 @@ internal fun MutantGenerator.frame(
     val prims = primitives(g, t, hot)
     if (heat > 0) prims += bubbles(g, t, heat)
     val fd = distanceField(g, cache, prims, t, REST_ROUGH * el.calm, boilPhase, boil, heat, boil0, steadyWebs, grow)
-    if (!paths) return BodyFrame(GenPath.Empty, GenPath.Empty, GenPath.Empty, prims, fd, boilPhase, boil, steadyWebs)
+    val flow = if (g.flowLines.isEmpty()) GenPath.Empty else flowLinePath(g, t, boilPhase, boil)
+    if (!paths) return BodyFrame(GenPath.Empty, GenPath.Empty, flow, prims, fd, boilPhase, boil, steadyWebs)
     val contour = smoothPath(march(fd, 0.0), .9, 5.0)
     val highlight =
         smoothPath(
             march(fd, -3.4, ceil((el.r + 19) / fd.step).toInt() + fd.pad, floor((el.h + 7) / fd.step).toInt() + fd.pad),
             1.1,
         )
-    val flow = if (g.flowLines.isEmpty()) GenPath.Empty else flowLinePath(g, t, boilPhase, boil)
     return BodyFrame(contour, highlight, flow, prims, fd, boilPhase, boil, steadyWebs)
 }
 

@@ -415,6 +415,70 @@ internal fun MutantSurface(
                     return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
                 }
 
+                // B-131: the shader's brush with every decoration, or null where the body keeps its paths: anything else
+                // drawn under the clip, or a surface off whole pixels, whose grid the still layers' image would miss.
+                fun shaderOf(
+                    g: Instance,
+                    f: io.github.youndie.mutant.gen.BodyFrame,
+                    dead: io.github.youndie.mutant.gen.DeadPixels?,
+                    tt: Double,
+                    kk: Double,
+                ): androidx.compose.ui.graphics.Brush? {
+                    val pic = pictureOf(g, f, tt, kk)
+                    val decor = pic.decor
+                    if (decor.runningMosaic != null || decor.errorBlocks.isNotEmpty() || decor.bands.isNotEmpty() ||
+                        decor.errorOutline != null || decor.brackets != null
+                    ) {
+                        return null
+                    }
+                    val layers = listOf(BodyPart.Speckle, BodyPart.Mosaic, BodyPart.DeadPixels).any { it !in skipParts }
+                    val still =
+                        if (!layers) {
+                            null
+                        } else {
+                            if (!onWholePixels(registry.surface)) return null
+                            val grid = Offset(slot.ox.toFloat(), slot.oy.toFloat())
+                            stillLayers.of(
+                                g,
+                                listOf(
+                                    look.slip,
+                                    colors,
+                                    d,
+                                    layoutDirection,
+                                    skipParts,
+                                    cassette,
+                                    stage,
+                                    wear,
+                                    dead,
+                                    grid,
+                                ),
+                            ) {
+                                stillLayersImage(
+                                    g,
+                                    look.slip,
+                                    colors,
+                                    speckle,
+                                    Offset.Zero,
+                                    dead,
+                                    skipParts,
+                                    d,
+                                    layoutDirection,
+                                    grid.x,
+                                    grid.y,
+                                )
+                            }
+                        }
+                    val flow =
+                        if (BodyPart.FlowLines in
+                            skipParts
+                        ) {
+                            io.github.youndie.mutant.gen.GenPath.Empty
+                        } else {
+                            f.flowLines
+                        }
+                    return bodyShaderBrush(f.field, slot, pic.look, d, still, flow)
+                }
+
                 // B-117: the body's still layers, drawn once for its instance and what they are drawn with.
                 fun stillOf(
                     g: Instance,
@@ -499,12 +563,7 @@ internal fun MutantSurface(
                             f,
                             null,
                             null,
-                            bodyShaderBrush(
-                                f.field,
-                                slot,
-                                pictureOf(g, f, next, 0.0).look,
-                                d,
-                            ),
+                            shaderOf(g, f, dead, next, 0.0),
                         )
                     }
                     val inputs = imageInputsOf(dead)
@@ -662,12 +721,7 @@ internal fun MutantSurface(
                 } else if (onGpu) {
                     val shaded =
                         early?.shaded.takeIf { early?.frame === frame }
-                            ?: bodyShaderBrush(
-                                frame.field,
-                                slot,
-                                pictureOf(g, frame, t, k).look,
-                                d,
-                            )
+                            ?: shaderOf(g, frame, dead, t, k)
                     if (shaded != null) {
                         view.drawn = null
                         frameProbe?.invoke(false, false, frame.steadyWebs)

@@ -55,6 +55,7 @@ class BodyShaderParityTest {
         onGpu: Boolean,
         density: Float,
         print: Boolean,
+        parts: Set<BodyPart> = skip,
     ): BufferedImage {
         var out: BufferedImage? = null
         runComposeUiTest {
@@ -62,7 +63,7 @@ class BodyShaderParityTest {
                 CompositionLocalProvider(
                     LocalDensity provides Density(density),
                     LocalMutantBodyOnGpu provides onGpu,
-                    LocalMutantSkipBodyParts provides skip,
+                    LocalMutantSkipBodyParts provides parts,
                     LocalMutantColors provides if (print) MutantPalettes.Kopiya else MutantPalettes.Efir,
                 ) {
                     ProvideMutantClock(remember { MutantClock(startMs = 5000.0, frozen = true) }) {
@@ -124,5 +125,34 @@ class BodyShaderParityTest {
         File(dir, "shares.txt").writeText(lines.joinToString("\n") + "\n")
         println(lines.joinToString("\n"))
         assertTrue(worst <= 0.5, "a case over the line of 0.5 %: ${lines.joinToString("; ")}")
+    }
+
+    /** B-131: the same, every decoration drawn by both; the line, set before the first render, 0.8 %. */
+    @Test
+    fun `with every decoration, the shader draws what the paths draw, within 0_8 percent`() {
+        val dir = File("build/b-131").apply { mkdirs() }
+        val lines = ArrayList<String>()
+        var worst = 0.0
+        for (print in listOf(false, true)) {
+            for (d in listOf(1f, 2.625f)) {
+                for (c in cases) {
+                    val paths = render(c, onGpu = false, d, print, emptySet())
+                    val shader = render(c, onGpu = true, d, print, emptySet())
+                    val s = share(paths, shader)
+                    worst = maxOf(worst, s)
+                    val tag = "${c.name}-${if (print) "kopiya" else "efir"}-$d"
+                    lines += "$tag ${"%.2f".format(s)} %"
+                    val sheet = BufferedImage(paths.width * 2 + 8, paths.height, BufferedImage.TYPE_INT_ARGB)
+                    sheet.graphics.apply {
+                        drawImage(paths, 0, 0, null)
+                        drawImage(shader, paths.width + 8, 0, null)
+                    }
+                    ImageIO.write(sheet, "png", File(dir, "$tag.png"))
+                }
+            }
+        }
+        File(dir, "shares.txt").writeText(lines.joinToString("\n") + "\n")
+        println(lines.joinToString("\n"))
+        assertTrue(worst <= 0.8, "a case over the line of 0.8 %: ${lines.joinToString("; ")}")
     }
 }

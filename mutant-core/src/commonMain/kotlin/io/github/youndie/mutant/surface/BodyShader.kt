@@ -28,6 +28,10 @@ internal expect fun bodyShaderBrush(
     slot: Slot,
     look: BodyLook,
     density: Float,
+    /** B-131: the still layers' image, on the surface's grid, or null where none is drawn. */
+    still: StillImage? = null,
+    /** B-131: the flow lines this tick. */
+    flow: io.github.youndie.mutant.gen.GenPath = io.github.youndie.mutant.gen.GenPath.Empty,
 ): Brush?
 
 /** The SkSL of [bodyShaderBrush], shared by the platforms that run it. */
@@ -46,6 +50,16 @@ uniform half4 hlC;
 uniform half4 shadowC;
 uniform float4 clipA;
 uniform float4 clipB;
+uniform shader still;
+uniform float hasStill;
+uniform float2 stillGrid;
+uniform float2 stillAt;
+uniform float dens;
+uniform shader flow;
+uniform float flowCount;
+uniform float2 flowOrigin;
+uniform float4 flowBox[${MAX_FLOW_LOOPS}];
+uniform float2 flowRange[${MAX_FLOW_LOOPS}];
 
 half4 node(float2 ij) { return field.eval(clamp(ij, float2(0.0), dims - 1.0) + 0.5); }
 
@@ -126,6 +140,37 @@ float sdist(float2 p, float iso, float r, float bit) {
     return v < 0.0 ? -best : best;
 }
 
+float u16(half hi, half lo) { return floor(float(hi) * 255.0 + 0.5) * 256.0 + floor(float(lo) * 255.0 + 0.5); }
+
+// The signed distance to the flow lines, negative inside by the non-zero rule; each loop read only inside its box.
+float flowSd(float2 p) {
+    float best = 1000.0;
+    float wind = 0.0;
+    for (int l = 0; l < ${MAX_FLOW_LOOPS}; l++) {
+        if (float(l) >= flowCount) break;
+        float4 bb = flowBox[l];
+        if (p.x >= bb.x && p.y >= bb.y && p.x <= bb.z && p.y <= bb.w) {
+            float2 rg = flowRange[l];
+            for (int k = 0; k < ${MAX_FLOW_SEGS}; k++) {
+                if (float(k) >= rg.y) break;
+                float t = (rg.x + float(k)) * 3.0;
+                float2 at = float2(mod(t, ${FLOW_W}.0), floor(t / ${FLOW_W}.0)) + 0.5;
+                half4 e0 = flow.eval(at);
+                half4 e1 = flow.eval(at + float2(1.0, 0.0));
+                half4 e2 = flow.eval(at + float2(2.0, 0.0));
+                float2 a = flowOrigin + float2(u16(e0.r, e0.g), u16(e0.b, e1.r)) / ${FLOW_SCALE};
+                float2 z = flowOrigin + float2(u16(e1.g, e1.b), u16(e2.r, e2.g)) / ${FLOW_SCALE};
+                best = min(best, segD(p, a, z));
+                if ((a.y > p.y) != (z.y > p.y)) {
+                    float x = a.x + (p.y - a.y) / (z.y - a.y) * (z.x - a.x);
+                    if (x > p.x) wind += z.y > a.y ? 1.0 : -1.0;
+                }
+            }
+        }
+    }
+    return wind != 0.0 ? -best : best;
+}
+
 float cov(float d) { return clamp(0.5 - d / pxDp, 0.0, 1.0); }
 
 bool inRect(float2 p, float4 r) { return p.x >= r.x && p.y >= r.y && p.x < r.z && p.y < r.w; }
@@ -137,7 +182,13 @@ half4 main(float2 p) {
     float d0 = sdist(p, 0.0, rOutline, 1.0);
     if (shadowC.a > 0.0) col = over(shadowC * half(cov(sdist(p - 4.0, 0.0, 1.0, 1.0))), col);
     float dSlip = slip == 0.0 ? d0 : sdist(p - slip, 0.0, 1.0, 1.0);
-    col = over(fillC * half(cov(dSlip)), col);
+    // The group the paths clip by the contour, shifted by the slip: the fill, the still layers, the flow lines.
+    half clip = half(cov(dSlip));
+    col = over(fillC * clip, col);
+    if (clip > 0.0) {
+        if (hasStill > 0.5) col = over(still.eval((p - stillGrid) * dens - stillAt) * clip, col);
+        if (flowCount > 0.0) col = over(inkC * half(cov(flowSd(p - slip))) * clip, col);
+    }
     if (inRect(p, clipA) || inRect(p, clipB)) {
         col = over(hlC * half(cov(sdist(p, ${HIGHLIGHT_ISO}, 1.0, 2.0))), col);
         col = over(fillC * half(cov(sdist(p - 1.5, ${HIGHLIGHT_ISO}, 1.0, 2.0))), col);
