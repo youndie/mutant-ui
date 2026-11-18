@@ -67,4 +67,5 @@ moves; Android holds 59 by paths and has no shader ([B-108](B-108-a-phones-budge
   - the shader on the desktop too, which re-records the components' goldens for a host that holds its frame by paths;
   - a public switch in `MutantTheme`, an API for a choice a consumer has no number to make;
   - leaving it off, which leaves the browser at half the frame rate on a phone.
-
+- **It engages.** The sample's wasm build makes about 164 runtime shaders a second on its first page in headless Chrome,
+  and the kit before the loop none ([the count](../../logs/b-126/2026-11-18-default-on-in-the-browser.txt)).

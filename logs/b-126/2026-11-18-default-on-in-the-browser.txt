@@ -1,0 +1,8 @@
+B-126, the shader on by default in the browser: does it engage?
+Build: :sample:wasmJsBrowserDistribution at 73f5703 (bodyOnGpuByDefault = true on wasm), headless Chrome on the Mac,
+390x844 at 3x, the sample's first page. sample.js patched to count RuntimeShaderBuilder._nMakeShader calls.
+
+this item's build   shaders made since load (15 s): 2180   after 5 s more: 2999   (~164 a second)
+control: the kit before the loop (paths only)       0                      0
+
+The page draws: header switches, the page's chips and the Components section, bodies with drips and mosaic.
