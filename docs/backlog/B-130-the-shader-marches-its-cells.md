@@ -22,3 +22,15 @@ drew the paths' curve but carried it from the CPU, too slow on the phone.
 - **Set before the first render.** `BodyShaderParityTest` within 0.5 % in every case; on the phone, the decorations left
   out, in one rotation with paths and B-110's shader: **it holds** if its pooled frames a second is within 2 of B-110's
   shader's.
+
+## Results, 2026-11-18
+
+**The phone: holds.** [The run](../../logs/b-130/2026-11-18-pixel6a.log), 38.0–38.7 °C, the decorations left out of all three
+([diff](../../logs/b-130/gpu-none4.diff)): paths 41.3 frames a second (rounds 36.7, 35.7, 36.6, 35.8, 61.5), B-110's shader
+61.0, **this item 61.0, at 60.8–61.3 in every round**, work p50 5.8 ms against B-110's 4.4.
+
+**The picture: grey.** `BodyShaderParityTest` at 0.27–0.59 % ([shares](../../logs/b-130/2026-11-18-shares.txt)): seven cases
+under the line of 0.5 %, five of «Копия» over it (0.50–0.59). The mosaic's edge holds its outline whole
+([edge](../../logs/b-130/2026-11-18-mosaic-edge-paths-vs-shader.png)); the drips are a shade more angular
+([drips](../../logs/b-130/2026-11-18-drips-paths-vs-shader.png)): the shader draws the marched polyline, and the paths round it
+through `smoothPath`'s quadratics and drop the points closer than its step. That rounding is what is left to match.
