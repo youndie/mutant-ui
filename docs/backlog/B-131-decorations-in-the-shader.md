@@ -43,3 +43,6 @@ the shader with every decoration 60.8, at 60.6–61.2 in every round**, work p50
 **Open.** B-130's silhouette test stays over its line of 0.5 % in five cases (0.50–0.59); the gate is red on it until the
 owner decides (B-126). The shader is still off by default (`BODY_ON_GPU`); a pressed or hot body, a pour, an error and
 focus keep their paths; iOS is not run.
+
+**Missed, 2026-11-18.** The run measured ten cards with no keyframe loss over them; on a page under one, the loss's snapshot
+ran the shader on the CPU and froze the page for 29 s every 37 ([B-133](B-133-the-keyframe-loss-freezes-a-shader-page.md)).

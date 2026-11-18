@@ -1,0 +1,32 @@
+# B-73 browser frame bench, 2026-11-18T14:13:42.425Z
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# power: -InternalBattery-0 (id=23658595) 100%; charged; 0:00 remaining present: true
+# browser: Chrome/157.0.8103.79, headless=new, 390x844 at 3x, phone proxy: mobile, touch, CPU slowed 2x
+# gpu: ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Version 27.0.1 (Build 26A434)); webgl enabled, gpu_compositing enabled
+# commit: 0d3469a
+# build: bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8, ee9f4bda2db06b26ad4c.wasm e965b6f6a22bbe21; ~b: 760e0041628170e081bb.wasm 0299555acf5481ca, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 3 (round 1 not counted), 8000 ms a scene, first 1000 ms not counted; scenes ComponentsWheel,ComponentsRest,ComponentsWheel~b,ComponentsRest~b
+round 1 ComponentsWheel    48.4 f/s  interval p95   50.0  >16.7  55.70 %  >33  14.51 %  work p50  12.50 p95  47.70  LoAF 32 (2343 ms)  busy  97.5 %  wheel 106 events, scrolled 29464 px
+round 1 ComponentsRest     40.8 f/s  interval p95   50.0  >16.7  63.08 %  >33  26.15 %  work p50  23.30 p95  56.90  LoAF 48 (3137 ms)  busy  99.9 %
+round 1 ComponentsWheel~b  53.1 f/s  interval p95   16.8  >16.7  52.12 %  >33   2.59 %  work p50   6.30 p95  21.70  LoAF 12 (1409 ms)  busy  84.0 %
+round 1 ComponentsRest~b   53.8 f/s  interval p95   16.8  >16.7  50.12 %  >33   2.33 %  work p50   6.20 p95  20.70  LoAF 12 (1418 ms)  busy  83.7 %
+round 2 ComponentsRest     41.1 f/s  interval p95   50.1  >16.7  62.80 %  >33  25.30 %  work p50  23.10 p95  58.70  LoAF 57 (3601 ms)  busy  99.9 %
+round 2 ComponentsWheel~b  51.9 f/s  interval p95   16.8  >16.7  51.21 %  >33   2.90 %  work p50   6.60 p95  21.10  LoAF 10 (1292 ms)  busy  85.3 %
+round 2 ComponentsRest~b   51.8 f/s  interval p95   16.8  >16.7  48.67 %  >33   2.42 %  work p50   6.40 p95  20.50  LoAF 10 (1296 ms)  busy  84.3 %
+round 2 ComponentsWheel    43.5 f/s  interval p95   50.0  >16.7  61.67 %  >33  25.36 %  work p50  17.10 p95  53.00  LoAF 38 (2743 ms)  busy  98.1 %  wheel 104 events, scrolled 28776 px
+round 3 ComponentsWheel~b  51.1 f/s  interval p95   16.8  >16.7  48.28 %  >33   2.94 %  work p50   6.20 p95  22.30  LoAF 12 (1449 ms)  busy  85.1 %
+round 3 ComponentsRest~b   51.4 f/s  interval p95   16.8  >16.7  49.27 %  >33   3.17 %  work p50   6.20 p95  24.30  LoAF 10 (1302 ms)  busy  84.2 %
+round 3 ComponentsWheel    45.3 f/s  interval p95   50.0  >16.7  59.00 %  >33  19.67 %  work p50  12.80 p95  55.20  LoAF 35 (2649 ms)  busy  97.8 %  wheel 99 events, scrolled 25198 px
+round 3 ComponentsRest     40.4 f/s  interval p95   50.0  >16.7  59.94 %  >33  25.78 %  work p50  22.80 p95  56.90  LoAF 55 (3594 ms)  busy  99.9 %
+
+# counted rounds 2..3, pooled
+ComponentsWheel    44.4 f/s  interval p95   50.0  >16.7  60.31 %  >33  22.46 %  work p50  14.80 p95  54.40  RED
+ComponentsRest     40.8 f/s  interval p95   50.0  >16.7  61.38 %  >33  25.54 %  work p50  23.00 p95  58.00  RED
+ComponentsWheel~b  51.5 f/s  interval p95   16.8  >16.7  49.76 %  >33   2.92 %  work p50   6.40 p95  21.50  GREY
+ComponentsRest~b   51.6 f/s  interval p95   16.8  >16.7  48.97 %  >33   2.79 %  work p50   6.30 p95  20.70  GREY
+# ~b minus a, ComponentsWheel, work p50: per counted round -10.50, -6.60ms; mean -8.55ms
+# ~b minus a, ComponentsWheel, f/s: per counted round 8.38, 5.88; mean 7.13
+# ~b minus a, ComponentsWheel, busy: per counted round -12.73, -12.73 pt; mean -12.73 pt
+# ~b minus a, ComponentsRest, work p50: per counted round -16.70, -16.60ms; mean -16.65ms
+# ~b minus a, ComponentsRest, f/s: per counted round 10.63, 11.00; mean 10.81
+# ~b minus a, ComponentsRest, busy: per counted round -15.59, -15.63 pt; mean -15.61 pt

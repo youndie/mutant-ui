@@ -67,7 +67,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-130](docs/backlog/B-130-the-shader-marches-its-cells.md) `[~]` | The body shader marches its own cells | P2 | M | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 
-## Closed (128)
+## Closed (129)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -201,6 +201,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-128](docs/backlog/B-128-the-shader-edge-from-the-contour.md) `[x]` - The body shader's edge from the contour itself
 - [B-129](docs/backlog/B-129-the-contour-distance-once-a-tick.md) `[-]` - The contour's distance computed once a tick, read by the shader
 - [B-131](docs/backlog/B-131-decorations-in-the-shader.md) `[x]` - A body's decorations drawn by its shader
+- [B-133](docs/backlog/B-133-the-keyframe-loss-freezes-a-shader-page.md) `[x]` - The keyframe loss freezes a page the shader draws
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
