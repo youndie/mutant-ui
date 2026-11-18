@@ -58,15 +58,14 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (3)
+## Open (2)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[?]` | Bodies on the GPU, with every decoration | P2 | L | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 
-## Closed (134)
+## Closed (135)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -196,6 +195,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-123](docs/backlog/B-123-each-body-in-its-own-layer.md) `[-]` - Each body drawn in a layer of its own
 - [B-124](docs/backlog/B-124-the-loop-on-the-phone.md) `[x]` - The performance loop's result on the phone
 - [B-125](docs/backlog/B-125-what-the-decorations-cost-on-the-phone-now.md) `[x]` - What the decorations cost on the phone, over the loop's build
+- [B-126](docs/backlog/B-126-bodies-on-the-gpu.md) `[x]` - Bodies on the GPU, with every decoration
 - [B-127](docs/backlog/B-127-speckle-and-fill-as-one-tile.md) `[-]` - A body's fill and speckle as one tile the GPU repeats
 - [B-128](docs/backlog/B-128-the-shader-edge-from-the-contour.md) `[x]` - The body shader's edge from the contour itself
 - [B-129](docs/backlog/B-129-the-contour-distance-once-a-tick.md) `[-]` - The contour's distance computed once a tick, read by the shader

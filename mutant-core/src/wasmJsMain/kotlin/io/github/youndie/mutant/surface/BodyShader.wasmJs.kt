@@ -22,6 +22,8 @@ import org.jetbrains.skia.RuntimeShaderBuilder
 
 internal actual val bodyShaderSupported: Boolean = true
 
+internal actual val bodyOnGpuByDefault: Boolean = true
+
 private val effect by lazy { RuntimeEffect.makeForShader(BODY_SKSL) }
 
 private val nearest = FilterMipmap(FilterMode.NEAREST, MipmapMode.NONE)

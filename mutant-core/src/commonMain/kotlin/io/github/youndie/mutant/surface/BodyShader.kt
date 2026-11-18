@@ -5,15 +5,18 @@ import androidx.compose.ui.graphics.Brush
 import io.github.youndie.mutant.gen.Slot
 
 /**
- * B-110, a spike: whether a body is drawn by a GPU shader from its field instead of by paths. The shader draws the
- * silhouette only — the misregistered shadow, the fill shifted by the slip, the highlight and its crescent inside
- * their clips, the outline — so the decorations (speckle, mosaic, dead pixels, flow lines) are not drawn with it.
- * Off by default; a measurement turns it on.
+ * B-110: whether a resting body is drawn by a GPU shader from its field instead of by paths, every decoration with it
+ * (B-131). A pressed or hot body, a pour, a slide, an error, focus and the mosaic past the contour keep their paths.
+ * The default is [bodyOnGpuByDefault]; a test or a measurement provides either.
  */
-internal val LocalMutantBodyOnGpu = staticCompositionLocalOf { BODY_ON_GPU }
+internal val LocalMutantBodyOnGpu = staticCompositionLocalOf { bodyOnGpuByDefault }
 
-/** The spike's default, for a build that measures the shader in the browser. */
-internal const val BODY_ON_GPU: Boolean = false
+/**
+ * B-126, the owner's decision of 2026-11-18: the shader by default in the browser only, where a hot phone runs ten cards
+ * at 60.8 frames a second by it against 26.9 by paths. The desktop keeps paths, so its goldens and parity stand as
+ * recorded; Android holds 59 by paths and has no shader (B-108).
+ */
+internal expect val bodyOnGpuByDefault: Boolean
 
 /** Whether this platform can draw a body by shader (B-110): Skia's runtime effects on desktop and in the browser. */
 internal expect val bodyShaderSupported: Boolean

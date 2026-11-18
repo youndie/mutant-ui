@@ -611,6 +611,14 @@ The design steps every transition at the hot tick (83.33 ms, 12 a second: pour, 
   - the design's steps as the default with a switch off, which keeps the motion the owner found limited;
   - per-frame movement of the bodies' shapes too, which would rebuild every body's field on every frame against D6.
 
+### D23. In the browser, a resting body is drawn by a shader
+
+The owner's decision of 2026-11-18 ([B-126](../backlog/B-126-bodies-on-the-gpu.md)). In Chrome on a hot Pixel 6a Skia's CPU work was two thirds of the one thread; a runtime shader reading the body's field ([B-130](../backlog/B-130-the-shader-marches-its-cells.md)) and every decoration ([B-131](../backlog/B-131-decorations-in-the-shader.md)) runs ten cards at 60.8 frames a second against 26.9 by paths. It is the default on wasm only (`bodyOnGpuByDefault`); the desktop, Android and iOS draw by paths.
+
+- **What it moves.** In the browser, the drips a shade more angular: four «Копия» cases of `BodyShaderParityTest` at 0.6 % against the paths, accepted ([B-132](../backlog/B-132-the-shader-rounds-its-contour.md) is the way back). No golden or parity cell on the Mac.
+- **What keeps its paths.** A pressed or hot body, a pour, a slide, an error, focus, the mosaic past the contour, and the keyframe loss's snapshot ([B-133](../backlog/B-133-the-keyframe-loss-freezes-a-shader-page.md)).
+- **Rejected:** the shader on the desktop too; a public switch; leaving it off.
+
 ## 3. Risks and open questions
 
 | # | Risk or hypothesis | Mitigation, and the item that settles it |
