@@ -1009,8 +1009,6 @@ internal fun rasterisedBody(
             scale(density, Offset.Zero) { translate(-ox.toFloat(), -oy.toFloat()) { draw() } }
         }
     }
-    // B-113: finished, so a frame drawing it shares its pixels instead of copying them.
-    image.freeze()
     return RasterisedBody(
         image,
         androidx.compose.ui.unit

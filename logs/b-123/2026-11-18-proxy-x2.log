@@ -1,0 +1,44 @@
+# B-73 browser frame bench, 2026-11-18T04:58:41.179Z
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# power: -InternalBattery-0 (id=23658595) 100%; charged; 0:00 remaining present: true
+# browser: Chrome/157.0.8103.79, headless=new, 390x844 at 3x, phone proxy: mobile, touch, CPU slowed 2x
+# gpu: ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Version 27.0.1 (Build 26A434)); webgl enabled, gpu_compositing enabled
+# commit: d6cf7b4
+# build: 98febf28496134847000.wasm 7ab8bf991166bdba, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8; ~b: bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8, ee9a8a89db25387b7d8a.wasm c4790b2f574d7881
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes TenCards8,Blank,TenCards8~b,Blank~b
+round 1 TenCards8          23.5 f/s  interval p95  100.0  >16.7  69.23 %  >33  36.75 %  work p50  30.30 p95 106.80  LoAF 81 (7556 ms)  busy  99.9 %
+round 1 Blank              60.2 f/s  interval p95   16.7  >16.7  46.59 %  >33   0.00 %  work p50   3.10 p95   3.70  LoAF 0 (0 ms)  busy   6.5 %
+round 1 TenCards8~b        22.8 f/s  interval p95  100.0  >16.7  66.96 %  >33  39.65 %  work p50  31.20 p95 107.80  LoAF 80 (7552 ms)  busy  99.9 %
+round 1 Blank~b            60.2 f/s  interval p95   16.7  >16.7  45.76 %  >33   0.00 %  work p50   3.10 p95   3.90  LoAF 0 (0 ms)  busy   6.5 %
+round 2 Blank              60.3 f/s  interval p95   16.7  >16.7  43.52 %  >33   0.00 %  work p50   2.90 p95   3.90  LoAF 0 (0 ms)  busy   6.7 %
+round 2 TenCards8~b        23.5 f/s  interval p95  100.0  >16.7  65.81 %  >33  36.75 %  work p50  31.00 p95 107.00  LoAF 81 (7570 ms)  busy  99.9 %
+round 2 Blank~b            60.2 f/s  interval p95   16.7  >16.7  45.26 %  >33   0.00 %  work p50   2.90 p95   3.90  LoAF 0 (0 ms)  busy   6.7 %
+round 2 TenCards8          23.6 f/s  interval p95  100.0  >16.7  71.06 %  >33  36.60 %  work p50  30.30 p95 106.80  LoAF 81 (7572 ms)  busy  99.9 %
+round 3 TenCards8~b        23.6 f/s  interval p95  100.0  >16.7  65.53 %  >33  37.87 %  work p50  30.70 p95 107.20  LoAF 81 (7568 ms)  busy  99.9 %
+round 3 Blank~b            60.3 f/s  interval p95   16.7  >16.7  45.51 %  >33   0.00 %  work p50   2.90 p95   3.80  LoAF 0 (0 ms)  busy   6.9 %
+round 3 TenCards8          23.5 f/s  interval p95  100.0  >16.7  69.66 %  >33  37.61 %  work p50  31.50 p95 107.10  LoAF 82 (7607 ms)  busy  99.9 %
+round 3 Blank              60.3 f/s  interval p95   16.8  >16.7  45.51 %  >33   0.00 %  work p50   3.00 p95   3.70  LoAF 0 (0 ms)  busy   6.4 %
+round 4 Blank~b            60.1 f/s  interval p95   16.8  >16.7  45.33 %  >33   0.00 %  work p50   2.90 p95   3.70  LoAF 0 (0 ms)  busy   6.3 %
+round 4 TenCards8          23.5 f/s  interval p95  100.0  >16.7  73.08 %  >33  39.74 %  work p50  31.10 p95 106.80  LoAF 82 (7691 ms)  busy  99.9 %
+round 4 Blank              60.2 f/s  interval p95   16.8  >16.7  44.76 %  >33   0.00 %  work p50   2.80 p95   3.70  LoAF 0 (0 ms)  busy   6.7 %
+round 4 TenCards8~b        23.7 f/s  interval p95  100.0  >16.7  64.83 %  >33  38.14 %  work p50  30.70 p95 107.10  LoAF 81 (7554 ms)  busy  99.9 %
+round 5 TenCards8          23.6 f/s  interval p95  100.1  >16.7  64.68 %  >33  35.74 %  work p50  30.60 p95 107.60  LoAF 82 (7657 ms)  busy  99.9 %
+round 5 Blank              60.2 f/s  interval p95   16.7  >16.7  44.59 %  >33   0.00 %  work p50   3.00 p95   3.70  LoAF 0 (0 ms)  busy   6.3 %
+round 5 TenCards8~b        23.9 f/s  interval p95  100.0  >16.7  63.45 %  >33  33.61 %  work p50  30.20 p95 106.60  LoAF 82 (7621 ms)  busy  99.9 %
+round 5 Blank~b            60.2 f/s  interval p95   16.7  >16.7  44.93 %  >33   0.00 %  work p50   1.90 p95   2.60  LoAF 0 (0 ms)  busy   6.4 %
+round 6 Blank              60.2 f/s  interval p95   16.7  >16.7  43.59 %  >33   0.00 %  work p50   2.60 p95   3.40  LoAF 0 (0 ms)  busy   6.6 %
+round 6 TenCards8~b        22.8 f/s  interval p95  100.0  >16.7  66.08 %  >33  40.09 %  work p50  30.70 p95 107.90  LoAF 81 (7604 ms)  busy  99.9 %
+round 6 Blank~b            60.2 f/s  interval p95   16.7  >16.7  46.09 %  >33   0.00 %  work p50   3.10 p95   3.90  LoAF 0 (0 ms)  busy   6.9 %
+round 6 TenCards8          22.8 f/s  interval p95  100.0  >16.7  71.37 %  >33  39.65 %  work p50  31.20 p95 106.90  LoAF 81 (7616 ms)  busy  99.9 %
+
+# counted rounds 2..6, pooled
+TenCards8          23.4 f/s  interval p95  100.0  >16.7  69.96 %  >33  37.85 %  work p50  30.90 p95 107.10  RED
+Blank              60.2 f/s  interval p95   16.7  >16.7  44.40 %  >33   0.00 %  work p50   2.80 p95   3.70  GREY
+TenCards8~b        23.5 f/s  interval p95  100.0  >16.7  65.13 %  >33  37.26 %  work p50  30.70 p95 107.10  RED
+Blank~b            60.2 f/s  interval p95   16.7  >16.7  45.42 %  >33   0.00 %  work p50   2.70 p95   3.80  GREY
+# ~b minus a, TenCards8, work p50: per counted round 0.70, -0.80, -0.40, -0.40, -0.50ms; mean -0.28ms
+# ~b minus a, TenCards8, f/s: per counted round -0.10, 0.10, 0.20, 0.30, 0.00; mean 0.10
+# ~b minus a, TenCards8, busy: per counted round -0.01, 0.00, -0.00, 0.01, -0.03 pt; mean -0.00 pt
+# ~b minus a, Blank, work p50: per counted round 0.00, -0.10, 0.10, -1.10, 0.50ms; mean -0.12ms
+# ~b minus a, Blank, f/s: per counted round -0.10, 0.00, -0.10, 0.00, 0.00; mean -0.04
+# ~b minus a, Blank, busy: per counted round -0.00, 0.46, -0.35, 0.13, 0.28 pt; mean 0.10 pt
