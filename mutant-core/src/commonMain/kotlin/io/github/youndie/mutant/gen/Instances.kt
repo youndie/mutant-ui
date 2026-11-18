@@ -137,6 +137,7 @@ internal class MutantGenerator(
         val segL = max(12.0, len * (if (top) .4 + .25 * rnd.next() else .9))
         val s0 = r + rnd.next() * max(0.0, len - segL)
         val chance = doubleArrayOf(.95, .7, .35)
+        val edge = ArrayList<DoubleArray>()
         var p = 0.0
         while (p < segL) {
             val bs = if (abs(p / segL - .5) < .22) 8.0 else 4.0
@@ -175,13 +176,69 @@ internal class MutantGenerator(
                         } else {
                             .62
                         }
-                    tiles += MosaicTile(slot.ox + x, slot.oy + y, bs, black = c < .45, opacity = opacity)
+                    tiles += MosaicTile(slot.ox + x, slot.oy + y, bs, black = c < .45, opacity = opacity, row = j)
+                    if (j == 0) edge += doubleArrayOf(a, bs)
                 }
             }
             p += bs
         }
         g.mosaic = blocks
         g.mosaicTiles = tiles
+        g.spillTiles = spillTiles(g, side, edge, hit)
+    }
+
+    /**
+     * B-137, a departure from the design (D20): the blocks past the contour. Over each edge block (row 0) one block of
+     * its size stands outside the slot's side at [SPILL_CHANCE], and over that, at [SPILL_FAR_CHANCE], one 4 dp block
+     * further out; neither enters the clean zone. Tinted as the design's tiles are. Nothing else reads them: the field's
+     * quantisation and the design's tiles stay as they were.
+     */
+    private fun spillTiles(
+        g: Instance,
+        side: MosaicSide,
+        edge: List<DoubleArray>,
+        hit: (Double, Double, Double) -> Boolean,
+    ): List<MosaicTile> {
+        val slot = g.slot
+        val w = slot.w
+        val rnd = Mulberry32(g.seed, "edge:spill")
+        val out = ArrayList<MosaicTile>()
+
+        fun place(
+            along: Double,
+            depth: Double,
+            size: Double,
+            row: Int,
+        ): Boolean {
+            val c = rnd.next()
+            val x =
+                when (side) {
+                    MosaicSide.Top -> along
+                    MosaicSide.Left -> -depth
+                    MosaicSide.Right -> w + depth - size
+                }
+            val y = if (side == MosaicSide.Top) -depth else along
+            if (hit(x, y, size)) return false
+            val opacity =
+                if (c < .25) {
+                    .5
+                } else if (c < .45) {
+                    .28
+                } else if (c < .75) {
+                    .38
+                } else {
+                    .62
+                }
+            out += MosaicTile(slot.ox + x, slot.oy + y, size, black = c < .45, opacity = opacity, row = row)
+            return true
+        }
+        for ((a, bs) in edge) {
+            if (rnd.next() >= SPILL_CHANCE) continue
+            val far = rnd.next()
+            val q = kotlin.math.floor(rnd.next() * bs / 4) * 4
+            if (place(a, bs, bs, -1) && far < SPILL_FAR_CHANCE) place(a + q, bs + 4, 4.0, -2)
+        }
+        return out
     }
 
     /** `deadPx`: the dead pixels of the card's dirty corner, 8, 4 and 2 dp, thinning with distance from the corner. */
@@ -632,3 +689,9 @@ internal fun taperInto(
     }
     builder.addLoop(lx, ly, 2 * n, 0.0)
 }
+
+/** B-137: the chance that an edge block has a block of its size past the contour. */
+internal const val SPILL_CHANCE: Double = .7
+
+/** B-137: the chance that a block past the contour has a 4 dp block further out. */
+internal const val SPILL_FAR_CHANCE: Double = .4

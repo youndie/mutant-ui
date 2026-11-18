@@ -304,7 +304,7 @@ public final class io/github/youndie/mutant/theme/MutantTheme {
 
 public final class io/github/youndie/mutant/theme/MutantThemeKt {
 	public static final fun MutantScreenClock (Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
-	public static final fun MutantTheme (Lio/github/youndie/mutant/tokens/MutantColors;Ljava/lang/String;Ljava/lang/Boolean;ZZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun MutantTheme (Lio/github/youndie/mutant/tokens/MutantColors;Ljava/lang/String;Ljava/lang/Boolean;ZZZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/tokens/MutantColors {

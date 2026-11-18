@@ -41,6 +41,12 @@ internal val LocalMutantCleanSignal = staticCompositionLocalOf { false }
  */
 internal val LocalMutantSteppedMotion = staticCompositionLocalOf { false }
 
+/**
+ * B-137, a departure from the design (D20), off by default: the edge mosaic's blocks drawn past the body's contour, over
+ * its outline and outside it, where the design keeps them inside the clip. The clean zone stays clear either way.
+ */
+internal val LocalMutantMosaicPastContour = staticCompositionLocalOf { false }
+
 /** The two bundled families (B-02). */
 internal val LocalMutantFonts = staticCompositionLocalOf<MutantFonts?> { null }
 
@@ -56,6 +62,9 @@ internal const val DEFAULT_CASSETTE: String = "5"
  * toggles switch at once. `null` follows the platform's setting. [cleanSignal] is the brief's «Чистый
  * сигнал» for long sessions and those sensitive to flicker: no Tape and no idle glitches over the screen,
  * while bodies keep their shapes and the clock keeps running; offer it to the user as a switch.
+ *
+ * [steppedMotion] steps movement at the hot tick, as the design does (B-100). [mosaicPastContour] is an experiment,
+ * off by default as the design draws it: the edge mosaic's blocks cross the outline and stand outside the body (B-137).
  */
 @Composable
 public fun MutantTheme(
@@ -64,6 +73,7 @@ public fun MutantTheme(
     reduceMotion: Boolean? = null,
     cleanSignal: Boolean = false,
     steppedMotion: Boolean = false,
+    mosaicPastContour: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val paused = reduceMotion ?: platformReduceMotion()
@@ -75,6 +85,7 @@ public fun MutantTheme(
         LocalMutantReduceMotion provides paused,
         LocalMutantCleanSignal provides cleanSignal,
         LocalMutantSteppedMotion provides steppedMotion,
+        LocalMutantMosaicPastContour provides mosaicPastContour,
         LocalMutantFonts provides mutantFonts(),
     ) {
         ProvideMutantClock(clock, content)

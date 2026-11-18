@@ -145,6 +145,7 @@ internal fun DrawScope.drawBody(
     decor: BodyDecor = BodyDecor(),
     pour: Pair<Path, Color>? = null,
     skip: Set<BodyPart> = emptySet(),
+    pastContour: Boolean = false,
 ) {
     val el = g.slot
     val ox = el.ox.toFloat()
@@ -212,8 +213,40 @@ internal fun DrawScope.drawBody(
     if (BodyPart.Outline !in skip) {
         drawPath(paths.contour, look.ink, style = Stroke(width = look.outline, join = StrokeJoin.Round))
     }
+    if (pastContour &&
+        BodyPart.Mosaic !in skip
+    ) {
+        translate(look.slip, look.slip) { drawMosaicPastContour(g, look.fill, decor) }
+    }
     decor.brackets?.let { drawBrackets(g, it) }
 }
+
+/**
+ * B-137, a departure from the design (D20): the edge mosaic past the contour. The edge row (row 0) and the blocks
+ * outside the side ([Instance.spillTiles]) are drawn over the outline, unclipped, each a square of the body's [fill]
+ * under its tile's tint, so the compression's blocks cross the ink line and stand outside the body. The rows further in
+ * stay inside the clip, as the design draws them. A pressed body's edge row runs as [BodyDecor.runningMosaic] does; the
+ * blocks outside keep their rest.
+ */
+private fun DrawScope.drawMosaicPastContour(
+    g: Instance,
+    fill: Color,
+    decor: BodyDecor,
+) {
+    val running = decor.runningMosaic
+    val tiles =
+        running?.let { g.mosaicTiles.zip(it) { d, r -> if (d.row == 0) r else null } }
+            ?: g.mosaicTiles.map { if (it.row == 0) it to tint(it) else null }
+    for (pair in tiles.asSequence().filterNotNull() + g.spillTiles.asSequence().map { it to tint(it) }) {
+        val (t, c) = pair
+        val at = Offset(t.x.toFloat(), t.y.toFloat())
+        val size = Size(t.size.toFloat(), t.size.toFloat())
+        drawRect(fill, at, size)
+        drawRect(c, at, size, alpha = t.opacity.toFloat())
+    }
+}
+
+private fun tint(t: io.github.youndie.mutant.gen.MosaicTile): Color = if (t.black) Color.Black else Color.White
 
 /**
  * The parts of a body, each of which a measurement can leave out of the draw (B-78). The kit draws them all;
