@@ -491,6 +491,7 @@ internal fun MutantSurface(
                             pressed = false,
                             steadyWebs = steadyWebs,
                             grow = false,
+                            paths = !onGpu,
                         )
                     // B-110: a body the shader draws gets its brush ahead, with its frame, and no image.
                     if (onGpu) {
@@ -499,9 +500,7 @@ internal fun MutantSurface(
                             null,
                             null,
                             bodyShaderBrush(
-                                f.contour,
-                                f.highlight,
-                                rasterBox(g),
+                                f.field,
                                 slot,
                                 pictureOf(g, f, next, 0.0).look,
                                 d,
@@ -637,7 +636,7 @@ internal fun MutantSurface(
 
                 var frame =
                     early?.frame
-                        ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                        ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs, paths = !onGpu)
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
                 if (resting && cache.settledFor(g)) {
@@ -664,9 +663,7 @@ internal fun MutantSurface(
                     val shaded =
                         early?.shaded.takeIf { early?.frame === frame }
                             ?: bodyShaderBrush(
-                                frame.contour,
-                                frame.highlight,
-                                rasterBox(g),
+                                frame.field,
                                 slot,
                                 pictureOf(g, frame, t, k).look,
                                 d,
