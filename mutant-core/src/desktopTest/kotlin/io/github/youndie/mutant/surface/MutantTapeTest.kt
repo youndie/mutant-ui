@@ -224,8 +224,15 @@ class MutantTapeTest {
         for (startMs in listOf(200.0, 2200.0)) {
             val draws = runTape(startMs = startMs, frames = 40, capture = false)
             val (first, last) = draws.first() to draws.last()
-            assertTrue(last.draws - first.draws >= 39, "from $startMs ms the Tape drawn on every frame: ${draws.map { it.draws }}")
-            assertEquals(first.holderDraws, last.holderDraws, "from $startMs ms the node holding the Tape drawn again with it")
+            assertTrue(
+                last.draws - first.draws >= 39,
+                "from $startMs ms the Tape drawn on every frame: ${draws.map { it.draws }}",
+            )
+            assertEquals(
+                first.holderDraws,
+                last.holderDraws,
+                "from $startMs ms the node holding the Tape drawn again with it",
+            )
             assertEquals(first.siblingDraws, last.siblingDraws, "from $startMs ms a sibling drawn again with the Tape")
         }
     }
