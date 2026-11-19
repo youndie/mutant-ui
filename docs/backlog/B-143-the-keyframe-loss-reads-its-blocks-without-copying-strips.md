@@ -1,7 +1,7 @@
 ---
 id: B-143
 title: "The keyframe loss reads its blocks without copying whole strips"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-6-later
