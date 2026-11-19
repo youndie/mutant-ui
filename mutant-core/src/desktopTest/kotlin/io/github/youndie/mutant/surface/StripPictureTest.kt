@@ -75,8 +75,15 @@ class StripPictureTest {
 
     private fun StripPicture.pixels(height: Int): IntArray {
         val out = ImageBitmap(width, height)
-        val scope = androidx.compose.ui.graphics.drawscope.CanvasDrawScope()
-        scope.draw(Density(1f), LayoutDirection.Ltr, Canvas(out), Size(width.toFloat(), height.toFloat())) { draw(this) }
+        val scope =
+            androidx.compose.ui.graphics.drawscope
+                .CanvasDrawScope()
+        scope.draw(
+            Density(1f),
+            LayoutDirection.Ltr,
+            Canvas(out),
+            Size(width.toFloat(), height.toFloat()),
+        ) { draw(this) }
         return IntArray(width * height).also { out.readPixels(it) }
     }
 
@@ -93,7 +100,11 @@ class StripPictureTest {
             Canvas(part).drawImageRect(one.bitmap, at, size, IntOffset.Zero, size, Paint())
             one.canvas.drawImageRect(part, IntOffset.Zero, size, to, size, paint)
         }
-        val tint = Paint().apply { color = Color(0x66FF00FF); blendMode = BlendMode.Screen }
+        val tint =
+            Paint().apply {
+                color = Color(0x66FF00FF)
+                blendMode = BlendMode.Screen
+            }
         pic.drawRect(10f, 30f, 250f, 120f, tint)
         one.canvas.drawRect(10f, 30f, 250f, 120f, tint)
         val expected = IntArray(w * h).also { one.bitmap.readPixels(it) }

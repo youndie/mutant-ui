@@ -102,17 +102,8 @@ internal class StripPicture(
             val a = maxOf(y0, t)
             val b = minOf(y1, t + from.strips[i].height)
             if (b <= a) continue
-            read.drawImageRect(
-                from.strips[i],
-                IntOffset(x0, a - t),
-                IntSize(w, b - a),
-                IntOffset(0, a - y0),
-                IntSize(
-                    w,
-                    b - a,
-                ),
-                copy,
-            )
+            // Only the block's rectangle of the strip, not the strip (B-143).
+            read.drawRegion(from.strips[i], IntOffset(x0, a - t), IntSize(w, b - a), IntOffset(0, a - y0), copy)
         }
         val dx = to.x + x0 - at.x
         val dy = to.y + y0 - at.y
