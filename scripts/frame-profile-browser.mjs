@@ -49,6 +49,15 @@ for (let i = 0; i < 50 && !up; i++) {
   await new Promise(r => setTimeout(r, 200));
   up = await fetch(`http://127.0.0.1:${DEBUG}/json/list`, { signal: AbortSignal.timeout(2_000) }).then(r => r.json()).catch(() => null);
 }
+// B-140: a tab left on a scene by a killed run keeps drawing and shares the renderer (frame-bench-browser.mjs says more).
+if (DEVICE) {
+  for (const t of up ?? []) {
+    if (t.type === 'page' && /^http:\/\/127\.0\.0\.1:876\d\/\?scene=/.test(t.url)) {
+      console.log(`# closed a leftover bench tab: ${t.url}`);
+      await fetch(`http://127.0.0.1:${DEBUG}/json/close/${t.id}`).catch(() => null);
+    }
+  }
+}
 const target = up?.find(t => t.type === 'page' && (!DEVICE || t.url === 'about:blank'));
 if (!target) throw new Error('no page to profile in');
 const ws = new WebSocket(target.webSocketDebuggerUrl);
@@ -115,11 +124,35 @@ profile.samples.forEach((id, i) => {
   where.set(k, (where.get(k) ?? 0) + d);
 });
 const busy = all - idle;
+// B-140: SPLIT=<target>:<a>|<b>|… — the busy time with a function whose name contains <target> on the stack, by the
+// nearest caller above it whose name contains one of <a>, <b>, … ("other" when none): a tick built in the frame against
+// one built ahead. RAW=<file> keeps the CDP profile itself, to be split again without measuring again.
+const splits = (process.env.SPLIT ?? '').split(';').filter(Boolean).map(spec => {
+  const [target, list] = spec.split(':');
+  const callers = list.split('|');
+  const by = new Map();
+  profile.samples.forEach((id, i) => {
+    const d = (dt[i + 1] ?? dt[i]) / 1000;
+    let n = byId.get(id);
+    while (n && !name(n).includes(target)) n = byId.get(parent.get(n.id));
+    if (!n) return;
+    let k = 'other';
+    for (let a = byId.get(parent.get(n.id)); a; a = byId.get(parent.get(a.id))) {
+      const hit = callers.find(c => name(a).includes(c));
+      if (hit) { k = hit; break; }
+    }
+    by.set(k, (by.get(k) ?? 0) + d);
+  });
+  return [`## ${target} on the stack, by its nearest caller among ${callers.join(', ')} (share of busy)`,
+    ...[...by].sort((x, y) => y[1] - x[1]).map(([k, v]) => `${v.toFixed(1).padStart(9)} ms ${(100 * v / (all - idle)).toFixed(1).padStart(5)} %  ${k}`), ''];
+}).flat();
+if (process.env.RAW) writeFileSync(process.env.RAW, JSON.stringify(profile));
 const line = ([k, v]) => `${v.toFixed(1).padStart(9)} ms ${(100 * v / busy).toFixed(1).padStart(5)} %  ${k}`;
 const text = [
   `# B-73 profile of ${scene}, ${new Date().toISOString()}, ${MS} ms sampled every 100 µs` +
     (DEVICE ? `, on ${sh(`${ADB} shell getprop ro.product.model`)} in Chrome, nothing emulated` : PHONE ? ', phone proxy' : ''),
   `# sampled ${all.toFixed(0)} ms, idle ${idle.toFixed(0)} ms, busy ${busy.toFixed(0)} ms (${(100 * busy / all).toFixed(1)} %)`,
+  ...(splits.length ? ['', ...splits] : []),
   '', '## self time by where its code lives (share of busy)', ...[...where].sort((x, y) => y[1] - x[1]).map(line),
   '', `## self time, top ${TOP} (share of busy)`, ...[...self].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(line),
   '', `## total time, top ${TOP} (share of busy)`, ...[...total].sort((a, b) => b[1] - a[1]).slice(0, TOP).map(line), '',

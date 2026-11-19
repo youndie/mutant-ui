@@ -99,6 +99,17 @@ for (let i = 0; i < 50 && !version; i++) {
   version = await fetch(`http://127.0.0.1:${DEBUG}/json/version`, { signal: AbortSignal.timeout(2_000) }).then(r => r.json()).catch(() => null);
 }
 if (!version) throw new Error(`no DevTools on port ${DEBUG}${DEVICE ? ': is Chrome open on the phone?' : ''}`);
+// B-140: a run killed mid-way leaves its tab on a scene, and the phone's Chrome keeps drawing it: found at 110 % of a
+// core and 112 min of CPU, heating the phone between runs and sharing the renderer with the measured tab (127.0.0.1 is
+// one site whatever the port). Only this bench's and the profiler's own pages carry this address; they are closed.
+if (DEVICE) {
+  for (const t of await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())) {
+    if (t.type === 'page' && /^http:\/\/127\.0\.0\.1:876\d\/\?scene=/.test(t.url)) {
+      console.log(`# closed a leftover bench tab: ${t.url}`);
+      await fetch(`http://127.0.0.1:${DEBUG}/json/close/${t.id}`).catch(() => null);
+    }
+  }
+}
 // On the phone, /json/new answers «Could not create new page»: the tab is the blank one the intent above opened in front,
 // and no other tab of the owner's is touched.
 // B-138: the intent's tab may be listed a few seconds after DevTools answers, so it is waited for.
@@ -228,6 +239,9 @@ for (let round = 1; round <= ROUNDS; round++) {
     const busy = (m1.TaskDuration - m0.TaskDuration) / (m1.Timestamp - m0.Timestamp);
     // B-111: the battery's temperature after the scene, in °C, as heat costs the phone frames.
     const temp = DEVICE ? +sh(`${ADB} shell dumpsys battery | grep temperature`).replace(/\D/g, '') / 10 : NaN;
+    // B-140: the big cores' (cpu6, cpu7) current and maximum frequency after the scene, in MHz: a phone that throttles
+    // lowers the maximum.
+    const freq = DEVICE ? sh(`${ADB} shell 'cat /sys/devices/system/cpu/cpu6/cpufreq/scaling_cur_freq /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq'`).split(/\s+/).map(v => Math.round(+v / 1000)).join('/') : '';
     const got = await evaluate('window.__bench.recording = false; JSON.stringify({ f: window.__bench.frames, l: window.__bench.long, s: window.__scrolled ?? -1 })');
     const { f, l, s } = JSON.parse(got);
     const intervals = [];
@@ -253,7 +267,7 @@ for (let round = 1; round <= ROUNDS; round++) {
       busy,
     };
     (results[scene] ??= []).push({ round, ...r });
-    console.log(`round ${round} ${scene.padEnd(17)} ${r.fps.toFixed(1).padStart(5)} f/s  interval p95 ${r.ivP95.toFixed(1).padStart(6)}  >16.7 ${(100 * r.over17).toFixed(2).padStart(6)} %  >33 ${(100 * r.over33).toFixed(2).padStart(6)} %  work p50 ${r.workP50.toFixed(2).padStart(6)} p95 ${r.workP95.toFixed(2).padStart(6)}  LoAF ${r.loaf} (${r.loafMs.toFixed(0)} ms)  busy ${(100 * busy).toFixed(1).padStart(5)} %${DEVICE ? `  ${temp.toFixed(1)} °C` : ''}${scene === 'ComponentsWheel' ? `  wheel ${wheels} events, scrolled ${s} px` : ''}`);
+    console.log(`round ${round} ${scene.padEnd(17)} ${r.fps.toFixed(1).padStart(5)} f/s  interval p95 ${r.ivP95.toFixed(1).padStart(6)}  >16.7 ${(100 * r.over17).toFixed(2).padStart(6)} %  >33 ${(100 * r.over33).toFixed(2).padStart(6)} %  work p50 ${r.workP50.toFixed(2).padStart(6)} p95 ${r.workP95.toFixed(2).padStart(6)}  LoAF ${r.loaf} (${r.loafMs.toFixed(0)} ms)  busy ${(100 * busy).toFixed(1).padStart(5)} %${DEVICE ? `  ${temp.toFixed(1)} °C  big ${freq} MHz` : ''}${scene === 'ComponentsWheel' ? `  wheel ${wheels} events, scrolled ${s} px` : ''}`);
   }
 }
 writeFileSync(join(out, 'frames.csv'), csv.join('\n') + '\n');

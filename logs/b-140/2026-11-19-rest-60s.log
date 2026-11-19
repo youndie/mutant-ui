@@ -1,0 +1,16 @@
+# phone before:  AC powered: true; level: 96; temperature: 283; Capacity level: 2;
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-19T12:58:50.612Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 96; temperature: 283; Capacity level: 2;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 3e8ea9d
+# build: 86231ca46bfe29af2a29.wasm 2be7f9bb49abc303, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 1 (round 1 not counted), 60000 ms a scene, first 1000 ms not counted; scenes ComponentsRest
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     49.3 f/s  interval p95   33.3  >16.7  24.30 %  >33  10.83 %  work p50  15.20 p95  45.30  LoAF 108 (9793 ms)  busy  99.8 %  29.9 °C  big 2401/2401 MHz
+
+# counted rounds 2..1, pooled
+ComponentsRest      NaN f/s  interval p95    NaN  >16.7    NaN %  >33    NaN %  work p50    NaN p95    NaN  GREY
+# phone after:  AC powered: true; level: 96; temperature: 299; Capacity level: 2;

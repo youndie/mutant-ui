@@ -44,3 +44,18 @@ What B-138's own frames already show (`logs/b-138/2026-11-19-chrome-pixel/frames
   moved its signature.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt`,
   `scripts/frame-bench-browser.mjs`, `scripts/frame-profile-browser.mjs`
+
+## Findings
+
+### Iteration 1, 2026-11-19: a leaked bench tab
+
+Waiting for the phone to cool after the priority A/B (`logs/b-140/2026-11-19-priority-warm.log`), it rose to 37.4 °C with
+the big cores' maximum at 1106 MHz and nothing measuring. `top` on the phone: one Chrome renderer at 110 % of a core,
+112 min of CPU. The tab list (read only) held `http://127.0.0.1:8761/?scene=DemoPageClean&load=4`: this bench's own
+address, round 1's fourth scene of the phone's list, left by a killed run; its server was gone, the page loaded and
+drawing. It was closed (only it); the renderer left `top` within 5 s.
+
+So every phone run of B-138 and of this item so far may have run beside it: 127.0.0.1 is one site whatever the port,
+so it most likely shared the measured tab's renderer, and in the front between runs it heated the phone. Whether it
+moved the numbers is not known; the cool `ComponentsRest` run is repeated without it as the control. Both scripts now
+close any page with their own address (`http://127.0.0.1:876N/?scene=`) before choosing their tab and log it.
