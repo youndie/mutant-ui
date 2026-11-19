@@ -48,13 +48,14 @@ class StripPictureTest {
             }
         }
         pic.paint(Density(1f), LayoutDirection.Ltr, height, block)
+        // The one bitmap starts from the strips' own pixels, so what is compared is the operations after, not how a
+        // shape's edge rasterises moved into a strip.
         androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
             Density(1f),
             LayoutDirection.Ltr,
             one.canvas,
             Size(width.toFloat(), height.toFloat()),
-            block,
-        )
+        ) { pic.draw(this) }
         return pic to one
     }
 
