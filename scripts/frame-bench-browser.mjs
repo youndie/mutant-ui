@@ -101,9 +101,14 @@ for (let i = 0; i < 50 && !version; i++) {
 if (!version) throw new Error(`no DevTools on port ${DEBUG}${DEVICE ? ': is Chrome open on the phone?' : ''}`);
 // On the phone, /json/new answers «Could not create new page»: the tab is the blank one the intent above opened in front,
 // and no other tab of the owner's is touched.
-const page = DEVICE
-  ? (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page' && t.url === 'about:blank')
-  : (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page');
+// B-138: the intent's tab may be listed a few seconds after DevTools answers, so it is waited for.
+let page;
+for (let i = 0; i < 50 && !page; i++) {
+  if (i > 0) await new Promise(r => setTimeout(r, 200));
+  page = DEVICE
+    ? (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page' && t.url === 'about:blank')
+    : (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page');
+}
 if (!page) throw new Error('no blank tab to measure in');
 const ws = new WebSocket(page.webSocketDebuggerUrl);
 await new Promise(r => { ws.onopen = r; });

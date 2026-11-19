@@ -1,0 +1,78 @@
+# host: Apple M1, macOS 27.0.1; simulator iPhone 17 (iPhone 17 Pro (E26B9230-F299-4BAA-955B-4C09823269DC) (Shutdown) )
+# runtime: iOS 27.0 (27.0 - 24A5390f) - com.apple.CoreSimulator.SimRuntime.iOS-27-0
+# commit 1a867fe-dirty; binary sha256 41e17efe8e50bb26
+B-138 iOS bench: rounds 6, scene 10000ms, settle 1000ms, control 10ms
+round 1 TenCards8: 59.6 | 0.1 | 0.6 | 16.6 | 16.7
+round 1 Blank: 60.0 | 0.2 | 0.3 | 16.6 | 16.6
+round 1 ComponentsRest: 56.7 | 0.1 | 0.8 | 16.6 | 33.2
+round 1 ComponentsClean: idle (no frame drawn)
+round 1 ComponentsReduce: idle (no frame drawn)
+round 1 DemoPage: idle (no frame drawn)
+round 1 DemoLibrary: idle (no frame drawn)
+round 1 DemoRecording: idle (no frame drawn)
+round 1 DemoSettings: idle (no frame drawn)
+round 1 Control: 60.0 | 10.1 | 10.1 | 16.6 | 16.6
+round 2 TenCards8: 60.0 | 0.1 | 0.6 | 16.6 | 16.7
+round 2 Blank: 60.0 | 0.2 | 0.3 | 16.6 | 16.6
+round 2 ComponentsRest: 57.0 | 0.1 | 0.7 | 16.6 | 30.1
+round 2 ComponentsClean: idle (no frame drawn)
+round 2 ComponentsReduce: idle (no frame drawn)
+round 2 DemoPage: idle (no frame drawn)
+round 2 DemoLibrary: idle (no frame drawn)
+round 2 DemoRecording: idle (no frame drawn)
+round 2 DemoSettings: idle (no frame drawn)
+round 2 Control: 60.0 | 10.1 | 10.1 | 16.6 | 16.6
+round 3 TenCards8: 60.0 | 0.1 | 0.6 | 16.6 | 16.8
+round 3 Blank: 60.1 | 0.3 | 0.4 | 16.6 | 16.7
+round 3 ComponentsRest: 57.5 | 0.1 | 0.7 | 16.6 | 16.7
+round 3 ComponentsClean: idle (no frame drawn)
+round 3 ComponentsReduce: idle (no frame drawn)
+round 3 DemoPage: idle (no frame drawn)
+round 3 DemoLibrary: idle (no frame drawn)
+round 3 DemoRecording: idle (no frame drawn)
+round 3 DemoSettings: idle (no frame drawn)
+round 3 Control: 60.0 | 10.1 | 10.1 | 16.6 | 16.6
+round 4 TenCards8: 60.1 | 0.1 | 0.6 | 16.6 | 16.7
+round 4 Blank: 60.0 | 0.2 | 0.3 | 16.6 | 16.6
+round 4 ComponentsRest: 55.7 | 3.0 | 5.8 | 16.6 | 33.3
+round 4 ComponentsClean: idle (no frame drawn)
+round 4 ComponentsReduce: idle (no frame drawn)
+round 4 DemoPage: idle (no frame drawn)
+round 4 DemoLibrary: idle (no frame drawn)
+round 4 DemoRecording: idle (no frame drawn)
+round 4 DemoSettings: idle (no frame drawn)
+round 4 Control: 60.0 | 10.1 | 10.1 | 16.6 | 16.7
+round 5 TenCards8: 60.0 | 0.1 | 0.6 | 16.6 | 17.4
+round 5 Blank: 60.0 | 0.2 | 0.3 | 16.6 | 16.7
+round 5 ComponentsRest: 55.8 | 2.6 | 5.4 | 16.6 | 33.3
+round 5 ComponentsClean: idle (no frame drawn)
+round 5 ComponentsReduce: idle (no frame drawn)
+round 5 DemoPage: idle (no frame drawn)
+round 5 DemoLibrary: idle (no frame drawn)
+round 5 DemoRecording: idle (no frame drawn)
+round 5 DemoSettings: idle (no frame drawn)
+round 5 Control: 60.0 | 10.1 | 10.2 | 16.6 | 16.7
+round 6 TenCards8: 60.1 | 0.1 | 0.6 | 16.6 | 16.7
+round 6 Blank: 60.0 | 0.2 | 0.3 | 16.6 | 16.6
+round 6 ComponentsRest: 57.0 | 0.1 | 0.7 | 16.6 | 33.2
+round 6 ComponentsClean: idle (no frame drawn)
+round 6 ComponentsReduce: idle (no frame drawn)
+round 6 DemoPage: idle (no frame drawn)
+round 6 DemoLibrary: idle (no frame drawn)
+round 6 DemoRecording: idle (no frame drawn)
+round 6 DemoSettings: idle (no frame drawn)
+round 6 Control: 60.0 | 10.1 | 10.1 | 16.6 | 16.6
+pooled, rounds 2..6:
+scene | frames/s | work p50 | work p95 | interval p50 | interval p95 (ms)
+TenCards8 | 60.0 | 0.1 | 0.6 | 16.6 | 16.7
+Blank | 60.0 | 0.2 | 0.3 | 16.6 | 16.7
+ComponentsRest | 56.6 | 0.6 | 4.9 | 16.6 | 33.3
+ComponentsClean | idle (no frame drawn)
+ComponentsReduce | idle (no frame drawn)
+DemoPage | idle (no frame drawn)
+DemoLibrary | idle (no frame drawn)
+DemoRecording | idle (no frame drawn)
+DemoSettings | idle (no frame drawn)
+Control | 60.0 | 10.1 | 10.2 | 16.6 | 16.6
+frames: /Users/youndie/Library/Developer/CoreSimulator/Devices/F507C6D5-23EE-42B7-82DB-31C9E2941491/data/Containers/Data/Application/D1DE7663-A6E8-4966-9190-9F4E8714AA23/Documents/frames.csv
+DONE

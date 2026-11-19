@@ -1,0 +1,93 @@
+# phone before:  AC powered: true level: 80 temperature: 345 
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-19T09:19:05.176Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 80; temperature: 345; Capacity level: 3;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 1a867fe (dirty)
+# build: 86231ca46bfe29af2a29.wasm 2be7f9bb49abc303, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes ComponentsRest,ComponentsClean,DemoPage,DemoPageClean,DemoLibrary,DemoRecording,DemoSettings,ComponentsReduce,TenCards8,Control,ControlRest
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     45.5 f/s  interval p95   49.8  >16.7  34.14 %  >33  17.62 %  work p50  17.50 p95  57.90  LoAF 35 (2655 ms)  busy  99.8 %  35.0 °C
+round 1 ComponentsClean    60.9 f/s  interval p95   16.7  >16.7  17.60 %  >33   0.66 %  work p50   6.40 p95  22.70  LoAF 2 (107 ms)  busy  81.6 %  35.0 °C
+round 1 DemoPage           48.8 f/s  interval p95   16.7  >16.7  22.59 %  >33   3.29 %  work p50   6.20 p95  21.40  LoAF 13 (2405 ms)  busy  83.7 %  35.1 °C
+round 1 DemoPageClean      60.3 f/s  interval p95   16.7  >16.7  20.60 %  >33   0.66 %  work p50   7.00 p95  13.80  LoAF 4 (288 ms)  busy  89.4 %  35.5 °C
+round 1 DemoLibrary        47.9 f/s  interval p95   16.7  >16.7  22.59 %  >33   2.30 %  work p50   8.00 p95  15.10  LoAF 10 (2438 ms)  busy  91.1 %  35.8 °C
+round 1 DemoRecording      61.0 f/s  interval p95   16.7  >16.7  19.38 %  >33   0.00 %  work p50   5.30 p95  11.10  LoAF 0 (0 ms)  busy  61.3 %  35.9 °C
+round 1 DemoSettings       61.2 f/s  interval p95   16.7  >16.7  19.31 %  >33   0.00 %  work p50  11.70 p95  14.30  LoAF 0 (0 ms)  busy  63.1 %  36.1 °C
+round 1 ComponentsReduce   60.3 f/s  interval p95   16.7  >16.7  24.42 %  >33   1.66 %  work p50   6.40 p95  26.70  LoAF 0 (0 ms)  busy  48.0 %  36.1 °C
+round 1 TenCards8          61.0 f/s  interval p95   16.7  >16.7  20.36 %  >33   0.00 %  work p50   4.90 p95   9.00  LoAF 0 (0 ms)  busy  63.9 %  36.1 °C
+round 1 Control            60.3 f/s  interval p95   16.7  >16.7  23.92 %  >33   1.33 %  work p50  14.50 p95  30.10  LoAF 0 (0 ms)  busy  88.9 %  36.5 °C
+round 1 ControlRest        17.8 f/s  interval p95  116.1  >16.7  91.53 %  >33  82.49 %  work p50  66.70 p95 117.40  LoAF 94 (7774 ms)  busy  99.9 %  36.4 °C
+round 2 ComponentsClean    40.2 f/s  interval p95   66.3  >16.7  40.65 %  >33  24.94 %  work p50  11.50 p95  69.50  LoAF 71 (5095 ms)  busy  99.8 %  36.6 °C
+round 2 DemoPage           52.5 f/s  interval p95   16.7  >16.7  23.47 %  >33   1.34 %  work p50   6.50 p95  13.50  LoAF 6 (1709 ms)  busy  84.0 %  36.6 °C
+round 2 DemoPageClean      60.6 f/s  interval p95   16.7  >16.7  20.50 %  >33   0.66 %  work p50   5.40 p95  13.00  LoAF 2 (131 ms)  busy  79.0 %  36.8 °C
+round 2 DemoLibrary        51.4 f/s  interval p95   16.7  >16.7  22.81 %  >33   1.36 %  work p50   5.60 p95  11.90  LoAF 7 (1791 ms)  busy  76.7 %  36.8 °C
+round 2 DemoRecording      61.0 f/s  interval p95   16.7  >16.7  20.03 %  >33   0.00 %  work p50   5.10 p95  10.90  LoAF 0 (0 ms)  busy  58.8 %  36.8 °C
+round 2 DemoSettings       61.0 f/s  interval p95   16.7  >16.7  18.06 %  >33   0.00 %  work p50  11.60 p95  14.20  LoAF 0 (0 ms)  busy  62.6 %  37.1 °C
+round 2 ComponentsReduce   60.3 f/s  interval p95   16.7  >16.7  20.76 %  >33   1.00 %  work p50   6.70 p95  26.90  LoAF 0 (0 ms)  busy  49.0 %  37.1 °C
+round 2 TenCards8          61.0 f/s  interval p95   16.7  >16.7  20.53 %  >33   0.00 %  work p50   4.90 p95   9.20  LoAF 0 (0 ms)  busy  64.4 %  37.2 °C
+round 2 Control            58.0 f/s  interval p95   33.2  >16.7  25.73 %  >33   5.35 %  work p50  15.10 p95  35.10  LoAF 0 (0 ms)  busy  91.4 %  37.2 °C
+round 2 ControlRest        13.6 f/s  interval p95  149.1  >16.7  96.30 %  >33  89.63 %  work p50  92.00 p95 157.60  LoAF 97 (8932 ms)  busy  99.9 %  37.3 °C
+round 2 ComponentsRest     16.0 f/s  interval p95  132.9  >16.7  83.65 %  >33  67.92 %  work p50  71.00 p95 160.10  LoAF 86 (8405 ms)  busy  99.9 %  37.4 °C
+round 3 DemoPage           50.0 f/s  interval p95   16.7  >16.7  21.64 %  >33   1.80 %  work p50   6.60 p95  14.20  LoAF 8 (2034 ms)  busy  84.8 %  37.4 °C
+round 3 DemoPageClean      60.6 f/s  interval p95   16.7  >16.7  19.67 %  >33   0.50 %  work p50   6.10 p95  13.00  LoAF 2 (131 ms)  busy  79.6 %  37.4 °C
+round 3 DemoLibrary        51.7 f/s  interval p95   16.7  >16.7  23.64 %  >33   1.36 %  work p50   6.50 p95  13.80  LoAF 7 (1765 ms)  busy  82.8 %  37.4 °C
+round 3 DemoRecording      61.1 f/s  interval p95   16.7  >16.7  20.82 %  >33   0.00 %  work p50   5.30 p95  10.80  LoAF 0 (0 ms)  busy  59.4 %  37.6 °C
+round 3 DemoSettings       61.1 f/s  interval p95   16.7  >16.7  19.51 %  >33   0.00 %  work p50  10.10 p95  12.20  LoAF 0 (0 ms)  busy  59.3 %  37.6 °C
+round 3 ComponentsReduce   60.6 f/s  interval p95   16.7  >16.7  21.98 %  >33   0.83 %  work p50   6.20 p95  24.80  LoAF 0 (0 ms)  busy  47.0 %  37.7 °C
+round 3 TenCards8          61.0 f/s  interval p95   16.7  >16.7  19.05 %  >33   0.00 %  work p50   6.40 p95  11.10  LoAF 0 (0 ms)  busy  64.6 %  37.7 °C
+round 3 Control            57.9 f/s  interval p95   33.2  >16.7  28.37 %  >33   5.71 %  work p50  16.20 p95  38.50  LoAF 0 (0 ms)  busy  93.5 %  37.7 °C
+round 3 ControlRest        10.6 f/s  interval p95  182.4  >16.7  99.05 %  >33  97.14 %  work p50 107.90 p95 183.70  LoAF 87 (9572 ms)  busy  99.9 %  37.7 °C
+round 3 ComponentsRest     14.0 f/s  interval p95  149.1  >16.7  89.93 %  >33  83.45 %  work p50  91.90 p95 165.50  LoAF 94 (9055 ms)  busy  99.9 %  37.9 °C
+round 3 ComponentsClean    23.2 f/s  interval p95   99.7  >16.7  71.00 %  >33  49.35 %  work p50  34.70 p95 106.00  LoAF 82 (7595 ms)  busy  99.8 %  37.9 °C
+round 4 DemoPageClean      60.1 f/s  interval p95   16.7  >16.7  24.00 %  >33   1.17 %  work p50   8.50 p95  17.20  LoAF 4 (302 ms)  busy  94.4 %  37.9 °C
+round 4 DemoLibrary        46.6 f/s  interval p95   16.7  >16.7  25.59 %  >33   3.87 %  work p50   9.30 p95  19.00  LoAF 14 (2693 ms)  busy  95.4 %  38.0 °C
+round 4 DemoRecording      61.1 f/s  interval p95   16.7  >16.7  20.33 %  >33   0.00 %  work p50   6.00 p95  10.80  LoAF 0 (0 ms)  busy  65.9 %  38.0 °C
+round 4 DemoSettings       61.1 f/s  interval p95   16.7  >16.7  17.38 %  >33   0.00 %  work p50   9.90 p95  12.00  LoAF 0 (0 ms)  busy  59.5 %  38.1 °C
+round 4 ComponentsReduce   60.1 f/s  interval p95   16.7  >16.7  24.33 %  >33   1.33 %  work p50   6.60 p95  26.90  LoAF 0 (0 ms)  busy  48.7 %  38.2 °C
+round 4 TenCards8          61.0 f/s  interval p95   16.7  >16.7  22.00 %  >33   0.00 %  work p50   7.10 p95  11.20  LoAF 0 (0 ms)  busy  75.8 %  38.2 °C
+round 4 Control            57.4 f/s  interval p95   33.2  >16.7  27.23 %  >33   6.11 %  work p50  20.60 p95  41.80  LoAF 0 (0 ms)  busy  96.8 %  38.2 °C
+round 4 ControlRest        13.3 f/s  interval p95  149.9  >16.7  95.45 %  >33  89.39 %  work p50  91.80 p95 166.90  LoAF 89 (8734 ms)  busy  99.9 %  38.2 °C
+round 4 ComponentsRest     20.3 f/s  interval p95  132.9  >16.7  69.80 %  >33  52.97 %  work p50  41.60 p95 135.70  LoAF 80 (7507 ms)  busy  99.9 %  38.2 °C
+round 4 ComponentsClean    27.4 f/s  interval p95  115.5  >16.7  49.82 %  >33  34.80 %  work p50  17.20 p95 121.20  LoAF 74 (6719 ms)  busy  99.5 %  38.1 °C
+round 4 DemoPage           48.3 f/s  interval p95   16.7  >16.7  20.95 %  >33   2.70 %  work p50   7.50 p95  16.60  LoAF 13 (2547 ms)  busy  96.0 %  38.1 °C
+round 5 DemoLibrary        47.5 f/s  interval p95   16.7  >16.7  24.89 %  >33   2.53 %  work p50   9.10 p95  15.10  LoAF 11 (2505 ms)  busy  95.1 %  38.1 °C
+round 5 DemoRecording      61.1 f/s  interval p95   16.7  >16.7  23.93 %  >33   0.00 %  work p50   5.60 p95  11.50  LoAF 0 (0 ms)  busy  66.1 %  38.1 °C
+round 5 DemoSettings       61.2 f/s  interval p95   16.7  >16.7  21.93 %  >33   0.00 %  work p50  10.00 p95  12.20  LoAF 0 (0 ms)  busy  59.6 %  38.1 °C
+round 5 ComponentsReduce   59.9 f/s  interval p95   16.7  >16.7  20.40 %  >33   1.84 %  work p50   6.60 p95  27.00  LoAF 0 (0 ms)  busy  49.6 %  38.3 °C
+round 5 TenCards8          61.0 f/s  interval p95   16.7  >16.7  20.53 %  >33   0.16 %  work p50   6.80 p95  11.00  LoAF 1 (54 ms)  busy  79.5 %  38.3 °C
+round 5 Control            55.4 f/s  interval p95   33.3  >16.7  28.39 %  >33   6.69 %  work p50  22.20 p95  49.40  LoAF 2 (101 ms)  busy  98.6 %  38.4 °C
+round 5 ControlRest         8.6 f/s  interval p95  216.2  >16.7 100.00 %  >33 100.00 %  work p50 117.80 p95 234.50  LoAF 80 (9870 ms)  busy  99.9 %  38.4 °C
+round 5 ComponentsRest     12.7 f/s  interval p95  166.1  >16.7  91.27 %  >33  81.75 %  work p50 100.30 p95 172.10  LoAF 94 (9309 ms)  busy  99.9 %  38.4 °C
+round 5 ComponentsClean    17.0 f/s  interval p95  100.1  >16.7  84.02 %  >33  70.41 %  work p50  62.70 p95 117.30  LoAF 82 (8274 ms)  busy  99.8 %  38.4 °C
+round 5 DemoPage           46.8 f/s  interval p95   16.7  >16.7  27.62 %  >33   4.07 %  work p50   8.00 p95  25.20  LoAF 18 (2999 ms)  busy  98.0 %  38.4 °C
+round 5 DemoPageClean      59.9 f/s  interval p95   16.7  >16.7  21.91 %  >33   0.84 %  work p50   6.60 p95  15.50  LoAF 5 (365 ms)  busy  95.0 %  38.4 °C
+round 6 DemoRecording      61.1 f/s  interval p95   16.7  >16.7  19.34 %  >33   0.00 %  work p50   5.70 p95  10.60  LoAF 0 (0 ms)  busy  64.5 %  38.4 °C
+round 6 DemoSettings       61.0 f/s  interval p95   16.7  >16.7  21.02 %  >33   0.00 %  work p50   9.80 p95  12.20  LoAF 0 (0 ms)  busy  58.4 %  38.4 °C
+round 6 ComponentsReduce   60.2 f/s  interval p95   16.7  >16.7  22.46 %  >33   1.50 %  work p50   6.60 p95  27.00  LoAF 0 (0 ms)  busy  48.2 %  38.5 °C
+round 6 TenCards8          60.7 f/s  interval p95   16.7  >16.7  20.30 %  >33   0.17 %  work p50   6.20 p95  10.20  LoAF 1 (94 ms)  busy  73.4 %  38.4 °C
+round 6 Control            57.8 f/s  interval p95   33.2  >16.7  25.30 %  >33   5.72 %  work p50  18.70 p95  41.80  LoAF 0 (0 ms)  busy  95.8 %  38.4 °C
+round 6 ControlRest        11.2 f/s  interval p95  165.9  >16.7 100.00 %  >33  98.20 %  work p50 104.50 p95 180.40  LoAF 91 (9495 ms)  busy  99.9 %  38.4 °C
+round 6 ComponentsRest     18.9 f/s  interval p95  100.0  >16.7  78.19 %  >33  57.45 %  work p50  59.90 p95 106.20  LoAF 88 (7926 ms)  busy  99.9 %  38.4 °C
+round 6 ComponentsClean    42.8 f/s  interval p95   49.9  >16.7  40.98 %  >33  22.72 %  work p50  11.40 p95  64.60  LoAF 71 (4813 ms)  busy  99.7 %  38.5 °C
+round 6 DemoPage           51.8 f/s  interval p95   16.7  >16.7  21.28 %  >33   1.74 %  work p50   6.60 p95  15.90  LoAF 8 (1791 ms)  busy  87.0 %  38.4 °C
+round 6 DemoPageClean      60.7 f/s  interval p95   16.7  >16.7  16.83 %  >33   0.33 %  work p50   6.00 p95  13.30  LoAF 2 (129 ms)  busy  81.4 %  38.4 °C
+round 6 DemoLibrary        50.4 f/s  interval p95   16.7  >16.7  22.27 %  >33   1.59 %  work p50   7.30 p95  14.90  LoAF 8 (2011 ms)  busy  87.8 %  38.3 °C
+
+# counted rounds 2..6, pooled
+ComponentsRest     16.4 f/s  interval p95  133.0  >16.7  81.20 %  >33  66.58 %  work p50  69.80 p95 145.70  RED
+ComponentsClean    30.1 f/s  interval p95   99.7  >16.7  51.97 %  >33  34.98 %  work p50  18.60 p95 105.80  RED
+DemoPage           49.9 f/s  interval p95   16.7  >16.7  22.94 %  >33   2.29 %  work p50   7.00 p95  16.30  GREY
+DemoPageClean      60.4 f/s  interval p95   16.7  >16.7  20.57 %  >33   0.70 %  work p50   6.40 p95  14.70  GREY
+DemoLibrary        49.5 f/s  interval p95   16.7  >16.7  23.80 %  >33   2.10 %  work p50   7.40 p95  14.60  GREY
+DemoRecording      61.1 f/s  interval p95   16.7  >16.7  20.89 %  >33   0.00 %  work p50   5.50 p95  10.90  GREY
+DemoSettings       61.1 f/s  interval p95   16.7  >16.7  19.58 %  >33   0.00 %  work p50  10.20 p95  12.90  GREY
+ComponentsReduce   60.2 f/s  interval p95   16.7  >16.7  21.99 %  >33   1.30 %  work p50   6.60 p95  26.70  GREY
+TenCards8          60.9 f/s  interval p95   16.7  >16.7  20.48 %  >33   0.07 %  work p50   6.20 p95  10.60  GREY
+Control            57.3 f/s  interval p95   33.2  >16.7  26.99 %  >33   5.91 %  work p50  18.20 p95  39.10  RED
+ControlRest        11.5 f/s  interval p95  166.7  >16.7  97.89 %  >33  94.19 %  work p50 100.80 p95 183.20  RED
+# Control: work p50 over ComponentsReduce's, per counted round: 8.40, 10.00, 14.00, 15.60, 12.10 ms against 10 ms
+# ControlRest: work p50 over ComponentsRest's, per counted round: 21.00, 16.00, 50.20, 17.50, 44.60 ms against 10 ms
+# phone after:  AC powered: true level: 92 temperature: 383 

@@ -21,6 +21,11 @@ kotlin {
         binaries.executable()
     }
 
+    // B-138: a host for the simulator, bundled by `scripts/sim-bench.sh` with no Xcode project.
+    iosSimulatorArm64 {
+        binaries.executable { entryPoint = "io.github.youndie.mutant.sample.main" }
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(project(":mutant-core"))
