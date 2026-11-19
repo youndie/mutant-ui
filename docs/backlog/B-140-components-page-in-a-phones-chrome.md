@@ -95,3 +95,15 @@ p50 16.3 ms (16.1–17.0), busy 99.8 % every round. Same host, same build, two r
 **Pre-registered before the run**: `ComponentsRest`, today's build (`2be7f9bb49abc303`) against B-135's (`c64ceef…`,
 `31029a6aaddbdee5`) as `~b`, interleaved, 6 × 10 s. If the build is the cause, `~b` reads near B-135's 5.9 ms and is
 under today's by more than 2 ms in every counted round; if it is the phone's state, the two stand within 2 ms.
+
+[The build A/B](../../logs/b-140/2026-11-19-build-ab.log), interleaved, 33.2–35.2 °C, same host and run: today's build
+36.7 f/s, work p50 20.9 ms, busy 99.8 % in every round; B-135's 51.6 f/s, 6.1 ms, busy 75–83 %. Paired, `~b` minus
+today's, work p50 per counted round −12.0, −18.9, −10.6, −16.0, −17.2 ms (mean −14.9); busy −16.9 to −24.9 points.
+- **The build is the cause**, by the rule written: more than 2 ms in every counted round. The phone's state is not.
+- B-135's build holds 5.5–6.7 ms while the phone warms from 33 to 35 °C; today's climbs from 15 to 25 ms with it. A
+  page with room on the thread does not feel the frequency; one at 99.8 % does — which is what Q1 read as "heat".
+
+**Pre-registered before the run**: one variable, B-136. Arm `~b` is `main` (`2d36670`) with `MutantTape.kt` as it
+stood before B-136 (`7e590c0^`; the file is unchanged since, the theme's part of B-136 is KDoc), interleaved with
+today's build, `ComponentsRest`, 6 × 10 s. B-136 is the cause if `~b` is under today's by more than 2 ms in every
+counted round and within 2 ms of B-135's build (6.1 ms in the A/B above); a part of it if only the first holds.
