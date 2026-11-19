@@ -1,7 +1,7 @@
 ---
 id: B-143
 title: "The keyframe loss reads its blocks without copying whole strips"
-status: question
+status: done
 priority: P2
 size: M
 stage: stage-6-later
@@ -89,3 +89,10 @@ item was for. Choices, for the owner:
    phone; the stall stays open as a new item about the number of draw calls a step makes (blocks × strips).
 2. **Take it out**: keep the findings, the profile and the equivalence test, drop `drawRegion` and the cost test; the
    stall goes on as that new item.
+
+## The decision
+
+The owner, 2026-11-19: «Take it out» (choice 2). `drawRegion` and its four platform files are removed, `StripPicture`
+is `main`'s again, and the cost test goes with them; the equivalence test stays as a guard on `StripPicture`'s
+operations. **Not held**, the decision tested and refuted on the phone. The stall goes on as
+[B-144](B-144-the-keyframe-losss-draw-calls-per-step.md).

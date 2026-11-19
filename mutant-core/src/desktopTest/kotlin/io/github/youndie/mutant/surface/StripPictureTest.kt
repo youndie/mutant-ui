@@ -14,12 +14,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
-import kotlin.test.assertTrue
 
 /**
- * B-143: [StripPicture] is one bitmap kept as strips, pixel for pixel, and a block read out of it costs the block, not
- * the strips it lies in. A part was read by drawing a whole mutable strip, which Compose on Skiko turns into an image
- * of the whole strip on every draw: a running keyframe loss held a phone's frames at 110–220 ms (B-142).
+ * B-143: the operations of [StripPicture] land as on the one bitmap it stands for, pixel for pixel: blocks dragged
+ * within it, some over the ones before, and a tint. The shapes painted into it are not compared (a strip rasterises a
+ * shape's edge moved up to its place, a channel off by one), only what is done to it after.
  */
 class StripPictureTest {
     private val strip = 42
@@ -109,37 +108,5 @@ class StripPictureTest {
         one.canvas.drawRect(10f, 30f, 250f, 120f, tint)
         val expected = IntArray(w * h).also { one.bitmap.readPixels(it) }
         assertContentEquals(expected, pic.pixels(h), "the strips are not the one bitmap")
-    }
-
-    private fun stepNanos(
-        width: Int,
-        rounds: Int,
-    ): Long {
-        val h = 168
-        val (pic, _) = paintBoth(width, h, seed = 3)
-        // The same blocks in the same 300 px whatever the width: only the strips' width differs.
-        val steps = blocks(300, h, seed = 5, n = 120)
-        val paint = Paint()
-        val size = IntSize(16, 16)
-        var best = Long.MAX_VALUE
-        repeat(rounds) {
-            val t0 = System.nanoTime()
-            for ((at, to) in steps) pic.drawPart(pic, at, size, to, paint)
-            best = minOf(best, System.nanoTime() - t0)
-        }
-        return best
-    }
-
-    @Test
-    fun `a step's blocks cost the blocks, not the width of the strips they lie in`() {
-        stepNanos(400, 5)
-        stepNanos(12_000, 2)
-        val narrow = stepNanos(400, 9)
-        val wide = stepNanos(12_000, 9)
-        // Copying whole strips, 30 times the width costs about 30 times as much; copying the blocks, about the same.
-        assertTrue(
-            wide < narrow * 4,
-            "120 blocks: ${narrow / 1000} µs on 400 px, ${wide / 1000} µs on 12000 px (×${wide.toDouble() / narrow})",
-        )
     }
 }
