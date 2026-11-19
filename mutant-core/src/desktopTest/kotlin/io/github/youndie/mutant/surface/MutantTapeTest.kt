@@ -2,6 +2,7 @@ package io.github.youndie.mutant.surface
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -31,8 +32,8 @@ import kotlin.test.assertTrue
  * B-13: the Tape's band passes on the engine's cycle, the Tape is off under «Чистый сигнал», stands still under
  * reduce motion, and draws in dp at any density. B-136: its band moves and its head's noise flickers on every frame, the
  * grain keeps the scene's tick, the content under it is not drawn again for it, and under the theme's stepped motion all
- * of it steps on the scene's tick. Its pixels against
- * the engine are [BodyParityTest]'s drift frames.
+ * of it steps on the scene's tick. B-141: its frames record its own layer only, not the layer of whatever holds it. Its
+ * pixels against the engine are [BodyParityTest]'s drift frames.
  */
 @OptIn(ExperimentalTestApi::class)
 class MutantTapeTest {
@@ -106,11 +107,16 @@ class MutantTapeTest {
         assertTrue(!stepsOver3s(reduceMotion = true), "paused, the Tape keeps its picture")
     }
 
-    /** One frame of a running Tape: its pixels, how many times its layer was drawn so far, the clock's time and tick. */
+    /**
+     * One frame of a running Tape: its pixels; how many times so far the Tape itself was drawn, the content under it, the
+     * node holding it (a draw before `mutantTape()` on that node) and a sibling beside it; the clock's time and tick.
+     */
     private class TapeFrame(
         val px: List<Color>?,
         val draws: Int,
         val contentDraws: Int,
+        val holderDraws: Int,
+        val siblingDraws: Int,
         val ms: Double,
         val tick: Long,
     ) {
@@ -122,9 +128,10 @@ class MutantTapeTest {
     }
 
     /**
-     * Runs a 250 × 130 dp Tape on a clock of 24 resting ticks a second from [startMs] for [frames] frames of 16 ms, with
-     * the theme's [steppedMotion], and records each frame: how often the Tape's layer and the content under it were
-     * drawn; [capture] takes its pixels too (a separate run counts draws, so a capture never draws the layer it counts).
+     * Runs a 250 × 130 dp Tape, under a sibling of its size in a column, as the sample's Tape section stands in its page,
+     * on a clock of 24 resting ticks a second from [startMs] for [frames] frames of 16 ms, with the theme's
+     * [steppedMotion], and records each frame's [TapeFrame] counts; [capture] takes its pixels too (a separate run counts
+     * draws, so a capture never draws the layer it counts).
      */
     private fun runTape(
         startMs: Double,
@@ -135,6 +142,8 @@ class MutantTapeTest {
         val clock = MutantClock(fps = 24.0, startMs = startMs)
         var draws = 0
         var contentDraws = 0
+        var holderDraws = 0
+        var siblingDraws = 0
         val out = ArrayList<TapeFrame>()
         runComposeUiTest {
             mainClock.autoAdvance = false
@@ -142,14 +151,19 @@ class MutantTapeTest {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     MutantTheme(reduceMotion = false, steppedMotion = steppedMotion) {
                         ProvideMutantClock(clock) {
-                            Box(
-                                Modifier
-                                    .size(250.dp, 130.dp)
-                                    .testTag("s")
-                                    .background(Color.Black)
-                                    .drawBehind { draws++ }
-                                    .mutantTape(),
-                            ) { Box(Modifier.matchParentSize().drawBehind { contentDraws++ }) }
+                            CompositionLocalProvider(LocalMutantTapeProbe provides { draws++ }) {
+                                Column {
+                                    Box(Modifier.size(250.dp, 130.dp).drawBehind { siblingDraws++ })
+                                    Box(
+                                        Modifier
+                                            .size(250.dp, 130.dp)
+                                            .testTag("s")
+                                            .background(Color.Black)
+                                            .drawBehind { holderDraws++ }
+                                            .mutantTape(),
+                                    ) { Box(Modifier.matchParentSize().drawBehind { contentDraws++ }) }
+                                }
+                            }
                         }
                     }
                 }
@@ -165,7 +179,7 @@ class MutantTapeTest {
                             List(m.width * m.height) { m[it % m.width, it / m.width] }
                         }
                     }
-                out += TapeFrame(px, draws, contentDraws, clock.nowMs, clock.sceneTick)
+                out += TapeFrame(px, draws, contentDraws, holderDraws, siblingDraws, clock.nowMs, clock.sceneTick)
             }
         }
         return out
@@ -202,6 +216,25 @@ class MutantTapeTest {
             "the Tape drawn on every frame: ${draws.map { it.draws }}",
         )
         assertEquals(draws.first().contentDraws, draws.last().contentDraws, "the content drawn again with the Tape")
+    }
+
+    @Test
+    fun `the Tape's frames draw neither the node holding it nor its siblings again`() {
+        // B-140: drawn in its holder's layer, a Tape inside a page's column recorded the whole column on every frame.
+        for (startMs in listOf(200.0, 2200.0)) {
+            val draws = runTape(startMs = startMs, frames = 40, capture = false)
+            val (first, last) = draws.first() to draws.last()
+            assertTrue(
+                last.draws - first.draws >= 39,
+                "from $startMs ms the Tape drawn on every frame: ${draws.map { it.draws }}",
+            )
+            assertEquals(
+                first.holderDraws,
+                last.holderDraws,
+                "from $startMs ms the node holding the Tape drawn again with it",
+            )
+            assertEquals(first.siblingDraws, last.siblingDraws, "from $startMs ms a sibling drawn again with the Tape")
+        }
     }
 
     @Test

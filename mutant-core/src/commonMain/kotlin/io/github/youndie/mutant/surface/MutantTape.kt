@@ -99,6 +99,9 @@ internal enum class TapePart { Lines, Band, Grain, Noise }
 /** The parts of the Tape left out: for B-77's bench only, never for a consumer. */
 internal val LocalMutantTapeSkip = androidx.compose.runtime.staticCompositionLocalOf<Set<TapePart>> { emptySet() }
 
+/** Called on every draw of the Tape itself: for its tests only (B-141), to tell its draws from its holder's. */
+internal val LocalMutantTapeProbe = androidx.compose.runtime.staticCompositionLocalOf<(() -> Unit)?> { null }
+
 /** The share of the cycle the band passes in. */
 private const val TRACKING_SHARE = .3
 
@@ -348,7 +351,9 @@ internal fun tapeMoment(
  * «Чистый сигнал» ([MutantTheme]'s `cleanSignal`). Its grain and noise are seeded by the screen. The band moves and
  * the head's noise flickers on every frame; under [MutantTheme]'s `steppedMotion` they step eight times a second with
  * the grain, as the design draws them. What it covers is drawn in a layer of its own, so a frame of the Tape replays
- * the content rather than drawing it again.
+ * the content rather than drawing it again; and the Tape draws in a layer of its own around that one, so its frames
+ * record only that layer, not the layer of whatever holds it (B-141: inside a page's column, the whole column was
+ * recorded again on every frame).
  */
 public fun Modifier.mutantTape(): Modifier =
     composed {
@@ -362,14 +367,17 @@ public fun Modifier.mutantTape(): Modifier =
         val tile = remember(grain, colors.print, density) { grainTile(grain, colors, density) }
         val lines = remember(colors.print, density) { scanlineFill(colors, density) }
         val steps = LocalMutantSteppedMotion.current
-        drawWithContent {
-            drawContent()
-            val d = density
-            val w = size.width / d
-            val h = size.height / d
-            val m = tapeMoment(clock, steps)
-            scale(d, Offset.Zero) {
-                clipRect(0f, 0f, w, h) { drawTape(stage, m.t, colors, w, h, grain, skip, tile, lines, m.noiseKey) }
-            }
-        }.graphicsLayer()
+        val probe = LocalMutantTapeProbe.current
+        graphicsLayer()
+            .drawWithContent {
+                drawContent()
+                probe?.invoke()
+                val d = density
+                val w = size.width / d
+                val h = size.height / d
+                val m = tapeMoment(clock, steps)
+                scale(d, Offset.Zero) {
+                    clipRect(0f, 0f, w, h) { drawTape(stage, m.t, colors, w, h, grain, skip, tile, lines, m.noiseKey) }
+                }
+            }.graphicsLayer()
     }
