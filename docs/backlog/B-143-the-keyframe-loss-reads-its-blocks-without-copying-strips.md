@@ -1,7 +1,7 @@
 ---
 id: B-143
 title: "The keyframe loss reads its blocks without copying whole strips"
-status: open
+status: done
 priority: P2
 size: M
 stage: stage-6-later
@@ -30,3 +30,69 @@ on every draw (B-113, B-119).
     loss-free arm as the floor.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/StripPicture.kt`,
   `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantKeyframeLoss.kt`
+
+## Findings
+
+### Iteration 1, 2026-11-19
+
+- `StripPicture.drawPart` reads a block through `Canvas.drawRegion` (`RegionDraw.kt`): on Skiko (desktop, iOS, wasm)
+  it draws a subset of the strip's bitmap (`extractSubset`, sharing the pixels), so the image Compose makes of it to
+  draw holds the block only; on Android it is `drawImageRect` as before, as Android draws a bitmap without copying it.
+  The read comes out whole into the part before anything is written, as before, so a step's blocks still read what
+  the earlier ones wrote. Writing the part into the strips is unchanged (the part is block-sized already).
+- `StripPictureTest`, new:
+  - `a step's blocks cost the blocks, not the width of the strips they lie in`: 120 blocks of 16 px, the same blocks on
+    a picture 400 and 12 000 px wide. Before the fix (`a89207a`, which is the mutant restoring the whole strip's read):
+    failed, 987 µs against 7496 (× 7.6), and × 8.9 in a first run; with it: green, under × 4;
+  - `blocks dragged within the strips land as on one bitmap, every pixel`: 300 blocks, some overlapping, and a tint,
+    against one bitmap drawn onto itself. Green before the fix and after it.
+  - Found on the way: painted shapes in the strips are not the one bitmap's to the pixel (a channel off by 1 at an
+    edge, with each strip drawing moved up to its place), so the test starts the one bitmap from the strips' pixels and
+    compares the operations after. B-88's "pixel for pixel" holds for the operations, not for a shape's rasterising.
+- The keyframe loss's own tests unchanged and green: `KeyframeLossParityTest`, `KeyframeLossBehaviourTest`,
+  `KeyframeLossPopupTest`, `KeyframeLossGoldenTest`, `MoshSnapshotOnGpuTest`.
+
+**Pre-registered before the run**, B-142's protocol: the Pixel 6a in Chrome, on mains, `ComponentsRest`, 3 rounds of
+60 s interleaved (round 1 not counted): `main` (`c9ee37f`; its build is B-142's, `fa05977cdbb9be9f`), this branch as
+`~b`, and B-142's arm without the loss (`1719bd18bb513da9`) as `~c`, the floor. A stall second has 20 frames or fewer.
+Held if, in both counted loads, `main` has 5 or more stall seconds 9 s apart and this branch at most one; then the
+frames a second in `main`'s stall seconds are read for this branch against the floor, as measured, with no line.
+
+### The run, 2026-11-19: not held
+
+[The run](../../logs/b-143/2026-11-19-loss-abc.log), the Pixel 6a in Chrome 157, on mains, 29.2 → 35.5 °C, same host and
+run, three 60 s loads of each arm interleaved. Stall seconds (20 frames or fewer) from `frames.csv`:
+
+| load | `main` | this branch | without the loss |
+|---|---|---|---|
+| round 1 (not counted) | none | none | none |
+| round 2 | 0, 9, 18, 27, 36, 45, 54 (14–20 frames) | 0, 9, 18, 27, 45, 54 (16–20) | none |
+| round 3 | 10, 37 (15, 17) | 0, 9, 18, 27, 36, 45, 54 (8–16) | none |
+
+- **Not held**: this branch has six and seven stall seconds 9 s apart in its counted loads, against at most one
+  written. `main` itself met its side in one counted load of two (round 3: two). Frames over 50 ms in a load: `main`
+  77 and 84, this branch 75 and 93; the floor has no stall at all. The stalls are shallower in this run than in
+  B-142's for `main` too (14–20 frames against 6–15), a few degrees cooler.
+- [A named profile of this branch](../../logs/b-143/2026-11-19-profile-fix.txt), 12 s, 35.8 °C: 644 ms under
+  `KeyframeLossBody`'s draw (B-142's profile of `main`: 735); about 360 ms still in `StripPicture.drawPart`, now through
+  `SkiaBackedCanvas.drawImage` into `wasm-to-js`, the calls into Skia. The whole-strip copy is gone from the profile's
+  top; what costs on the phone is the blocks' drawing itself, call for call, on the software raster in the browser —
+  which the JVM's cost test (bytes per block) cannot see.
+- So the JVM test holds a real change (× 7.6 cheaper there), and the phone does not show it in the stall.
+
+## The question
+
+The change is correct (every keyframe-loss test, its parity and goldens unchanged; the new equivalence test green)
+and makes a block's read about eight times cheaper on the JVM, but it does not move the stall on the phone, where the
+item was for. Choices, for the owner:
+1. **Merge it** as a desktop and iOS improvement that the phone does not show, the item closed as not held for the
+   phone; the stall stays open as a new item about the number of draw calls a step makes (blocks × strips).
+2. **Take it out**: keep the findings, the profile and the equivalence test, drop `drawRegion` and the cost test; the
+   stall goes on as that new item.
+
+## The decision
+
+The owner, 2026-11-19: «Take it out» (choice 2). `drawRegion` and its four platform files are removed, `StripPicture`
+is `main`'s again, and the cost test goes with them; the equivalence test stays as a guard on `StripPicture`'s
+operations. **Not held**, the decision tested and refuted on the phone. The stall goes on as
+[B-144](B-144-the-keyframe-losss-draw-calls-per-step.md).

@@ -63,11 +63,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-143](docs/backlog/B-143-the-keyframe-loss-reads-its-blocks-without-copying-strips.md) `[ ]` | The keyframe loss reads its blocks without copying whole strips | P2 | M | - |
+| [B-144](docs/backlog/B-144-the-keyframe-losss-draw-calls-per-step.md) `[ ]` | The keyframe loss's draw calls per step | P2 | M | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (139)
+## Closed (140)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -212,6 +212,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-140](docs/backlog/B-140-components-page-in-a-phones-chrome.md) `[x]` - The resting Components page in a phone's Chrome falls to 16 frames a second
 - [B-141](docs/backlog/B-141-the-tape-draws-in-a-layer-of-its-own.md) `[x]` - The Tape draws in a layer of its own
 - [B-142](docs/backlog/B-142-a-stall-every-nine-seconds-on-the-components-page.md) `[x]` - A stall every nine seconds on the resting Components page
+- [B-143](docs/backlog/B-143-the-keyframe-loss-reads-its-blocks-without-copying-strips.md) `[x]` - The keyframe loss reads its blocks without copying whole strips
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
