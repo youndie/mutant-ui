@@ -107,3 +107,27 @@ today's, work p50 per counted round −12.0, −18.9, −10.6, −16.0, −17.2 
 stood before B-136 (`7e590c0^`; the file is unchanged since, the theme's part of B-136 is KDoc), interleaved with
 today's build, `ComponentsRest`, 6 × 10 s. B-136 is the cause if `~b` is under today's by more than 2 ms in every
 counted round and within 2 ms of B-135's build (6.1 ms in the A/B above); a part of it if only the first holds.
+
+[The tape A/B](../../logs/b-140/2026-11-19-tape-ab.log), interleaved, 35.5–36.6 °C, same host and run: today's build
+35.0 f/s, work p50 22.2 ms; `main` with `MutantTape.kt` before B-136 (`388fbe3a8c612e1c`), 49.3 f/s, 7.1 ms. Paired,
+`~b` minus today's, per counted round −15.1, −13.3, −19.5, −13.5, −13.9 ms. Under in every round, and 1.0 ms from
+B-135's build's 6.1 (the build A/B, another run, a degree cooler): **B-136 is the cause, by the rule written.**
+
+**Q2 answered, and the prediction refuted.** Profiles of both arms back to back
+([`main`](../../logs/b-140/2026-11-19-profile-ab-main.txt), [tape on its tick](../../logs/b-140/2026-11-19-profile-ab-tape.txt);
+36.7 and 36.5 °C, 2802 MHz, named builds): `gen.frame` takes 1378 ms of 8 s in both, 821 and 736 ms of it under the
+draw. No cascade of missed builds ahead: the bodies cost the same. What `main` spends more, inclusive, per 8 s:
+`GraphicsLayer.record` +1228 ms (3979 against 2752), `BackgroundNode.draw` +976, `DrawBackgroundModifier.draw` +600,
+`mutantPattern` +426, text +17 — the page's own content recorded again, every frame, under the Tape.
+
+**The candidate mechanism**, from the code: `mutantTape()` is `drawWithContent { drawContent(); drawTape(…) }
+.graphicsLayer()`. The layer wraps what comes after it, the content; the Tape's own draw, which reads the clock's
+frame since B-136, sits before it, in the layer of whatever holds the Tape. On the Components page a Tape also stands in
+the Tape section inside the scrolling column (`ComponentsPage.kt`, the `Tapes` section), so each frame re-records the
+column's layer: every background, pattern and word on the page. B-136's own check put the Tape on a root.
+
+**Pre-registered before the run**: one variable, a layer of the Tape's own before its draw
+(`graphicsLayer().drawWithContent { … }.graphicsLayer()`), `main` otherwise, as `~b` against today's build,
+`ComponentsRest`, 6 × 10 s, interleaved; then the profile of `~b`. The mechanism holds if `~b` is under today's by more
+than 2 ms in every counted round and within 2 ms of the tape-on-tick arm (7.1 ms), and `GraphicsLayer.record` in its
+profile falls to within 15 % of the tape-on-tick arm's 2752 ms.
