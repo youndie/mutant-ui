@@ -1,0 +1,23 @@
+# leak: http://127.0.0.1:8780/?scene=DemoPageClean opened by intent 15 s before, left in the background
+# phone before:  AC powered: true; level: 100; temperature: 302; Capacity level: 5; big 2252000 2802000 
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-19T14:56:26.267Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 100; temperature: 302; Capacity level: 5;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 60551ac
+# build: 86231ca46bfe29af2a29.wasm 2be7f9bb49abc303, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes ComponentsRest
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     45.5 f/s  interval p95   49.9  >16.7  36.56 %  >33  16.08 %  work p50  17.00 p95  55.50  LoAF 27 (2594 ms)  busy  99.8 %  30.2 °C  big 2507/2507 MHz
+round 2 ComponentsRest     44.0 f/s  interval p95   49.9  >16.7  38.50 %  >33  16.40 %  work p50  16.40 p95  54.60  LoAF 22 (2261 ms)  busy  99.8 %  31.1 °C  big 2401/2401 MHz
+round 3 ComponentsRest     44.3 f/s  interval p95   49.8  >16.7  37.78 %  >33  16.52 %  work p50  16.90 p95  58.10  LoAF 26 (2582 ms)  busy  99.8 %  31.1 °C  big 2630/2630 MHz
+round 4 ComponentsRest     43.8 f/s  interval p95   49.9  >16.7  34.55 %  >33  14.65 %  work p50  16.10 p95  61.70  LoAF 25 (2496 ms)  busy  99.8 %  31.9 °C  big 2630/2630 MHz
+round 5 ComponentsRest     44.9 f/s  interval p95   49.8  >16.7  41.52 %  >33  15.40 %  work p50  16.10 p95  52.90  LoAF 32 (2826 ms)  busy  99.8 %  31.9 °C  big 2507/2507 MHz
+round 6 ComponentsRest     45.5 f/s  interval p95   49.8  >16.7  35.68 %  >33  15.86 %  work p50  16.30 p95  51.20  LoAF 25 (2455 ms)  busy  99.8 %  32.3 °C  big 2401/2401 MHz
+
+# counted rounds 2..6, pooled
+ComponentsRest     44.5 f/s  interval p95   49.8  >16.7  37.61 %  >33  15.77 %  work p50  16.30 p95  54.60  RED
+# phone after:  AC powered: true; level: 100; temperature: 323; Capacity level: 5; big 2401000 2401000 
+# closed the leak tab 20555

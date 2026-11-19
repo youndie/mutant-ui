@@ -112,6 +112,9 @@ ends). B-49's screens; the main thread is animation + layout + draw from `FrameM
 **wasm in Chrome on the Pixel 6a** (Chrome 157, 411 × 784 at 2.625×; on mains, charging 80 → 92 %, battery 34.5 →
 38.3 °C over the run).
 
+> Note, 2026-11-19, from [B-140](B-140-components-page-in-a-phones-chrome.md): this run had a tab of a killed bench
+> run drawing beside it, and its resting Components page pays B-136's re-recording; both are measured there.
+
 | Scene | f/s | Work p50 / p95, ms |
 |---|---|---|
 | `TenCards8` | 60.9 | 6.2 / 10.6 |

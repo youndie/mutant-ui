@@ -58,15 +58,16 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (3)
+## Open (4)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-141](docs/backlog/B-141-the-tape-draws-in-a-layer-of-its-own.md) `[ ]` | The Tape draws in a layer of its own | P1 | S | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (136)
+## Closed (137)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -208,6 +209,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-136](docs/backlog/B-136-the-tape-band-on-every-frame.md) `[x]` - The Tape's band and head noise move on every frame
 - [B-137](docs/backlog/B-137-mosaic-past-the-contour.md) `[x]` - The edge mosaic's blocks past the body's contour, as an experiment
 - [B-138](docs/backlog/B-138-a-round-on-every-platform.md) `[x]` - A round of frame measurements on every platform
+- [B-140](docs/backlog/B-140-components-page-in-a-phones-chrome.md) `[x]` - The resting Components page in a phone's Chrome falls to 16 frames a second
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection

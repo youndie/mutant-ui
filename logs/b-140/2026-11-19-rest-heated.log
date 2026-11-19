@@ -1,0 +1,21 @@
+# phone before (after 4 min of 8 busy loops, stopped):  AC powered: true; level: 97; temperature: 336; Capacity level: 3;
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-19T13:04:25.075Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 97; temperature: 336; Capacity level: 3;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 3e8ea9d
+# build: 86231ca46bfe29af2a29.wasm 2be7f9bb49abc303, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes ComponentsRest
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     23.9 f/s  interval p95   99.8  >16.7  62.18 %  >33  45.38 %  work p50  32.40 p95 102.00  LoAF 78 (6691 ms)  busy  99.9 %  33.6 °C  big 1826/1826 MHz
+round 2 ComponentsRest     39.6 f/s  interval p95   49.9  >16.7  46.08 %  >33  27.09 %  work p50  19.10 p95  63.00  LoAF 59 (4103 ms)  busy  99.8 %  34.0 °C  big 2252/2252 MHz
+round 3 ComponentsRest     42.7 f/s  interval p95   49.9  >16.7  42.72 %  >33  20.66 %  work p50  18.10 p95  57.70  LoAF 40 (3098 ms)  busy  99.8 %  34.0 °C  big 2252/2252 MHz
+round 4 ComponentsRest     36.8 f/s  interval p95   66.5  >16.7  46.05 %  >33  29.16 %  work p50  21.20 p95  71.40  LoAF 68 (4863 ms)  busy  99.8 %  34.4 °C  big 2048/2048 MHz
+round 5 ComponentsRest     35.6 f/s  interval p95   66.5  >16.7  48.73 %  >33  28.73 %  work p50  21.80 p95  77.50  LoAF 77 (5588 ms)  busy  99.8 %  34.4 °C  big 2048/2048 MHz
+round 6 ComponentsRest     34.6 f/s  interval p95   66.5  >16.7  50.14 %  >33  32.17 %  work p50  23.70 p95  73.20  LoAF 83 (5849 ms)  busy  99.8 %  34.6 °C  big 2188/2188 MHz
+
+# counted rounds 2..6, pooled
+ComponentsRest     37.9 f/s  interval p95   66.4  >16.7  46.56 %  >33  27.28 %  work p50  21.10 p95  70.00  RED
+# phone after:  AC powered: true; level: 97; temperature: 346; Capacity level: 3;

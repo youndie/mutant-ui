@@ -1,0 +1,149 @@
+# B-73 profile of ComponentsRest, 2026-11-19T15:15:26.820Z, 8000 ms sampled every 100 µs, on Pixel 6a in Chrome, nothing emulated
+# sampled 8007 ms, idle 1009 ms, busy 6998 ms (87.4 %)
+
+## mutant.gen.frame on the stack, by its nearest caller among buildAhead, LayoutNodeDrawScope (share of busy)
+    736.1 ms  10.5 %  LayoutNodeDrawScope
+    642.3 ms   9.2 %  buildAhead
+      0.2 ms   0.0 %  other
+
+## surface.shaderOf on the stack, by its nearest caller among buildAhead, LayoutNodeDrawScope (share of busy)
+    637.9 ms   9.1 %  buildAhead
+    344.2 ms   4.9 %  LayoutNodeDrawScope
+
+## makeRaster on the stack, by its nearest caller among buildAhead, LayoutNodeDrawScope (share of busy)
+    401.8 ms   5.7 %  buildAhead
+    208.0 ms   3.0 %  LayoutNodeDrawScope
+
+
+## self time by where its code lives (share of busy)
+   3202.9 ms  45.8 %  a751cba94b412552adab.wasm
+   2061.6 ms  29.5 %  bfa5198fb2fe683c613a.wasm
+    640.6 ms   9.2 %  (browser)
+    433.3 ms   6.2 %  sample.js
+    432.2 ms   6.2 %  (program)
+    218.1 ms   3.1 %  (garbage collector)
+      9.5 ms   0.1 %  164bb79e
+
+## self time, top 60 (share of busy)
+    489.5 ms   7.0 %  io.github.youndie.mutant.gen.frame
+    432.2 ms   6.2 %  (program)
+    404.9 ms   5.8 %  wasm-to-js
+    276.8 ms   4.0 %  kotlin.DoubleArray.get
+    218.1 ms   3.1 %  (garbage collector)
+    173.6 ms   2.5 %  kotlin.math.fdlibm.__ieee754_rem_pio2
+    166.4 ms   2.4 %  kotlin.FloatArray.get
+    159.2 ms   2.3 %  js-to-wasm:ii:
+    142.9 ms   2.0 %  y
+    138.9 ms   2.0 %  io.github.youndie.mutant.surface.mark
+    104.8 ms   1.5 %  wasm-function[3109]
+     88.6 ms   1.3 %  wasm-function[3110]
+     84.4 ms   1.2 %  kotlin.collections.Itr.next_279
+     80.2 ms   1.1 %  io.github.youndie.mutant.surface.shaderOf
+     76.9 ms   1.1 %  wasm-function[3111]
+     64.1 ms   0.9 %  androidx.compose.ui.node.InnerNodeCoordinator.performDraw
+     55.5 ms   0.8 %  wasm-function[3081]
+     53.6 ms   0.8 %  wasm-function[14255]
+     52.3 ms   0.7 %  kotlin.math.fdlibm.sin
+     50.2 ms   0.7 %  io.github.youndie.mutant.gen.roundedRectDistance
+     49.7 ms   0.7 %  wasm-function[4858]
+     45.4 ms   0.6 %  org.jetbrains.skia.impl.InteropScope.toInterop_9742
+     39.4 ms   0.6 %  androidx.compose.ui.platform.accessibility.setSizeAndPosition
+     38.0 ms   0.5 %  replaceChildren
+     37.9 ms   0.5 %  org.jetbrains.skia.impl.register_$external_fun
+     32.6 ms   0.5 %  androidx.collection.ScatterMap.get
+     32.0 ms   0.5 %  kotlin.collections.ArrayList.listIterator_329
+     32.0 ms   0.5 %  androidx.compose.ui.node.NodeCoordinator.drawContainedDrawModifiers
+     31.9 ms   0.5 %  wasm-function[2960]
+     30.4 ms   0.4 %  kotlin.wasm.internal.getInterfaceVTable
+     28.4 ms   0.4 %  wasm-function[3095]
+     27.7 ms   0.4 %  wasm-function[14256]
+     27.2 ms   0.4 %  wasm-function[2410]
+     26.7 ms   0.4 %  wasm-function[11567]
+     25.0 ms   0.4 %  androidx.compose.runtime.snapshots.readable_8082
+     24.7 ms   0.4 %  getShaderParameter
+     24.3 ms   0.3 %  kotlin.FloatArray.set
+     23.7 ms   0.3 %  wasm-function[8676]
+     23.6 ms   0.3 %  wasm-function[1065]
+     23.5 ms   0.3 %  wasm-function[6461]
+     23.4 ms   0.3 %  androidx.compose.ui.text.intl.parseLanguageTagToIntlLocale
+     23.1 ms   0.3 %  appendChild
+     23.0 ms   0.3 %  androidx.compose.ui.text.SkiaParagraph.paint
+     22.3 ms   0.3 %  androidx.compose.foundation.text.modifiers.TextStringSimpleNode.draw
+     21.1 ms   0.3 %  io.github.youndie.mutant.gen.clamp01
+     21.1 ms   0.3 %  kotlin.math.fdlibm.__kernel_sin
+     20.5 ms   0.3 %  org.w3c.dom.innerText_$external_prop_setter
+     20.3 ms   0.3 %  androidx.compose.ui.graphics.toArgb
+     20.3 ms   0.3 %  wasm-function[2342]
+     20.2 ms   0.3 %  androidx.compose.ui.platform.accessibility.ComposeWebSemanticsListener.syncNode
+     20.1 ms   0.3 %  androidx.compose.ui.graphics.ShaderBrush.applyTo
+     19.6 ms   0.3 %  androidx.compose.ui.node.LayoutNodeDrawScope.drawDirect
+     19.4 ms   0.3 %  wasm-function[3598]
+     19.1 ms   0.3 %  wasm-function[2392]
+     18.9 ms   0.3 %  wasm-function[2550]
+     18.9 ms   0.3 %  io.github.youndie.mutant.gen.valueNoise
+     18.6 ms   0.3 %  androidx.compose.ui.platform.accessibility.ComposeWebSemanticsListener.syncSemanticsWithWebA11Y
+     18.5 ms   0.3 %  kotlin.Double__compareTo-impl
+     18.1 ms   0.3 %  kotlin.math.fdlibm.__kernel_cos
+     17.3 ms   0.2 %  wasm-function[2562]
+
+## total time, top 60 (share of busy)
+   6998.2 ms 100.0 %  (root)
+   6269.1 ms  89.6 %  (sample.js)
+   5094.4 ms  72.8 %  js-to-wasm:rii:
+   4396.6 ms  62.8 %  kotlin.collections.Function1_bound1_A.invoke
+   4396.1 ms  62.8 %  org.w3c.dom.__callFunction_((Double)->Unit)
+   4395.1 ms  62.8 %  org.jetbrains.skiko.CanvasRenderer$needRedraw$lambda.invoke
+   3958.1 ms  56.6 %  androidx.compose.ui.window.Function4_bound1_A.invoke
+   3251.3 ms  46.5 %  androidx.compose.ui.scene.CanvasLayersComposeSceneImpl.doDraw
+   3187.2 ms  45.5 %  androidx.compose.ui.node.NodeCoordinator.drawContainedDrawModifiers
+   3102.7 ms  44.3 %  wasm-to-js
+   2937.7 ms  42.0 %  androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads
+   2935.4 ms  41.9 %  kotlin.collections.Function0_bound1_A.invoke
+   2677.8 ms  38.3 %  androidx.compose.ui.node.GraphicsLayerOwnerLayer.updateDisplayList
+   2677.1 ms  38.3 %  androidx.compose.ui.graphics.layer.GraphicsLayer.record
+   2629.7 ms  37.6 %  androidx.compose.ui.graphics.layer.Function1_bound5_AAAVandroidx_compose_ui_unit_IntSizeA.invoke
+   2627.3 ms  37.5 %  androidx.compose.ui.node.GraphicsLayerOwnerLayer$recordLambda$lambda.invoke
+   2627.1 ms  37.5 %  androidx.compose.ui.node.NodeCoordinator$<get-drawBlock>$lambda.invoke_15555
+   2618.2 ms  37.4 %  androidx.compose.ui.node.NodeCoordinator$<get-drawBlock>$lambda.invoke
+   2597.2 ms  37.1 %  androidx.compose.ui.node.LayoutNodeDrawScope.drawDirect
+   2510.6 ms  35.9 %  androidx.compose.ui.node.LayoutModifierNodeCoordinator.performDraw
+   2505.5 ms  35.8 %  androidx.compose.ui.node.InnerNodeCoordinator.performDraw
+   1819.3 ms  26.0 %  kotlin.js.__callFunction_(()->Unit)
+   1799.1 ms  25.7 %  kotlinx.coroutines.DispatchedTask.run
+   1793.7 ms  25.6 %  kotlin.coroutines.CoroutineImplStateMachine.resumeWith
+   1773.0 ms  25.3 %  kotlin.coroutines.intrinsics.<no name provided>.doResume
+   1770.6 ms  25.3 %  kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturnImpl
+   1768.1 ms  25.3 %  androidx.collection.SuspendFunction1_bound2_AA.invoke
+   1579.1 ms  22.6 %  androidx.compose.ui.node.LayoutNodeDrawScope.drawContent
+   1483.2 ms  21.2 %  androidx.compose.foundation.BackgroundNode.draw
+   1388.0 ms  19.8 %  e.postTask.priority
+   1386.6 ms  19.8 %  kotlin.Function0.invoke
+   1386.2 ms  19.8 %  io.github.youndie.mutant.surface.OneTaskEach$post$lambda.invoke
+   1374.0 ms  19.6 %  io.github.youndie.mutant.surface.Function1_bound30_AAFAAAAADZZAAAAAAAADAAAAAZZAAZ.invoke
+   1374.0 ms  19.6 %  io.github.youndie.mutant.surface.FrameAhead$prepare$slambda.invoke
+   1372.8 ms  19.6 %  io.github.youndie.mutant.surface.buildAhead
+   1327.0 ms  19.0 %  io.github.youndie.mutant.gen.frame
+   1215.4 ms  17.4 %  androidx.compose.ui.draw.CacheDrawModifierNodeImpl.draw
+   1140.9 ms  16.3 %  androidx.compose.ui.node.observeReads
+   1137.4 ms  16.3 %  androidx.compose.ui.draw.CacheDrawModifierNodeImpl$getOrBuildCachedDrawBlock$lambda.invoke
+   1133.6 ms  16.2 %  io.github.youndie.mutant.surface.Function1_bound43_AAAAFAAAAAADAAAAZAZAAAAAAAZZAZAZAAAAAAAAAZZ.invoke
+   1124.2 ms  16.1 %  js-to-wasm:n:
+   1110.8 ms  15.9 %  androidx.compose.ui.node.GraphicsLayerOwnerLayer.drawLayer
+   1008.1 ms  14.4 %  androidx.compose.ui.draw.DrawBackgroundModifier.draw
+    982.2 ms  14.0 %  io.github.youndie.mutant.surface.shaderOf
+    863.2 ms  12.3 %  androidx.compose.ui.node.NodeCoordinator.draw
+    863.2 ms  12.3 %  androidx.compose.ui.node.LayoutNode.draw
+    801.3 ms  11.5 %  js-to-wasm:ii:
+    736.1 ms  10.5 %  io.github.youndie.mutant.gen.frame$default
+    609.8 ms   8.7 %  org.jetbrains.skia.Companion.makeRaster
+    603.8 ms   8.6 %  kotlinx.coroutines.sync.Function1_bound2_AA.invoke
+    597.4 ms   8.5 %  org.jetbrains.skia.impl.InteropScope.toInterop_9742
+    577.5 ms   8.3 %  androidx.compose.ui.graphics.layer.drawLayer
+    571.1 ms   8.2 %  Uh
+    570.5 ms   8.2 %  wasm-function[1160]
+    569.7 ms   8.1 %  wasm-function[2415]
+    566.4 ms   8.1 %  io.github.youndie.mutant.surface.KeyframeLossBody$lambda.invoke_26002
+    564.5 ms   8.1 %  wasm-function[2416]
+    564.0 ms   8.1 %  wasm-function[8676]
+    564.0 ms   8.1 %  wasm-function[1112]
+    563.6 ms   8.1 %  wasm-function[4857]
