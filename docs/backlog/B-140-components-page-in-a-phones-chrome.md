@@ -1,7 +1,7 @@
 ---
 id: B-140
 title: "The resting Components page in a phone's Chrome falls to 16 frames a second"
-status: wip
+status: done
 priority: P2
 size: M
 stage: stage-6-later
@@ -131,3 +131,48 @@ column's layer: every background, pattern and word on the page. B-136's own chec
 `ComponentsRest`, 6 × 10 s, interleaved; then the profile of `~b`. The mechanism holds if `~b` is under today's by more
 than 2 ms in every counted round and within 2 ms of the tape-on-tick arm (7.1 ms), and `GraphicsLayer.record` in its
 profile falls to within 15 % of the tape-on-tick arm's 2752 ms.
+
+[The layer A/B](../../logs/b-140/2026-11-19-layer-ab.log), interleaved, about 36 °C, same host and run: today's build
+37.7 f/s, work p50 20.6 ms; `~b` with the one line (`6f12ea021492f8a5`) 48.1 f/s, 7.5 ms. Paired, per counted round
+−10.4, −8.3, −14.4, −14.1, −16.6 ms. Under in every round, and 0.4 ms from the tape-on-tick arm's 7.1 (another run):
+**both frame conditions hold.** [Its profile](../../logs/b-140/2026-11-19-profile-ab-layer.txt), 36.4 °C, right after:
+
+| inclusive, ms of 8 s | `main` | tape on its tick | the layer |
+|---|---|---|---|
+| `BackgroundNode.draw` | 2486 | 1510 | 1438 |
+| `DrawBackgroundModifier.draw` | 1634 | 1034 | 1023 |
+| `mutantPattern` (its draw lambda) | 749 | 323 | 274 |
+| `TextStringSimpleNode.draw` | 283 | 174 | 171 |
+| `GraphicsLayer.record` | 3979 | 2752 | **4237** |
+| bodies' `getOrBuildCachedDrawBlock` | 1272 | 1179 | 2640 |
+| `gen.frame` (under the draw) | 1321 (821) | 1356 (736) | 1748 (1468) |
+
+The content's re-recording is gone with the layer: backgrounds, patterns and words are at the tape-on-tick arm's level.
+**The profile condition written fails**: `GraphicsLayer.record` is 54 % over 2752, not within 15 %. In that profile the
+page stood in another mode: busy 99.7 %, the bodies built in the frame (1468 ms of `gen.frame` under the draw against
+736–821) and their layers recorded with them. The condition was written as a total, and the total took the bodies'
+recording in; that is a limitation of the condition, not a reason to read it otherwise.
+
+## The answers
+
+| Question | Answer | Logs |
+|---|---|---|
+| Q0, the leaked tab | **Not the cause** (clean 12.7 ms against leaked 13.5); a background bench tab costs some (+3.6 ms, warmer) | `q0-clean`, `q0-leak` |
+| Q1, heat or the page | **The page**: B-135's build at 6.1 ms where today's is 20.9, same run; heat only shows once the thread is full | `build-ab`, `rest-cool`, `rest-heated` |
+| Q2, which work | **The page's content recorded again on every frame** under a Tape inside the column; the bodies' builds cost the same in both arms | `profile-ab-main`, `profile-ab-tape` |
+| The cascade prediction | **Refuted** as the cause; a mode with bodies built in the frame was seen once, in the layer arm's profile at 36.4 °C | `profile-ab-layer` |
+
+**The mechanism**, named where one variable moved it: [B-136](B-136-the-tape-band-on-every-frame.md) made the Tape read
+the clock's frame in a draw that `mutantTape()` places before its layer, in the layer of whatever holds the Tape. A Tape
+inside the Components page's column (its Tape section) then records the column again on every frame. Reverting
+`MutantTape.kt` moved the frames (−13.3 to −19.5 ms a round); a layer before the draw moved the frames (−8.3 to −16.6)
+and the content's part of the profile; the total `GraphicsLayer.record` did not move in that one profile, above.
+
+**The route**, its own item: [B-141](B-141-the-tape-draws-in-a-layer-of-its-own.md), the one line, with a test that holds
+a Tape nested in content to recording only its own layer per frame. What is left open here:
+- the mode with bodies built in the frame, seen once (the layer arm's profile); B-138's steps between levels may be it.
+  B-141 re-measures a 60 s load after the fix;
+- B-138's Chrome-on-the-Pixel row ran beside the leaked tab and with B-136's cost: it is not the page's number.
+
+Pinned: the phone, Chrome 157.0.8103.78 and the driver host as in every log's header; the arms built from `2d36670` in a
+worktree, their commits not pushed, the change of each written above.

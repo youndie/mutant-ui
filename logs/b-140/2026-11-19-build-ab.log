@@ -1,0 +1,31 @@
+# phone before:  AC powered: true; level: 100; temperature: 332; Capacity level: 5;
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-73 browser frame bench, 2026-11-19T15:00:25.640Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 100; temperature: 332; Capacity level: 5;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 4f1e591
+# build: 86231ca46bfe29af2a29.wasm 2be7f9bb49abc303, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8; ~b: bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8, c64ceef81e965436ea3b.wasm 31029a6aaddbdee5
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes ComponentsRest,ComponentsRest~b
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     47.7 f/s  interval p95   33.4  >16.7  32.56 %  >33   9.87 %  work p50  15.40 p95  48.20  LoAF 22 (2317 ms)  busy  99.8 %  33.2 °C  big 2401/2401 MHz
+round 1 ComponentsRest~b   52.4 f/s  interval p95   16.7  >16.7  28.30 %  >33   4.40 %  work p50   6.70 p95  31.40  LoAF 18 (1797 ms)  busy  78.0 %  33.5 °C  big 2507/2507 MHz
+round 2 ComponentsRest~b   55.6 f/s  interval p95   16.7  >16.7  25.41 %  >33   2.88 %  work p50   5.50 p95  26.70  LoAF 13 (1272 ms)  busy  74.9 %  33.6 °C  big 2507/2507 MHz
+round 2 ComponentsRest     43.0 f/s  interval p95   49.9  >16.7  41.96 %  >33  21.45 %  work p50  17.50 p95  57.20  LoAF 47 (3709 ms)  busy  99.8 %  33.9 °C  big 2252/2252 MHz
+round 3 ComponentsRest     29.5 f/s  interval p95   66.6  >16.7  50.34 %  >33  35.71 %  work p50  24.90 p95  80.80  LoAF 79 (6282 ms)  busy  99.8 %  33.9 °C  big 1826/1826 MHz
+round 3 ComponentsRest~b   49.9 f/s  interval p95   33.1  >16.7  25.70 %  >33   5.02 %  work p50   6.00 p95  45.60  LoAF 22 (2468 ms)  busy  82.9 %  33.9 °C  big 2252/2252 MHz
+round 4 ComponentsRest~b   53.0 f/s  interval p95   16.7  >16.7  24.95 %  >33   3.78 %  work p50   6.20 p95  28.10  LoAF 14 (1518 ms)  busy  80.2 %  34.6 °C  big 2252/2252 MHz
+round 4 ComponentsRest     41.7 f/s  interval p95   50.0  >16.7  39.42 %  >33  19.95 %  work p50  16.80 p95  61.50  LoAF 41 (3450 ms)  busy  99.8 %  34.6 °C  big 2188/2188 MHz
+round 5 ComponentsRest     35.0 f/s  interval p95   66.5  >16.7  44.13 %  >33  28.65 %  work p50  22.10 p95  77.30  LoAF 77 (5631 ms)  busy  99.8 %  34.9 °C  big 2048/2048 MHz
+round 5 ComponentsRest~b   49.4 f/s  interval p95   16.7  >16.7  26.57 %  >33   4.67 %  work p50   6.10 p95  31.20  LoAF 20 (2074 ms)  busy  82.9 %  34.9 °C  big 2188/2188 MHz
+round 6 ComponentsRest~b   50.2 f/s  interval p95   16.7  >16.7  25.75 %  >33   4.79 %  work p50   6.50 p95  33.20  LoAF 16 (1787 ms)  busy  82.8 %  35.2 °C  big 2188/2188 MHz
+round 6 ComponentsRest     34.3 f/s  interval p95   66.5  >16.7  48.25 %  >33  29.24 %  work p50  23.70 p95  79.00  LoAF 75 (5867 ms)  busy  99.8 %  35.2 °C  big 1826/1826 MHz
+
+# counted rounds 2..6, pooled
+ComponentsRest     36.7 f/s  interval p95   66.5  >16.7  44.32 %  >33  26.23 %  work p50  20.90 p95  75.20  RED
+ComponentsRest~b   51.6 f/s  interval p95   16.7  >16.7  25.66 %  >33   4.19 %  work p50   6.10 p95  29.80  GREY
+# ~b minus a, ComponentsRest, work p50: per counted round -12.00, -18.90, -10.60, -16.00, -17.20ms; mean -14.94ms
+# ~b minus a, ComponentsRest, f/s: per counted round 12.60, 20.40, 11.30, 14.40, 15.90; mean 14.92
+# ~b minus a, ComponentsRest, busy: per counted round -24.93, -16.90, -19.66, -16.88, -17.05 pt; mean -19.08 pt
+# phone after:  AC powered: true; level: 100; temperature: 352; Capacity level: 4;
