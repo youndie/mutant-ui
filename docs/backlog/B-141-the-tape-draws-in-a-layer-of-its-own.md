@@ -28,3 +28,24 @@ Chrome the resting Components page went from 6.1 ms of work a frame (B-135's bui
   - B-73's bench on the phone, `ComponentsRest` against `main`, interleaved, with the Control scene: work p50 under by
     more than 2 ms in every counted round; then one 60 s load, its levels read per second (B-140's open mode).
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantTape.kt`
+
+## Findings
+
+### Iteration 1, 2026-11-19
+
+- `mutantTape()` is `graphicsLayer().drawWithContent { … }.graphicsLayer()`. `MutantTapeTest`'s old counter of the
+  Tape's draws was a `drawBehind` before `mutantTape()` on the same node, in the holder's layer: it moved on every frame
+  only because of this defect, so it is replaced by an internal probe in the Tape's own draw
+  (`LocalMutantTapeProbe`, as `LocalMutantTapeSkip` is for B-77's bench).
+- New test, `the Tape's frames draw neither the node holding it nor its siblings again`: a Tape under a sibling in a
+  column, from 200 ms (the band passing) and from 2200 ms (away), 40 frames each. Before the fix (`edee2f2`, which is the
+  mutant dropping the outer layer): failed, the holder drawn 41 times where 2 were expected. With it: green, with the
+  other nine of `MutantTapeTest`.
+
+**Pre-registered before the run**, the AC's comparison as it will be read: B-73's bench on the Pixel 6a in Chrome,
+`ComponentsRest`, `ComponentsReduce` and `Control` (10 ms in the frame over `ComponentsReduce`), this branch's build
+against `main`'s (`63008d5`, built in a worktree), interleaved as `~b`, 6 × 10 s, on mains, the temperature logged.
+Held if `ComponentsRest`'s work p50 is under `main`'s by more than 2 ms in every counted round and the control reads
+10 ± 3 ms in every counted round (wider than B-107's ± 1, which B-138's warm phone broke at 8.4–15.6; a
+run outside it is void); then one 60 s load of `ComponentsRest` on this build alone, read per
+second, for the mode B-140 saw once (levels and steps).
