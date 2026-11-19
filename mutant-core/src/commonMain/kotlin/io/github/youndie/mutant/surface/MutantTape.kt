@@ -368,15 +368,16 @@ public fun Modifier.mutantTape(): Modifier =
         val lines = remember(colors.print, density) { scanlineFill(colors, density) }
         val steps = LocalMutantSteppedMotion.current
         val probe = LocalMutantTapeProbe.current
-        graphicsLayer().drawWithContent {
-            drawContent()
-            probe?.invoke()
-            val d = density
-            val w = size.width / d
-            val h = size.height / d
-            val m = tapeMoment(clock, steps)
-            scale(d, Offset.Zero) {
-                clipRect(0f, 0f, w, h) { drawTape(stage, m.t, colors, w, h, grain, skip, tile, lines, m.noiseKey) }
-            }
-        }.graphicsLayer()
+        graphicsLayer()
+            .drawWithContent {
+                drawContent()
+                probe?.invoke()
+                val d = density
+                val w = size.width / d
+                val h = size.height / d
+                val m = tapeMoment(clock, steps)
+                scale(d, Offset.Zero) {
+                    clipRect(0f, 0f, w, h) { drawTape(stage, m.t, colors, w, h, grain, skip, tile, lines, m.noiseKey) }
+                }
+            }.graphicsLayer()
     }
