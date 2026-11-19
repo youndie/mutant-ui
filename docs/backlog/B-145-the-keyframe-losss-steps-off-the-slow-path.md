@@ -52,3 +52,41 @@ A stall second has 20 frames or fewer.
   B-143's run showed it reaching five in one counted load of two.
 - Then a named profile of the arm: `drawPart`'s share of a loss against B-144's 405 ms of 644.
 - If not held, route A is weighed again against what the profile shows, with the upload's cost above.
+
+**The sampling arm: not held.** [The run](../../logs/b-145/2026-11-20-nearest-abc.log), 28.5 → 34.8 °C, same host and
+run. Stall seconds per load, round 1 not counted: `main` 1 and 7, the arm 3 and 7, the floor none. Frames over 50 ms in a
+load: `main` 79 and 79, the arm 77 and 84, the floor 0. Nearest sampling does not move it; on the JVM it had moved no
+pixel either.
+- The stall's depth follows the phone's heat, the count of slow frames does not: in the first, coolest load the worst
+  second has 31–43 frames in both builds, in the third 10–17, while a load holds 63–84 frames over 50 ms throughout. From
+  here the slow frames are counted beside the stall seconds.
+
+### Iteration 2, 2026-11-20: what the hot functions are
+
+`skiko.wasm` disassembled (`wasm-dis`): the functions holding the loss's time in every profile since B-142
+(`wasm-function[3081]`, `[3095]`, `[3108]`–`[3111]`) all have the signature `(i32, i32, f32, f32, f32, f32)`: stages of
+Skia's raster pipeline in its scalar form, one pixel a pass in floats (the browser's build has no SIMD). So a block's
+pixels go through that pipeline twice, read and written, which is B-144's cost by the pixel. Skia copies a sprite
+without the pipeline only where nothing is blended: the blend mode `Src`, or `SrcOver` from a source marked opaque; a
+block is drawn by `SrcOver` from a bitmap that may hold transparent pixels, sampled or not, so the sampling arm changed
+nothing.
+
+**The change.** `StripPicture.drawPart` moves a block as pixels where that is the same picture (`BlockCopy.kt`):
+- the read, into an empty part: `Canvas.readPixels` of the strip, a copy; drawing it there blended nothing;
+- the write of a part with no transparent pixel (`Bitmap.computeIsOpaque`, asked once a block) under a plain
+  source-over paint: `Canvas.writePixels`, a copy; drawn, it would have replaced what was under it;
+- a part with any transparent pixel is drawn as before, and so is everything on Android, whose pipeline is vectorised
+  and whose three functions answer "not here".
+
+On the JVM: `StripPictureTest` (now with opaque ground under part of its picture, so both ways are taken and blocks
+cross between them) and the keyframe loss's parity, golden, behaviour and snapshot tests green, none moved. Mutants,
+each killed by `StripPictureTest` and by `KeyframeLossParityTest` both: every part written as a copy; the copy written
+one row down; the read copied from one column right.
+
+**Pre-registered before the run.** B-142's protocol again: `main` (`fa05977cdbb9be9f`), this branch as `~b`, the
+loss-free arm (`1719bd18bb513da9`) as `~c`; 3 rounds of 60 s interleaved, round 1 not counted.
+- **Held** if, in both counted loads, this branch has at most one stall second (20 frames or fewer) and fewer than half
+  of `main`'s frames over 50 ms in the same round.
+- Then a named profile of the branch: `drawPart`'s time in a loss against B-144's 405 ms of 644, and what is left.
+- If not held: the profile says where the pixels still go through the pipeline (the share of parts with a transparent
+  pixel is not known beforehand), and the item stops for the owner with it.
