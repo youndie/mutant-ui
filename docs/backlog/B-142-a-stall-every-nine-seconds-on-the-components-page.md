@@ -1,7 +1,7 @@
 ---
 id: B-142
 title: "A stall every nine seconds on the resting Components page"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-6-later
