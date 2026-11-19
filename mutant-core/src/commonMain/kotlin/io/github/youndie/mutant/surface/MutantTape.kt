@@ -99,6 +99,9 @@ internal enum class TapePart { Lines, Band, Grain, Noise }
 /** The parts of the Tape left out: for B-77's bench only, never for a consumer. */
 internal val LocalMutantTapeSkip = androidx.compose.runtime.staticCompositionLocalOf<Set<TapePart>> { emptySet() }
 
+/** Called on every draw of the Tape itself: for its tests only (B-141), to tell its draws from its holder's. */
+internal val LocalMutantTapeProbe = androidx.compose.runtime.staticCompositionLocalOf<(() -> Unit)?> { null }
+
 /** The share of the cycle the band passes in. */
 private const val TRACKING_SHARE = .3
 
@@ -362,8 +365,10 @@ public fun Modifier.mutantTape(): Modifier =
         val tile = remember(grain, colors.print, density) { grainTile(grain, colors, density) }
         val lines = remember(colors.print, density) { scanlineFill(colors, density) }
         val steps = LocalMutantSteppedMotion.current
+        val probe = LocalMutantTapeProbe.current
         drawWithContent {
             drawContent()
+            probe?.invoke()
             val d = density
             val w = size.width / d
             val h = size.height / d
