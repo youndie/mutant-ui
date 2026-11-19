@@ -1,7 +1,7 @@
 ---
 id: B-144
 title: "The keyframe loss's draw calls per step"
-status: question
+status: done
 priority: P2
 size: M
 stage: stage-6-later
@@ -63,3 +63,8 @@ So a route has to take the calls out, not make each cheaper. Two, with what each
 Take route A as the next item (M–L, goldens may move by a channel at the cleared blocks' edges, recorded as the
 departures rule asks), or leave the loss as it is (a second in nine at 8–20 frames on the resting Components page in a
 phone's browser; desktop, Android and iOS unmeasured here)? Route B is not recommended on B-143's numbers.
+
+## The decision
+
+The owner, 2026-11-19: «Yes, route A». It goes on as [B-145](B-145-the-keyframe-losss-steps-off-the-slow-path.md), which
+first checks what route A's own upload would cost in the browser, before anything is built on it.
