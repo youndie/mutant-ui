@@ -351,7 +351,9 @@ internal fun tapeMoment(
  * «Чистый сигнал» ([MutantTheme]'s `cleanSignal`). Its grain and noise are seeded by the screen. The band moves and
  * the head's noise flickers on every frame; under [MutantTheme]'s `steppedMotion` they step eight times a second with
  * the grain, as the design draws them. What it covers is drawn in a layer of its own, so a frame of the Tape replays
- * the content rather than drawing it again.
+ * the content rather than drawing it again; and the Tape draws in a layer of its own around that one, so its frames
+ * record only that layer, not the layer of whatever holds it (B-141: inside a page's column, the whole column was
+ * recorded again on every frame).
  */
 public fun Modifier.mutantTape(): Modifier =
     composed {
@@ -366,7 +368,7 @@ public fun Modifier.mutantTape(): Modifier =
         val lines = remember(colors.print, density) { scanlineFill(colors, density) }
         val steps = LocalMutantSteppedMotion.current
         val probe = LocalMutantTapeProbe.current
-        drawWithContent {
+        graphicsLayer().drawWithContent {
             drawContent()
             probe?.invoke()
             val d = density
