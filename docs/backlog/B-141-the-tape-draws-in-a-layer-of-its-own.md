@@ -1,7 +1,7 @@
 ---
 id: B-141
 title: "The Tape draws in a layer of its own"
-status: wip
+status: done
 priority: P1
 size: S
 stage: stage-6-later
@@ -49,3 +49,29 @@ Held if `ComponentsRest`'s work p50 is under `main`'s by more than 2 ms in every
 10 ± 3 ms in every counted round (wider than B-107's ± 1, which B-138's warm phone broke at 8.4–15.6; a
 run outside it is void); then one 60 s load of `ComponentsRest` on this build alone, read per
 second, for the mode B-140 saw once (levels and steps).
+
+### The run, 2026-11-19
+
+[The A/B](../../logs/b-141/2026-11-19-pixel-ab.log), the Pixel 6a in Chrome 157, on mains, 28.8 → 35.7 °C, same host
+and run; the scripts closed one leftover tab of a run that hung when adb dropped the phone (logged). **It was cut short
+by the run's own time limit** (900 s, put on it after that hang): rounds 1–5 are whole, round 6 has this branch's
+`ComponentsRest` and `Control` and `main`'s `Control` only, and no summary or `frames.csv` was written. The log's
+per-round lines are the record.
+
+| counted round | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|
+| `ComponentsRest` work p50, this branch | 6.6 | 8.3 | 7.2 | 8.1 | 8.2 |
+| the same, `main` | 17.0 | 19.0 | 17.9 | 25.6 | — |
+| difference | −10.4 | −10.7 | −10.7 | −17.5 | — |
+| `Control` over `ComponentsReduce`, this branch | 7.8 | 8.0 | 8.2 | 8.9 | 8.5 |
+| the same, `main` | 7.8 | 8.1 | 8.5 | 8.4 | — |
+
+- **Held** in every counted round that has both arms (four of five): under `main` by 10.4 to 17.5 ms, against the 2
+  written. The control reads 7.8–8.9 ms, inside 10 ± 3, in every counted round of both arms. Frames a second: 47.6–51.2
+  against 33.5–44.5; the main thread 85–93 % busy against 99.8 %.
+- [The 60 s load](../../logs/b-141/2026-11-19-pixel-60s.log), this build alone, 35.9–36.1 °C, the big cores capped at
+  1826 MHz: 50.6 f/s, work p50 8.1 ms. Read per second (`frames.csv`): 6–10 ms in every second but one in nine — at 0, 9,
+  18, 27, 36, 45 and 54 s a second of 7–12 frames at a median of 94–165 ms. **No levels and no steps**: the work comes
+  back to 8 ms after each. B-140's 60 s load of `main` (`logs/b-140/2026-11-19-rest-60s/frames.csv`, the leaked tab
+  beside it) has the same nine-second dips (8, 17, 26, … s), so they are not this change. They are
+  [B-142](B-142-a-stall-every-nine-seconds-on-the-components-page.md).
