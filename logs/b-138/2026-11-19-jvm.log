@@ -1,0 +1,214 @@
+# host: Apple M1 8 cores, macOS 27.0.1; java openjdk version "25.0.4.1" 2026-08-18; commit 1a867fe (kit at 102a2dd);  -InternalBattery-0 (id=23658595) 76%; charging; 1:06 remaining present: true
+Calculating task graph as no cached configuration is available for tasks: :sample:frameBench --args=1a867fe /Users/youndie/Documents/GitHub/mutant-ui/logs/b-138/2026-11-19-jvm 6 10000
+sborka 0.5.0.135 is made for Gradle 9.8.0, and this build runs on 9.8.2. Move the wrapper: set distributionUrl in gradle/wrapper/gradle-wrapper.properties to gradle-9.8.0-bin.zip.
+
+> Configure project :mutant-core
+WARNING: The 'commonTest' source directory exists, but android host tests are not enabled. To enable android host tests, add `withHostTest {}` to your android target configuration in the Gradle build file.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Task :mutant-core:checkDesktopMainComposeLibrariesCompatibility
+> Task :sample:checkDesktopMainComposeLibrariesCompatibility
+> Task :sample:kmpPartiallyResolvedDependenciesChecker
+> Task :mutant-core:kmpPartiallyResolvedDependenciesChecker
+> Task :sample:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :mutant-core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :mutant-core:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :sample:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :sample:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :sample:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :mutant-core:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :sample:generateResourceAccessorsForCommonMain SKIPPED
+> Task :mutant-core:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :sample:convertXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :sample:copyNonXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :mutant-core:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :sample:prepareComposeResourcesTaskForDesktopMain NO-SOURCE
+> Task :mutant-core:convertXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :sample:generateResourceAccessorsForDesktopMain SKIPPED
+> Task :sample:generateActualResourceCollectorsForDesktopMain SKIPPED
+> Task :mutant-core:copyNonXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :sample:generateComposeResClass SKIPPED
+> Task :sample:generateExpectResourceCollectorsForCommonMain SKIPPED
+> Task :mutant-core:prepareComposeResourcesTaskForDesktopMain NO-SOURCE
+> Task :sample:checkDesktopTestComposeLibrariesCompatibility
+> Task :mutant-core:generateResourceAccessorsForDesktopMain NO-SOURCE
+> Task :sample:assembleDesktopMainResources UP-TO-DATE
+> Task :sample:desktopProcessResources UP-TO-DATE
+> Task :mutant-core:generateActualResourceCollectorsForDesktopMain UP-TO-DATE
+> Task :sample:processDesktopMainResources SKIPPED
+> Task :sample:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :mutant-core:generateComposeResClass UP-TO-DATE
+> Task :sample:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :mutant-core:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :sample:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :sample:generateResourceAccessorsForCommonTest SKIPPED
+> Task :sample:convertXmlValueResourcesForDesktopTest NO-SOURCE
+> Task :sample:copyNonXmlValueResourcesForDesktopTest NO-SOURCE
+> Task :sample:prepareComposeResourcesTaskForDesktopTest NO-SOURCE
+> Task :sample:generateResourceAccessorsForDesktopTest SKIPPED
+> Task :sample:assembleDesktopTestResources UP-TO-DATE
+> Task :sample:desktopTestProcessResources UP-TO-DATE
+> Task :sample:processDesktopTestResources SKIPPED
+> Task :mutant-core:compileKotlinDesktop UP-TO-DATE
+> Task :mutant-core:compileDesktopMainJava NO-SOURCE
+> Task :mutant-core:assembleDesktopMainResources UP-TO-DATE
+> Task :mutant-core:desktopProcessResources UP-TO-DATE
+> Task :mutant-core:processDesktopMainResources SKIPPED
+> Task :mutant-core:desktopMainClasses UP-TO-DATE
+> Task :mutant-core:desktopJar UP-TO-DATE
+> Task :sample:compileKotlinDesktop UP-TO-DATE
+> Task :sample:compileDesktopMainJava NO-SOURCE
+> Task :sample:desktopMainClasses UP-TO-DATE
+> Task :sample:desktopJar UP-TO-DATE
+> Task :sample:compileTestKotlinDesktop UP-TO-DATE
+> Task :sample:compileDesktopTestJava NO-SOURCE
+> Task :sample:desktopTestClasses UP-TO-DATE
+
+> Task :sample:frameBench
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.skiko.LibraryLoader in an unnamed module (file:/Users/youndie/.gradle/caches/modules-2/files-2.1/org.jetbrains.skiko/skiko-awt/0.150.1/e03fd8140c0e331c3c7018b00a9710ec98d78fc1/skiko-awt-0.150.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+# B-72 frame bench
+# commit 1a867fe
+# host MacBookAir10,1, cpu Apple M1, 8 cores
+# os Mac OS X 27.0.1 aarch64
+# jvm OpenJDK 64-Bit Server VM 25.0.4.1+1-b635.79
+# render METAL, display 1440x900 @ 60 Hz, window 1280x814, scale 2.0
+# rounds 6 (round 1 not counted), scene 10 s, first 1 s not counted
+round 1 ComponentsRest: 602 frames
+round 1 ComponentsWheel: 601 frames, scrolled 16412 px
+round 1 DemoPage: 602 frames
+round 1 DemoLibrary: 604 frames
+round 1 DemoRecording: 603 frames
+round 1 DemoSettings: 602 frames
+round 1 ComponentsClean: 597 frames
+round 1 ComponentsReduce: 600 frames
+round 1 Control: 604 frames
+round 1 Blank: 600 frames
+round 1 BlankLoad: 602 frames
+round 1 DemoPageTicked: 604 frames
+round 1 DemoPageLoad: 602 frames
+round 1 DemoPageClean: 602 frames
+round 1 DemoRow: 601 frames
+round 1 DemoRowNoClip: 604 frames
+round 2 ComponentsWheel: 600 frames, scrolled 14947 px
+round 2 DemoPage: 603 frames
+round 2 DemoLibrary: 601 frames
+round 2 DemoRecording: 606 frames
+round 2 DemoSettings: 602 frames
+round 2 ComponentsClean: 605 frames
+round 2 ComponentsReduce: 602 frames
+round 2 Control: 604 frames
+round 2 Blank: 602 frames
+round 2 BlankLoad: 604 frames
+round 2 DemoPageTicked: 598 frames
+round 2 DemoPageLoad: 603 frames
+round 2 DemoPageClean: 601 frames
+round 2 DemoRow: 604 frames
+round 2 DemoRowNoClip: 605 frames
+round 2 ComponentsRest: 602 frames
+round 3 DemoPage: 602 frames
+round 3 DemoLibrary: 604 frames
+round 3 DemoRecording: 606 frames
+round 3 DemoSettings: 602 frames
+round 3 ComponentsClean: 603 frames
+round 3 ComponentsReduce: 602 frames
+round 3 Control: 601 frames
+round 3 Blank: 603 frames
+round 3 BlankLoad: 603 frames
+round 3 DemoPageTicked: 605 frames
+round 3 DemoPageLoad: 605 frames
+round 3 DemoPageClean: 601 frames
+round 3 DemoRow: 602 frames
+round 3 DemoRowNoClip: 605 frames
+round 3 ComponentsRest: 604 frames
+round 3 ComponentsWheel: 600 frames, scrolled 15240 px
+round 4 DemoLibrary: 602 frames
+round 4 DemoRecording: 601 frames
+round 4 DemoSettings: 601 frames
+round 4 ComponentsClean: 601 frames
+round 4 ComponentsReduce: 604 frames
+round 4 Control: 605 frames
+round 4 Blank: 603 frames
+round 4 BlankLoad: 601 frames
+round 4 DemoPageTicked: 602 frames
+round 4 DemoPageLoad: 603 frames
+round 4 DemoPageClean: 603 frames
+round 4 DemoRow: 601 frames
+round 4 DemoRowNoClip: 600 frames
+round 4 ComponentsRest: 601 frames
+round 4 ComponentsWheel: 602 frames, scrolled 15120 px
+round 4 DemoPage: 602 frames
+round 5 DemoRecording: 603 frames
+round 5 DemoSettings: 605 frames
+round 5 ComponentsClean: 602 frames
+round 5 ComponentsReduce: 604 frames
+round 5 Control: 602 frames
+round 5 Blank: 601 frames
+round 5 BlankLoad: 602 frames
+round 5 DemoPageTicked: 603 frames
+round 5 DemoPageLoad: 606 frames
+round 5 DemoPageClean: 603 frames
+round 5 DemoRow: 600 frames
+round 5 DemoRowNoClip: 601 frames
+round 5 ComponentsRest: 606 frames
+round 5 ComponentsWheel: 601 frames, scrolled 15119 px
+round 5 DemoPage: 600 frames
+round 5 DemoLibrary: 601 frames
+round 6 DemoSettings: 603 frames
+round 6 ComponentsClean: 605 frames
+round 6 ComponentsReduce: 603 frames
+round 6 Control: 604 frames
+round 6 Blank: 604 frames
+round 6 BlankLoad: 606 frames
+round 6 DemoPageTicked: 600 frames
+round 6 DemoPageLoad: 603 frames
+round 6 DemoPageClean: 601 frames
+round 6 DemoRow: 603 frames
+round 6 DemoRowNoClip: 601 frames
+round 6 ComponentsRest: 603 frames
+round 6 ComponentsWheel: 601 frames, scrolled 15210 px
+round 6 DemoPage: 601 frames
+round 6 DemoLibrary: 601 frames
+round 6 DemoRecording: 604 frames
+
+scene                 frames/s  interval p50  p95   >16.7%  >33%  | work p50   p95    p99    max  | event p50  p95  | render/frame busy
+ComponentsRest           60.3       16.67  18.66   35.90  0.00  |   2.81   7.36  11.14  18.60 |   3.42   8.10 |     1.66   10%  GREY
+ComponentsWheel          60.1       16.67  18.66   31.01  0.07  |   2.87   6.25  10.71  20.93 |   3.40   6.78 |     1.69   10%  GREY
+DemoPage                 60.2       16.67  18.65   36.43  0.07  |   0.23   5.60  10.91  19.17 |   0.72   6.06 |     2.50   15%  GREY
+DemoLibrary              60.2       16.67  18.61   35.92  0.03  |   0.18   2.25   8.64  18.80 |   0.36   2.50 |     1.45    9%  GREY
+DemoRecording            60.4       16.67  18.59   35.59  0.00  |   0.19   1.34   1.58  19.22 |   0.35   1.52 |     1.09    7%  GREY
+DemoSettings             60.3       16.67  18.56   34.47  0.00  |   0.09   0.27   0.40  11.03 |   0.32   0.53 |     1.35    8%  GREY
+ComponentsClean          60.3       16.67  18.65   33.81  0.03  |   0.15   7.09   9.35  25.36 |   1.61   7.94 |     2.46   15%  GREY
+ComponentsReduce         60.3       16.67  18.62   33.59  0.07  |   0.09   3.42   4.48   6.80 |   1.65   3.97 |     2.51   15%  GREY
+Control                  60.3       16.67  18.71   27.37  0.03  |  11.70  15.35  19.66  31.30 |  12.17  15.90 |     1.37    8%  (control)
+Blank                    60.3       16.67  18.61   34.71  0.03  |   0.11   0.16   0.20   0.47 |   0.16   0.21 |     0.46    3%  GREY
+BlankLoad                60.3       16.66  18.61   31.15  0.07  |   0.77   1.05   1.14   1.57 |   0.89   1.19 |     4.04   24%  GREY
+DemoPageTicked           60.2       16.67  18.64   34.77  0.10  |   0.25   5.46  11.14  28.82 |   0.73   5.86 |     2.39   14%  GREY
+DemoPageLoad             60.4       16.67  18.67   30.68  0.10  |   0.47   4.81   9.92  23.52 |   0.78   5.26 |     3.55   21%  GREY
+DemoPageClean            60.2       16.67  18.65   35.82  0.03  |   0.11   4.98   9.39  23.17 |   0.57   5.41 |     2.26   14%  GREY
+DemoRow                  60.2       16.67  18.63   37.50  0.03  |   0.23   4.79   9.96  17.01 |   0.68   5.29 |     2.49   15%  GREY
+DemoRowNoClip            60.2       16.67  18.64   37.51  0.00  |   0.30   4.96  10.73  19.55 |   0.74   5.35 |     2.42   15%  GREY
+
+render control, what the load adds to the render thread's CPU per frame, per counted round:
+  on a blank page    3.57, 3.57, 3.58, 3.59, 3.60 ms
+  on the Demo page   1.25, 1.15, 1.06, 1.18, 1.16 ms
+
+control: work p50 over ComponentsRest per counted round 9.06, 8.95, 8.75, 8.82, 8.88 ms
+         (busy-wait 10 ms)
+render threads seen: 3
+wheel: scrolled per counted round [14947, 15240, 15120, 15119, 15210] px
+
+[Incubating] Problems report is available at: file:///Users/youndie/Documents/GitHub/mutant-ui/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 17m 48s
+23 actionable tasks: 6 executed, 17 up-to-date
+Configuration cache entry discarded because incompatible task was found: 'task `:sample:frameBench` of type `org.gradle.api.tasks.JavaExec`'.

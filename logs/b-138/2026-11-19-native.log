@@ -1,0 +1,8 @@
+# before
+# phone: Pixel 6a Android 17 build CP3A.261005.002.A1; battery level:% ac=true 32.7 °C; skin 26.143002 °C
+# commit 1a867fe-dirty (kit at 102a2dd; the dirt is the iOS host, not in this build); apk sha256 0cbadd7a1d4376a0
+Starting: Intent { cmp=io.github.youndie.mutant.bench/.android.BenchActivity (has extras) }
+/sdcard/Android/data/io.github.youndie.mutant.bench/files/scenes.csv: 1 file pulled, 0 skipped. 0.6 MB/s (1883 bytes in 0.003s)
+/sdcard/Android/data/io.github.youndie.mutant.bench/files/metrics.csv: 1 file pulled, 0 skipped. 33.9 MB/s (2024928 bytes in 0.057s)
+# after
+# phone: Pixel 6a Android 17 build CP3A.261005.002.A1; battery level:% ac=true 33.8 °C; skin 26.143002 °C
