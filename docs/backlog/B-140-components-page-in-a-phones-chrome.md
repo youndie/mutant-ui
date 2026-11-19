@@ -74,3 +74,6 @@ numbers carry the leak, so they are not the item's baseline until this is answer
   two arms (the second is warmer), so only a leak arm *slower* than the clean one by more than the clean run's own
   round-to-round spread names the leak.
 - If the leak is the mechanism, Q1 and Q2 are re-measured without it before anything else is said of the page.
+- **Amended before the run, 2026-11-19**: the owner asked to measure at once («меряй щас»); the clean arm starts at
+  29.5 °C with the big cores' maximum back at 2802 MHz, a degree over the 28.5 °C written above. Heat runs against the
+  prediction (a warmer phone is slower), so a clean run faster than the leaked cool run is not explained by it.
