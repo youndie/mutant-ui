@@ -77,3 +77,21 @@ numbers carry the leak, so they are not the item's baseline until this is answer
 - **Amended before the run, 2026-11-19**: the owner asked to measure at once («меряй щас»); the clean arm starts at
   29.5 °C with the big cores' maximum back at 2802 MHz, a degree over the 28.5 °C written above. Heat runs against the
   prediction (a warmer phone is slower), so a clean run faster than the leaked cool run is not explained by it.
+
+### Iteration 2, 2026-11-19: Q0 answered, and the build
+
+[Clean](../../logs/b-140/2026-11-19-q0-clean.log), 29.3–29.6 °C: `ComponentsRest` 51.7 f/s, work p50 12.7 ms (rounds
+11.9–15.1). [Leak made on purpose](../../logs/b-140/2026-11-19-q0-leak.log), right after, 30.2–32.3 °C: 44.5 f/s, work
+p50 16.3 ms (16.1–17.0), busy 99.8 % every round. Same host, same build, two runs a minute apart: yes.
+- **The prediction is refuted**: the clean run is 0.8 ms under the leaked cool run (13.5), inside the 2 ms written. The
+  leak is not why the day's page costs twice the day before's.
+- The leak arm is 3.6 ms slower, more than the clean run's spread (3.2), so a background bench tab does cost the
+  measured one; it ran a degree or two warmer, so the size is not the leak's alone.
+- Chrome (157.0.8103.78), the phone and its build are the same as B-135's run the day before; the kit's build is not.
+  Between B-135's (`66cc1f0`) and this one (`102a2dd`): [B-136](B-136-the-tape-band-on-every-frame.md) (the Tape's band
+  and head noise on every frame; its cost on the phone "not measured here"), the edge mosaic behind a switch, and the
+  shader by default (B-135's own `~b` arm).
+
+**Pre-registered before the run**: `ComponentsRest`, today's build (`2be7f9bb49abc303`) against B-135's (`c64ceef…`,
+`31029a6aaddbdee5`) as `~b`, interleaved, 6 × 10 s. If the build is the cause, `~b` reads near B-135's 5.9 ms and is
+under today's by more than 2 ms in every counted round; if it is the phone's state, the two stand within 2 ms.
