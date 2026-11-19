@@ -59,3 +59,18 @@ So every phone run of B-138 and of this item so far may have run beside it: 127.
 so it most likely shared the measured tab's renderer, and in the front between runs it heated the phone. Whether it
 moved the numbers is not known; the cool `ComponentsRest` run is repeated without it as the control. Both scripts now
 close any page with their own address (`http://127.0.0.1:876N/?scene=`) before choosing their tab and log it.
+
+**Pre-registered on 2026-11-19, after the leak was found and before any run without it.** The same day's earlier
+numbers carry the leak, so they are not the item's baseline until this is answered.
+- **Q0, the leak.** On mains, starting cool (battery ≤ 28.5 °C), `ComponentsRest` alone, 6 × 10 s, the build of
+  `logs/b-140/2026-11-19-rest-cool.log` (`2be7f9bb49abc303`), with no bench tab but the measured one (the scripts'
+  log line says what they closed). Then, as soon as it ends, the same run with a leak made on purpose: a second tab
+  opened by intent on `DemoPageClean` from that build, served on a port outside the scripts' own range (8780), left in
+  the background, as the found one was.
+- **The prediction**: the leak is the mechanism of the day's slowdown. Clean, the work comes back near B-135's
+  shader arm on the same phone the day before (`logs/b-135/2026-11-18-pixel6a.log`, `~b`: 53.5 f/s, work p50 5.9 ms)
+  and well under the leaked cool run (13.5 ms); with the leak back, it rises again. Refuted if the clean run's work
+  p50 is within 2 ms of 13.5, or the leak arm's within 2 ms of the clean one's. Heat runs the same way between the
+  two arms (the second is warmer), so only a leak arm *slower* than the clean one by more than the clean run's own
+  round-to-round spread names the leak.
+- If the leak is the mechanism, Q1 and Q2 are re-measured without it before anything else is said of the page.
