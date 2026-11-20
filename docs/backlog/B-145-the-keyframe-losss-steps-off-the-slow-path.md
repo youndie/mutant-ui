@@ -114,3 +114,21 @@ of a core at the start.
   but it does not show the copy removing the stall.
 - Next: the same protocol with the phone under 30 °C, nothing else running on it, and the floor's counted loads free of
   stalls as the condition of a valid run.
+
+### The second run, 2026-11-20: valid, not held
+
+[The run](../../logs/b-145/2026-11-20-copy-abc-2.log), the same protocol, started at once on the owner's word at
+33.6 °C (not under 30 °C as written above), the owner's Telegram closed; 36.6 °C at the end, the big cores capped at
+1277 MHz. **Valid**: the floor has no stall second in any load. Stall seconds and frames over 50 ms per load:
+
+| load | `main` | the pixel copy | the floor |
+|---|---|---|---|
+| round 1 (not counted) | 1; 86 | none; 32 | none; 42 |
+| round 2 | 15; 423 | **none; 143** | none; 223 |
+| round 3 | 45; 558 | 37; 579 | none; 352 |
+
+- **Not held** by the rule written: round 3 has 37 stall seconds for the copy, not at most one, and more slow frames
+  than `main`.
+- Round 2 holds both conditions: no stall second against `main`'s 15, 143 slow frames against 423. By round 3 the
+  phone was throttled and `main` and the copy both stall most seconds; the floor, without the loss's work, does not.
+- Same host, same run, interleaved: yes. What is owed: a run started under 30 °C, as the resumed protocol says.
