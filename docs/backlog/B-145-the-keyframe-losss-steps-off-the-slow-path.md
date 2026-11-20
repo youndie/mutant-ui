@@ -90,3 +90,11 @@ loss-free arm (`1719bd18bb513da9`) as `~c`; 3 rounds of 60 s interleaved, round 
 - Then a named profile of the branch: `drawPart`'s time in a loss against B-144's 405 ms of 644, and what is left.
 - If not held: the profile says where the pixels still go through the pipeline (the share of parts with a transparent
   pixel is not known beforehand), and the item stops for the owner with it.
+
+### Parked, 2026-11-20
+
+The pixel copy is committed on this branch (`4f15619`) with its tests; on it, `./gradlew check` is green (472 tests),
+iOS and Android compile, and the wasm sample builds (`3bc3817acac49f7c`). **The phone run pre-registered above was not
+made**: the owner took the phone back the same day («телефон мне нужен - снимаю с тестов»). Without it the item's
+acceptance cannot be read, so the branch is not merged. Resuming: build `3bc3817acac49f7c` again from this branch,
+run the protocol as written, read it by the rule written.
