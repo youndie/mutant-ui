@@ -1,7 +1,7 @@
 ---
 id: B-149
 title: "A body drawn in its first frame"
-status: wip
+status: done
 priority: P1
 size: L
 stage: stage-6-later
@@ -154,3 +154,5 @@ at layout and at draw.
   held**: met in one round of five. The first frame of ten appearing cards costs about 43 ms where B-50's frame
   without bodies cost about 15. Not measured: the browser's stand-in on a screen (the phone away; held on the desktop
   by the seam alone), and Android and iOS, compiled only.
+
+**Merged on the owner's word**, 2026-11-20: «Merge it», the bar on `AppearBench` not held as written above.
