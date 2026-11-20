@@ -41,7 +41,6 @@ class SampleStrings(
             "Включено — блоки мозаики края перекрывают обводку и выходят за тело. Выключено — остаются внутри, как в " +
                 "дизайне.",
         )
-    val languageName = t("EN", "RU")
     val pageComponents = t("Components", "Компоненты")
     val pageDemo = t("Demo", "Демо")
 
@@ -110,7 +109,6 @@ class SampleStrings(
 
     // The components' words.
     val play = t("Play", "Воспроизвести")
-    val playAll = t("Play all", "Воспроизвести всё")
     val reset = t("Reset", "Сбросить")
     val record = t("Record", "Записать")
     val loading = t("Loading", "Загрузка")
