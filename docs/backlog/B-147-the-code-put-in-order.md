@@ -1,7 +1,7 @@
 ---
 id: B-147
 title: "The code put in order"
-status: wip
+status: done
 priority: P2
 size: L
 stage: stage-6-later
@@ -114,3 +114,12 @@ file of `mutant-core` is now `MutantPullToRefresh.kt` (760), of the sample `Spec
 20), the same count as on `1422c27` before the item; `checkKotlinAbi` green, `mutant-core/api/` untouched. iOS
 (`compileKotlinIosArm64`, `compileKotlinIosSimulatorArm64`), Android (`compileAndroidMain`, `:bench-android`'s
 `compileReleaseKotlin` and `compileDebugKotlin`) and wasm (`:sample:wasmJsBrowserDistribution`) compile.
+
+### Review, 2026-11-20
+
+Checked apart from the findings above, on `5c3f926` against `main`: nothing under `mutant-core/api/`, the screenshot
+goldens, the numeric goldens, `reference/`, `logs/`, `scripts/` or any test changed. Every code line of the three
+modules' main source sets, imports and `private`/`internal` set aside, compared as a multiset before and after: what is
+gone is the dead code listed, comments rewritten, and the two parameters no caller passed (`trembleSeed`, `viewStage`),
+each replaced by its default's own expression; nothing else moved but by place. `make check` green; `./gradlew check`
+green with its outputs up to date on the same inputs, 472 tests in the JUnit XML, 0 failed, 0 skipped.
