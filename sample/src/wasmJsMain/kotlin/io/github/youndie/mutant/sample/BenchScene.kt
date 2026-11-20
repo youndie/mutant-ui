@@ -34,7 +34,8 @@ private external fun reportScrolled(px: Int)
 
 /**
  * B-73: the scenes of B-72's recorder, opened by `?scene=<name>` so the browser's recorder measures what the JVM's did.
- * Null for a name it does not know, and the sample opens as usual.
+ * Null for a name it does not know, and the sample opens as usual. B-148: the Components scenes show the page's default
+ * group, Foundations, alone, and the Demo page scenes its default screen, Library, alone.
  */
 internal fun benchScene(name: String?): (@Composable () -> Unit)? =
     when (name) {

@@ -28,7 +28,7 @@ import io.github.youndie.mutant.theme.MutantScreenClock
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
 
-// The sections of the design's foundations, in the catalogue's order (`SpecCatalogue.kt`); `ComponentsPage` lays them out.
+// The sections of Foundations, in the catalogue's order (`SpecCatalogue.kt`); `ComponentsPage` lays them out.
 
 /** Each palette under its own theme, on its own ground. */
 @Composable
