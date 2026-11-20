@@ -181,31 +181,44 @@ class SampleStrings(
     val rowVariants = t("VARIANTS", "ВАРИАНТЫ")
     val rowStates = t("STATES", "СОСТОЯНИЯ")
     val rowTry = t("TRY IT", "ПОПРОБУЙТЕ")
-    val groupMvp = t("Components", "Компоненты")
-    val groupMvpLine =
+
+    // B-148: the groups, by what a consumer looks for.
+    val groupFoundations = t("Foundations", "Основа")
+    val groupFoundationsLine =
         t(
-            "The 21 components of the first release, with every state the design draws.",
-            "21 компонент первого выпуска со всеми состояниями, которые рисует дизайн.",
+            "The theme, the icons, the patterns, the Tape and the keyframe loss every screen stands on.",
+            "Тема, иконки, узоры, Лента и потеря кадра, на которых стоит каждый экран.",
         )
-    val groupV1 = t("Components v1", "Компоненты v1")
-    val groupV1Line =
+    val groupActions = t("Actions", "Действия")
+    val groupActionsLine =
+        t("What a person presses to make something happen.", "То, что нажимают, чтобы что-то случилось.")
+    val groupSelection = t("Selection and input", "Выбор и ввод")
+    val groupSelectionLine =
         t(
-            "The second release: slider, segments, tooltip, menu, drawer, sheet and pull to refresh.",
-            "Второй выпуск: слайдер, сегменты, подсказка, меню, боковое меню, лист и «потянуть».",
+            "Choosing among options, setting a value, typing text, a date or a time.",
+            "Выбор из вариантов, значение, текст, дата или время.",
         )
-    val groupLater = t("Components later", "Компоненты позже")
-    val groupLaterLine =
-        t("Search, date and time, the table and the carousel.", "Поиск, дата и время, таблица и карусель.")
-    val groupBase = t("Foundations", "Основа")
-    val groupBaseLine =
+    val groupContainment = t("Containment", "Контейнеры")
+    val groupContainmentLine =
         t(
-            "Icons, patterns, the Tape and the keyframe loss every screen stands on.",
-            "Иконки, узоры, Лента и потеря кадра, на которых стоит каждый экран.",
+            "What holds content: cards, rows, dividers, the carousel, the table.",
+            "Что держит содержимое: карточки, строки, разделители, карусель, таблица.",
         )
-    val stageMvp = "MVP"
-    val stageV1 = "V1"
-    val stageLater = t("LATER", "ПОЗЖЕ")
-    val stageBase = t("BASE", "ОСНОВА")
+    val groupNavigation = t("Navigation", "Навигация")
+    val groupNavigationLine =
+        t("Moving between screens, and between the views of one.", "Переход между экранами и видами одного экрана.")
+    val groupCommunication = t("Communication", "Сообщения")
+    val groupCommunicationLine =
+        t(
+            "Status, progress, loading, short messages and hints.",
+            "Статус, прогресс, загрузка, короткие сообщения и подсказки.",
+        )
+    val groupOverlays = t("Overlays", "Оверлеи")
+    val groupOverlaysLine =
+        t(
+            "Content over the screen: the dialog and the bottom sheet.",
+            "Содержимое поверх экрана: диалог и нижний лист.",
+        )
     val onThisPage = t("ON THIS PAGE", "НА СТРАНИЦЕ")
 
     // State captions, as the design's table names them.

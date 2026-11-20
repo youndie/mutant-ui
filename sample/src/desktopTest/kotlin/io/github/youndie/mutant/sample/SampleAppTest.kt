@@ -23,16 +23,24 @@ class SampleAppTest {
                     setContent { MutantUiSample(settings) }
                     mainClock.advanceTimeByFrame()
                     onNodeWithTag("sample-root").assertIsDisplayed()
-                    // B-99: one section per entry of the catalogue, every component of the kit and the foundations.
-                    for (id in SpecId.entries) {
-                        onNodeWithTag(
-                            "section-${id.name}",
-                        ).assertExists("${id.name}, ${if (print) "Копия" else "Эфир"}, $language")
+                    // B-99: one section per entry of the catalogue, every component of the kit and the foundations;
+                    // B-148: a group at a time.
+                    for (group in SpecGroup.entries) {
+                        settings.group = group
+                        mainClock.advanceTimeByFrame()
+                        for (id in SpecId.entries.filter { it.group == group }) {
+                            onNodeWithTag(
+                                "section-${id.name}",
+                            ).assertExists("${id.name}, ${if (print) "Копия" else "Эфир"}, $language")
+                        }
                     }
-                    // The other page draws too.
+                    // The other page draws too, a screen at a time.
                     settings.page = SamplePage.Demo
-                    mainClock.advanceTimeByFrame()
-                    onNodeWithTag("sample-root").assertIsDisplayed()
+                    for (screen in DemoScreen.entries) {
+                        settings.demoScreen = screen
+                        mainClock.advanceTimeByFrame()
+                        onNodeWithTag("sample-root").assertIsDisplayed()
+                    }
                 }
             }
         }

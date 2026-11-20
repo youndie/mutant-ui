@@ -41,7 +41,13 @@ class DemoTapeOnceTest {
 
     @Test
     fun `a phone on the Demo page carries one Tape, its own`() {
-        val page = frames { MutantUiSample(SampleSettings(page = SamplePage.Demo), ScrollState(0)) }
+        val page =
+            frames {
+                MutantUiSample(
+                    SampleSettings(page = SamplePage.Demo, demoScreen = DemoScreen.Recording),
+                    ScrollState(0),
+                )
+            }
         val alone =
             frames {
                 MutantTheme {

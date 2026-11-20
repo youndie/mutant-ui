@@ -109,6 +109,10 @@ private enum class Scene {
     Control,
 }
 
+/**
+ * B-148: the Components scenes show the page's default group, Foundations, alone, and the Demo page scenes its default
+ * screen, Library, alone.
+ */
 @Composable
 private fun SceneContent(scene: Scene) {
     val strings = remember { SampleStrings(SampleLanguage.English) }

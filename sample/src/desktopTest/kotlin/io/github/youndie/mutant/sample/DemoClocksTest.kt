@@ -1,5 +1,6 @@
 package io.github.youndie.mutant.sample
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.platform.LocalDensity
@@ -14,8 +15,9 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * B-90: on the demo page the Settings screen opens with its dialog, and the dialog stands that screen alone; the Library
- * screen beside it keeps ticking.
+ * B-90: the Settings screen opens with its dialog, and the dialog stands that screen alone; the Library screen beside it
+ * keeps ticking. B-148: the Demo page shows one screen at a time, so the two stand side by side here, as a host that
+ * shows two of them would put them.
  */
 @OptIn(ExperimentalTestApi::class)
 class DemoClocksTest {
@@ -31,7 +33,12 @@ class DemoClocksTest {
             mainClock.autoAdvance = false
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                    MutantTheme(reduceMotion = false) { DemoPage(SampleStrings(SampleLanguage.English)) }
+                    MutantTheme(reduceMotion = false) {
+                        Row {
+                            DemoScreenFrame(DemoScreen.Library, SampleStrings(SampleLanguage.English))
+                            DemoScreenFrame(DemoScreen.Settings, SampleStrings(SampleLanguage.English))
+                        }
+                    }
                 }
             }
 
