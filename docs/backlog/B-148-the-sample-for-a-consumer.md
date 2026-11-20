@@ -1,7 +1,7 @@
 ---
 id: B-148
 title: "The sample for a consumer, light on a phone"
-status: wip
+status: done
 priority: P1
 size: M
 stage: stage-6-later
@@ -150,3 +150,11 @@ run's `~b`), `make check` green.
 - The README's table of frame rates still cites B-138's and B-141's numbers, taken on the whole page; they describe the
   page as it was until a run on the new one replaces them.
 - A second proxy run on a quiet host, if `DemoPage`'s answer is wanted: this one could not tell the two arms apart.
+
+### Review, 2026-11-20
+
+Checked apart from the findings: nothing under `mutant-core/`, `reference/` or `scripts/` changed; no stage name is left
+in `sample/src` but the test's own pattern. `make check` green; `./gradlew check` green on `de2e877`, 474 tests in the
+JUnit XML (452 `mutant-core`, 22 `sample`), 0 failed. The proxy run's host load included the sample left running in
+the iOS simulator by B-138's run for 19 hours (stopped on 2026-11-20 after this run), so its numbers carry that load as
+the findings say; `ComponentsRest` moved the same way in every counted round.
