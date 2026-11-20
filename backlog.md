@@ -58,10 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (4)
+## Open (5)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-148](docs/backlog/B-148-the-sample-for-a-consumer.md) `[~]` | The sample for a consumer, light on a phone | P1 | M | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-145](docs/backlog/B-145-the-keyframe-losss-steps-off-the-slow-path.md) `[ ]` | The keyframe loss's steps off the slow path | P2 | M | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
