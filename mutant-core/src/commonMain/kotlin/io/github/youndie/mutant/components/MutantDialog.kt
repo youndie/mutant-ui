@@ -119,7 +119,8 @@ public fun MutantDialog(
 
 /**
  * [MutantDialog]; [playIn] false stands it open from the first frame and [windowTop] places its window there instead of
- * centring it (a fixture's still, at the page's place); [hidden] draws its words transparent for a bare twin.
+ * centring it (a fixture's still, at the page's place); [hidden] draws its words transparent for a bare twin. [probe] is
+ * told the window's body instance ([MutantSurface]'s): for tests only, never for a consumer.
  */
 @Composable
 internal fun DialogFrame(
