@@ -3,11 +3,13 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -16,6 +18,7 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performSemanticsAction
@@ -96,6 +99,28 @@ class DateTimePickerBehaviourTest {
                     onNode(hasContentDescription(it)).fetchSemanticsNode().boundsInRoot
                 }
             assertTrue(arrows.all { it.width >= 48f && it.height >= 48f }, "arrows $arrows")
+        }
+
+    @Test
+    fun `given more room than it needs, the calendar keeps its width and its header over its days`() =
+        // B-150: the header's row filled the width it was offered, so the calendar stretched over a wide column and its
+        // month and arrows ran past the days (the Components page, 2026-11-20).
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still {
+                    Box(Modifier.width(600.dp)) {
+                        MutantDatePicker(2026, 11, 13, {}, { _, _ -> }, Modifier.testTag("calendar"))
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val calendar = onNodeWithTag("calendar").fetchSemanticsNode().boundsInRoot
+            assertEquals(284f, calendar.width, "the calendar's width")
+            // November 2026's Sundays, the 29th among them, are its last column.
+            val days = onNode(hasText("29").and(hasClickAction())).fetchSemanticsNode().boundsInRoot
+            val next = onNode(hasContentDescription("Следующий месяц")).fetchSemanticsNode().boundsInRoot
+            assertTrue(next.left < days.right, "the arrow from ${next.left}, past the days' end at ${days.right}")
         }
 
     @Test
