@@ -1,0 +1,62 @@
+# B-149: AppearBench under JFR (jdk.ExecutionSample every 1 ms), JDK 25, this M1, main at 66d9c57.
+# Samples on the frame's thread (not DefaultDispatcher) with the kit's surface on the stack: both arms; the in-frame
+# arm's first build is all but all of them. 837 samples.
+
+## inclusive, the kit's functions, share of those samples
+  756  90.3%  surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$18$0
+  730  87.2%  gen.FrameKt.frame$default
+  730  87.2%  gen.FrameKt.frame
+  678  81.0%  gen.FieldKt.distanceField
+  677  80.9%  gen.FieldKt.fieldOn
+  667  79.7%  bench.AppearBenchKt$round$1.invokeSuspend$lambda$2$0$1$0
+  511  61.1%  gen.FieldKt.fieldStatic
+   66   7.9%  surface.HeldInstance$buildOffFrame$1.invokeSuspend
+   65   7.8%  surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$18$0$10
+   43   5.1%  gen.FieldKt.march
+   37   4.4%  surface.HeldInstance.of
+   36   4.3%  surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$18$0$4
+   33   3.9%  gen.MutantGenerator.instance$default
+   33   3.9%  gen.MutantGenerator.instance
+   28   3.3%  gen.FieldKt.march$default
+   26   3.1%  surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$18$0$stillOf
+   25   3.0%  surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$18$0$stillOf$7
+   25   3.0%  surface.StillLayers.of
+   23   2.7%  gen.MutantGenerator.placeFlowLines
+   18   2.2%  gen.MutantGenerator.placeFlowLines$lambda$1
+   10   1.2%  gen.MutantGenerator.flowLineAt$io_github_youndie_mutant_core
+    9   1.1%  gen.ShapesKt.roundedRectDistance
+    8   1.0%  gen.ShapesKt.bodyDistance
+    7   0.8%  surface.CleanZoneRegistry.union
+    6   0.7%  surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$19$0
+    6   0.7%  bench.AppearBenchKt$round$1.invokeSuspend$lambda$2$0$1
+    6   0.7%  surface.MutantKeyframeLossKt.moshBehind$lambda$0
+    6   0.7%  surface.MutantSurfaceKt.MutantSurface_FXKtXks$lambda$18$0$22
+    6   0.7%  gen.MutantGenerator.arc
+    5   0.6%  gen.MutantGenerator.edgeMosaic$io_github_youndie_mutant_core
+
+## fieldStatic by source line (Field.kt at 66d9c57), 511 samples
+line 267: 2 (0.4%)
+line 268: 193 (37.8%)
+line 269: 1 (0.2%)
+line 270: 2 (0.4%)
+line 271: 3 (0.6%)
+line 272: 41 (8.0%)
+line 273: 31 (6.1%)
+line 279: 88 (17.2%)
+line 280: 2 (0.4%)
+line 281: 4 (0.8%)
+line 282: 18 (3.5%)
+line 283: 14 (2.7%)
+line 293: 59 (11.5%)
+line 295: 1 (0.2%)
+line 296: 4 (0.8%)
+line 297: 1 (0.2%)
+line 298: 1 (0.2%)
+line 300: 1 (0.2%)
+line 304: 2 (0.4%)
+line 306: 3 (0.6%)
+line 308: 2 (0.4%)
+line 311: 8 (1.6%)
+line 314: 15 (2.9%)
+line 328: 14 (2.7%)
+line 331: 1 (0.2%)

@@ -40,3 +40,30 @@ frames have not.
   parity and numeric goldens unchanged.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt`,
   `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/bench/AppearBench.kt`
+
+## Findings
+
+### Iteration 1, 2026-11-20: where the first frame goes
+
+- The first measurement above ran with the sample left running in the iOS simulator by B-138's run (about 60 % of a
+  core, for 19 hours), found by B-148's run. Stopped, [again](../../logs/b-149/2026-11-20-appear-desktop-2.log): built in
+  the frame 127.8 ms (100.1 drawing), off it 9.4. The cost is the first build's, not the load's.
+- [The profile](../../logs/b-149/2026-11-20-appear-jfr-main-thread.txt) (`AppearBench` under JFR, a sample every
+  1 ms, [its run](../../logs/b-149/2026-11-20-appear-jfr.log)): of the frame thread's samples under the kit, **87 % are
+  the first `gen.frame`, 81 % its `distanceField`, 61 % `fieldStatic`**, the grid's part that is built once an
+  instance; the generator's instance 4 %, the still layers' image 3 %, the vectors' draw under 1 %.
+- Why `fieldStatic` costs: a body wider than 200 dp has a grid of 1.5 dp, so a 328 × 80 card is about 230 × 100 cells.
+  Each cell asks `valueNoise` four times (two terms at 0.8 and 2.1 for the edge noise, two at 0.03 × 0.05 for the warp),
+  and each `valueNoise` hashes four lattice corners with a `sin` (`latticeHash`); the warp's pass takes two more `sin`s,
+  one depending on the cell's row only, one on its column only, and `topWave` on its column only. About 18 `sin`s a
+  cell, four million for ten cards.
+- Most of them repeat a value already computed: a lattice corner is shared by every cell around it (the warp's lattice
+  is 33 × 20 dp, so a corner serves about 200 cells; the 0.8 term's about 1.4), and a row's or a column's term is the same
+  for the whole row or column.
+
+**Pre-registered before the change.** `fieldStatic` computes each lattice corner's hash once per call and each row's
+and column's term once, with the same expressions, so every value is the same to the bit. Held if:
+- the numeric goldens (`gen/goldens`), the parity tests and the screenshot goldens pass unchanged;
+- `AppearBench`'s in-frame frame N falls by at least a quarter against `main`, in two runs of each, alternating
+  (`main`, this, `main`, this), on this M1, same host, the median of rounds 2–6 each.
+It is not the item's answer: what remains after it decides the route.
