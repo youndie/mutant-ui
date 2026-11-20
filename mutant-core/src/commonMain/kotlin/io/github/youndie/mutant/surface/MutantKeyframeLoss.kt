@@ -73,7 +73,7 @@ public fun MutantKeyframeLoss(
 
 /**
  * [MutantKeyframeLoss]; [frozenAt] (a fixture's `data-mu-mosh-p`) starts the [first] loss at once and stands it at that
- * share of its run: 0.45 at 45 %, 1.2 into its recovery.
+ * share of its run: 0.45 at 45 %, 1.2 into its recovery. [probe] becomes the scene's ([MoshScene.probe]).
  */
 @Composable
 internal fun KeyframeLossBody(
@@ -173,7 +173,7 @@ internal class MoshScene(
     var frozenAt: Double? = null
     var live = false
 
-    /** Told, at each draw under the content, whether a loss runs: for tests. */
+    /** Told, at each draw under the content, whether a loss runs: for tests only, never for a consumer. */
     var probe: ((Boolean) -> Unit)? = null
 
     // The band in scene pixels, top and bottom; NaN while no loss runs. Bodies read it as they draw.

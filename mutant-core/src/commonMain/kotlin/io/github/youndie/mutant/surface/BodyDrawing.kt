@@ -355,16 +355,6 @@ private fun DrawScope.drawMosaicPastContour(
 
 private fun tint(t: io.github.youndie.mutant.gen.MosaicTile): Color = if (t.black) Color.Black else Color.White
 
-/**
- * The parts of a body, each of which a measurement can leave out of the draw (B-78). The kit draws them all;
- * [LocalMutantSkipBodyParts] is empty but for that bench.
- */
-internal enum class BodyPart { Shadow, Fill, Speckle, Mosaic, DeadPixels, FlowLines, Highlight, Outline, ContourClip }
-
-/** What a measurement leaves out of every body's draw (B-78); empty in the kit. */
-internal val LocalMutantSkipBodyParts =
-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
-
 /** [block] clipped by [path], or unclipped when [unclipped] (B-78's ablation of the clip alone). */
 private inline fun DrawScope.clipPathUnless(
     unclipped: Boolean,

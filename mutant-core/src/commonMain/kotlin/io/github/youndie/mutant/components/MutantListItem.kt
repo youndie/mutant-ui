@@ -80,7 +80,10 @@ public fun MutantListItem(
     )
 }
 
-/** [MutantListItem]; [hidden] draws its words and icon transparent for a fixture's bare twin. */
+/**
+ * [MutantListItem]; [hidden] draws its words and icon transparent for a fixture's bare twin. [probe] is told the leading
+ * icon tile's body instance ([MutantSurface]'s): for tests only, never for a consumer.
+ */
 @Composable
 internal fun ListItemBody(
     headline: AnnotatedString,

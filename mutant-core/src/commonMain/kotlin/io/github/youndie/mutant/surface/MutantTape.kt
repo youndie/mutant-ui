@@ -93,15 +93,6 @@ internal fun tapeBandTop(
     return if (phase < TRACKING_SHARE) jsRound(h - (phase / TRACKING_SHARE) * (h + 30)).toFloat() else null
 }
 
-/** A part of the Tape, as B-77's bench leaves one out to read what it costs. */
-internal enum class TapePart { Lines, Band, Grain, Noise }
-
-/** The parts of the Tape left out: for B-77's bench only, never for a consumer. */
-internal val LocalMutantTapeSkip = androidx.compose.runtime.staticCompositionLocalOf<Set<TapePart>> { emptySet() }
-
-/** Called on every draw of the Tape itself: for its tests only (B-141), to tell its draws from its holder's. */
-internal val LocalMutantTapeProbe = androidx.compose.runtime.staticCompositionLocalOf<(() -> Unit)?> { null }
-
 /** The share of the cycle the band passes in. */
 private const val TRACKING_SHARE = .3
 

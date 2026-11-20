@@ -75,55 +75,7 @@ internal class CleanZoneRegistry {
             }?.let { Rect(it.left / density, it.top / density, it.right / density, it.bottom / density) }
 }
 
-/**
- * A parity fixture's way to draw an outline at the width the engine drew it: the engine seeds the outline's
- * tremble with its running slot count, which a kit has no counterpart for (research §1.10, D16). Null in the kit.
- */
-internal val LocalMutantOutlineOverride = staticCompositionLocalOf<((String) -> Float?)?> { null }
-
-/**
- * A parity fixture's way to stand a body where the engine stood it: the engine generates a slot in its stage's
- * coordinates, so its noise depends on where the slot is, where the kit's is its own (D16). The body is generated
- * at that origin and drawn back at its place; the speckle is anchored there too. Null in the kit.
- */
-internal val LocalMutantSlotOrigin = staticCompositionLocalOf<((String) -> Offset?)?> { null }
-
-/**
- * A parity fixture's way to give a body the engine's text zone (`textZone`): Chrome measures a label's box at a
- * fraction (83.29 dp) where Compose rounds it up (84), and a flow line starting between the two is kept by one and
- * dropped by the other. Null in the kit, which measures its own content.
- */
-internal val LocalMutantTextZone = staticCompositionLocalOf<((String) -> DoubleArray?)?> { null }
-
-/**
- * A parity fixture's way to generate a body at the size the engine generated it: Chrome lays a label-sized slot out
- * at a fraction (103.4 dp) the engine records whole (103), where Compose rounds the label up (104). The body is
- * generated at that size and drawn in its own box. Null in the kit.
- */
-internal val LocalMutantSlotSize = staticCompositionLocalOf<((String) -> androidx.compose.ui.geometry.Size?)?> { null }
-
 internal val LocalCleanZone = staticCompositionLocalOf<CleanZoneRegistry?> { null }
-
-/**
- * Whether a running clock builds a body's first instance off the frame (B-50). Off only for a test or a measurement
- * that compares with building it in the frame, as before.
- */
-internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
-
-/**
- * Told, for every body frame a surface draws, whether it was built ahead off the frame (B-75) and whether it is
- * drawn from an image rasterised ahead (B-82), and whether its webs were steadied (B-84): a test reads it.
- */
-internal val LocalMutantFrameProbe =
-    staticCompositionLocalOf<
-        (
-            (
-                fromAhead: Boolean,
-                asImage: Boolean,
-                steadyWebs: Boolean,
-            ) -> Unit
-        )?,
-    > { null }
 
 /**
  * Marks this element's bounds as part of its surface's clean zone: the text and icons that flow lines,
@@ -1011,15 +963,6 @@ internal data class BodyPicture(
 )
 
 /**
- * Whether a resting body under a running clock is rasterised once per tick, ahead with its frame, and drawn as that
- * image until the next tick (B-82). Off only for a test or a measurement comparing it with drawing the vectors.
- */
-internal val LocalMutantBodyAsImage = staticCompositionLocalOf { true }
-
-/** Told the time and the bytes of every body rasterised (B-82): the bench reads it. */
-internal val LocalMutantRasterProbe = staticCompositionLocalOf<((nanos: Long, bytes: Long) -> Unit)?> { null }
-
-/**
  * A body rasterised at the device's pixels, and where its top-left pixel goes in the surface's own pixels. [whole] is
  * everything the body can ink, in the same pixels; the image covers all of it, or the part of it a band asked for (B-86).
  */
@@ -1101,9 +1044,6 @@ internal fun rasterisedBody(
 }
 
 private const val RASTER_MARGIN = 20.0
-
-/** B-117: whether a body's still layers are drawn once per instance; off only to measure against drawing them each tick. */
-internal val LocalMutantStillLayersOnce = staticCompositionLocalOf { true }
 
 /**
  * B-117: a body's still layers drawn once ([stillLayersImage]), kept for as long as its instance and the inputs of its
