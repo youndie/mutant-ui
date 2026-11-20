@@ -1,0 +1,30 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:StartFlightRecording=filename=/private/tmp/claude-501/-Users-youndie-Documents-GitHub/eb104267-58c0-4965-ada3-137a72a165d0/scratchpad/appear-%p.jfr,settings=/private/tmp/claude-501/-Users-youndie-Documents-GitHub/eb104267-58c0-4965-ada3-137a72a165d0/scratchpad/fine.jfc
+[0.413s][info][jfr,startup] Started recording 1. No limit specified, using maxsize=250MB as default.
+[0.413s][info][jfr,startup] 
+[0.413s][info][jfr,startup] Use jcmd 79260 JFR.dump name=1 to copy recording data to file.
+Picked up JAVA_TOOL_OPTIONS: -XX:StartFlightRecording=filename=/private/tmp/claude-501/-Users-youndie-Documents-GitHub/eb104267-58c0-4965-ada3-137a72a165d0/scratchpad/appear-%p.jfr,settings=/private/tmp/claude-501/-Users-youndie-Documents-GitHub/eb104267-58c0-4965-ada3-137a72a165d0/scratchpad/fine.jfc
+[0.409s][info][jfr,startup] Started recording 1. No limit specified, using maxsize=250MB as default.
+[0.409s][info][jfr,startup] 
+[0.409s][info][jfr,startup] Use jcmd 79319 JFR.dump name=1 to copy recording data to file.
+# B-50 appear bench, commit f8840f5, OpenJDK 64-Bit Server VM 25.0.4.1, Mac OS X aarch64, 8 cpus
+round arm          N frame      N draw   N+1 frame  warm frame   (us)
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.skiko.LibraryLoader in an unnamed module (file:/Users/youndie/.gradle/caches/modules-2/files-2.1/org.jetbrains.skiko/skiko-awt/0.150.1/e03fd8140c0e331c3c7018b00a9710ec98d78fc1/skiko-awt-0.150.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+1     inFrame       736777      558901       29131       27281
+1     offFrame       60517       33344       63742       29594
+2     offFrame       28866       11090        1990       21869
+2     inFrame       228872      189103       32798       27886
+3     inFrame       125669      100849       16647       19057
+3     offFrame       21780        1730       41080       30273
+4     offFrame       11531        1978       11924       16459
+4     inFrame       151365      111869       27203       29095
+5     inFrame       132517      106929       15749       15974
+5     offFrame       11952        2364       12504       29779
+6     offFrame       37371       13819       39516       16515
+6     inFrame       131745      109613       15943       26893
+median of rounds 2-6
+      inFrame       132517      109613       16647       26893
+      offFrame       21780        2364       12504       21869

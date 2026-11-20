@@ -1,0 +1,17 @@
+=== run 1, main (66d9c57), load { 8.00 8.08 13.54 }
+median of rounds 2-6
+      inFrame       127751      105401       15718       14739
+      offFrame       22656        1685        1588       17346
+=== run 1, branch (39868b6), load { 12.76 9.14 13.83 }
+median of rounds 2-6
+      inFrame       155504      115032       27006       18338
+      offFrame       14745        2708        2325       24480
+=== run 2, main (66d9c57), load { 12.35 9.17 13.78 }
+median of rounds 2-6
+      inFrame       120492       99084       18048       17332
+      offFrame       16273        5073        1705       21194
+=== run 2, branch (39868b6), load { 10.88 9.00 13.64 }
+median of rounds 2-6
+      inFrame        97784       73884       19278       17832
+      offFrame       17796        2609        2150       18831
+DONE
