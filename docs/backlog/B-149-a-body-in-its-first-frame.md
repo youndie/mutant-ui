@@ -1,7 +1,7 @@
 ---
 id: B-149
 title: "A body drawn in its first frame"
-status: question
+status: wip
 priority: P1
 size: L
 stage: stage-6-later
@@ -105,3 +105,25 @@ How should a body's first frame look? Choices, for the owner:
    cards on this M1). In the browser there is one thread, so there it is choice 1 or 2.
 And separately: keep the exact hashing change (no loss, a small gain on the JVM, perhaps more in the browser,
 unmeasured) or take it out as not held.
+
+## The decision
+
+The owner, 2026-11-20: «Parallel + stand-in» (choice 3, with choice 2 in the browser). The exact hashing change
+(`39868b6`) stays: it is the same to the bit, held by `LatticeRowsTest`, and costs nothing (not held as a speed-up).
+
+- **Where the platform has threads** (desktop, Android, iOS): a body whose first instance is not built yet asks for its
+  build at layout; the first body drawn in a frame starts every build asked for, each on `Dispatchers.Default`, by then
+  every clean zone of the frame being registered; each body's draw then waits for its own. A body with no build asked
+  for (or a signature that changed between layout and draw) builds in its draw, as before B-50. Every body is drawn
+  exactly in its first frame.
+- **In the browser** (one thread): the first frame draws a stand-in, the slot's rounded shape in the body's fill with
+  its outline, and the body from the frame its build is taken in, as B-50 does.
+- **Pre-registered, before the change:**
+  - a test, failing on `main`: under a running clock, on the desktop, the body is drawn in its first frame, built once,
+    and every frame from the first is the picture a body built in its frame draws;
+  - a test of the stand-in, the platform's waiting turned off by a seam: the first frame draws the stand-in and builds
+    nothing in the frame, the body is drawn from the next frame;
+  - the screenshot goldens, the parity tests and the numeric goldens unchanged;
+  - `AppearBench`, the off-the-frame arm now the parallel build: its frame N under half of the in-frame arm's in every
+    counted round, on this M1, the host's load logged;
+  - iOS, Android and wasm compile.
