@@ -1,0 +1,19 @@
+# load before: { 7.60 14.08 12.70 }; offFrame is now the parallel first build (B-149)
+# B-50 appear bench, commit 4d3d1fa, OpenJDK 64-Bit Server VM 25.0.4.1, Mac OS X aarch64, 8 cpus
+round arm          N frame      N draw   N+1 frame  warm frame   (us)
+1     inFrame       312362      172480       18062       17182
+1     offFrame      164425      134743       16081       15887
+2     offFrame       59302       35521       16108       13671
+2     inFrame        85976       65520       13961       13014
+3     inFrame        80863       59880       13633       12935
+3     offFrame       49964       29909       14884       13676
+4     offFrame       43171       23812       14639       12375
+4     inFrame        99582       73551       14386       12940
+5     inFrame        72836       54853       14609       13370
+5     offFrame       40909       23002       15193       12853
+6     offFrame       40240       23104       14415       12369
+6     inFrame        74249       56942       14073       12386
+median of rounds 2-6
+      inFrame        80863       59880       14073       12940
+      offFrame       43171       23812       14884       12853
+# load after: { 8.40 14.03 12.70 }

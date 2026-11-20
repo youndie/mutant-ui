@@ -127,3 +127,30 @@ The owner, 2026-11-20: «Parallel + stand-in» (choice 3, with choice 2 in the b
   - `AppearBench`, the off-the-frame arm now the parallel build: its frame N under half of the in-frame arm's in every
     counted round, on this M1, the host's load logged;
   - iOS, Android and wasm compile.
+
+### Iteration 3, 2026-11-20: the first frame drawn
+
+`4d3d1fa`. `FirstBuilds` takes the frame's first builds: a body with no instance asks at layout (its surface's
+`onGloballyPositioned`, a running clock), the first body drawn in the frame starts every build asked for on
+`Dispatchers.Default` (`HeldInstance.startFirst`), each body's draw waits for its own (`takeFirst`, `awaitHere`:
+`runBlocking` on the desktop, Android and iOS). A body with nothing started for it (a standing clock, whose first build
+also makes B-83's image; a slot changed since layout) builds in its draw. In the browser (`firstFrameWaits = false`) the
+first frame draws `drawStandIn` and builds as B-50 did. The slot and its signature come from one function, `slotOf`,
+at layout and at draw.
+
+- `FirstFrameOffTheFrameTest`, rewritten to the new contract, five tests green:
+  - under a running clock the body is drawn in its first frame, built once, no stand-in;
+  - every frame, the first included, is what a body built in its frame draws (before: every frame but the first);
+  - with the seam `LocalMutantFirstFrameWaits` off, as in the browser: the first frame draws the stand-in and builds
+    nothing in the frame, the body is taken in the next, one stand-in in all;
+  - unchanged: a frozen clock draws in its first frame; a later rebuild is drawn in its own frame.
+  A mutant turning the desktop's waiting off fails exactly the first two. On `main` the first fails (nothing built in
+  the first frame) and the second at frame 0.
+- `make check` green; `./gradlew check` green, 479 tests, 0 failed, every screenshot golden, parity test and numeric
+  golden unchanged; iOS (arm64, simulator), Android and the wasm sample compile.
+- [`AppearBench`](../../logs/b-149/2026-11-20-appear-parallel.log), this M1, the host loaded 8–14 by another session:
+  frame N, the parallel arm against the in-frame arm, per counted round 59.3/86.0, 50.0/80.9, 43.2/99.6, 40.9/72.8,
+  40.2/74.2 ms (69, 62, 43, 56, 54 %); medians 43.2 and 80.9. **The bar written, under half in every round, is not
+  held**: met in one round of five. The first frame of ten appearing cards costs about 43 ms where B-50's frame
+  without bodies cost about 15. Not measured: the browser's stand-in on a screen (the phone away; held on the desktop
+  by the seam alone), and Android and iOS, compiled only.
