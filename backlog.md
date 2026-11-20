@@ -67,7 +67,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (141)
+## Closed (142)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -214,6 +214,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-142](docs/backlog/B-142-a-stall-every-nine-seconds-on-the-components-page.md) `[x]` - A stall every nine seconds on the resting Components page
 - [B-143](docs/backlog/B-143-the-keyframe-loss-reads-its-blocks-without-copying-strips.md) `[x]` - The keyframe loss reads its blocks without copying whole strips
 - [B-144](docs/backlog/B-144-the-keyframe-losss-draw-calls-per-step.md) `[x]` - The keyframe loss's draw calls per step
+- [B-146](docs/backlog/B-146-the-repository-put-in-order.md) `[x]` - The repository put in order, and a README
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
