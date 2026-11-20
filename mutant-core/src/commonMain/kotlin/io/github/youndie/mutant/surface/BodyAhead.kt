@@ -41,6 +41,44 @@ internal class HeldInstance {
     /** No instance held yet: the body has not drawn. */
     val isEmpty: Boolean get() = held == null
 
+    // B-149: the first build started for the frame, and what it was started for.
+    private var first: Deferred<Built>? = null
+    private var firstFor: List<Any?>? = null
+
+    /** Whether a first build was started and not taken yet. */
+    val starting: Boolean get() = first != null
+
+    /** Starts [build] for [signature] on a background thread, to be taken by [takeFirst] in this frame's draw. */
+    fun startFirst(
+        signature: List<Any?>,
+        scope: CoroutineScope,
+        build: () -> Built,
+    ) {
+        if (held != null || first != null) return
+        firstFor = signature
+        first = scope.async(aheadDispatcher) { build() }
+    }
+
+    /**
+     * The first build started for [signature], waited for here; null if none was, or it was started for another
+     * signature (the slot changed between layout and draw), which is then dropped.
+     */
+    fun takeFirst(signature: List<Any?>): Built? {
+        val f = first ?: return null
+        val forNow = firstFor == signature
+        first = null
+        firstFor = null
+        if (!forNow) {
+            f.cancel()
+            return null
+        }
+        val built = f.awaitHere()
+        this.signature = signature
+        pending = null
+        held = built
+        return built
+    }
+
     fun of(
         signature: List<Any?>,
         build: () -> Built,

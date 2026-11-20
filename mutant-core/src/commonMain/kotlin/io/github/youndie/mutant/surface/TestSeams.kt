@@ -46,6 +46,12 @@ internal val LocalMutantSlotSize = staticCompositionLocalOf<((String) -> Size?)?
 internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
 
 /**
+ * B-149: whether a body's first frame waits for its build where the platform could; null follows the platform
+ * ([firstFrameWaits]). `false` only for a test of the browser's stand-in on the desktop (`FirstFrameOffTheFrameTest`).
+ */
+internal val LocalMutantFirstFrameWaits = staticCompositionLocalOf<Boolean?> { null }
+
+/**
  * Whether a resting body under a running clock is rasterised once per tick, ahead with its frame, and drawn as that
  * image until the next tick (B-82). Off only for a test or a bench comparing it with drawing the vectors
  * (`BodyAsImageTest`, `BodyRenderBench`).
@@ -74,6 +80,9 @@ internal enum class TapePart { Lines, Band, Grain, Noise }
 internal val LocalMutantTapeSkip = staticCompositionLocalOf<Set<TapePart>> { emptySet() }
 
 // Probes: told what the body or the Tape did, for a test or a bench to read. Null in the kit.
+
+/** B-149: told each time a body draws its stand-in, its build not ready: `FirstFrameOffTheFrameTest` reads it. */
+internal val LocalMutantStandInProbe = staticCompositionLocalOf<(() -> Unit)?> { null }
 
 /**
  * Told, for every body frame a surface draws, whether it was built ahead off the frame (B-75), whether it is drawn from

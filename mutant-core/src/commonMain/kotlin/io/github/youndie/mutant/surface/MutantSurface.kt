@@ -225,18 +225,107 @@ internal fun MutantSurface(
                 if (k <= 0 && !pouring) null else boilFill(under, colorsNow, k, clock.hotTimeMs())
             }
         }
+    // B-149: whether this body's first frame waits for its build, and the slot and signature a size gives, at layout
+    // or at draw.
+    val waits = LocalMutantFirstFrameWaits.current ?: firstFrameWaits
+    val standInProbe = LocalMutantStandInProbe.current
+    val densityNow = androidx.compose.ui.platform.LocalDensity.current.density
+
+    fun slotOf(
+        d: Float,
+        widthPx: Float,
+        heightPx: Float,
+    ): Triple<Slot, List<Any?>, DoubleArray?>? {
+        val zone = registry.union(d)
+        val w = engineSize?.width?.toDouble() ?: (widthPx / d.toDouble())
+        val h = engineSize?.height?.toDouble() ?: (heightPx / d.toDouble())
+        if (w < 1 || h < 1) return null
+        val tz =
+            engineZone ?: zone?.let {
+                doubleArrayOf(
+                    it.left - MutantGrid.CLEAN_ZONE_HORIZONTAL,
+                    it.top - MutantGrid.CLEAN_ZONE_VERTICAL,
+                    it.width + 2 * MutantGrid.CLEAN_ZONE_HORIZONTAL,
+                    it.height + 2 * MutantGrid.CLEAN_ZONE_VERTICAL,
+                )
+            }
+        val slot =
+            Slot(
+                ox = origin?.x?.toDouble() ?: 0.0,
+                oy = origin?.y?.toDouble() ?: 0.0,
+                w = w,
+                h = h,
+                r = minOf(p.radius, w / 2, h / 2),
+                over = p.overhang * (if (wear < 1) .4 + .6 * wear else 1.0),
+                dripShare = p.dripShare,
+                wobble = p.wobble,
+                round = p.round,
+                calm = wear,
+                dead = p.deadPixels,
+                marks = p.marks,
+                edge = p.mosaic,
+                textZone = tz ?: doubleArrayOf(-99.0, -99.0, 0.0, 0.0),
+                cleanZone =
+                    tz?.let { doubleArrayOf(it[0] - 2, it[1] - 2, it[2] + 4, it[3] + 4) }
+                        ?: doubleArrayOf(0.0, 0.0, 0.0, 0.0),
+            )
+        val signature =
+            listOf(
+                cassette,
+                key,
+                slot.w,
+                slot.h,
+                slot.calm,
+                body,
+                // A profile overridden per slot: its numbers, not its identity, shape the instance.
+                listOf(slot.r, slot.over, slot.dripShare, slot.wobble, slot.marks, slot.edge),
+                tz?.toList(),
+                state == BodyState.Disabled || state == BodyState.Success,
+            )
+        return Triple(slot, signature, tz)
+    }
     Box(
         modifier
             .onGloballyPositioned {
                 registry.surface = it
                 moshBody.coords = it
                 view.place(it, reach)
+                // B-149: no instance yet, and a running clock: ask for the first build, started with the frame's others
+                // by the first body drawn in it. A standing clock's first build also makes its image (B-83): in its draw.
+                if (waits && offFrame && held.isEmpty && !held.starting && !clock.paused && clock.holds == 0) {
+                    val coords = it
+                    FirstBuilds.ask {
+                        if (!coords.isAttached || !held.isEmpty) return@ask
+                        val (slot, signature, _) =
+                            slotOf(densityNow, coords.size.width.toFloat(), coords.size.height.toFloat()) ?: return@ask
+                        val still = state == BodyState.Disabled || state == BodyState.Success
+                        val warmAt = clock.nowMs
+                        held.startFirst(signature, scope) {
+                            val gen = MutantGenerator(cassette)
+                            val g = gen.instance(slot, key)
+                            val built = Triple(g, FieldCache(), if (slot.dead) gen.deadPixels(g) else null)
+                            if (!still) {
+                                gen.frame(
+                                    g,
+                                    built.second,
+                                    warmAt,
+                                    0.0,
+                                    pressed = false,
+                                    steadyWebs = steadyWebs,
+                                )
+                            }
+                            built
+                        }
+                    }
+                }
             }
             // B-135: a layer of its own, so a tick records the body and its content and nothing beside it.
             .graphicsLayer()
             .drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
                 held.arrivals
+                // B-149: the frame's first builds start together, every clean zone of the frame registered by now.
+                FirstBuilds.start()
                 // B-87: a body off the screen builds no tick and reads no clock; its layout tells it when it shows
                 // again ([BodyView.place]). Off the window it draws nothing; outside a box it is laid out in but on the
                 // window, which that box may not clip, it draws its last picture.
@@ -248,54 +337,9 @@ internal fun MutantSurface(
                     return@drawWithCache moshBehind(moshScene, moshBody, snapshot = moshBody.snapshot, block = last)
                 }
                 val d = density
-                val zone = registry.union(d)
-                val w = engineSize?.width?.toDouble() ?: (size.width / d.toDouble())
-                val h = engineSize?.height?.toDouble() ?: (size.height / d.toDouble())
                 val gen = MutantGenerator(cassette)
-                if (w < 1 || h < 1) return@drawWithCache onDrawBehind {}
-                val tz =
-                    engineZone ?: zone?.let {
-                        doubleArrayOf(
-                            it.left - MutantGrid.CLEAN_ZONE_HORIZONTAL,
-                            it.top - MutantGrid.CLEAN_ZONE_VERTICAL,
-                            it.width + 2 * MutantGrid.CLEAN_ZONE_HORIZONTAL,
-                            it.height + 2 * MutantGrid.CLEAN_ZONE_VERTICAL,
-                        )
-                    }
+                val (slot, signature, tz) = slotOf(d, size.width, size.height) ?: return@drawWithCache onDrawBehind {}
                 moshBody.zone = tz
-                val slot =
-                    Slot(
-                        ox = origin?.x?.toDouble() ?: 0.0,
-                        oy = origin?.y?.toDouble() ?: 0.0,
-                        w = w,
-                        h = h,
-                        r = minOf(p.radius, w / 2, h / 2),
-                        over = p.overhang * (if (wear < 1) .4 + .6 * wear else 1.0),
-                        dripShare = p.dripShare,
-                        wobble = p.wobble,
-                        round = p.round,
-                        calm = wear,
-                        dead = p.deadPixels,
-                        marks = p.marks,
-                        edge = p.mosaic,
-                        textZone = tz ?: doubleArrayOf(-99.0, -99.0, 0.0, 0.0),
-                        cleanZone =
-                            tz?.let { doubleArrayOf(it[0] - 2, it[1] - 2, it[2] + 4, it[3] + 4) }
-                                ?: doubleArrayOf(0.0, 0.0, 0.0, 0.0),
-                    )
-                val signature =
-                    listOf(
-                        cassette,
-                        key,
-                        slot.w,
-                        slot.h,
-                        slot.calm,
-                        body,
-                        // A profile overridden per slot: its numbers, not its identity, shape the instance.
-                        listOf(slot.r, slot.over, slot.dripShare, slot.wobble, slot.marks, slot.edge),
-                        tz?.toList(),
-                        state == BodyState.Disabled || state == BodyState.Success,
-                    )
                 val still = state == BodyState.Disabled || state == BodyState.Success
                 val build = {
                     gen
@@ -510,9 +554,12 @@ internal fun MutantSurface(
                         }
                     return Ahead(f, image, inputs)
                 }
+                // B-149: a first build started for this frame is taken here, waited for.
+                if (offFrame && held.isEmpty && waits) held.takeFirst(signature)
                 if (offFrame && held.isEmpty) {
-                    // The static layers are what makes a first frame ten times a warm one: build them with the
-                    // instance on a background thread, and draw the body from the next frame.
+                    // The static layers are what makes a first frame ten times a warm one: where the frame cannot wait
+                    // for another thread (the browser), they are built there with the instance and the body is drawn
+                    // from the frame that takes them, a stand-in until then (B-50, B-149).
                     val warmAt = clock.nowMs
                     // B-83: a clock that stands (held by a dialog, paused) has no next tick, so a body under it would
                     // never be given an image and would draw its vectors on every frame something else asks for. Its
@@ -521,11 +568,7 @@ internal fun MutantSurface(
                     val firstAt = clock.restTimeMs()
                     val firstImage =
                         bodyAsImage && !still && heat == null && !boil.on && (clock.paused || clock.holds > 0)
-                    held.buildOffFrame(
-                        signature,
-                        scope,
-                        taken = { built, first: Ahead? -> first?.let { ahead.preset(built.first, firstAt, it) } },
-                    ) {
+                    val firstOf = {
                         val built = build()
                         val (g, cache, dead) = built
                         val first =
@@ -554,7 +597,20 @@ internal fun MutantSurface(
                             }
                         built to first
                     }
-                    return@drawWithCache onDrawBehind {}
+                    if (waits) {
+                        // Nothing was started for this frame (a standing clock, a slot changed since layout): built here.
+                        val (built, first) = firstOf()
+                        held.of(signature) { built }
+                        first?.let { ahead.preset(built.first, firstAt, it) }
+                    } else {
+                        held.buildOffFrame(
+                            signature,
+                            scope,
+                            taken = { built, first: Ahead? -> first?.let { ahead.preset(built.first, firstAt, it) } },
+                        ) { firstOf() }
+                        standInProbe?.invoke()
+                        return@drawWithCache onDrawBehind { drawStandIn(slot, look, d) }
+                    }
                 }
                 val (g, cache, dead) = held.of(signature, build)
                 // Compared through a plain reference: reading the state here would make this cache depend on its own write.
