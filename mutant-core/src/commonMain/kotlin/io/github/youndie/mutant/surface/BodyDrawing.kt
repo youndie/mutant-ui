@@ -62,8 +62,8 @@ internal fun outlineWidth(
     outline: Double,
     boilPhase: Int,
     boil: Double,
-    trembleSeed: Double = trembleSeedOf(g),
-): Float = jsToFixed(outline * (1 + .12 * boil * valueNoise(boilPhase * 3.3 + trembleSeed * 7.1, 2.5)), 2).toFloat()
+): Float =
+    jsToFixed(outline * (1 + .12 * boil * valueNoise(boilPhase * 3.3 + trembleSeedOf(g) * 7.1, 2.5)), 2).toFloat()
 
 /** The instance's tremble seed: its seed's hash, folded to 0…1023. */
 internal fun trembleSeedOf(g: Instance): Double =

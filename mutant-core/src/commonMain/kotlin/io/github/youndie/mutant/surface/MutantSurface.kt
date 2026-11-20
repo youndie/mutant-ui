@@ -191,7 +191,9 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * A change of [fill] pours the new colour down from the top (`clamp(260 + 5 · h, 300, 620)` ms); a new [slide]
  * request slides the body home from `dx` with its stretch (330 ms). Both step at 12 frames a second and land at
  * once under reduce motion. [pourAt] and [slideAt] fix a progress instead (fixtures, the engine's `data-pour`,
- * `data-slide`). [probe] is told the instance each time a frame is built, for tests.
+ * `data-slide`); no fixture passes either today, and they stay because dropping them renames the content lambdas of
+ * four components in the ABI dump (B-147). [probe] is told the instance each time the body's drawing is built: for
+ * tests only, never for a consumer.
  */
 @Composable
 internal fun MutantSurface(
@@ -947,10 +949,6 @@ internal class HeldInstance {
     private var held: Built? = null
     private var pending: List<Any?>? = null
 
-    /** How many times the instance was built: a test reads it. */
-    var builds: Int = 0
-        private set
-
     /** Bumped when an instance built off the frame is taken; a draw cache reads it to be invalidated. */
     var arrivals: Int by mutableIntStateOf(0)
         private set
@@ -964,7 +962,6 @@ internal class HeldInstance {
     ): Built {
         val h = held
         if (h != null && signature == this.signature) return h
-        builds++
         this.signature = signature
         pending = null
         return build().also { held = it }
