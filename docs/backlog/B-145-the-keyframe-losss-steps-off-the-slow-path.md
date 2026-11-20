@@ -98,3 +98,19 @@ iOS and Android compile, and the wasm sample builds (`3bc3817acac49f7c`). **The 
 made**: the owner took the phone back the same day («телефон мне нужен - снимаю с тестов»). Without it the item's
 acceptance cannot be read, so the branch is not merged. Resuming: build `3bc3817acac49f7c` again from this branch,
 run the protocol as written, read it by the rule written.
+
+### Resumed, 2026-11-20: the run, void
+
+[The run](../../logs/b-145/2026-11-20-copy-abc.log), as pre-registered: `main` (`fa05977cdbb9be9f`), the pixel copy as
+`~b` (`3bc3817acac49f7c`), the loss-free floor as `~c` (`1719bd18bb513da9`), three 60 s loads interleaved. The phone
+started at 35.8 °C and ended at 38.0, its big cores capped from 2802 to 1277 MHz; the owner's Telegram took about 40 %
+of a core at the start.
+
+- **Void.** In the counted loads the floor itself has a stall second nearly every second (rounds 2 and 3), and so do
+  the other two: the run cannot tell the loss's stall from a phone that stalls anyway. The floor is this protocol's
+  control; it failed, so no verdict is read from the counted loads.
+- Round 1, not counted, before the throttling: `main` stalls at 8, 17, 35, 44, 53 s; the pixel copy at 6, 15, 24, 51 s
+  (nine apart, as the loss); the floor at 12, 28, 29, 41 s (no period). One load each, not counted: it says nothing yet,
+  but it does not show the copy removing the stall.
+- Next: the same protocol with the phone under 30 °C, nothing else running on it, and the floor's counted loads free of
+  stalls as the condition of a valid run.
