@@ -1,7 +1,7 @@
 ---
 id: B-149
 title: "A body drawn in its first frame"
-status: wip
+status: question
 priority: P1
 size: L
 stage: stage-6-later
@@ -67,3 +67,41 @@ and column's term once, with the same expressions, so every value is the same to
 - `AppearBench`'s in-frame frame N falls by at least a quarter against `main`, in two runs of each, alternating
   (`main`, this, `main`, this), on this M1, same host, the median of rounds 2–6 each.
 It is not the item's answer: what remains after it decides the route.
+
+### Iteration 2, 2026-11-20: the lattice hashed once — not held
+
+The change (`39868b6`): `fieldStatic` hashes each lattice corner once per call (`LatticeRows`) and computes each row's
+and column's term once. `LatticeRowsTest` holds it to `valueNoise` bit for bit over the field's own steps and over 40
+random grids; a mutant shifting the lattice rows wrongly fails both its tests. The numeric goldens and the parity
+tests: 56 green, unchanged.
+
+[`AppearBench`, alternating](../../logs/b-149/2026-11-20-appear-ab.log), this M1, the host loaded at 8–12 by another
+session's headless Chrome (not this item's, left running): in-frame frame N, `main` 127.8 and 120.5 ms, this 155.5 and
+97.8. **Not held**: the first run is slower, not a quarter faster. Same host, two runs each, alternating: yes.
+
+Wall time on a loaded host says little, so [the frame thread's CPU time](../../logs/b-149/2026-11-20-first-build-cpu.log)
+of ten cards' first build alone (`gen.instance` and the first `gen.frame`, a scratch test, not kept), alternating three
+times: `main` 115.2, 125.3, 111.2 ms; this 111.0, 88.5, 106.8. Lower in each pair, by 4 to 29 %, with rounds inside one
+run moving 75–135 ms. The JVM's `sin` is cheap: the hashes were not what the first frame spends. In the browser, whose
+`sin` is Kotlin's own (`fdlibm`, `__ieee754_rem_pio2` in every profile since B-73), it may be; not measured, the phone
+being away and the proxy's host loaded.
+
+**What it means for the item.** Ten cards' first builds cost about 100 ms of CPU on this M1 with or without the
+change, about 10 ms a body, in `fieldStatic`'s grid of 1.5 dp: about 23 000 cells for a 328 × 80 card, each with its
+distance to the body's rounded shape and two noise terms. That grid is the engine's own (research D3); a coarser one
+would be a departure that moves every body. No change inside this design draws ten bodies exactly in a frame of 16 ms.
+
+## The question
+
+How should a body's first frame look? Choices, for the owner:
+1. **Exact, in its frame.** The body is built where it first draws, as before B-50: never missing, but the frame in
+   which bodies appear takes about 10 ms a body on this M1, several times that on a phone: a group of the Components
+   page switching shows a stall of a few hundred ms there.
+2. **A stand-in for that frame.** The frame a body appears in draws its slot's plain rounded shape in the body's fill
+   and outline; the real body replaces it from the next frame the build is ready. Never bare and never a stall, but a
+   visible change from the plain shape to the slime.
+3. **Exact, built in parallel** on platforms with threads (desktop, Android, iOS): every body of the frame starts its
+   build at layout, and the draw waits for it. Never missing; the stall shrinks by the cores (about 20–30 ms for ten
+   cards on this M1). In the browser there is one thread, so there it is choice 1 or 2.
+And separately: keep the exact hashing change (no loss, a small gain on the JVM, perhaps more in the browser,
+unmeasured) or take it out as not held.
