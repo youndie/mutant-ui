@@ -30,10 +30,10 @@ import io.github.youndie.mutant.surface.mutantTape
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
 
-/** The sample's pages: every component as the design's pages group them, and the three demo screens. */
+/** The sample's pages: every component, a group at a time, and the demo app, a screen at a time. */
 enum class SamplePage { Components, Demo }
 
-/** What the header switches. */
+/** What the header switches, and which group of components and which demo screen the pages show (B-148). */
 class SampleSettings(
     print: Boolean = false,
     reduceMotion: Boolean = false,
@@ -42,6 +42,8 @@ class SampleSettings(
     mosaicPastContour: Boolean = false,
     language: SampleLanguage = SampleLanguage.English,
     page: SamplePage = SamplePage.Components,
+    group: SpecGroup = SpecGroup.Foundations,
+    demoScreen: DemoScreen = DemoScreen.Library,
 ) {
     var print by mutableStateOf(print)
     var reduceMotion by mutableStateOf(reduceMotion)
@@ -50,6 +52,8 @@ class SampleSettings(
     var mosaicPastContour by mutableStateOf(mosaicPastContour)
     var language by mutableStateOf(language)
     var page by mutableStateOf(page)
+    var group by mutableStateOf(group)
+    var demoScreen by mutableStateOf(demoScreen)
 }
 
 /**
@@ -83,8 +87,8 @@ fun MutantUiSample(
             Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(24.dp)) {
                 Header(settings, strings)
                 when (settings.page) {
-                    SamplePage.Components -> ComponentsPage(strings)
-                    SamplePage.Demo -> DemoPage(strings)
+                    SamplePage.Components -> ComponentsPage(strings, settings.group) { settings.group = it }
+                    SamplePage.Demo -> DemoPage(strings, settings.demoScreen) { settings.demoScreen = it }
                 }
             }
         }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,18 +66,40 @@ import io.github.youndie.mutant.theme.MutantScreenClock
 import io.github.youndie.mutant.theme.MutantTheme
 
 /**
- * The Demo page's three phones (B-96): each runs the demo app, opened where the design's three screens stand — the
+ * The Demo page's phone (B-96): it runs the demo app, opened where one of the design's three screens stands — the
  * library, a recording, and settings under a dialog — and from there it navigates by its bar, its drawer and its cards.
+ * B-148: one screen at a time, chosen by a row of chips over it; the screen keeps its frame, its size and its title.
  */
 @Composable
-internal fun DemoPage(strings: SampleStrings) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalArrangement = Arrangement.spacedBy(32.dp)) {
-        for (screen in DemoScreen.entries) DemoScreenFrame(screen, strings)
+internal fun DemoPage(
+    strings: SampleStrings,
+    screen: DemoScreen,
+    choose: (DemoScreen) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        FlowRow(
+            Modifier.testTag("demo-index"),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            for (each in DemoScreen.entries) {
+                val label =
+                    when (each) {
+                        DemoScreen.Library -> strings.demoLibrary
+                        DemoScreen.Recording -> strings.demoRecording
+                        DemoScreen.Settings -> strings.settings
+                    }
+                MutantChip(label, each == screen, { choose(each) }, key = "demo-${each.name}")
+            }
+        }
+        // The Settings screen's dialog takes focus as it opens, and the focus asks the page to scroll to it; the page stays
+        // put, its chips in view.
+        Box(StayPut) { key(screen) { DemoScreenFrame(screen, strings) } }
     }
 }
 
-/** The page's three screens. */
-internal enum class DemoScreen { Library, Recording, Settings }
+/** The page's three screens. Public, as [SampleSettings] remembers the one shown. */
+enum class DemoScreen { Library, Recording, Settings }
 
 /** One of the screens with its title over it, as the page and a test draw it. */
 @Composable

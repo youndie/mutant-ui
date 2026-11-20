@@ -5,7 +5,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteractionCollection
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -19,9 +22,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * B-99: the Components page has one structure for every section — a head (name, purpose, stage, the public functions it
- * shows) and labelled rows of captioned specimens — its states are the design's table's, it covers every public
- * function of the kit, it opens at its top, and its index scrolls to a group.
+ * B-99: the Components page has one structure for every section — a head (name, purpose, the public functions it shows)
+ * and labelled rows of captioned specimens — its states are the design's table's, it covers every public function of the
+ * kit, and it opens at its top. B-148: its index chooses one group of sections, the one composed.
  */
 @OptIn(ExperimentalTestApi::class)
 class ComponentsPageTest {
@@ -71,14 +74,37 @@ class ComponentsPageTest {
         )
 
     private fun page(
+        settings: SampleSettings = SampleSettings(language = SampleLanguage.English),
         scroll: ScrollState = ScrollState(0),
         block: ComposeUiTest.() -> Unit,
     ) = runComposeUiTest {
         mainClock.autoAdvance = false
-        setContent { MutantUiSample(SampleSettings(language = SampleLanguage.English), scroll) }
+        setContent { MutantUiSample(settings, scroll) }
         mainClock.advanceTimeBy(1_000)
         block()
     }
+
+    /** B-148: the page composes one group at a time; [block] runs on each in turn, chosen through the settings. */
+    private fun everyGroup(block: ComposeUiTest.(SpecGroup) -> Unit) {
+        val settings = SampleSettings(language = SampleLanguage.English)
+        page(settings) {
+            for (group in SpecGroup.entries) {
+                settings.group = group
+                mainClock.advanceTimeBy(1_000)
+                block(group)
+            }
+        }
+    }
+
+    private val sections =
+        SemanticsMatcher("a section") {
+            it.config.getOrElse(SemanticsProperties.TestTag) { "" }.startsWith("section-")
+        }
+
+    private fun ComposeUiTest.composedSections(): List<String> =
+        onAllNodes(sections, useUnmergedTree = true).fetchSemanticsNodes().map {
+            it.config[SemanticsProperties.TestTag].removePrefix("section-")
+        }
 
     private fun SemanticsNodeInteractionCollection.texts(): List<String> =
         fetchSemanticsNodes().flatMap { n ->
@@ -88,19 +114,12 @@ class ComponentsPageTest {
     private fun inSection(id: SpecId) = hasAnyAncestor(hasTestTag("section-${id.name}"))
 
     @Test
-    fun `every section has its head and labelled rows of captioned specimens`() =
-        page {
-            val failures = ArrayList<String>()
-            for (id in SpecId.entries) {
+    fun `every section has its head and labelled rows of captioned specimens`() {
+        val failures = ArrayList<String>()
+        everyGroup { group ->
+            for (id in SpecId.entries.filter { it.group == group }) {
                 val head = onAllNodes(hasAnyAncestor(hasTestTag("head-${id.name}")), useUnmergedTree = true).texts()
-                val badge =
-                    when (id.stage) {
-                        SpecStage.Mvp -> s.stageMvp
-                        SpecStage.V1 -> s.stageV1
-                        SpecStage.Later -> s.stageLater
-                        SpecStage.Base -> s.stageBase
-                    }
-                for (want in listOf(id.en, id.enLine, badge) + id.api) {
+                for (want in listOf(id.en, id.enLine) + id.api) {
                     if (want !in head) failures += "${id.name}: the head lacks «$want»"
                 }
                 val rows =
@@ -126,14 +145,15 @@ class ComponentsPageTest {
                     if (want !in label) failures += "${id.name}: $row is not labelled"
                 }
             }
-            assertTrue(failures.isEmpty(), failures.joinToString("\n"))
         }
+        assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+    }
 
     @Test
-    fun `each section shows the states the design's table names`() =
-        page {
-            val failures = ArrayList<String>()
-            for (id in SpecId.entries) {
+    fun `each section shows the states the design's table names`() {
+        val failures = ArrayList<String>()
+        everyGroup { group ->
+            for (id in SpecId.entries.filter { it.group == group }) {
                 val shown =
                     onAllNodes(
                         hasTestTag("caption") and hasAnyAncestor(hasTestTag("row-states") and inSection(id)),
@@ -142,8 +162,9 @@ class ComponentsPageTest {
                 val want = states.getValue(id)
                 if (shown != want) failures += "${id.name}: $shown, the design's $want"
             }
-            assertTrue(failures.isEmpty(), failures.joinToString("\n"))
         }
+        assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+    }
 
     @Test
     fun `the catalogue names every public function of the kit, and only real ones`() {
@@ -169,20 +190,81 @@ class ComponentsPageTest {
 
     @Test
     fun `the page opens at its top though its overlays are shown from the first frame`() {
-        val scroll = ScrollState(0)
-        page(scroll) { assertEquals(0, scroll.value, "the page's scroll after a second") }
+        // Each group opened on its own: the overlays shown from the first frame are in Overlays, Navigation and
+        // Communication, none of them the default group.
+        for (group in SpecGroup.entries) {
+            val scroll = ScrollState(0)
+            page(SampleSettings(language = SampleLanguage.English, group = group), scroll) {
+                assertEquals(0, scroll.value, "${group.name}: the page's scroll after a second")
+            }
+        }
+    }
+
+    /** B-148: the groups as the owner's round decided them, each in its order; the catalogue must say the same. */
+    private val decided =
+        mapOf(
+            SpecGroup.Foundations to "Theme Icons Patterns Tape KeyframeLoss",
+            SpecGroup.Actions to "Button IconButton Fab Segmented",
+            SpecGroup.Selection to "Checkbox Radio Switch Slider Chip TextField Search DatePicker TimePicker",
+            SpecGroup.Containment to "Card ListItem Divider Carousel Table",
+            SpecGroup.Navigation to "TopAppBar Tabs NavigationBar Drawer Menu",
+            SpecGroup.Communication to
+                "Badge LinearProgress CircularProgress Cocoon Snackbar Tooltip EmptyState Pull",
+            SpecGroup.Overlays to "Dialog Sheet",
+        ).mapValues { it.value.split(" ") }
+
+    @Test
+    fun `the index chooses a group, and the page composes that group's sections alone`() {
+        val settings = SampleSettings(language = SampleLanguage.English)
+        page(settings) {
+            assertEquals(SpecGroup.Foundations, settings.group, "the default group")
+            assertEquals(decided.getValue(SpecGroup.Foundations), composedSections(), "the page as it opens")
+            val seen = HashMap<String, MutableList<SpecGroup>>()
+            for (group in SpecGroup.entries) {
+                val n = SpecId.entries.count { it.group == group }
+                onNode(hasText("${group.title(s)} · $n")).performClick()
+                mainClock.advanceTimeBy(1_000)
+                assertEquals(group, settings.group, "the chip of ${group.name} chose it")
+                for (other in SpecGroup.entries) {
+                    val chip = onNode(hasText("${other.title(s)} · ${SpecId.entries.count { it.group == other }}"))
+                    if (other == group) chip.assertIsSelected() else chip.assertIsNotSelected()
+                }
+                onNodeWithTag("group-${group.name}").assertExists()
+                val composed = composedSections()
+                assertEquals(decided.getValue(group), composed, "the sections composed under ${group.name}")
+                for (id in composed) seen.getOrPut(id) { ArrayList() } += group
+            }
+            assertEquals(SpecId.entries.map { it.name }.toSet(), seen.keys, "every section is in a group")
+            assertEquals(emptyMap(), seen.filterValues { it.size != 1 }, "sections in more than one group")
+        }
     }
 
     @Test
-    fun `the index scrolls to a group`() {
-        val scroll = ScrollState(0)
-        page(scroll) {
-            onNode(hasText("${s.groupLater} · ${SpecId.entries.count { it.stage == SpecStage.Later }}")).performClick()
-            mainClock.advanceTimeBy(1_000)
-            val top = onNodeWithTag("group-Later").fetchSemanticsNode().boundsInRoot.top
-            assertTrue(scroll.value > 0, "the page scrolled: ${scroll.value}")
-            assertTrue(top in 0f..200f, "the group's title stands near the top: $top")
+    fun `no design stage is named on either page, in either language`() {
+        val stage = Regex("""(?i)\bmvp\b|\bv1\b|\blater\b|позже""")
+        val failures = ArrayList<String>()
+        for (language in SampleLanguage.entries) {
+            val settings = SampleSettings(language = language)
+            page(settings) {
+                fun look(where: String) {
+                    val texts =
+                        onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+                    for (t in texts.texts()) if (stage.containsMatchIn(t)) failures += "$language, $where: «$t»"
+                }
+                for (group in SpecGroup.entries) {
+                    settings.group = group
+                    mainClock.advanceTimeBy(1_000)
+                    look(group.name)
+                }
+                settings.page = SamplePage.Demo
+                for (screen in DemoScreen.entries) {
+                    settings.demoScreen = screen
+                    mainClock.advanceTimeBy(1_000)
+                    look("Demo, ${screen.name}")
+                }
+            }
         }
+        assertTrue(failures.isEmpty(), failures.joinToString("\n"))
     }
 
     @Test

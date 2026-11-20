@@ -17,15 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -36,69 +33,66 @@ import androidx.compose.ui.relocation.BringIntoViewModifierNode
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.youndie.mutant.components.MutantBadge
 import io.github.youndie.mutant.components.MutantChip
 import io.github.youndie.mutant.theme.MutantScreenClock
 import io.github.youndie.mutant.theme.MutantTheme
-import kotlinx.coroutines.launch
 
 /**
- * Every component of the kit, one section each, grouped as the design's pages group them (B-99). A section is the
- * component's name, its public functions, its stage and its purpose, then labelled rows: its variants, its states as the
- * design's table names them, and a live example where a state is only seen by doing something. Every specimen is live.
+ * Every component of the kit, one section each, grouped by what a consumer looks for (B-148). A section is the
+ * component's name, its public functions and its purpose, then labelled rows: its variants, its states as the design's
+ * table names them, and a live example where a state is only seen by doing something. Every specimen is live, so the
+ * page shows one [group] at a time, chosen by its index, and composes that group's sections alone.
  */
 @Composable
-internal fun ComponentsPage(strings: SampleStrings) {
-    val scope = rememberCoroutineScope()
-    val groups = remember { SpecStage.entries.associateWith { BringIntoViewRequester() } }
+internal fun ComponentsPage(
+    strings: SampleStrings,
+    group: SpecGroup,
+    choose: (SpecGroup) -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(SECTION_GAP)) {
-        // A rect taller than any window: the page brings its top edge to the window's top, not its bottom.
-        Index(strings) { stage -> scope.launch { groups.getValue(stage).bringIntoView(Rect(0f, 0f, 1f, 100_000f)) } }
-        for (stage in SpecStage.entries) {
-            GroupTitle(stage, strings, Modifier.bringIntoViewRequester(groups.getValue(stage)))
-            for (id in SpecId.entries.filter { it.stage == stage }) {
-                Spec(id, strings) { SpecBody(id, strings) }
-            }
+        Index(strings, group, choose)
+        GroupTitle(group, strings)
+        for (id in SpecId.entries.filter { it.group == group }) {
+            key(id) { Spec(id, strings) { SpecBody(id, strings) } }
         }
     }
 }
 
-private fun SpecStage.title(s: SampleStrings) =
+internal fun SpecGroup.title(s: SampleStrings) =
     when (this) {
-        SpecStage.Mvp -> s.groupMvp
-        SpecStage.V1 -> s.groupV1
-        SpecStage.Later -> s.groupLater
-        SpecStage.Base -> s.groupBase
+        SpecGroup.Foundations -> s.groupFoundations
+        SpecGroup.Actions -> s.groupActions
+        SpecGroup.Selection -> s.groupSelection
+        SpecGroup.Containment -> s.groupContainment
+        SpecGroup.Navigation -> s.groupNavigation
+        SpecGroup.Communication -> s.groupCommunication
+        SpecGroup.Overlays -> s.groupOverlays
     }
 
-private fun SpecStage.line(s: SampleStrings) =
+private fun SpecGroup.line(s: SampleStrings) =
     when (this) {
-        SpecStage.Mvp -> s.groupMvpLine
-        SpecStage.V1 -> s.groupV1Line
-        SpecStage.Later -> s.groupLaterLine
-        SpecStage.Base -> s.groupBaseLine
+        SpecGroup.Foundations -> s.groupFoundationsLine
+        SpecGroup.Actions -> s.groupActionsLine
+        SpecGroup.Selection -> s.groupSelectionLine
+        SpecGroup.Containment -> s.groupContainmentLine
+        SpecGroup.Navigation -> s.groupNavigationLine
+        SpecGroup.Communication -> s.groupCommunicationLine
+        SpecGroup.Overlays -> s.groupOverlaysLine
     }
 
-private fun SpecStage.badge(s: SampleStrings) =
-    when (this) {
-        SpecStage.Mvp -> s.stageMvp
-        SpecStage.V1 -> s.stageV1
-        SpecStage.Later -> s.stageLater
-        SpecStage.Base -> s.stageBase
-    }
-
-/** The page's index: one chip per group, each with its count, scrolling to it. */
+/** The page's index: one chip per group, each with its count; the chosen one is selected. */
 @Composable
 private fun Index(
     s: SampleStrings,
-    go: (SpecStage) -> Unit,
+    chosen: SpecGroup,
+    choose: (SpecGroup) -> Unit,
 ) {
     Column(Modifier.testTag("spec-index"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Osd(s.onThisPage, MutantTheme.colors.textSecondary, size = 16)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (stage in SpecStage.entries) {
-                val n = SpecId.entries.count { it.stage == stage }
-                MutantChip("${stage.title(s)} · $n", false, { go(stage) }, key = "index-${stage.name}")
+            for (group in SpecGroup.entries) {
+                val n = SpecId.entries.count { it.group == group }
+                MutantChip("${group.title(s)} · $n", group == chosen, { choose(group) }, key = "index-${group.name}")
             }
         }
     }
@@ -106,22 +100,21 @@ private fun Index(
 
 @Composable
 private fun GroupTitle(
-    stage: SpecStage,
+    group: SpecGroup,
     s: SampleStrings,
-    modifier: Modifier,
 ) {
     Column(
-        modifier.padding(top = 24.dp).testTag("group-${stage.name}"),
+        Modifier.padding(top = 24.dp).testTag("group-${group.name}"),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        BasicText(stage.title(s), style = MutantTheme.textStyles.display(40.sp))
+        BasicText(group.title(s), style = MutantTheme.textStyles.display(40.sp))
         // In the text's own ink: the secondary one reads 4.49:1 on the page's ground of «Копия».
-        BasicText(stage.line(s), style = MutantTheme.textStyles.text(15.sp))
+        BasicText(group.line(s), style = MutantTheme.textStyles.text(15.sp))
     }
 }
 
 /**
- * One section: the head (name, functions, stage, purpose) beside the rows on a wide page, over them on a narrow one.
+ * One section: the head (name, functions, purpose) beside the rows on a wide page, over them on a narrow one.
  * Every section has the same widths, padding and gaps.
  */
 @Composable
@@ -161,15 +154,7 @@ private fun Head(
 ) {
     val colors = MutantTheme.colors
     Column(modifier.testTag("head-${id.name}"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        // A long name wraps, and the stage's badge goes under it rather than out of the head.
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            itemVerticalAlignment = Alignment.CenterVertically,
-        ) {
-            BasicText(id.name(s), style = MutantTheme.textStyles.display(28.sp))
-            MutantBadge(id.stage.badge(s))
-        }
+        BasicText(id.name(s), style = MutantTheme.textStyles.display(28.sp))
         BasicText(id.line(s), style = MutantTheme.textStyles.text(14.sp).copy(color = colors.textSecondary))
         for (api in id.api) Osd(api, colors.textOsd, size = 14, tracking = .5f)
     }
@@ -269,13 +254,13 @@ internal fun Stage(
 }
 
 /** Swallows a request to bring something inside into view: the page around does not scroll for it. */
-private data object StayPut : ModifierNodeElement<StayPutNode>() {
+internal data object StayPut : ModifierNodeElement<StayPutNode>() {
     override fun create() = StayPutNode()
 
     override fun update(node: StayPutNode) = Unit
 }
 
-private class StayPutNode :
+internal class StayPutNode :
     Modifier.Node(),
     BringIntoViewModifierNode {
     override suspend fun bringIntoView(
@@ -331,7 +316,7 @@ private fun SpecBody(
     }
 }
 
-/** Between sections, and between a group's title and its first section. */
+/** Between sections, and between the index, the group's title and its first section. */
 private val SECTION_GAP = 24.dp
 private val SECTION_PADDING = 28.dp
 private val ROW_GAP = 28.dp
