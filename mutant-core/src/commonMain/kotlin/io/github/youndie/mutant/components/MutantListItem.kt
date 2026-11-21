@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -162,7 +161,7 @@ internal fun ListItemBody(
             }
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(LINE_GAP)) {
-            BasicText(
+            MutantText(
                 // A headline's own colours (a search result's match, B-44) give way to the row's grey or a bare twin's
                 // transparency.
                 if (hidden || !enabled) AnnotatedString(headline.text) else headline,
@@ -179,7 +178,7 @@ internal fun ListItemBody(
                 overflow = TextOverflow.Ellipsis,
             )
             if (supporting != null) {
-                BasicText(
+                MutantText(
                     supporting,
                     style =
                         TextStyle(
@@ -200,7 +199,7 @@ internal fun ListItemBody(
             }
 
             trailingText != null -> {
-                BasicText(
+                MutantText(
                     trailingText,
                     style =
                         TextStyle(

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -168,7 +167,7 @@ internal fun DropdownAnchor(
             horizontalArrangement = Arrangement.spacedBy(ANCHOR_GAP.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            BasicText(
+            MutantText(
                 label,
                 Modifier.mutantCleanZone(),
                 style = buttonLabelStyle(ANCHOR_SIZE, ink),
@@ -420,7 +419,7 @@ private fun MenuRow(
             }.padding(start = (STEP_START + STEP * (index % STEPS)).dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        BasicText(
+        MutantText(
             text,
             Modifier.mutantCleanZone(),
             style = style,

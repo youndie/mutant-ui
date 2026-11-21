@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -144,7 +143,7 @@ internal fun SnackbarBody(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            BasicText(
+            MutantText(
                 message,
                 Modifier.weight(1f, fill = false).mutantCleanZone(),
                 style =
@@ -207,7 +206,7 @@ private fun SnackbarAction(
             }.padding(start = ACTION_GAP, end = SIDE),
         contentAlignment = Alignment.CenterEnd,
     ) {
-        BasicText(
+        MutantText(
             label,
             Modifier.mutantCleanZone(),
             style =

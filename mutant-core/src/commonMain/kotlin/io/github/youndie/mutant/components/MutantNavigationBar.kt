@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -258,7 +257,7 @@ private fun NavigationItem(
                     )
                 }
             }
-            BasicText(
+            MutantText(
                 item.label,
                 Modifier.padding(horizontal = LABEL_MARGIN).mutantCleanZone(),
                 style =

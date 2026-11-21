@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -274,7 +273,7 @@ internal fun ButtonLabel(
     size: Int = LABEL_SIZE,
     other: Color = MutantTheme.colors.onPrimary,
 ) {
-    BasicText(
+    MutantText(
         text,
         modifier.mutantCleanZone(),
         style = buttonLabelStyle(size, inkOnBody(color, other)),

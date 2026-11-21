@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -201,7 +200,7 @@ private fun CarouselCard(
                 (if (item.status != null) Modifier.fillMaxHeight() else Modifier).mutantCleanZone(),
                 verticalArrangement = Arrangement.spacedBy(LINE_GAP),
             ) {
-                BasicText(
+                MutantText(
                     item.title,
                     style = rubik(TITLE_SIZE, FontWeight.Medium, titleInk),
                     maxLines = 1,
@@ -209,7 +208,7 @@ private fun CarouselCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (item.subtitle != null) {
-                    BasicText(
+                    MutantText(
                         item.subtitle,
                         style = rubik(SUBTITLE_SIZE, FontWeight.Normal, subtitleInk),
                         maxLines = 1,
@@ -219,7 +218,7 @@ private fun CarouselCard(
                 }
                 if (item.status != null) {
                     Spacer(Modifier.weight(1f))
-                    BasicText(
+                    MutantText(
                         item.status,
                         style =
                             MutantTheme.textStyles

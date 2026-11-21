@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +61,7 @@ internal fun EmptyStateBody(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(LINE_GAP),
         ) {
-            BasicText(
+            MutantText(
                 title,
                 Modifier.semantics { heading() },
                 style =
@@ -75,7 +74,7 @@ internal fun EmptyStateBody(
                     ).cssLine(MutantFaceMetrics.Handjet),
             )
             if (text != null) {
-                BasicText(
+                MutantText(
                     text,
                     style =
                         TextStyle(

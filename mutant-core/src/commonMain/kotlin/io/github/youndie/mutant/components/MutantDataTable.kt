@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -155,7 +154,7 @@ private fun RowScope.Cell(
     text: String,
     style: TextStyle,
 ) {
-    BasicText(
+    MutantText(
         text,
         if (width == null) Modifier.weight(1f) else Modifier.width(width),
         style = style,

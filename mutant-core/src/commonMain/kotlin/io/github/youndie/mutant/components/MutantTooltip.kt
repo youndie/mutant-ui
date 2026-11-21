@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -204,7 +203,7 @@ internal fun TooltipPlate(
         ) {
             if (rich) {
                 // `line-height: 1`, the two lines Handjet 18 and 16.
-                BasicText(
+                MutantText(
                     text,
                     Modifier.mutantCleanZone(),
                     style =
@@ -216,7 +215,7 @@ internal fun TooltipPlate(
                     maxLines = 1,
                     softWrap = false,
                 )
-                BasicText(
+                MutantText(
                     supportingText.orEmpty(),
                     Modifier.mutantCleanZone(),
                     style =
@@ -230,7 +229,7 @@ internal fun TooltipPlate(
                 )
             } else {
                 Box(Modifier.heightIn(min = PLAIN_HEIGHT.dp), contentAlignment = Alignment.CenterStart) {
-                    BasicText(
+                    MutantText(
                         text,
                         Modifier.mutantCleanZone(),
                         style = styles.osd(18.sp).copy(color = ink, platformStyle = raster),

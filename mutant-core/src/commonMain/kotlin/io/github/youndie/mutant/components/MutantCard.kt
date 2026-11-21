@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -120,7 +119,7 @@ private fun CardLine(
             LocalCardEnabled.current -> inkOnBody(color)
             else -> colors.textDisabled
         }
-    BasicText(
+    MutantText(
         text,
         modifier,
         style =
