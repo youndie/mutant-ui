@@ -1,0 +1,25 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# B-151 Demo touch bench, 2026-11-21T16:42:40.955Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 66; temperature: 378; Capacity level: 2; big 1582/2802 MHz
+# browser: Chrome/157.0.8103.78, on the device, nothing emulated or throttled
+# commit: 1a31c00 (dirty)
+# build: a: 3feff0e4855beb773de4.wasm 0869748da456d6aa, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 4 (round 1 not counted), 30000 ms a load, 3000 ms settle; loads tabs,scroll,blank; tap every 1500 ms, swipe every 1500 ms, window 1000 ms, missed > 25 ms
+round 1 tabs       20 gestures (20 pointerups)  latency p50   19 max   91 ms  longest p50  116 max  416 ms  missed 98/831 (11.8 %)  1436 frames  37.6 °C big 2401/2704 MHz
+round 1 scroll     20 gestures (20 pointerups)  latency p50   16 max   24 ms  longest p50   33 max  781 ms  missed 37/1813 (2.0 %)  1623 frames  38 °C big 2048/2507 MHz
+round 1 blank      20 gestures (20 pointerups)  latency p50   17 max   20 ms  longest p50   17 max   17 ms  missed 0/1205 (0.0 %)  1869 frames  38 °C big 851/2802 MHz
+round 2 scroll     20 gestures (20 pointerups)  latency p50   17 max   61 ms  longest p50   17 max  748 ms  missed 28/1891 (1.5 %)  1676 frames  37.8 °C big 2188/2630 MHz
+round 2 blank      20 gestures (20 pointerups)  latency p50   19 max   37 ms  longest p50   17 max   17 ms  missed 0/1202 (0.0 %)  1869 frames  37.9 °C big 984/2802 MHz
+round 2 tabs       20 gestures (20 pointerups)  latency p50   19 max  264 ms  longest p50  116 max  333 ms  missed 97/831 (11.7 %)  1422 frames  37.9 °C big 1745/2507 MHz
+round 3 blank      20 gestures (20 pointerups)  latency p50   18 max   21 ms  longest p50   17 max   17 ms  missed 0/1203 (0.0 %)  1869 frames  38 °C big 851/2802 MHz
+round 3 tabs       20 gestures (20 pointerups)  latency p50   23 max  257 ms  longest p50  100 max  333 ms  missed 94/838 (11.2 %)  1427 frames  38 °C big 2507/2507 MHz
+round 3 scroll     20 gestures (20 pointerups)  latency p50   17 max   32 ms  longest p50   17 max  831 ms  missed 33/1797 (1.8 %)  1605 frames  38.1 °C big 1426/1582 MHz
+round 4 tabs       20 gestures (20 pointerups)  latency p50   24 max  371 ms  longest p50  166 max  483 ms  missed 108/632 (17.1 %)  1121 frames  38.3 °C big 1582/1582 MHz
+round 4 scroll     20 gestures (20 pointerups)  latency p50   18 max 1228 ms  longest p50   33 max 1164 ms  missed 84/1758 (4.8 %)  1513 frames  38.4 °C big 1426/1426 MHz
+round 4 blank      20 gestures (20 pointerups)  latency p50   18 max   37 ms  longest p50   17 max   17 ms  missed 0/1205 (0.0 %)  1868 frames  38.4 °C big 984/2252 MHz
+
+# counted rounds 2..4, pooled
+scroll     60 gestures  latency p50   17 p95   37 max 1228 ms  longest p50   33 max 1164 ms  over 50 ms in 13  missed 2.7 %
+blank      60 gestures  latency p50   18 p95   35 max   37 ms  longest p50   17 max   17 ms  over 50 ms in 0  missed 0.0 %
+tabs       60 gestures  latency p50   21 p95  264 max  371 ms  longest p50  116 max  483 ms  over 50 ms in 53  missed 13.0 %
