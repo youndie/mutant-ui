@@ -1,7 +1,7 @@
 ---
 id: B-145
 title: "The keyframe loss's steps off the slow path"
-status: wip
+status: question
 priority: P2
 size: M
 stage: stage-6-later
@@ -132,3 +132,30 @@ of a core at the start.
 - Round 2 holds both conditions: no stall second against `main`'s 15, 143 slow frames against 423. By round 3 the
   phone was throttled and `main` and the copy both stall most seconds; the floor, without the loss's work, does not.
 - Same host, same run, interleaved: yes. What is owed: a run started under 30 °C, as the resumed protocol says.
+
+### The third run, 2026-11-21: void
+
+[The run](../../logs/b-145/2026-11-20-copy-abc-3.log), the same protocol, started on the owner's word («делай») at
+31.8 °C (not under 30 °C), the phone charging from 13 %; Google Photos took about half a core at the start. 36.6 °C at
+the end, the big cores capped at 1745 MHz. Stall seconds and frames over 50 ms per load:
+
+| load | `main` | the pixel copy | the floor |
+|---|---|---|---|
+| round 1 (not counted) | none; 76 | none; 27 | none; 5 |
+| round 2 | 11; 168 | **none; 46** | none; 12 |
+| round 3 | 15; 415 | 8; 371 | 1; 351 |
+
+- **Void** by the condition written after the first run: the floor has a stall second in round 3 (at 13 s).
+- Read anyway, it would not hold: round 3 has 8 stall seconds for the copy, not at most one, and 371 slow frames
+  against `main`'s 415, not under half.
+- The same shape as the second run. Round 2, the phone still cool: the copy holds both conditions (no stall second
+  against 11, 46 slow frames against 168). Round 3, throttled: the copy's stalls come back at 15, 24, 33, 42 and 51 s,
+  nine apart as the loss's, while the floor's one stall has no period. Same host, same run, interleaved: yes.
+- Three runs: void, not held, void. On the phone the copy shortens the loss's stall under the 20-frame line while the
+  phone is cool and does not remove it once it throttles. Whether that is enough is the owner's call, below.
+
+### Question, 2026-11-21
+
+The pre-registered acceptance has not held in any valid run. The choices: drop the pixel copy as B-143's block read
+was dropped (the branch stays as the record), or merge it for what round 2 shows, as a change below its own bar,
+recorded as such. The owner decides.
