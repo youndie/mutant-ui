@@ -378,6 +378,17 @@ internal fun MutantSurface(
                     return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
                 }
 
+                // B-163: whether this body's decorations need its paths (B-131's list): its frames are then built with them,
+                // ahead as well, so the frame never builds them itself.
+                fun decorNeedsPaths(
+                    g: Instance,
+                    tt: Double,
+                ): Boolean {
+                    val decor = gen.decorOf(g, state, focused, 0.0, tt, colors)
+                    return decor.runningMosaic != null || decor.errorBlocks.isNotEmpty() || decor.bands.isNotEmpty() ||
+                        decor.errorOutline != null || decor.brackets != null
+                }
+
                 // B-131: the shader's brush with every decoration, or null where the body keeps its paths: anything else
                 // drawn under the clip, or a surface off whole pixels, whose grid the still layers' image would miss.
                 fun shaderOf(
@@ -569,7 +580,7 @@ internal fun MutantSurface(
                             pressed = false,
                             steadyWebs = steadyWebs,
                             grow = grow,
-                            paths = !onGpu,
+                            paths = !onGpu || decorNeedsPaths(g, next),
                         )
                     return aheadOf(g, dead, next, band, f)
                 }
@@ -584,7 +595,17 @@ internal fun MutantSurface(
                     band: Rect?,
                     grow: Boolean,
                 ): Ahead {
-                    val steps = gen.frameSteps(g, cache, next, 0.0, false, steadyWebs, grow, !onGpu)
+                    val steps =
+                        gen.frameSteps(
+                            g,
+                            cache,
+                            next,
+                            0.0,
+                            false,
+                            steadyWebs,
+                            grow,
+                            !onGpu || decorNeedsPaths(g, next),
+                        )
                     inSteps { steps.columns(it) }
                     return aheadOf(g, dead, next, band, steps.frame())
                 }
@@ -808,10 +829,12 @@ internal fun MutantSurface(
                             }
                         }
                     }
+                    // B-163: a frame built ahead with its paths is drawn as it is.
                     frame =
-                        inFrame.of(g, t, k, boil.on, true) {
-                            gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
-                        }
+                        early?.frame?.takeIf { early.frame === frame && !it.contour.isEmpty }
+                            ?: inFrame.of(g, t, k, boil.on, true) {
+                                gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                            }
                 }
                 val imageInputs = imageInputsOf(dead)
                 val image =

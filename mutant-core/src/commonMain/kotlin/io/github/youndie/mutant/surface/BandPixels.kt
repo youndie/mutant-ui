@@ -75,6 +75,17 @@ internal class BandPixels(
         image = null
     }
 
+    /** [color] over the rectangle (its edges at pixel centres, as [drawRect]'s), without Skia (B-163). */
+    fun fill(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        color: androidx.compose.ui.graphics.Color,
+    ) {
+        drawRect(left, top, right, bottom, Paint().apply { this.color = color })
+    }
+
     override fun copy(): BandPixels = BandPixels(width, top, bottom).also { px.copyInto(it.px) }
 
     override fun draw(scope: DrawScope) {
