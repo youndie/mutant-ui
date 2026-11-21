@@ -41,7 +41,7 @@ internal actual fun bodyShaderBrush(
     val nx = field.nx
     val ny = field.ny
     val image =
-        Image.makeRaster(
+        rasterImage(
             ImageInfo(nx, ny, ColorType.RGB_565, ColorAlphaType.OPAQUE, ColorSpace.sRGB),
             fieldTexels(field),
             nx * 2,
@@ -71,14 +71,18 @@ internal actual fun bodyShaderBrush(
     b.uniform("clipA", ox - 6, oy + h + .5f, ox + w + 6, oy + h + .5f + over + 30)
     b.uniform("clipB", ox - 4, oy - 6, ox - 4 + r + 13, oy - 6 + r + 10)
     if (still != null) {
-        b.child(
-            "still",
-            still.image
-                .asSkiaBitmap()
-                .let {
-                    Image.makeFromBitmap(it)
-                }.makeShader(FilterTileMode.DECAL, FilterTileMode.DECAL, nearest),
-        )
+        // B-157: the still layers' shader made once for their image, which is drawn once and never again: made at every
+        // tick, it copied the image's whole bitmap each time.
+        val stillShader =
+            still.platformForm as? org.jetbrains.skia.Shader
+                ?: still.image
+                    .asSkiaBitmap()
+                    .let {
+                        it.setImmutable()
+                        Image.makeFromBitmap(it)
+                    }.makeShader(FilterTileMode.DECAL, FilterTileMode.DECAL, nearest)
+                    .also { still.platformForm = it }
+        b.child("still", stillShader)
         b.uniform("hasStill", 1f)
         b.uniform("stillGrid", still.gridX, still.gridY)
         b.uniform("stillAt", still.at.x.toFloat(), still.at.y.toFloat())
@@ -109,20 +113,18 @@ internal actual fun bodyShaderBrush(
 
 /** 16-bit words as `RGB_565` texels, read texel by texel. */
 private fun words565(words: Words) =
-    Image
-        .makeRaster(
-            ImageInfo(words.w, words.h, ColorType.RGB_565, ColorAlphaType.OPAQUE, ColorSpace.sRGB),
-            words.bytes,
-            words.w * 2,
-        ).makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, nearest)
+    rasterImage(
+        ImageInfo(words.w, words.h, ColorType.RGB_565, ColorAlphaType.OPAQUE, ColorSpace.sRGB),
+        words.bytes,
+        words.w * 2,
+    ).makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, nearest)
 
 /** Opaque RGBA bytes as a texture read texel by texel. */
 private fun raster(
     bytes: ByteArray,
     w: Int,
     h: Int,
-) = Image
-    .makeRaster(ImageInfo(w, h, ColorType.RGBA_8888, ColorAlphaType.OPAQUE, ColorSpace.sRGB), bytes, w * 4)
+) = rasterImage(ImageInfo(w, h, ColorType.RGBA_8888, ColorAlphaType.OPAQUE, ColorSpace.sRGB), bytes, w * 4)
     .makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, nearest)
 
 /** A colour as the shader's premultiplied `half4`. */
