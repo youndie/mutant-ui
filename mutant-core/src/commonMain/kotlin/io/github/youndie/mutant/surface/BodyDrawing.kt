@@ -265,7 +265,10 @@ internal class StillImage(
     val gridX: Float,
     val gridY: Float,
     val at: androidx.compose.ui.unit.IntOffset,
-)
+) {
+    /** The image in a platform's own form, made once for all the ticks that draw it (B-157). */
+    var platformForm: Any? = null
+}
 
 /**
  * B-117: a body's still layers ([drawStillLayers]) drawn once, into an image covering what [rasterisedBody]'s image
