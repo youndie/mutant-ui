@@ -132,3 +132,19 @@ a load:
   the tab, round 1 above), and every return to Settings (50 ms), the heaviest tab.
 
 Owed, as round 2: the loss's first frame under one frame; a tab's composing frame, Settings' first.
+
+### Round 3, 2026-11-22: a tab's composing frame
+
+A profile on the phone of the frame that composes a tab (logs above): a first visit is about 56 ms of the main thread —
+Compose's draw of the new nodes 16, layout 15 of which text 11, composition and its changes about 12, the rest Skia's
+and GPU programs — and the frame lasts about 100 ms; a return to Settings about 26 ms, a 50 ms frame. The bodies are no
+longer in it. Asked of the owner, who chose the kit's own means over composing a tab across frames (which the Demo
+would have to adopt):
+
+- [B-164](B-164-the-kits-text-layouts-kept.md), the kit's text layouts kept: **a return to Settings 33 ms** in 11 of 12
+  (`main` 50 in 11 of 12), missed 0.9 %.
+- [B-165](B-165-glyphs-warmed-ahead.md), the glyphs warmed: no change on the phone; dropped.
+
+Where it stands on the phone ([the run](../../logs/b-151/2026-11-22-round3-1.log), valid): tab switches longest p50 33,
+missed 0.9 %; every return to a tab within one lost frame; over the bar only each tab's first visit in a load (9 of 60,
+66–100 ms), which is Compose composing a whole screen at once.

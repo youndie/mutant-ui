@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -197,7 +196,7 @@ private fun TabItem(
                 }
             }.padding(start = SIDE, end = SIDE, top = TOP, bottom = FOOT),
     ) {
-        BasicText(
+        MutantText(
             tab.label,
             Modifier
                 .heightIn(min = LABEL_ROW)

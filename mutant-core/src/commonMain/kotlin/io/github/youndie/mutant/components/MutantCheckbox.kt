@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -284,7 +283,7 @@ internal fun ControlRow(
                     enabled -> colors.text
                     else -> colors.textDisabled
                 }
-            BasicText(
+            MutantText(
                 label,
                 Modifier.weight(1f, fill = false),
                 style =

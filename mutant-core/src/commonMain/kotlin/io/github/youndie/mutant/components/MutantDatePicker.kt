@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -156,7 +155,7 @@ internal fun DatePickerBody(
         ) {
             // The page's row is as tall as the arrows' glyphs, in the host's face, make it: 25 dp.
             Row(Modifier.fillMaxWidth().heightIn(min = HEADER.dp), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(
+                MutantText(
                     "${monthNames.getOrElse(m - 1) { "$m" }} $year",
                     Modifier.weight(1f).mutantCleanZone(),
                     style =
@@ -189,7 +188,7 @@ internal fun DatePickerBody(
                         platformStyle = raster,
                     ).cssLine(MutantFaceMetrics.Handjet)
                 for (i in 0 until 7) {
-                    BasicText(
+                    MutantText(
                         weekdayNames.getOrElse(i) { "" },
                         Modifier.width(CELL.dp).mutantCleanZone(),
                         style = week,
@@ -354,7 +353,7 @@ private fun DayCell(
             },
         contentAlignment = Alignment.Center,
     ) {
-        BasicText("$day", Modifier.mutantCleanZone(), style = style, maxLines = 1, softWrap = false)
+        MutantText("$day", Modifier.mutantCleanZone(), style = style, maxLines = 1, softWrap = false)
     }
 }
 
@@ -469,7 +468,7 @@ internal fun TimePickerBody(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TimeField(h, 24, active == 0, hourLabel, "$key-h", hidden, { active = 0 }) { change(it, m) }
-        BasicText(
+        MutantText(
             ":",
             // Chrome lays the colon at its fractional width and the next field on the pixel nearest; Compose would
             // round the width up and the minutes would stand a pixel late (as B-44's chips).
@@ -540,7 +539,7 @@ private fun TimeField(
         profile = MutantBody.Field.profile.with(overhang = FIELD_OVERHANG),
     ) {
         Box(Modifier.widthIn(min = FIELD_W.dp).heightIn(min = FIELD_H.dp), contentAlignment = Alignment.Center) {
-            BasicText(
+            MutantText(
                 value.toString().padStart(2, '0'),
                 Modifier.mutantCleanZone(),
                 style =

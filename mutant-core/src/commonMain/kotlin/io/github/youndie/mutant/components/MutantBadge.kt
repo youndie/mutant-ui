@@ -1,7 +1,6 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -43,7 +42,7 @@ internal fun BadgeBody(
     val colors = MutantTheme.colors
     val size = if (compact) COMPACT_SIZE else SIZE
     val line = (if (compact) COMPACT_LINE else LINE) / size
-    BasicText(
+    MutantText(
         text,
         modifier
             .drawBehind {

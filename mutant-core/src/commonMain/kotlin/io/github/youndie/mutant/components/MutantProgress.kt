@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,7 +62,7 @@ public fun MutantLinearProgress(
             }
         }
         if (showValue) {
-            BasicText(
+            MutantText(
                 "${(value * 100).roundToInt().toString().padStart(3, '0')}%",
                 style =
                     TextStyle(

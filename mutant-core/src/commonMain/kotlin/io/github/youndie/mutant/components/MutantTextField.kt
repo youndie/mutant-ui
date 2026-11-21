@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -188,7 +187,7 @@ internal fun TextFieldBody(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (prefix != null) {
-                BasicText(
+                MutantText(
                     prefix,
                     Modifier.mutantCleanZone(),
                     style =
@@ -204,7 +203,7 @@ internal fun TextFieldBody(
             }
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (value.isEmpty() && placeholder != null) {
-                    BasicText(
+                    MutantText(
                         placeholder,
                         Modifier.mutantCleanZone(),
                         style =

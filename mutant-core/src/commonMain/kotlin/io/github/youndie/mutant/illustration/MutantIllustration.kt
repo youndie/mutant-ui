@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.components.MutantText
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.with
@@ -176,7 +176,7 @@ private class Art(
         x: Int,
         y: Int,
     ) {
-        BasicText(
+        MutantText(
             text,
             // Wrapped to the text, as the engine's `textZone` measures the text's own box, not the label's.
             Modifier

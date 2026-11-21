@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -312,7 +311,7 @@ internal fun DrawerWindow(
                             drawVenomFill(v, colors.primary, fillGoo, density)
                         }
                         if (title != null) {
-                            BasicText(
+                            MutantText(
                                 title,
                                 Modifier.mutantCleanZone(),
                                 style = code.copy(color = if (hidden) Color.Transparent else colors.textOsd),
@@ -438,8 +437,8 @@ private fun DrawerRow(
         horizontalArrangement = Arrangement.spacedBy(ROW_GAP.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(item.code, Modifier.mutantCleanZone(), style = code, maxLines = 1, softWrap = false, color = ink)
-        BasicText(
+        MutantText(item.code, Modifier.mutantCleanZone(), style = code, maxLines = 1, softWrap = false, color = ink)
+        MutantText(
             item.label,
             Modifier.weight(1f, fill = false).mutantCleanZone(),
             style = label,

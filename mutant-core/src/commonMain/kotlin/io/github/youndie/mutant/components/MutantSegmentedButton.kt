@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -305,7 +304,7 @@ private fun SegmentLabel(
     color: () -> Color,
 ) {
     var line by remember { mutableFloatStateOf(Float.NaN) }
-    BasicText(
+    MutantText(
         text,
         Modifier
             .mutantCleanZone()

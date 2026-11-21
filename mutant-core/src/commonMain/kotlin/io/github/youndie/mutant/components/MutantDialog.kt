@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -277,7 +276,7 @@ private fun DialogScene(
                     Modifier.padding(start = PAD, top = PAD, end = PAD, bottom = PAD_FOOT),
                     verticalArrangement = Arrangement.spacedBy(GAP),
                 ) {
-                    BasicText(
+                    MutantText(
                         title,
                         Modifier.semantics { heading() }.mutantCleanZone(),
                         style =
@@ -342,7 +341,7 @@ private fun CssParagraph(
     Layout(
         modifier = modifier,
         content = {
-            BasicText(text, Modifier.mutantCleanZone(), style = style, onTextLayout = { lines[0] = it.lineCount })
+            MutantText(text, Modifier.mutantCleanZone(), style = style, onTextLayout = { lines[0] = it.lineCount })
         },
     ) { measurables, constraints ->
         // The text tells its line count as it measures, before this box takes its height.
@@ -447,7 +446,7 @@ public fun MutantDialogAction(
                     Modifier.defaultMinSize(minWidth = BUTTON_W).height(BUTTON_H).padding(horizontal = BUTTON_PAD),
                     contentAlignment = Alignment.Center,
                 ) {
-                    BasicText(
+                    MutantText(
                         label,
                         Modifier.mutantCleanZone(),
                         style = style.copy(color = if (hidden) Color.Transparent else colors.onPrimary),
@@ -458,7 +457,7 @@ public fun MutantDialogAction(
                 }
             }
         } else {
-            BasicText(
+            MutantText(
                 label,
                 Modifier.padding(horizontal = PLAIN_PAD).mutantCleanZone(),
                 style = style.copy(color = if (hidden) Color.Transparent else colors.textAccent),

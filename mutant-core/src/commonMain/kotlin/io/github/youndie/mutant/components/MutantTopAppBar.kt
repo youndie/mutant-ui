@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +49,7 @@ public fun MutantTopAppBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             navigationIcon?.invoke()
-            BasicText(
+            MutantText(
                 title,
                 Modifier.weight(1f),
                 style =
@@ -65,7 +64,7 @@ public fun MutantTopAppBar(
                 overflow = TextOverflow.Ellipsis,
             )
             if (status != null) {
-                BasicText(
+                MutantText(
                     status,
                     style =
                         TextStyle(

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -372,7 +371,7 @@ private fun Tongue(
         ) {
             if (boiling && f >= 1f && morph == null) {
                 Box(Modifier.size(w.dp, h.dp), contentAlignment = Alignment.Center) {
-                    BasicText(
+                    MutantText(
                         label,
                         Modifier.mutantCleanZone(),
                         style = labelStyle,
@@ -477,8 +476,12 @@ private fun Hanging(
                 // going back up, the pill's fades in the first 40 %.
                 val out = if (moving) (1f - 2 * morph).coerceIn(0f, 1f) else 0f
                 val into = if (moving) (2 * morph - 1f).coerceIn(0f, 1f) else (1f - exit / .4f).coerceIn(0f, 1f)
-                if (out > 0f) BasicText(refreshingLabel, style = pillWords(hidden, out), maxLines = 1, softWrap = false)
-                if (into > 0f) BasicText(doneLabel, style = pillWords(hidden, into), maxLines = 1, softWrap = false)
+                if (out >
+                    0f
+                ) {
+                    MutantText(refreshingLabel, style = pillWords(hidden, out), maxLines = 1, softWrap = false)
+                }
+                if (into > 0f) MutantText(doneLabel, style = pillWords(hidden, into), maxLines = 1, softWrap = false)
             }
         }
     }
@@ -534,7 +537,7 @@ private fun PillBody(
         ) {
             if (standing) {
                 Box(Modifier.padding(start = PILL_PAD.dp).height(PILL_H.dp), contentAlignment = Alignment.CenterStart) {
-                    BasicText(
+                    MutantText(
                         label,
                         Modifier.mutantCleanZone(),
                         style = pillWords(hidden),

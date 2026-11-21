@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -208,7 +207,7 @@ internal fun SliderBody(
         verticalArrangement = Arrangement.spacedBy(HEADER_GAP.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            BasicText(label.orEmpty(), style = header, maxLines = 1)
+            MutantText(label.orEmpty(), style = header, maxLines = 1)
             ChromePlacedText(rangeText, header, Modifier, InkPlace.End)
         }
         val fill = if (enabled) colors.primary else colors.textDisabled
@@ -352,7 +351,7 @@ private fun ChromePlacedText(
     room: Int = 0,
 ) {
     var line by remember { mutableFloatStateOf(Float.NaN) }
-    BasicText(
+    MutantText(
         text,
         modifier.drawWithContent {
             val w = line
