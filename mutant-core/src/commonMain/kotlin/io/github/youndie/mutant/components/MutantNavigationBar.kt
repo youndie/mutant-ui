@@ -92,7 +92,11 @@ public fun MutantNavigationBar(
     NavigationBarBody(items, selectedIndex, onSelect, modifier.windowInsetsPadding(windowInsets), key, pillKey)
 }
 
-/** [MutantNavigationBar]; [hidden] draws the icons and words transparent for a fixture's bare twin, the badge's box kept. */
+/**
+ * [MutantNavigationBar]; [hidden] draws the icons and words transparent for a fixture's bare twin, the badge's box kept.
+ * [probe] and [pillProbe] are told the bar's and the pill's body instances ([MutantSurface]'s): for tests only, never
+ * for a consumer.
+ */
 @Composable
 internal fun NavigationBarBody(
     items: List<MutantNavigationItem>,

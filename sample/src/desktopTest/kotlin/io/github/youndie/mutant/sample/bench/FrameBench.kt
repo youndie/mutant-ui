@@ -185,6 +185,10 @@ private fun busyWait(ms: Long) {
     while (System.nanoTime() < until) Thread.onSpinWait()
 }
 
+/**
+ * B-148: the Components scenes show the page's default group, Foundations, alone, and the Demo page scenes its default
+ * screen, Library, alone.
+ */
 @Composable
 private fun SceneContent(
     scene: Scene,

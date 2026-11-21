@@ -264,23 +264,28 @@ private fun fieldStatic(
     val n = nx * ny
     val a = FloatArray(n)
     val b = FloatArray(n) { Float.NaN }
+    // B-149: the same values as the engine's per-cell calls, each computed once. A lattice corner's hash serves every
+    // cell around it, and a term of the row alone or of the column alone serves the whole row or column.
+    val edge = LatticeRows(nx) { i -> (x0 + (i - pad) * s) * .8 }
     for (j in 0 until ny) {
         for (i in 0 until nx) {
             val x = x0 + (i - pad) * s
             val y = y0 + (j - pad) * s
             val ly = y - el.oy
-            a[j * nx + i] = (.55 * valueNoise(x * .8, y * .8) + .3 * valueNoise(x * 2.1 + 17, y * 2.1 + 17)).toFloat()
+            a[j * nx + i] = (.55 * edge.noise(x * .8, y * .8) + .3 * valueNoise(x * 2.1 + 17, y * 2.1 + 17)).toFloat()
             if (ly >= el.h * .5) b[j * nx + i] = bodyDistance(x - el.ox, ly, g, 0.0).toFloat()
         }
     }
     val v1 = FloatArray(n)
     val v2 = FloatArray(n)
+    val warp1 = LatticeRows(nx) { i -> (x0 + (i - pad) * s - el.ox) * .03 + g.shape[7] }
+    val warp2 = LatticeRows(nx) { i -> (x0 + (i - pad) * s - el.ox) * .03 + g.shape[7] + 31 }
     for (j in 0 until ny) {
         for (i in 0 until nx) {
             val lx = x0 + (i - pad) * s - el.ox
             val ly = y0 + (j - pad) * s - el.oy
-            v1[j * nx + i] = valueNoise(lx * .03 + g.shape[7], ly * .05).toFloat()
-            v2[j * nx + i] = valueNoise(lx * .03 + g.shape[7] + 31, ly * .05 + 9).toFloat()
+            v1[j * nx + i] = warp1.noise(lx * .03 + g.shape[7], ly * .05).toFloat()
+            v2[j * nx + i] = warp2.noise(lx * .03 + g.shape[7] + 31, ly * .05 + 9).toFloat()
         }
     }
     val xw = FloatArray(n)
@@ -289,30 +294,30 @@ private fun fieldStatic(
     val sh = g.shape
     val w = el.w
     val h = el.h
+    // The column's terms: the horizontal warp's swing and the top's wave, each a function of the column alone.
+    val swing = DoubleArray(nx)
+    val wave = DoubleArray(nx)
+    for (i in 0 until nx) {
+        val px = x0 + (i - pad) * s - el.ox
+        val u = clamp01(px / w)
+        swing[i] =
+            sh[2] * (u - .5) * 2 + sh[4] *
+            sin(
+                PI * u * sh[5] + sh[6],
+            )
+        wave[i] = topWave(g, clamp(px, 0.0, w), 0.0)
+    }
     for (j in 0 until ny) {
+        val py = y0 + (j - pad) * s - el.oy
+        val v = clamp01(py / h)
+        val m = clamp01(1 - py / (h * .5))
+        val bulge = sin(PI * v)
         for (i in 0 until nx) {
             val idx = j * nx + i
             val px = x0 + (i - pad) * s - el.ox
-            val py = y0 + (j - pad) * s - el.oy
-            val u = clamp01(px / w)
-            val v = clamp01(py / h)
-            val m = clamp01(1 - py / (h * .5))
-            xw[idx] = (px + (if (px < w / 2) sh[0] else -sh[1]) * sin(PI * v) + sh[3] * v1[idx].toDouble()).toFloat()
-            yw[idx] =
-                (
-                    py - (
-                        sh[2] * (u - .5) * 2 + sh[4] *
-                            sin(
-                                PI * u * sh[5] + sh[6],
-                            )
-                    ) * m + sh[3] * .7 * v2[idx].toDouble()
-                ).toFloat()
-            b0[idx] =
-                roundedRectDistance(
-                    g,
-                    xw[idx].toDouble(),
-                    yw[idx].toDouble() - topWave(g, clamp(px, 0.0, w), 0.0) * m,
-                ).toFloat()
+            xw[idx] = (px + (if (px < w / 2) sh[0] else -sh[1]) * bulge + sh[3] * v1[idx].toDouble()).toFloat()
+            yw[idx] = (py - swing[i] * m + sh[3] * .7 * v2[idx].toDouble()).toFloat()
+            b0[idx] = roundedRectDistance(g, xw[idx].toDouble(), yw[idx].toDouble() - wave[i] * m).toFloat()
         }
     }
     var pairs: IntArray? = null
@@ -338,6 +343,65 @@ private fun fieldStatic(
         pairs = pr.toIntArray()
     }
     return FieldStatic(a, b, xw, yw, b0, pairs)
+}
+
+/**
+ * B-149: [valueNoise] over a grid walked row by row, its lattice corners hashed once. The noise's x for the grid's
+ * column `i` is [xOf]`(i)` in every row, so the corners a row needs are known from the columns, and a row whose lattice
+ * row is the one before's, or the next, takes the hashes already made. The value is [valueNoise]'s to the bit: the same
+ * expression on the same corners' hashes.
+ */
+internal class LatticeRows(
+    nx: Int,
+    xOf: (Int) -> Double,
+) {
+    private val ix0 = floor(xOf(0))
+    private val span = (floor(xOf(nx - 1)) - ix0).toInt() + 2
+    private var low = DoubleArray(span) { Double.NaN }
+    private var high = DoubleArray(span) { Double.NaN }
+    private var iyNow = Double.NaN
+
+    private fun row(iy: Double) {
+        if (iy == iyNow) return
+        if (iy == iyNow + 1) {
+            val reuse = low
+            low = high
+            high = reuse.also { it.fill(Double.NaN) }
+        } else {
+            low.fill(Double.NaN)
+            high.fill(Double.NaN)
+        }
+        iyNow = iy
+    }
+
+    private fun DoubleArray.at(
+        ix: Double,
+        iy: Double,
+    ): Double {
+        val k = (ix - ix0).toInt()
+        val got = this[k]
+        if (!got.isNaN()) return got
+        return latticeHash(ix, iy).also { this[k] = it }
+    }
+
+    /** [valueNoise]`(x, y)`, [x] being `xOf` of one of the grid's columns. */
+    fun noise(
+        x: Double,
+        y: Double,
+    ): Double {
+        val ix = floor(x)
+        val iy = floor(y)
+        row(iy)
+        val fx = x - ix
+        val fy = y - iy
+        val ux = fx * fx * (3 - 2 * fx)
+        val uy = fy * fy * (3 - 2 * fy)
+        val a = low.at(ix, iy)
+        val b = low.at(ix + 1, iy)
+        val c = high.at(ix, iy + 1)
+        val d = high.at(ix + 1, iy + 1)
+        return (a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy) * 2 - 1
+    }
 }
 
 /** `march` → the closed polylines of the iso-line, as `Float` points the way the JS buffers keep them. */

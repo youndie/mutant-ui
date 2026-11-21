@@ -1,0 +1,19 @@
+# load before: { 5.33 13.78 18.91 }; the iOS simulator's sample stopped
+# B-50 appear bench, commit f8840f5, OpenJDK 64-Bit Server VM 25.0.4.1, Mac OS X aarch64, 8 cpus
+round arm          N frame      N draw   N+1 frame  warm frame   (us)
+1     inFrame       559497      389566       24864       25763
+1     offFrame       61367       38851       13144       26737
+2     offFrame       21226        5505       21644       20170
+2     inFrame       220355      184239       28344       16893
+3     inFrame       118763       89650       17280       23776
+3     offFrame       24136        4238       46002       15647
+4     offFrame        9374        1411        1059       16923
+4     inFrame       157089      131643       17234       16213
+5     inFrame       127765      100098       23912       15163
+5     offFrame        7541        1270        1132       18061
+6     offFrame        8535        2031       21242       14377
+6     inFrame       106467       87203       15995       15414
+median of rounds 2-6
+      inFrame       127765      100098       17280       16213
+      offFrame        9374        2031       21242       16923
+# load after: { 5.37 13.24 18.60 }

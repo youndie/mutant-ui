@@ -85,7 +85,7 @@ public fun MutantCarousel(
     CarouselBody(items, modifier, state, onClick, key, indicatorKey)
 }
 
-/** [MutantCarousel]; [viewStage] seeds the cards (a fixture gives the page's), [hidden] draws the words transparent. */
+/** [MutantCarousel]; [hidden] draws the words transparent. */
 @Composable
 internal fun CarouselBody(
     items: List<MutantCarouselItem>,
@@ -94,9 +94,10 @@ internal fun CarouselBody(
     onClick: ((Int) -> Unit)?,
     key: String,
     indicatorKey: String,
-    viewStage: String = "${LocalMutantStage.current}-view",
     hidden: Boolean = false,
 ) {
+    // The cards are seeded by the view's own stage, `<stage>-view`, as the page's `l-carousel-view`.
+    val viewStage = "${LocalMutantStage.current}-view"
     val scope = rememberCoroutineScope()
     val instant = LocalMutantReduceMotion.current
     val current = state.currentPage

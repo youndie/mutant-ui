@@ -81,7 +81,8 @@ public fun MutantSnackbar(
 
 /**
  * [MutantSnackbar]; [hidden] draws its words transparent for a fixture's bare twin, and [playIn] false stands it at
- * its place from the first frame (a fixture's still, whose clock does not run).
+ * its place from the first frame (a fixture's still, whose clock does not run). [probe] is told the body's instance
+ * ([MutantSurface]'s): for tests only, never for a consumer.
  */
 @Composable
 internal fun SnackbarBody(

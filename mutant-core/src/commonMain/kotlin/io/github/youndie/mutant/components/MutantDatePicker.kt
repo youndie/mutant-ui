@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -147,7 +148,10 @@ internal fun DatePickerBody(
         profile = MutantBody.Bar.profile.with(radius = RADIUS, marks = false),
     ) {
         Column(
-            Modifier.padding(start = SIDE.dp, end = SIDE.dp, top = TOP.dp, bottom = FOOT.dp),
+            // As wide as its days (B-150): the header fills the column, not whatever width the calendar is offered.
+            Modifier
+                .padding(start = SIDE.dp, end = SIDE.dp, top = TOP.dp, bottom = FOOT.dp)
+                .width(IntrinsicSize.Max),
             verticalArrangement = Arrangement.spacedBy(GAP.dp),
         ) {
             // The page's row is as tall as the arrows' glyphs, in the host's face, make it: 25 dp.

@@ -62,8 +62,8 @@ internal fun outlineWidth(
     outline: Double,
     boilPhase: Int,
     boil: Double,
-    trembleSeed: Double = trembleSeedOf(g),
-): Float = jsToFixed(outline * (1 + .12 * boil * valueNoise(boilPhase * 3.3 + trembleSeed * 7.1, 2.5)), 2).toFloat()
+): Float =
+    jsToFixed(outline * (1 + .12 * boil * valueNoise(boilPhase * 3.3 + trembleSeedOf(g) * 7.1, 2.5)), 2).toFloat()
 
 /** The instance's tremble seed: its seed's hash, folded to 0…1023. */
 internal fun trembleSeedOf(g: Instance): Double =
@@ -354,16 +354,6 @@ private fun DrawScope.drawMosaicPastContour(
 }
 
 private fun tint(t: io.github.youndie.mutant.gen.MosaicTile): Color = if (t.black) Color.Black else Color.White
-
-/**
- * The parts of a body, each of which a measurement can leave out of the draw (B-78). The kit draws them all;
- * [LocalMutantSkipBodyParts] is empty but for that bench.
- */
-internal enum class BodyPart { Shadow, Fill, Speckle, Mosaic, DeadPixels, FlowLines, Highlight, Outline, ContourClip }
-
-/** What a measurement leaves out of every body's draw (B-78); empty in the kit. */
-internal val LocalMutantSkipBodyParts =
-    androidx.compose.runtime.staticCompositionLocalOf<Set<BodyPart>> { emptySet() }
 
 /** [block] clipped by [path], or unclipped when [unclipped] (B-78's ablation of the clip alone). */
 private inline fun DrawScope.clipPathUnless(

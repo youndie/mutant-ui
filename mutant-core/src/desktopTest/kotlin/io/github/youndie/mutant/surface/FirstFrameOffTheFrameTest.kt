@@ -33,8 +33,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * B-50: a body's first instance and static layers are built off the frame under a running clock, the body drawing
- * from the next frame the picture it drew before; a frozen clock still draws in its first frame.
+ * B-50, B-149: under a running clock a body's first instance and static layers are built on another thread, the frame's
+ * bodies side by side, and the body's first frame waits for its own: it is drawn in its first frame, the picture a body
+ * built in its frame draws. Where the frame cannot wait (the browser, here the seam), the first frame draws a stand-in
+ * and the body comes from the next. A frozen clock draws in its first frame, as before.
  */
 @OptIn(ExperimentalTestApi::class)
 class FirstFrameOffTheFrameTest {
@@ -45,16 +47,21 @@ class FirstFrameOffTheFrameTest {
         var builds = 0
     }
 
+    private var standIns = 0
+
     private fun ComposeUiTest.card(
         offFrame: Boolean,
         clock: MutantClock = MutantClock(),
         card: Card = Card(),
+        waits: Boolean? = null,
     ): Card {
         var width by mutableStateOf(card.width)
         setContent {
             CompositionLocalProvider(
                 LocalDensity provides Density(1f),
                 LocalMutantBuildOffFrame provides offFrame,
+                LocalMutantFirstFrameWaits provides waits,
+                LocalMutantStandInProbe provides { standIns++ },
                 // The first build alone: drawing a resting body from an image (B-82) is held by BodyAsImageTest.
                 LocalMutantBodyAsImage provides false,
             ) {
@@ -90,23 +97,37 @@ class FirstFrameOffTheFrameTest {
     private fun List<Color>.fill() = count { near(it, MutantPalettes.Efir.surface) }
 
     @Test
-    fun `under a running clock the first frame draws no body and the next draws it, once built`() =
+    fun `under a running clock the body is drawn in its first frame, built once`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             val card = card(offFrame = true)
             mainClock.advanceTimeByFrame()
-            // No instance, so nothing to draw the body from. (A capture renders a frame of its own in the test
-            // runtime, so this frame is read through the probe, not the pixels.)
+            // (A capture renders a frame of its own in the test runtime, so this frame is read through the probes.)
+            assertNotNull(card.instance, "built for the frame that first knows the slot, and drawn in it")
+            assertEquals(0, standIns, "no stand-in where the frame waits")
+            repeat(20) { mainClock.advanceTimeByFrame() }
+            assertEquals(1, card.builds, "built once")
+            assertTrue(pixels().fill() > 5000, "the body drawn: ${pixels().fill()} px of its fill")
+        }
+
+    @Test
+    fun `where the frame cannot wait, the first frame draws a stand-in and the next the body`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            val card = card(offFrame = true, waits = false)
+            mainClock.advanceTimeByFrame()
             assertNull(card.instance, "nothing built in the frame that first knows the slot")
+            assertEquals(1, standIns, "the stand-in drawn in that frame")
             mainClock.advanceTimeByFrame()
             assertNotNull(card.instance, "taken in the next frame")
             assertTrue(pixels().fill() > 5000, "the body drawn: ${pixels().fill()} px of its fill")
             repeat(20) { mainClock.advanceTimeByFrame() }
             assertEquals(1, card.builds, "built once")
+            assertEquals(1, standIns, "a stand-in in the first frame alone")
         }
 
     @Test
-    fun `from the next frame on it draws exactly what a body built in its frame draws`() {
+    fun `every frame, the first included, is what a body built in its frame draws`() {
         fun frames(offFrame: Boolean): List<List<Color>> {
             var shots = emptyList<List<Color>>()
             runComposeUiTest {
@@ -119,7 +140,7 @@ class FirstFrameOffTheFrameTest {
         val off = frames(offFrame = true)
         val inFrame = frames(offFrame = false)
         assertTrue(inFrame[0].fill() > 5000, "built in its frame, the body draws at once")
-        for (i in 1 until off.size) assertEquals(inFrame[i], off[i], "frame $i")
+        for (i in off.indices) assertEquals(inFrame[i], off[i], "frame $i")
     }
 
     @Test

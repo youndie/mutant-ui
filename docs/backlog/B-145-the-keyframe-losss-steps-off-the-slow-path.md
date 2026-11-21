@@ -1,7 +1,7 @@
 ---
 id: B-145
 title: "The keyframe loss's steps off the slow path"
-status: question
+status: done
 priority: P2
 size: M
 stage: stage-6-later
@@ -154,8 +154,17 @@ the end, the big cores capped at 1745 MHz. Stall seconds and frames over 50 ms p
 - Three runs: void, not held, void. On the phone the copy shortens the loss's stall under the 20-frame line while the
   phone is cool and does not remove it once it throttles. Whether that is enough is the owner's call, below.
 
-### Question, 2026-11-21
+## The question, 2026-11-21
 
 The pre-registered acceptance has not held in any valid run. The choices: drop the pixel copy as B-143's block read
 was dropped (the branch stays as the record), or merge it for what round 2 shows, as a change below its own bar,
 recorded as such. The owner decides.
+
+## The decision
+
+The owner, 2026-11-21: «Убрать, как B-143». The pixel copy is taken out: `BlockCopy.kt` and its four platform files
+are removed and `StripPicture` is `main`'s again. The findings, the four phone runs' logs and the widened
+`StripPictureTest` (opaque blocks, blocks with transparent pixels and blocks across the edge between them) stay; the
+test holds `main`'s `StripPicture` as it held the copy. **Not held**: the copy was measured on the phone three times by
+the protocol written before the first, and held in no valid run. The branch keeps the copy as the record
+(`4f15619`). The loss's stall on the phone stays as it is; no item carries it on.

@@ -95,21 +95,25 @@ internal class StripPicture(
         val h = y1 - y0
         if (w <= 0 || h <= 0) return
         val part = ImageBitmap(w, h)
-        // Read out whole before anything is written. A copy of the pixels where the platform has one (B-145): the part
-        // is empty, so drawing the strip into it blends nothing and gives the same pixels.
-        var read: Canvas? = null
+        val read = Canvas(part)
+        val copy = Paint()
         for (i in from.strips.indices) {
             val t = from.tops[i]
             val a = maxOf(y0, t)
             val b = minOf(y1, t + from.strips[i].height)
             if (b <= a) continue
-            val rows = IntSize(w, b - a)
-            if (from.canvases[i].readBlock(part, IntOffset(x0, a - t), rows, a - y0)) continue
-            val canvas = read ?: Canvas(part).also { read = it }
-            canvas.drawImageRect(from.strips[i], IntOffset(x0, a - t), rows, IntOffset(0, a - y0), rows, Paint())
+            read.drawImageRect(
+                from.strips[i],
+                IntOffset(x0, a - t),
+                IntSize(w, b - a),
+                IntOffset(0, a - y0),
+                IntSize(
+                    w,
+                    b - a,
+                ),
+                copy,
+            )
         }
-        // Drawn over what is there, a part with no transparent pixel replaces it: the same pixels as a copy.
-        val solid = paint.replacesWhenOpaque() && part.allOpaque()
         val dx = to.x + x0 - at.x
         val dy = to.y + y0 - at.y
         for (i in strips.indices) {
@@ -117,16 +121,17 @@ internal class StripPicture(
             val a = maxOf(dy, t)
             val b = minOf(dy + h, t + strips[i].height)
             if (b <= a) continue
-            val rows = IntSize(w, b - a)
-            if (solid && canvases[i].writeBlock(part, a - dy, rows, IntOffset(dx, a - t))) continue
-            canvases[i].drawImageRect(part, IntOffset(0, a - dy), rows, IntOffset(dx, a - t), rows, paint)
+            canvases[i].drawImageRect(
+                part,
+                IntOffset(0, a - dy),
+                IntSize(w, b - a),
+                IntOffset(dx, a - t),
+                IntSize(
+                    w,
+                    b - a,
+                ),
+                paint,
+            )
         }
     }
-
-    /** A paint that only lays its source over: an opaque source then leaves nothing of what was under it. */
-    private fun Paint.replacesWhenOpaque(): Boolean =
-        blendMode == androidx.compose.ui.graphics.BlendMode.SrcOver &&
-            alpha == 1f &&
-            colorFilter == null &&
-            shader == null
 }

@@ -17,8 +17,7 @@ import kotlin.test.assertContentEquals
 
 /**
  * B-143, B-145: the operations of [StripPicture] land as on the one bitmap it stands for, pixel for pixel: blocks
- * dragged within it, some over the ones before, opaque ones (copied as pixels since B-145) and ones with transparent
- * pixels (drawn), and a tint. The shapes painted into it are not compared (a strip rasterises a
+ * dragged within it, some over the ones before, opaque ones and ones with transparent pixels, and a tint. The shapes painted into it are not compared (a strip rasterises a
  * shape's edge moved up to its place, a channel off by one), only what is done to it after.
  */
 class StripPictureTest {
