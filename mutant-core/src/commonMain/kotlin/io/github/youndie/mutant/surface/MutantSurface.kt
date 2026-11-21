@@ -485,31 +485,34 @@ internal fun MutantSurface(
                     }
                 }
 
+                // B-166: what a body's picture is drawn with besides its frame — a brush built ahead bakes them in, and is
+                // used only while they are still what it was built with: a chip chosen pours its new fill in, and drew
+                // its old one again from a brush built ahead before it was chosen once the pour was over.
+                fun lookOf(dead: io.github.youndie.mutant.gen.DeadPixels?): List<Any?> =
+                    listOf(
+                        outlineOverride?.invoke(key),
+                        look.fill,
+                        look.highlight,
+                        look.ink,
+                        look.outline,
+                        look.slip,
+                        look.shadow,
+                        colors,
+                        state,
+                        focused,
+                        d,
+                        layoutDirection,
+                        skipParts,
+                        cassette,
+                        stage,
+                        wear,
+                        dead,
+                    )
+
                 // B-82: everything the image of a resting body depends on besides its frame. An image built ahead is
                 // used only if these are still what they were when it was prepared.
                 fun imageInputsOf(dead: io.github.youndie.mutant.gen.DeadPixels?): List<Any?>? =
-                    if (bodyAsImage) {
-                        listOf(
-                            look.fill,
-                            look.highlight,
-                            look.ink,
-                            look.outline,
-                            look.slip,
-                            look.shadow,
-                            colors,
-                            state,
-                            focused,
-                            d,
-                            layoutDirection,
-                            skipParts,
-                            cassette,
-                            stage,
-                            wear,
-                            dead,
-                        )
-                    } else {
-                        null
-                    }
+                    if (bodyAsImage) lookOf(dead) else null
 
                 // A resting frame at [next], built off the frame, with its image when the body is drawn as one (B-75, B-82).
                 fun aheadOf(
@@ -524,7 +527,7 @@ internal fun MutantSurface(
                         return Ahead(
                             f,
                             null,
-                            null,
+                            lookOf(dead),
                             shaderOf(g, f, dead, next, 0.0),
                         )
                     }
@@ -793,7 +796,7 @@ internal fun MutantSurface(
                         }
                 } else if (onGpu) {
                     val shaded =
-                        early?.shaded.takeIf { early?.frame === frame }
+                        early?.shaded.takeIf { early?.frame === frame && early.inputs == lookOf(dead) }
                             ?: shaderOf(g, frame, dead, t, k)
                     if (shaded != null) {
                         view.drawn = null
