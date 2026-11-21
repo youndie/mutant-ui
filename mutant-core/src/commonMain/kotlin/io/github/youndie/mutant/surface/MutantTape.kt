@@ -370,6 +370,5 @@ public fun Modifier.mutantTape(): Modifier =
                 scale(d, Offset.Zero) {
                     clipRect(0f, 0f, w, h) { drawTape(stage, m.t, colors, w, h, grain, skip, tile, lines, m.noiseKey) }
                 }
-            }.mutantGlyphWarmUp()
-            .graphicsLayer()
+            }.graphicsLayer()
     }

@@ -1,7 +1,7 @@
 ---
 id: B-165
 title: "In the browser, a screen's first frames warm the kit's glyphs"
-status: wip
+status: dropped
 priority: P1
 size: S
 stage: stage-6-later
@@ -28,3 +28,7 @@ compiled — a tab's first visit rasterises every letter at every size it has no
 
 - Phone proxy (2 counted rounds of 20 s, against B-164's arm): a tab's first visit's longest interval 67, 67, 83, 67,
   50, 50 ms against 67, 50, 50, 50, 50, 50; the screen in its first second (a screenshot) shows nothing of it.
+- **Not held on the phone**, [by B-151's protocol](../../logs/b-151/2026-11-22-round3-1.log) (valid, against B-164 in the
+  same run): a first visit's longest interval 66, 83, 66, 100, 83, 100, 83, 100, 83 ms against 83, 83, 83, 66, 83, 83,
+  83, 100, 83 — the same. The proxy's frame it saved was the Mac's: the phone's first visit is not in its glyphs. Taken
+  out; the item stays as the record.

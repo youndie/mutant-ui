@@ -1,7 +1,7 @@
 ---
 id: B-164
 title: "The kit's text layouts are kept between compositions"
-status: wip
+status: done
 priority: P1
 size: M
 stage: stage-6-later
@@ -31,3 +31,7 @@ its node, and a tab composed anew lays every label out again, the paragraph shap
 
 - Phone proxy (2 counted rounds of 20 s, against `main`): no change above the spread (tab switches over 50 ms in 3
   against 4 of 28). The phone, where Settings' returns are, was disconnected before its run.
+
+- On the phone, [by B-151's protocol](../../logs/b-151/2026-11-22-round3-1.log) (valid: every floor held; `main`, this
+  as `~b`, B-165 on it as `~c`, 4 rounds of 30 s): **a return to Settings** 33 ms in 11 of 12 against `main`'s 50 in 11
+  of 12; missed 0.9 % against 1.4 %. A tab's first visit unchanged (66–100 ms), as a first layout has nothing to keep.
