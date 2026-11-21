@@ -118,70 +118,140 @@ internal fun distanceField(
     steadyWebs: Boolean = false,
     grow: Boolean = true,
 ): DistanceField {
-    val s = gridStep(g)
-    var pad = cache.pad
-    while (true) {
-        val fd = fieldOn(g, cache, prims, t, rough, boilPhase, boil, heat, boil0, steadyWebs, pad)
-        // Off the frame's thread the cache is only read: a cut frame is returned as it is and not taken (B-97).
-        if (!fd.cut || !grow || pad * s >= MAX_PAD_DP) return fd
-        pad = if (pad == 0) ceil(PAD_DP / s).toInt() else 2 * pad
-        cache.pad = pad
-    }
+    val steps = FieldSteps(g, cache, prims, t, rough, boilPhase, boil, heat, boil0, steadyWebs, grow)
+    var done = false
+    while (!done) done = steps.columns(Int.MAX_VALUE)
+    return steps.field()
 }
 
-/** The field on the engine's grid with [pad] cells more on every side (B-97). */
-private fun fieldOn(
-    g: Instance,
+/**
+ * [distanceField] a few columns at a time (B-161), so a build between two frames of the browser's one thread can stop
+ * and let a frame through: [columns] computes the next ones and says whether the field is done, [field] hands it over.
+ * Done in one go, it is [distanceField], to the bit.
+ */
+internal class FieldSteps(
+    private val g: Instance,
+    private val cache: FieldCache,
+    private val prims: List<Primitive>,
+    private val t: Double,
+    private val rough: Double,
+    private val boilPhase: Int,
+    private val boil: Double,
+    private val heat: Double,
+    private val boil0: Double,
+    private val steadyWebs: Boolean,
+    private val grow: Boolean,
+) {
+    private var on = FieldOn(g, cache, prims, t, rough, boilPhase, boil, heat, boil0, steadyWebs, cache.pad)
+    private var done: DistanceField? = null
+
+    /** Computes up to [count] more columns; true once the field is whole. */
+    fun columns(count: Int): Boolean {
+        if (done != null) return true
+        if (!on.columns(count)) return false
+        val fd = on.field()
+        // Off the frame's thread the cache is only read: a cut frame is returned as it is and not taken (B-97).
+        val s = gridStep(g)
+        val pad = on.pad
+        if (!fd.cut || !grow || pad * s >= MAX_PAD_DP) {
+            done = fd
+            return true
+        }
+        val wider = if (pad == 0) ceil(PAD_DP / s).toInt() else 2 * pad
+        cache.pad = wider
+        on = FieldOn(g, cache, prims, t, rough, boilPhase, boil, heat, boil0, steadyWebs, wider)
+        return false
+    }
+
+    fun field(): DistanceField = checkNotNull(done) { "the field is not done" }
+}
+
+/** The field on the engine's grid with [pad] cells more on every side (B-97), a column range at a time. */
+private class FieldOn(
+    private val g: Instance,
     cache: FieldCache,
     prims: List<Primitive>,
-    t: Double,
-    rough: Double,
+    private val t: Double,
+    private val rough: Double,
     boilPhase: Int,
-    boil: Double,
-    heat: Double,
-    boil0: Double,
-    steadyWebs: Boolean,
-    pad: Int,
-): DistanceField {
-    val el = g.slot
-    val s = gridStep(g)
-    val x0 = el.ox - 7
-    val y0 = el.oy - 13
-    val nx = ceil((el.w + 14) / s).toInt() + 1 + 2 * pad
-    val ny = ceil((el.h + el.over + 31) / s).toInt() + 1 + 2 * pad
-    val n = nx * ny
-    val st =
-        cache.static.getOrPut(gridKey(g, pad)) {
-            fieldStatic(g, nx, ny, x0, y0, s, pad)
+    private val boil: Double,
+    private val heat: Double,
+    private val boil0: Double,
+    private val steadyWebs: Boolean,
+    val pad: Int,
+) {
+    private val el = g.slot
+    private val s = gridStep(g)
+    private val x0 = el.ox - 7
+    private val y0 = el.oy - 13
+    private val nx = ceil((el.w + 14) / s).toInt() + 1 + 2 * pad
+    private val ny = ceil((el.h + el.over + 31) / s).toInt() + 1 + 2 * pad
+    private val n = nx * ny
+    private val key = gridKey(g, pad)
+    private val cacheNow = cache
+
+    // B-161: the instance's static layers and this boil phase's noise, a few rows at a time where the cache has neither.
+    private var staticSteps: StaticSteps? =
+        if (cache.static.containsKey(key)) null else StaticSteps(g, nx, ny, x0, y0, s, pad)
+    private var st: FieldStatic? = cache.static[key]
+    private val phase = boilPhase
+    private var bk: FloatArray? = null
+    private var boilRow = -1
+    private var boilNoise: FloatArray? = null
+    private val f = FloatArray(n)
+    private val hh2 = el.h * .5
+    private val cols =
+        Array(nx) { ArrayList<Primitive>() }.also { cols ->
+            for (p in prims) {
+                val rr = max(p[4], p[5]) + p[6] + 1
+                val a = max(0.0, floor((p[0] - rr - x0) / s) + pad).toInt()
+                val b = min((nx - 1).toDouble(), ceil((p[0] + rr - x0) / s) + pad).toInt()
+                for (i in a..b) cols[i] += p
+            }
         }
-    val bk =
-        if (boil != 0.0) {
-            st.boil.getOrPut(boilPhase) {
-                val k = FloatArray(n)
-                for (j in 0 until ny) {
+    private var next = 0
+
+    /** Computes up to [count] more rows of what the cache lacks, then columns; true once all are. */
+    fun columns(count: Int): Boolean {
+        val steps = staticSteps
+        if (steps != null) {
+            if (!steps.rows(count)) return false
+            st = cacheNow.static.getOrPut(key) { steps.result() }
+            staticSteps = null
+            return false
+        }
+        if (boil != 0.0 && bk == null) {
+            val ready = checkNotNull(st).boil[phase]
+            if (ready != null) {
+                bk = ready
+            } else {
+                val k = boilNoise ?: FloatArray(n).also { boilNoise = it }
+                val from = boilRow + 1
+                val to = if (count >= ny - from) ny else from + count
+                for (j in from until to) {
                     for (i in 0 until nx) {
                         k[j * nx + i] =
                             valueNoise(
-                                (x0 + (i - pad) * s) * .16 + boilPhase * 41.3,
-                                (y0 + (j - pad) * s) * .16 + boilPhase * 17.9,
+                                (x0 + (i - pad) * s) * .16 + phase * 41.3,
+                                (y0 + (j - pad) * s) * .16 + phase * 17.9,
                             ).toFloat()
                     }
                 }
-                k
+                boilRow = to - 1
+                if (to < ny) return false
+                bk = checkNotNull(st).boil.getOrPut(phase) { k }
+                return false
             }
-        } else {
-            null
         }
-    val f = FloatArray(n)
-    val hh2 = el.h * .5
-    val cols = Array(nx) { ArrayList<Primitive>() }
-    for (p in prims) {
-        val rr = max(p[4], p[5]) + p[6] + 1
-        val a = max(0.0, floor((p[0] - rr - x0) / s) + pad).toInt()
-        val b = min((nx - 1).toDouble(), ceil((p[0] + rr - x0) / s) + pad).toInt()
-        for (i in a..b) cols[i] += p
+        val end = if (count >= nx - next) nx else next + count
+        for (i in next until end) column(i)
+        next = end
+        return next >= nx
     }
-    for (i in 0 until nx) {
+
+    private fun column(i: Int) {
+        val st = checkNotNull(this.st)
+        val bk = this.bk
         val x = x0 + (i - pad) * s
         val lx = x - el.ox
         val tyx =
@@ -235,12 +305,15 @@ private fun fieldOn(
             f[idx] = (d + rough * st.noise[idx].toDouble() + tremble * kept).toFloat()
         }
     }
-    val q = st.quantPairs
-    if (q != null) {
-        val tmp = FloatArray(q.size / 2) { f[q[2 * it + 1]] }
-        for (k in tmp.indices) f[q[2 * k]] = tmp[k]
+
+    fun field(): DistanceField {
+        val q = checkNotNull(st).quantPairs
+        if (q != null) {
+            val tmp = FloatArray(q.size / 2) { f[q[2 * it + 1]] }
+            for (k in tmp.indices) f[q[2 * k]] = tmp[k]
+        }
+        return DistanceField(f, nx, ny, x0, y0, s, pad)
     }
-    return DistanceField(f, nx, ny, x0, y0, s, pad)
 }
 
 /**
@@ -259,14 +332,68 @@ private fun fieldStatic(
     s: Double,
     pad: Int,
 ): FieldStatic {
-    val el = g.slot
-    val n = nx * ny
-    val a = FloatArray(n)
-    val b = FloatArray(n) { Float.NaN }
+    val steps = StaticSteps(g, nx, ny, x0, y0, s, pad)
+    var done = false
+    while (!done) done = steps.rows(Int.MAX_VALUE)
+    return steps.result()
+}
+
+/** [fieldStatic] a few rows at a time (B-161): its three passes over the grid, each row in the order it had. */
+private class StaticSteps(
+    private val g: Instance,
+    private val nx: Int,
+    private val ny: Int,
+    private val x0: Double,
+    private val y0: Double,
+    private val s: Double,
+    private val pad: Int,
+) {
+    private val el = g.slot
+    private val n = nx * ny
+    private val a = FloatArray(n)
+    private val b = FloatArray(n) { Float.NaN }
+
     // B-149: the same values as the engine's per-cell calls, each computed once. A lattice corner's hash serves every
     // cell around it, and a term of the row alone or of the column alone serves the whole row or column.
-    val edge = LatticeRows(nx) { i -> (x0 + (i - pad) * s) * .8 }
-    for (j in 0 until ny) {
+    private val edge = LatticeRows(nx) { i -> (x0 + (i - pad) * s) * .8 }
+    private val v1 = FloatArray(n)
+    private val v2 = FloatArray(n)
+    private val warp1 = LatticeRows(nx) { i -> (x0 + (i - pad) * s - el.ox) * .03 + g.shape[7] }
+    private val warp2 = LatticeRows(nx) { i -> (x0 + (i - pad) * s - el.ox) * .03 + g.shape[7] + 31 }
+    private val xw = FloatArray(n)
+    private val yw = FloatArray(n)
+    private val b0 = FloatArray(n)
+    private val sh = g.shape
+    private val w = el.w
+    private val h = el.h
+
+    // The column's terms: the horizontal warp's swing and the top's wave, each a function of the column alone.
+    private val swing = DoubleArray(nx)
+    private val wave = DoubleArray(nx)
+    private var pass = 0
+    private var j = 0
+
+    /** Computes up to [count] more rows; true once all three passes are done. */
+    fun rows(count: Int): Boolean {
+        var left = count
+        while (pass < 3 && left > 0) {
+            when (pass) {
+                0 -> edgeRow(j)
+                1 -> warpRow(j)
+                else -> bodyRow(j)
+            }
+            j++
+            left--
+            if (j == ny) {
+                j = 0
+                pass++
+                if (pass == 2) columns()
+            }
+        }
+        return pass >= 3
+    }
+
+    private fun edgeRow(j: Int) {
         for (i in 0 until nx) {
             val x = x0 + (i - pad) * s
             val y = y0 + (j - pad) * s
@@ -275,11 +402,8 @@ private fun fieldStatic(
             if (ly >= el.h * .5) b[j * nx + i] = bodyDistance(x - el.ox, ly, g, 0.0).toFloat()
         }
     }
-    val v1 = FloatArray(n)
-    val v2 = FloatArray(n)
-    val warp1 = LatticeRows(nx) { i -> (x0 + (i - pad) * s - el.ox) * .03 + g.shape[7] }
-    val warp2 = LatticeRows(nx) { i -> (x0 + (i - pad) * s - el.ox) * .03 + g.shape[7] + 31 }
-    for (j in 0 until ny) {
+
+    private fun warpRow(j: Int) {
         for (i in 0 until nx) {
             val lx = x0 + (i - pad) * s - el.ox
             val ly = y0 + (j - pad) * s - el.oy
@@ -287,26 +411,21 @@ private fun fieldStatic(
             v2[j * nx + i] = warp2.noise(lx * .03 + g.shape[7] + 31, ly * .05 + 9).toFloat()
         }
     }
-    val xw = FloatArray(n)
-    val yw = FloatArray(n)
-    val b0 = FloatArray(n)
-    val sh = g.shape
-    val w = el.w
-    val h = el.h
-    // The column's terms: the horizontal warp's swing and the top's wave, each a function of the column alone.
-    val swing = DoubleArray(nx)
-    val wave = DoubleArray(nx)
-    for (i in 0 until nx) {
-        val px = x0 + (i - pad) * s - el.ox
-        val u = clamp01(px / w)
-        swing[i] =
-            sh[2] * (u - .5) * 2 + sh[4] *
-            jsSin(
-                PI * u * sh[5] + sh[6],
-            )
-        wave[i] = topWave(g, clamp(px, 0.0, w), 0.0)
+
+    private fun columns() {
+        for (i in 0 until nx) {
+            val px = x0 + (i - pad) * s - el.ox
+            val u = clamp01(px / w)
+            swing[i] =
+                sh[2] * (u - .5) * 2 + sh[4] *
+                jsSin(
+                    PI * u * sh[5] + sh[6],
+                )
+            wave[i] = topWave(g, clamp(px, 0.0, w), 0.0)
+        }
     }
-    for (j in 0 until ny) {
+
+    private fun bodyRow(j: Int) {
         val py = y0 + (j - pad) * s - el.oy
         val v = clamp01(py / h)
         val m = clamp01(1 - py / (h * .5))
@@ -319,29 +438,32 @@ private fun fieldStatic(
             b0[idx] = roundedRectDistance(g, xw[idx].toDouble(), yw[idx].toDouble() - wave[i] * m).toFloat()
         }
     }
-    var pairs: IntArray? = null
-    if (g.mosaic.isNotEmpty()) {
-        val pr = ArrayList<Int>()
-        for (blk in g.mosaic) {
-            val bx = blk.x
-            val by = blk.y
-            val bs = blk.size
-            val ci = clamp(jsRound((el.ox + bx + bs / 2 - x0) / s) + pad, 0.0, (nx - 1).toDouble()).toInt()
-            val cj = clamp(jsRound((el.oy + by + bs / 2 - y0) / s) + pad, 0.0, (ny - 1).toDouble()).toInt()
-            var j = max(0.0, ceil((el.oy + by - y0) / s) + pad).toInt()
-            while (j < ny && y0 + (j - pad) * s < el.oy + by + bs) {
-                var i = max(0.0, ceil((el.ox + bx - x0) / s) + pad).toInt()
-                while (i < nx && x0 + (i - pad) * s < el.ox + bx + bs) {
-                    pr += j * nx + i
-                    pr += cj * nx + ci
-                    i++
+
+    fun result(): FieldStatic {
+        var pairs: IntArray? = null
+        if (g.mosaic.isNotEmpty()) {
+            val pr = ArrayList<Int>()
+            for (blk in g.mosaic) {
+                val bx = blk.x
+                val by = blk.y
+                val bs = blk.size
+                val ci = clamp(jsRound((el.ox + bx + bs / 2 - x0) / s) + pad, 0.0, (nx - 1).toDouble()).toInt()
+                val cj = clamp(jsRound((el.oy + by + bs / 2 - y0) / s) + pad, 0.0, (ny - 1).toDouble()).toInt()
+                var j = max(0.0, ceil((el.oy + by - y0) / s) + pad).toInt()
+                while (j < ny && y0 + (j - pad) * s < el.oy + by + bs) {
+                    var i = max(0.0, ceil((el.ox + bx - x0) / s) + pad).toInt()
+                    while (i < nx && x0 + (i - pad) * s < el.ox + bx + bs) {
+                        pr += j * nx + i
+                        pr += cj * nx + ci
+                        i++
+                    }
+                    j++
                 }
-                j++
             }
+            pairs = pr.toIntArray()
         }
-        pairs = pr.toIntArray()
+        return FieldStatic(a, b, xw, yw, b0, pairs)
     }
-    return FieldStatic(a, b, xw, yw, b0, pairs)
 }
 
 /**

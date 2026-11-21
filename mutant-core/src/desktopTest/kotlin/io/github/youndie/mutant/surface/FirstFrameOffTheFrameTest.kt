@@ -36,7 +36,7 @@ import kotlin.test.assertTrue
  * B-50, B-149: under a running clock a body's first instance and static layers are built on another thread, the frame's
  * bodies side by side, and the body's first frame waits for its own: it is drawn in its first frame, the picture a body
  * built in its frame draws. Where the frame cannot wait (the browser, here the seam), the first frame draws a stand-in
- * and the body comes from the next. A frozen clock draws in its first frame, as before.
+ * and the body comes from the first frame after its build is done (B-153). A frozen clock draws in its first frame.
  */
 @OptIn(ExperimentalTestApi::class)
 class FirstFrameOffTheFrameTest {
@@ -111,15 +111,21 @@ class FirstFrameOffTheFrameTest {
         }
 
     @Test
-    fun `where the frame cannot wait, the first frame draws a stand-in and the next the body`() =
+    fun `where the frame cannot wait, the stand-in stands until the body's build is done`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             val card = card(offFrame = true, waits = false)
             mainClock.advanceTimeByFrame()
             assertNull(card.instance, "nothing built in the frame that first knows the slot")
             assertEquals(1, standIns, "the stand-in drawn in that frame")
-            mainClock.advanceTimeByFrame()
-            assertNotNull(card.instance, "taken in the next frame")
+            // B-153: taken in the first frame after the build is done, never built in a frame for being late.
+            var frames = 0
+            while (card.instance == null && frames < 200) {
+                Thread.sleep(5)
+                mainClock.advanceTimeByFrame()
+                frames++
+            }
+            assertNotNull(card.instance, "taken once built, $frames frames on")
             assertTrue(pixels().fill() > 5000, "the body drawn: ${pixels().fill()} px of its fill")
             repeat(20) { mainClock.advanceTimeByFrame() }
             assertEquals(1, card.builds, "built once")
