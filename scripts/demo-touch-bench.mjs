@@ -19,11 +19,16 @@
 // phone's own frame rate under the same touches is read beside the screen's. Round 1 is not counted; loads rotate.
 // PROFILE=1 also samples each load with the CDP profiler (every 200 µs) and keeps it as <out>/<load>-r<round>.cpuprofile.
 // Needs the phone over adb with Chrome open on it, and `./gradlew :sample:wasmJsBrowserDistribution`.
-import { execSync } from 'node:child_process';
+//
+// PHONE=1 runs the same in B-107's phone proxy instead: headless Chrome on this Mac, 390 × 844 at 3x, mobile, touch, its
+// main thread slowed CPU=<rate> times (2 by default, B-116's calibration to the Pixel 6a). A proxy, not the phone: for
+// finding where the time goes fast and without the phone's heat; verdicts are the phone's.
+import { execSync, spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync, statSync, mkdtempSync } from 'node:fs';
 import { join, extname } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const [out, roundsArg, loadMsArg, kindsArg] = process.argv.slice(2);
 if (!out) throw new Error('usage: demo-touch-bench.mjs <out-dir> [rounds] [load-ms] [tabs,scroll,blank]');
@@ -41,6 +46,8 @@ const ARMS = [{ tag: '', dir: DIST }, ...OTHERS];
 for (const a of ARMS) if (!existsSync(join(a.dir, 'index.html'))) throw new Error(`no build at ${a.dir}`);
 mkdirSync(out, { recursive: true });
 
+const PHONE = process.env.PHONE === '1';
+const CPU = +(process.env.CPU ?? 2);
 const ADB = process.env.ADB ?? `${process.env.HOME}/Library/Android/sdk/platform-tools/adb`;
 const sh = cmd => { try { return execSync(cmd, { encoding: 'utf8' }).trim(); } catch { return '?'; } };
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm',
@@ -54,15 +61,22 @@ const serve = async dist => {
     res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
     res.end(readFileSync(file));
   });
-  await new Promise(r => server.listen(nextPort++, '127.0.0.1', r));
-  sh(`${ADB} reverse tcp:${server.address().port} tcp:${server.address().port}`);
+  await new Promise(r => server.listen(PHONE ? 0 : nextPort++, '127.0.0.1', r));
+  if (!PHONE) sh(`${ADB} reverse tcp:${server.address().port} tcp:${server.address().port}`);
   return `http://127.0.0.1:${server.address().port}`;
 };
 for (const a of ARMS) a.origin = await serve(a.dir);
 
-const DEBUG = 9336;
-sh(`${ADB} shell am start -a android.intent.action.VIEW -d about:blank -n com.android.chrome/com.google.android.apps.chrome.Main`);
-sh(`${ADB} forward tcp:${DEBUG} localabstract:chrome_devtools_remote`);
+// The proxy's Chrome on a port of its own: 9336 is the phone's (B-151: a profiler there took over a phone's run).
+const DEBUG = PHONE ? 9339 : 9336;
+const chrome = PHONE ? spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--headless=new',
+  '--window-size=390,844', '--force-device-scale-factor=3', `--remote-debugging-port=${DEBUG}`,
+  `--user-data-dir=${mkdtempSync(join(tmpdir(), 'b151-'))}`, '--no-first-run', '--no-default-browser-check',
+  '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' }) : null;
+if (!PHONE) {
+  sh(`${ADB} shell am start -a android.intent.action.VIEW -d about:blank -n com.android.chrome/com.google.android.apps.chrome.Main`);
+  sh(`${ADB} forward tcp:${DEBUG} localabstract:chrome_devtools_remote`);
+}
 let version;
 for (let i = 0; i < 50 && !version; i++) {
   await new Promise(r => setTimeout(r, 200));
@@ -70,7 +84,7 @@ for (let i = 0; i < 50 && !version; i++) {
 }
 if (!version) throw new Error('no DevTools on the phone: is Chrome open on it?');
 // B-140: a bench tab left by a killed run keeps drawing and heats the phone; this bench's and B-73's are closed.
-for (const t of await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())) {
+for (const t of PHONE ? [] : await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())) {
   if (t.type === 'page' && /^http:\/\/127\.0\.0\.1:876\d\/\?scene=/.test(t.url)) {
     console.log(`# closed a leftover bench tab: ${t.url}`);
     await fetch(`http://127.0.0.1:${DEBUG}/json/close/${t.id}`).catch(() => null);
@@ -79,7 +93,7 @@ for (const t of await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.j
 let page;
 for (let i = 0; i < 50 && !page; i++) {
   if (i > 0) await new Promise(r => setTimeout(r, 200));
-  page = (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page' && t.url === 'about:blank');
+  page = (await fetch(`http://127.0.0.1:${DEBUG}/json/list`).then(r => r.json())).find(t => t.type === 'page' && (PHONE || t.url === 'about:blank'));
 }
 if (!page) throw new Error('no blank tab to measure in');
 const ws = new WebSocket(page.webSocketDebuggerUrl);
@@ -106,6 +120,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 await send('Page.enable');
 await send('Runtime.enable');
+if (PHONE) {
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  await send('Emulation.setCPUThrottlingRate', { rate: CPU });
+}
 // B-73's recorder, plus the gestures' own times as the page saw them.
 await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
   const frames = []; const marks = [];
@@ -125,14 +144,15 @@ await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
 
 const digestOf = dist => readdirSync(dist).filter(f => f.endsWith('.wasm')).sort()
   .map(f => `${f} ${createHash('sha256').update(readFileSync(join(dist, f))).digest('hex').slice(0, 16)}`).join(', ');
-const adbProp = k => sh(`${ADB} shell getprop ${k}`);
-const power = () => sh(`${ADB} shell dumpsys battery | grep -E 'level|AC powered|temperature' | tr -s ' ' | tr '\\n' ';'`);
-const freq = () => sh(`${ADB} shell 'cat /sys/devices/system/cpu/cpu6/cpufreq/scaling_cur_freq /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq'`).split(/\s+/).map(v => Math.round(+v / 1000)).join('/');
+const adbProp = k => (PHONE ? '' : sh(`${ADB} shell getprop ${k}`));
+const power = () => PHONE ? '' : sh(`${ADB} shell dumpsys battery | grep -E 'level|AC powered|temperature' | tr -s ' ' | tr '\\n' ';'`);
+const freq = () => PHONE ? '' : sh(`${ADB} shell 'cat /sys/devices/system/cpu/cpu6/cpufreq/scaling_cur_freq /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq'`).split(/\s+/).map(v => Math.round(+v / 1000)).join('/');
 console.log([
   `# B-151 Demo touch bench, ${new Date().toISOString()}`,
-  `# device: ${adbProp('ro.product.model')} (${adbProp('ro.product.device')}), Android ${adbProp('ro.build.version.release')}, build ${adbProp('ro.build.id')}`,
-  `# device power: ${power()} big ${freq()} MHz`,
-  `# browser: ${version.Browser}, on the device, nothing emulated or throttled`,
+  ...(PHONE ? [`# phone proxy: ${version.Browser}, headless, 390x844 at 3x, mobile, touch, CPU slowed ${CPU}x`] : [
+    `# device: ${adbProp('ro.product.model')} (${adbProp('ro.product.device')}), Android ${adbProp('ro.build.version.release')}, build ${adbProp('ro.build.id')}`,
+    `# device power: ${power()} big ${freq()} MHz`,
+    `# browser: ${version.Browser}, on the device, nothing emulated or throttled`]),
   `# commit: ${sh('git rev-parse --short HEAD')}${sh('git status --porcelain -- sample mutant-core') ? ' (dirty)' : ''}`,
   `# build: ${ARMS.map(a => `${a.tag || 'a'}: ${digestOf(a.dir)}`).join('; ')}`,
   `# rounds ${ROUNDS} (round 1 not counted), ${LOAD_MS} ms a load, ${SETTLE_MS} ms settle; loads ${KINDS.join(',')}; tap every ${TAP_EVERY} ms, swipe every ${SWIPE_EVERY} ms, window ${WINDOW} ms, missed > ${MISSED} ms`,
@@ -218,7 +238,7 @@ for (let round = 1; round <= ROUNDS; round++) {
     if (round > 1) (pooled[name] ??= []).push(...rows);
     const lat = rows.map(r => r.latency).filter(x => !Number.isNaN(x));
     const iv = rows.reduce((a, r) => a + r.n, 0), miss = rows.reduce((a, r) => a + r.missed, 0);
-    console.log(`round ${round} ${name.padEnd(9)} ${String(rows.length).padStart(3)} gestures (${ups.length} pointerups)  latency p50 ${q(lat, .5).toFixed(0).padStart(4)} max ${Math.max(...lat).toFixed(0).padStart(4)} ms  longest p50 ${q(rows.map(r => r.longest), .5).toFixed(0).padStart(4)} max ${Math.max(...rows.map(r => r.longest)).toFixed(0).padStart(4)} ms  missed ${miss}/${iv} (${(100 * miss / Math.max(1, iv)).toFixed(1)} %)  ${f.length} frames  ${power().match(/temperature: (\d+)/)?.[1] / 10} °C big ${freq()} MHz`);
+    console.log(`round ${round} ${name.padEnd(9)} ${String(rows.length).padStart(3)} gestures (${ups.length} pointerups)  latency p50 ${q(lat, .5).toFixed(0).padStart(4)} max ${Math.max(...lat).toFixed(0).padStart(4)} ms  longest p50 ${q(rows.map(r => r.longest), .5).toFixed(0).padStart(4)} max ${Math.max(...rows.map(r => r.longest)).toFixed(0).padStart(4)} ms  missed ${miss}/${iv} (${(100 * miss / Math.max(1, iv)).toFixed(1)} %)  ${f.length} frames${PHONE ? '' : `  ${power().match(/temperature: (\d+)/)?.[1] / 10} °C big ${freq()} MHz`}`);
   }
 }
 writeFileSync(join(out, 'gestures.csv'), csv.join('\n') + '\n');
@@ -235,7 +255,10 @@ for (const [name, rows] of Object.entries(pooled)) {
   console.log(`${name.padEnd(9)} ${String(rows.length).padStart(3)} gestures  latency p50 ${q(lat, .5).toFixed(0).padStart(4)} p95 ${q(lat, .95).toFixed(0).padStart(4)} max ${Math.max(...lat).toFixed(0).padStart(4)} ms  longest p50 ${q(longest, .5).toFixed(0).padStart(4)} p95 ${p95.toFixed(0).padStart(4)} max ${max.toFixed(0).padStart(4)} ms  over 50 ms in ${rows.filter(r => r.longest > 50).length}  missed ${(100 * missed).toFixed(1)} %  ${failed.length ? `NOT HELD (${failed.join(', ')})` : 'HELD'}`);
 }
 ws.close();
-await fetch(`http://127.0.0.1:${DEBUG}/json/close/${page.id}`).catch(() => null);
-sh(`${ADB} forward --remove tcp:${DEBUG}`);
-sh(`${ADB} reverse --remove-all`);
+if (PHONE) chrome.kill();
+else {
+  await fetch(`http://127.0.0.1:${DEBUG}/json/close/${page.id}`).catch(() => null);
+  sh(`${ADB} forward --remove tcp:${DEBUG}`);
+  sh(`${ADB} reverse --remove-all`);
+}
 process.exit(0);

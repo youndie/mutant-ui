@@ -3,13 +3,11 @@ package io.github.youndie.mutant.gen
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
-import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.sin
 
 /**
  * The instance half of `MutantGenerator`: everything decided once per slot and key (`genItem` and what
@@ -81,7 +79,7 @@ internal class MutantGenerator(
                 val b = max(1.9, (if (thin) 2 + q else 3.4 + 4.6 * q * q) * k)
                 val cx = x + b * 1.45
                 if (cx + b * 1.45 > w - rb - 1) break
-                val mod = .5 + .5 * sin(tau * cx / lw + lp)
+                val mod = .5 + .5 * jsSin(tau * cx / lw + lp)
                 val drip = a < cf
                 var len = if (thin) over * (.55 + .45 * s) else over * (.2 + .8 * mod.pow(.7) * (.3 + .7 * s))
                 len = max(b * 2.2 + 1.5, min(if (drip) over * .74 else over, len))
@@ -412,7 +410,7 @@ internal class MutantGenerator(
         val tau = 6.283
         if (!d.drips) {
             val ph = (t / (d.period * 1.7) + d.offset) % 1
-            return DripState(d.maxLength * (.88 + .12 * (.5 + .5 * sin(tau * ph))), b * 1.08, .9)
+            return DripState(d.maxLength * (.88 + .12 * (.5 + .5 * jsSin(tau * ph))), b * 1.08, .9)
         }
         val period = d.period
         val hang = 2200 + 2200 * d.u
@@ -434,7 +432,7 @@ internal class MutantGenerator(
         }
         if (ph < grow + hang) {
             val v = (ph - grow) / hang
-            val sw = sin(v * tau * 1.5) * .6 * (1 - v)
+            val sw = jsSin(v * tau * 1.5) * .6 * (1 - v)
             return DripState(d.maxLength + s * .25 * v + sw, r2, .76 - .08 * v)
         }
         if (ph < grow + hang + pinch) {
@@ -453,7 +451,7 @@ internal class MutantGenerator(
         val sc = max(0.0, 1 - max(0.0, dist - 10 * k) / (8 * k))
         val ls = lh - r2 * 1.2
         val q = 1 - exp(-w / 90)
-        val tipLength = d.restLength + (ls - d.restLength) * exp(-w / 160) * cos(w / 90)
+        val tipLength = d.restLength + (ls - d.restLength) * exp(-w / 160) * jsCos(w / 90)
         return if (sc > .05) {
             DripState(tipLength, b * (.55 + .45 * q), .56 + .34 * q, yc0 + s * 1.1 + dist, r2 * .92 * sc)
         } else {
@@ -620,7 +618,7 @@ internal class MutantGenerator(
         var ib = 0
         for (i in 1..8) {
             val q = PI * i / 8
-            c += doubleArrayOf(bx + dir * a * (1 - cos(q)), by + a * 1.15 * sin(q))
+            c += doubleArrayOf(bx + dir * a * (1 - jsCos(q)), by + a * 1.15 * jsSin(q))
             if (i == 4) ib = c.size - 1
         }
         val m = max(2.0, jsRound(hk / 1.1)).toInt()
@@ -642,7 +640,7 @@ internal class MutantGenerator(
         val n = max(6.0, jsRound(wd / 1.1)).toInt()
         for (i in 0..n) {
             val u = i.toDouble() / n
-            c += doubleArrayOf(x - wd / 2 + wd * u, y + dp * sin(PI * u) - dp * .55 * abs(2 * u - 1).pow(4))
+            c += doubleArrayOf(x - wd / 2 + wd * u, y + dp * jsSin(PI * u) - dp * .55 * abs(2 * u - 1).pow(4))
         }
         return FlowLineShape(c, n shr 1)
     }

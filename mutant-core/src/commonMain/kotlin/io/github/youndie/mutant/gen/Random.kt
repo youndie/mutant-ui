@@ -1,7 +1,6 @@
 package io.github.youndie.mutant.gen
 
 import kotlin.math.floor
-import kotlin.math.sin
 
 /**
  * `hash`: FNV-1a over the string's UTF-16 code units (`charCodeAt`), 32 bits, unsigned. The root of
@@ -60,7 +59,7 @@ internal fun latticeHash(
     x: Double,
     y: Double,
 ): Double {
-    val s = sin(x * 127.1 + y * 311.7) * 43758.5453
+    val s = jsSin(x * 127.1 + y * 311.7) * 43758.5453
     return s - floor(s)
 }
 

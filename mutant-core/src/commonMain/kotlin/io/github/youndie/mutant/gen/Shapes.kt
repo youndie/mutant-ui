@@ -4,7 +4,6 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
@@ -52,7 +51,7 @@ internal fun topWave(
     val ws = w[4]
     val tau = 6.2832
     return -amplitude *
-        (.2 + .6 * sin(tau * x / lambda + p0 + t * ws) + .25 * sin(tau * x / (lambda * .53) + p1 - t * ws * .7))
+        (.2 + .6 * jsSin(tau * x / lambda + p0 + t * ws) + .25 * jsSin(tau * x / (lambda * .53) + p1 - t * ws * .7))
 }
 
 /**
@@ -72,8 +71,8 @@ internal fun bodyDistance(
     val u = clamp01(px / w)
     val v = clamp01(py / h)
     val m = clamp01(1 - py / (h * .5))
-    var x = px + (if (px < w / 2) s[0] else -s[1]) * sin(PI * v)
-    var y = py - (topOffset + s[2] * (u - .5) * 2 + s[4] * sin(PI * u * s[5] + s[6])) * m
+    var x = px + (if (px < w / 2) s[0] else -s[1]) * jsSin(PI * v)
+    var y = py - (topOffset + s[2] * (u - .5) * 2 + s[4] * jsSin(PI * u * s[5] + s[6])) * m
     x += s[3] * valueNoise(px * .03 + s[7], py * .05)
     y += s[3] * .7 * valueNoise(px * .03 + s[7] + 31, py * .05 + 9)
     return roundedRectDistance(g, x, y)

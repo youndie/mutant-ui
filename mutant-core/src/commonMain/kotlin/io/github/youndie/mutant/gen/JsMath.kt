@@ -70,3 +70,13 @@ internal fun jsToFixed(
     val t = jsRound(abs(v) * scale) / scale
     return if (v < 0) -t else t
 }
+
+/**
+ * `Math.sin`. The design's generator is JavaScript, so its sines are the browser's; Kotlin's own `sin` on wasm is a port
+ * of `fdlibm` in the module, which takes most of its time reducing the lattice hash's large arguments (B-152). In the
+ * browser this is the browser's own; elsewhere Kotlin's, as before.
+ */
+internal expect fun jsSin(x: Double): Double
+
+/** `Math.cos`, as [jsSin]. */
+internal expect fun jsCos(x: Double): Double

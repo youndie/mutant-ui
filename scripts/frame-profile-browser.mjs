@@ -40,9 +40,11 @@ if (DEVICE) {
   sh(`${ADB} shell am start -a android.intent.action.VIEW -d about:blank -n com.android.chrome/com.google.android.apps.chrome.Main`);
   sh(`${ADB} forward tcp:9337 localabstract:chrome_devtools_remote`);
 }
-const DEBUG = DEVICE ? 9337 : 9336;
+// B-151: the local Chrome on 9338, as 9336 is where the device benches forward the phone's Chrome: on 9336 this profiled,
+// and navigated, a phone's bench tab while a device run was measuring in it.
+const DEBUG = DEVICE ? 9337 : 9338;
 const chrome = DEVICE ? null : spawn(CHROME, ['--headless=new', '--window-size=1280,814', '--force-device-scale-factor=2',
-  '--remote-debugging-port=9336', `--user-data-dir=${mkdtempSync(join(tmpdir(), 'b73p-'))}`, '--no-first-run',
+  '--remote-debugging-port=9338', `--user-data-dir=${mkdtempSync(join(tmpdir(), 'b73p-'))}`, '--no-first-run',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let up;
 for (let i = 0; i < 50 && !up; i++) {
