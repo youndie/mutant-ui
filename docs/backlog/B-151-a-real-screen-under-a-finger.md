@@ -84,3 +84,51 @@ as the bodies arrive.
 - Anchors: `scripts/demo-touch-bench.mjs`, `sample/src/wasmJsMain/kotlin/io/github/youndie/mutant/sample/BenchScene.kt`
 
 ## Findings
+
+### Round 1, 2026-11-21: the levers
+
+Each lever is an item, measured against the arm before it; the phone's runs are [arms 1](../../logs/b-151/2026-11-21-arms-1.log)
+(a comparison: no floor, the phone throttled to 0.5–1.6 GHz) and [arms 2](../../logs/b-151/2026-11-21-arms-2.log) (by the
+protocol, valid); the rest are the phone proxy (`PHONE=1 CPU=2`, 2 counted rounds of 20 s), which read `main` as the
+phone does (tab switches longest p50 117 ms and 12 % missed, a scroll stopped up to 1.2 s at the loss).
+
+| item | what | where it was measured | tab switches, longest p50 / p95 | scroll, longest p95 |
+|---|---|---|---|---|
+| [B-152](B-152-the-browsers-own-sine.md) | the browser's `Math.sin` | arms 1 | 150 / – (main 216) | – |
+| [B-153](B-153-a-first-picture-between-frames.md) | a first picture between frames, whole | arms 1 | 83 / – | – |
+| [B-155](B-155-no-tick-built-in-a-frame.md) | no tick built in a frame | arms 2, valid | 50 / 150 (main 133 / 283) | 449 (main 1196) |
+| [B-156](B-156-a-pool-of-bodies.md) | a pool of bodies left behind | arms 2 | 67 / 183 | 449 |
+| [B-154](B-154-the-loss-snapshots-the-band-only.md) | the snapshot: the band's bodies, each frame built once | arms 2 | 67 / 150 | 200 |
+| [B-157](B-157-textures-in-one-block.md) | textures in one block | proxy, at rest | busy −14 points | – |
+| [B-158](B-158-the-loss-band-in-memory.md) | the loss's band in memory | proxy | – | 350, missed 0.2 % |
+| [B-159](B-159-the-loss-snapshot-painted-ahead.md) | the snapshot painted ahead | proxy | 33 / 133 | **33, held** |
+| [B-160](B-160-a-frame-kept-between-ticks.md) | a frame kept between ticks | proxy | no change | held |
+| [B-161](B-161-builds-in-steps.md) | builds in steps | proxy | no change | held |
+| [B-162](B-162-a-surface-keeps-its-recent-instances.md) | recent instances, a new one between frames | proxy | **17 / 67**, missed 0.7 % | held |
+
+Where it stands, in the proxy: **a scroll holds** (no window over 33 ms, 0.1 % missed); **a tab switch holds on a return
+to a tab** (one frame lost, at most) and not on a tab's first visit in a page: the frame that composes it takes 65–100
+ms in the proxy, of which Compose's own draw of the new nodes 17, text 10, composition 5, layout 3, and Skia's work that
+the profile cannot name (its module carries no names), with GPU programs compiled for it. The bodies are not in that
+frame any more: they come as stand-ins and are built after it, a few milliseconds at a time.
+
+### The run with all of it, 2026-11-21
+
+[The run](../../logs/b-151/2026-11-21-stack-1.log), by the protocol on the phone: `main` against the build with every
+lever of round 1 (`~b`), interleaved, 4 rounds of 30 s, the phone at 27–34 °C. **Valid**: both floors held. 60 gestures
+a load:
+
+| load | longest, p50; p95; max | windows over 50 ms | missed | verdict |
+|---|---|---|---|---|
+| tabs, `main` | 116; 300; 350 ms | 53 | 11.2 % | not held (p95, max, missed) |
+| tabs, all of it | **33; 100; 100 ms** | 12 | **1.6 %** | not held (p95, max) |
+| scroll, `main` | 17; 715; 748 ms | 17 | 1.8 % | not held (p95, max) |
+| scroll, all of it | **17; 50; 50 ms** | 0 | **0.3 %** | not held (p95) |
+
+- **Scroll**: missed under the bar, nothing over 50 ms; six windows of 60 hold a 50 ms interval — two frames lost
+  together — at 15.1, 31.3 and 40.5 s into a load: the loss's start, nine seconds apart. Its first frame lays the pieces
+  into the band, reads it and copies it clean (B-159) in about 33 ms on the phone.
+- **Tab switches**: missed under the bar. Over it: each tab's first visit in a load (83–100 ms, the frame that composes
+  the tab, round 1 above), and every return to Settings (50 ms), the heaviest tab.
+
+Owed, as round 2: the loss's first frame under one frame; a tab's composing frame, Settings' first.
