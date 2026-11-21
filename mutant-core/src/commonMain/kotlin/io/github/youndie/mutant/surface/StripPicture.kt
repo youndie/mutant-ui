@@ -17,11 +17,11 @@ import androidx.compose.ui.unit.IntSize
  * before it is drawn, as drawing a bitmap onto itself reads it.
  */
 internal class StripPicture(
-    val width: Int,
+    override val width: Int,
     private val top: Int,
     private val bottom: Int,
     private val stripHeight: Int,
-) {
+) : LossPicture {
     private val tops = IntArray(maxOf(0, (bottom - top + stripHeight - 1) / stripHeight)) { top + it * stripHeight }
     private val strips = List(tops.size) { ImageBitmap(width, minOf(stripHeight, bottom - tops[it])) }
     private val canvases = strips.map { Canvas(it) }
@@ -30,7 +30,7 @@ internal class StripPicture(
      * Draws [block] into every strip, as into one bitmap [width] × [height] px: each strip draws it moved up to its own
      * place, and clips it at its edges.
      */
-    fun paint(
+    override fun paint(
         density: androidx.compose.ui.unit.Density,
         direction: androidx.compose.ui.unit.LayoutDirection,
         height: Int,
@@ -50,19 +50,19 @@ internal class StripPicture(
     }
 
     /** A copy, strip for strip. */
-    fun copy(): StripPicture =
+    override fun copy(): StripPicture =
         StripPicture(width, top, bottom, stripHeight).also { c ->
             val paint = Paint()
             for (i in strips.indices) c.canvases[i].drawImage(strips[i], Offset.Zero, paint)
         }
 
     /** Draws the picture at the scope's origin. */
-    fun draw(scope: DrawScope) {
+    override fun draw(scope: DrawScope) {
         for (i in strips.indices) scope.drawImage(strips[i], Offset(0f, tops[i].toFloat()))
     }
 
     /** As `drawRect` on the one bitmap: on each strip it meets, which clips it at its edges. */
-    fun drawRect(
+    override fun drawRect(
         left: Float,
         top: Float,
         right: Float,
@@ -80,13 +80,14 @@ internal class StripPicture(
      * As `drawImageRect(from, at, size, to, size, paint)` on the one bitmap, [from] this picture or another of the same
      * strips: the source's part inside [from] is read out first, then drawn onto every strip the destination meets.
      */
-    fun drawPart(
-        from: StripPicture,
+    override fun drawPart(
+        from: LossPicture,
         at: IntOffset,
         size: IntSize,
         to: IntOffset,
         paint: Paint,
     ) {
+        from as StripPicture
         val x0 = maxOf(at.x, 0)
         val x1 = minOf(at.x + size.width, from.width)
         val y0 = maxOf(at.y, from.top)
@@ -134,4 +135,43 @@ internal class StripPicture(
             )
         }
     }
+}
+
+/**
+ * The keyframe loss's picture of its band: strips of Skia bitmaps ([StripPicture]), or the band's pixels in this
+ * module's memory ([BandPixels], the browser's, B-158). The operations are those of one bitmap.
+ */
+internal interface LossPicture {
+    val width: Int
+
+    /** Draws [block] into the picture, as into one bitmap [width] × [height] px. */
+    fun paint(
+        density: androidx.compose.ui.unit.Density,
+        direction: androidx.compose.ui.unit.LayoutDirection,
+        height: Int,
+        block: DrawScope.() -> Unit,
+    )
+
+    fun copy(): LossPicture
+
+    /** Draws the picture at the scope's origin. */
+    fun draw(scope: DrawScope)
+
+    /** `drawRect` with [paint]: the loss clears with `BlendMode.Clear` and tints with `BlendMode.Screen`. */
+    fun drawRect(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        paint: Paint,
+    )
+
+    /** `drawImageRect(from, at, size, to, size, paint)`, the source's part read out first. */
+    fun drawPart(
+        from: LossPicture,
+        at: IntOffset,
+        size: IntSize,
+        to: IntOffset,
+        paint: Paint,
+    )
 }

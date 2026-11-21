@@ -47,6 +47,7 @@ import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantCleanSignal
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
+import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.min
@@ -94,6 +95,7 @@ internal fun KeyframeLossBody(
     scene.ground = ground
     scene.frozenAt = frozenAt
     scene.live = !off && frozenAt == null && !reduce && !clock.frozen && !clock.paused && clock.holds == 0
+    scene.scope = androidx.compose.runtime.rememberCoroutineScope()
     Box(
         modifier
             .onGloballyPositioned { scene.coords = it }
@@ -173,6 +175,13 @@ internal class MoshScene(
     var frozenAt: Double? = null
     var live = false
 
+    /** Where the bodies' pieces are painted ahead of a loss (B-159). */
+    var scope: kotlinx.coroutines.CoroutineScope? = null
+
+    // B-159: each body's picture for the next loss's snapshot, painted between frames ahead of it, and the window it is for.
+    private val pieces = HashMap<MoshBody, BodyPiece>()
+    private var piecesFor = -1L
+
     /** Told, at each draw under the content, whether a loss runs: for tests only, never for a consumer. */
     var probe: ((Boolean) -> Unit)? = null
 
@@ -184,8 +193,8 @@ internal class MoshScene(
     private var retry by mutableIntStateOf(0)
     private var window = -1L
     private var plan: MoshPlan? = null
-    private var picture: StripPicture? = null
-    private var clean: StripPicture? = null
+    private var picture: LossPicture? = null
+    private var clean: LossPicture? = null
 
     // The blocks cut out of the snapshot (`gone`), in scene pixels.
     private var holes: List<Rect> = emptyList()
@@ -249,6 +258,7 @@ internal class MoshScene(
         } else {
             val t = clock.restTimeMs()
             if (live) {
+                if (lossBandInMemory && plan == null) prepareAhead(scope, t)
                 val win = floor(t / EVERY_MS).toLong()
                 if (plan == null && win != window && t - win * EVERY_MS > OFFSET_MS) {
                     window = win
@@ -281,20 +291,52 @@ internal class MoshScene(
         val ph = scope.size.height.roundToInt()
         // B-88: kept as strips over the band and a row under it, where the blocks pull (at most 8 dp down); the bodies
         // draw straight into them.
-        val strips =
-            StripPicture(
-                pw,
-                floor(plan.y0 * d).toInt().coerceIn(0, ph),
-                ceil((plan.y0 + (plan.rows + 1) * ROW) * d).toInt().coerceIn(0, ph),
-                (ROW * d).roundToInt().coerceAtLeast(1),
-            )
+        val bandFrom = floor(plan.y0 * d).toInt().coerceIn(0, ph)
+        val bandTo = ceil((plan.y0 + (plan.rows + 1) * ROW) * d).toInt().coerceIn(0, ph)
+        // B-158: in the browser the band's pixels are kept in this module's memory and handed to Skia once a step.
+        val strips: LossPicture =
+            if (lossBandInMemory) {
+                BandPixels(pw, bandFrom, bandTo)
+            } else {
+                StripPicture(pw, bandFrom, bandTo, (ROW * d).roundToInt().coerceAtLeast(1))
+            }
+        if (strips is BandPixels) {
+            paintBand(strips, scope, plan, me)
+        } else {
+            paintStrips(strips, scope, plan, me, ph)
+        }
+        this.plan = plan
+        picture = strips
+        clean = strips.copy()
+        holes = plan.runs.filter { it.gone }.map { Rect(it.x * d, it.y * d, (it.x + it.w) * d, (it.y + it.h) * d) }
+        t0 = now
+        steps = -1
+        tinted.clear()
+        bandTop = plan.y0 * d
+        bandBottom = (plan.y0 + plan.rows * ROW) * d
+        return true
+    }
+
+    /** The snapshot as the strips take it: every body that meets the band drawn into them (B-88, B-154). */
+    private fun paintStrips(
+        strips: LossPicture,
+        scope: DrawScope,
+        plan: MoshPlan,
+        me: LayoutCoordinates,
+        ph: Int,
+    ) {
+        val d = scope.density
         strips.paint(Density(d, scope.fontScale), scope.layoutDirection, ph) {
             val y0 = plan.y0 * d
             val y1 = (plan.y0 + plan.rows * ROW) * d
             drawRect(ground, Offset(0f, y0), Size(size.width, y1 - y0))
+            // B-154: a body whose reach misses the band draws nothing the band keeps: it is not drawn into the snapshot,
+            // where drawing it built its frame by paths for nothing.
+            val reach = HOLE_REACH * d
             for (b in bodies) {
                 val c = b.coords ?: continue
                 val at = me.offsetOf(c) ?: continue
+                if (at.y - reach >= y1 || at.y + c.size.height + reach <= y0) continue
                 val saved = drawContext.size
                 drawContext.size = c.size.toSize()
                 translate(at.x, at.y) { b.inSnapshot?.invoke(this) }
@@ -314,16 +356,93 @@ internal class MoshScene(
                 }
             }
         }
-        this.plan = plan
-        picture = strips
-        clean = strips.copy()
-        holes = plan.runs.filter { it.gone }.map { Rect(it.x * d, it.y * d, (it.x + it.w) * d, (it.y + it.h) * d) }
-        t0 = now
-        steps = -1
-        tinted.clear()
-        bandTop = plan.y0 * d
-        bandBottom = (plan.y0 + plan.rows * ROW) * d
-        return true
+    }
+
+    /**
+     * The snapshot in the band's memory (B-159): the ground, then each body that meets the band from the piece painted
+     * for it ahead of the loss, or drawn now where none was; then the band alone kept, its cleared blocks cleared.
+     */
+    private fun paintBand(
+        band: BandPixels,
+        scope: DrawScope,
+        plan: MoshPlan,
+        me: LayoutCoordinates,
+    ) {
+        val d = scope.density
+        val ph = scope.size.height.roundToInt()
+        val y0 = plan.y0 * d
+        val y1 = (plan.y0 + plan.rows * ROW) * d
+        val reach = HOLE_REACH * d
+        val meets =
+            bodies.mapNotNull { b ->
+                val c = b.coords ?: return@mapNotNull null
+                val at = me.offsetOf(c) ?: return@mapNotNull null
+                if (at.y - reach >= y1 || at.y + c.size.height + reach <= y0) null else Triple(b, c, at)
+            }
+        val missing = meets.filter { (b, _, _) -> pieces[b] == null }
+        band.paint(Density(d, scope.fontScale), scope.layoutDirection, ph) {
+            drawRect(ground, Offset(0f, y0), Size(size.width, y1 - y0))
+            for ((b, c, at) in missing) {
+                val saved = drawContext.size
+                drawContext.size = c.size.toSize()
+                translate(at.x, at.y) { b.inSnapshot?.invoke(this) }
+                drawContext.size = saved
+            }
+        }
+        for ((b, _, at) in meets) {
+            val piece = pieces[b] ?: continue
+            band.overlay(
+                piece.px,
+                piece.width,
+                piece.height,
+                at.x.roundToInt() - piece.reach,
+                at.y.roundToInt() - piece.reach,
+            )
+        }
+        pieces.clear()
+        val clear =
+            androidx.compose.ui.graphics
+                .Paint()
+                .apply { blendMode = BlendMode.Clear }
+        band.drawRect(0f, 0f, scope.size.width, y0, clear)
+        band.drawRect(0f, y1, scope.size.width, scope.size.height, clear)
+        for (r in plan.runs) if (r.gone) band.drawRect(r.x * d, r.y * d, (r.x + r.w) * d, (r.y + r.h) * d, clear)
+    }
+
+    /**
+     * B-159: from [LEAD_MS] before the next loss, the bodies its band may meet (with room for a scroll meanwhile) paint
+     * their pictures for its snapshot, each a task of its own between frames, so the loss's first frame only lays them in.
+     */
+    private fun prepareAhead(
+        ds: DrawScope,
+        t: Double,
+    ) {
+        val win = floor(t / EVERY_MS).toLong()
+        val next = if (win != window && t - win * EVERY_MS <= OFFSET_MS) win else win + 1
+        if (next * EVERY_MS + OFFSET_MS - t > LEAD_MS || piecesFor == next) return
+        val sc = scope ?: return
+        val me = coords ?: return
+        val d = ds.density
+        val w = (ds.size.width / d).toInt()
+        val h = (ds.size.height / d).toInt()
+        if (w < 16 || h < 16) return
+        piecesFor = next
+        pieces.clear()
+        val plan = moshPlan(cassette, count, w, h)
+        val y0 = plan.y0 * d
+        val y1 = (plan.y0 + plan.rows * ROW) * d
+        val margin = (HOLE_REACH + SCROLL_ROOM) * d
+        val density = Density(d, ds.fontScale)
+        val direction = ds.layoutDirection
+        for (b in bodies.toList()) {
+            sc.launch(aheadDispatcher) {
+                if (piecesFor != next || b !in bodies) return@launch
+                val c = b.coords ?: return@launch
+                val at = me.offsetOf(c) ?: return@launch
+                if (at.y - margin >= y1 || at.y + c.size.height + margin <= y0) return@launch
+                paintPiece(b, c, density, direction)?.let { pieces[b] = it }
+            }
+        }
     }
 
     private fun startFrozen(
@@ -393,8 +512,8 @@ internal class MoshScene(
 
     /** The bodies' clean zones (and 3 dp around them) inside the band are the clean snapshot's, as the engine's are. */
     private fun restoreCleanZones(
-        pic: StripPicture,
-        ref: StripPicture,
+        pic: LossPicture,
+        ref: LossPicture,
         d: Float,
         plan: MoshPlan,
     ) {
@@ -444,6 +563,46 @@ private const val EVERY_MS = 9000.0
 private const val OFFSET_MS = 3500.0
 private const val STEP_MS = 125.0
 private const val RECOVER_MS = 375.0
+
+/** B-159: how long before a loss its bodies' pieces are painted, and how far a scroll may move them meanwhile, dp. */
+private const val LEAD_MS = 1500.0
+private const val SCROLL_ROOM = 400f
+
+/** A body's picture for a loss's snapshot, painted ahead (B-159): its box and [reach] px around it. */
+private class BodyPiece(
+    val px: IntArray,
+    val width: Int,
+    val height: Int,
+    val reach: Int,
+)
+
+private fun paintPiece(
+    b: MoshBody,
+    c: LayoutCoordinates,
+    density: Density,
+    direction: androidx.compose.ui.unit.LayoutDirection,
+): BodyPiece? {
+    val draw = b.inSnapshot ?: return null
+    val reach = (HOLE_REACH * density.density).roundToInt()
+    val w = c.size.width + 2 * reach
+    val h = c.size.height + 2 * reach
+    val image = ImageBitmap(w, h)
+    CanvasDrawScope().draw(
+        density,
+        direction,
+        androidx.compose.ui.graphics
+            .Canvas(image),
+        Size(w.toFloat(), h.toFloat()),
+    ) {
+        translate(reach.toFloat(), reach.toFloat()) {
+            val saved = drawContext.size
+            drawContext.size = c.size.toSize()
+            draw()
+            drawContext.size = saved
+        }
+    }
+    return BodyPiece(IntArray(w * h).also { readImagePixels(image, it) }, w, h, reach)
+}
 
 /** How far past its box a body may ink, dp, for the cleared blocks drawn over it (as B-87's reach off the screen). */
 private const val HOLE_REACH = 64f

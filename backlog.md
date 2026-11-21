@@ -67,7 +67,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (155)
+## Closed (158)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -222,9 +222,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-150](docs/backlog/B-150-the-date-picker-keeps-its-width.md) `[x]` - The date picker keeps its width
 - [B-152](docs/backlog/B-152-the-browsers-own-sine.md) `[x]` - The generator's sines are the browser's own
 - [B-153](docs/backlog/B-153-a-first-picture-between-frames.md) `[x]` - In the browser, a body's first picture is built between frames, whole
+- [B-154](docs/backlog/B-154-the-loss-snapshots-the-band-only.md) `[x]` - The keyframe loss's snapshot draws only the bodies its band can show
 - [B-155](docs/backlog/B-155-no-tick-built-in-a-frame.md) `[x]` - In the browser, no resting tick is built in a frame
 - [B-156](docs/backlog/B-156-a-pool-of-bodies.md) `[x]` - A body left behind is kept, and a screen visited again draws it at once
 - [B-157](docs/backlog/B-157-textures-in-one-block.md) `[x]` - In the browser, a body's textures reach Skia in one block
+- [B-158](docs/backlog/B-158-the-loss-band-in-memory.md) `[x]` - In the browser, the keyframe loss's band lives in this module's memory
+- [B-159](docs/backlog/B-159-the-loss-snapshot-painted-ahead.md) `[x]` - The keyframe loss's snapshot is painted ahead, a body a task
 - [B-160](docs/backlog/B-160-a-frame-kept-between-ticks.md) `[x]` - A frame built in a frame is kept until the next tick
 - [B-161](docs/backlog/B-161-builds-in-steps.md) `[x]` - In the browser, a body's build lets the page's frames through every few milliseconds
 - [B-162](docs/backlog/B-162-a-surface-keeps-its-recent-instances.md) `[x]` - A surface keeps its recent instances, and in the browser builds a new one between frames

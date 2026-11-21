@@ -781,9 +781,12 @@ internal fun MutantSurface(
                         val oy = slot.oy.toFloat()
                         // B-133: the keyframe loss's snapshot is a CPU bitmap, where the shader would run pixel by pixel;
                         // there the body draws by paths, built only when a loss takes its snapshot.
+                        // B-154: the snapshot draws each of its strips with this, so the frame is built once for all of them.
+                        val byPathsPicture by lazy {
+                            pictureOf(g, gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs), t, k)
+                        }
                         val byPaths: DrawScope.() -> Unit = {
-                            val pf = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
-                            val (pp, pl, pd) = pictureOf(g, pf, t, k)
+                            val (pp, pl, pd) = byPathsPicture
                             scale(d, Offset.Zero) {
                                 translate(-ox, -oy) {
                                     drawBody(g, pp, pl, colors, speckle, Offset.Zero, dead, pd, null, skipParts, null)
