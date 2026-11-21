@@ -7,7 +7,6 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.sin
 
 /**
  * `{F, nx, ny, x0, y0, s}`: the signed-distance field of one instance on a grid of step [step] dp,
@@ -302,7 +301,7 @@ private fun fieldStatic(
         val u = clamp01(px / w)
         swing[i] =
             sh[2] * (u - .5) * 2 + sh[4] *
-            sin(
+            jsSin(
                 PI * u * sh[5] + sh[6],
             )
         wave[i] = topWave(g, clamp(px, 0.0, w), 0.0)
@@ -311,7 +310,7 @@ private fun fieldStatic(
         val py = y0 + (j - pad) * s - el.oy
         val v = clamp01(py / h)
         val m = clamp01(1 - py / (h * .5))
-        val bulge = sin(PI * v)
+        val bulge = jsSin(PI * v)
         for (i in 0 until nx) {
             val idx = j * nx + i
             val px = x0 + (i - pad) * s - el.ox

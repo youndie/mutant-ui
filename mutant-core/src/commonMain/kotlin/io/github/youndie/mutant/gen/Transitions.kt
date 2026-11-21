@@ -7,7 +7,6 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 /*
@@ -106,7 +105,7 @@ internal fun MutantGenerator.pourFront(
     val pts = ArrayList<Int>()
     var x = -12.0
     while (x <= w + 12) {
-        var y = base + 1.6 * sin(x * .21 + p * 9)
+        var y = base + 1.6 * jsSin(x * .21 + p * 9)
         for (q in f) {
             val u = (x - q[0]) / q[1]
             if (u > -3 && u < 3) y += q[2] * min(1.0, p * 2.4 * q[3]) * exp(-u * u)
@@ -280,7 +279,7 @@ internal fun MutantGenerator.venomShapes(
                 )
         }
         if (hu - tu > .04) {
-            val th = if (on) 1 + (if (isFat) .3 else .9) * sin(PI * clamp01((p - pa) / max(.05, pd - pa))) else 1.0
+            val th = if (on) 1 + (if (isFat) .3 else .9) * jsSin(PI * clamp01((p - pa) / max(.05, pd - pa))) else 1.0
             val count = if (isFat) 32 else 8
             val nEdge = if (mass != null) mass[3] - mass[1] else st
             val rf = if (isFat && on) min(26.0, min(ha * 1.3, nEdge * .6)) else 0.0
@@ -304,7 +303,7 @@ internal fun MutantGenerator.venomShapes(
                 val sj = lerp(-3.0, st, u)
                 val cj =
                     lerp(cr * hs, ct, if (isFat) smoothstep(0.0, 1.0, u) else u) +
-                        sw * sin(PI * u).pow(2) * (1 + .5 * sin(2 * PI * u + ph))
+                        sw * jsSin(PI * u).pow(2) * (1 + .5 * jsSin(2 * PI * u + ph))
                 var wj =
                     b * th *
                         (
