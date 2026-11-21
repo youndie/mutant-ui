@@ -112,5 +112,23 @@ ms in the proxy, of which Compose's own draw of the new nodes 17, text 10, compo
 the profile cannot name (its module carries no names), with GPU programs compiled for it. The bodies are not in that
 frame any more: they come as stand-ins and are built after it, a few milliseconds at a time.
 
-Owed: the run by the protocol on the phone with all of it, against `main` (the phone was disconnected the evening of
-2026-11-21, between the last proxy run and it); and a first visit's own frame.
+### The run with all of it, 2026-11-21
+
+[The run](../../logs/b-151/2026-11-21-stack-1.log), by the protocol on the phone: `main` against the build with every
+lever of round 1 (`~b`), interleaved, 4 rounds of 30 s, the phone at 27–34 °C. **Valid**: both floors held. 60 gestures
+a load:
+
+| load | longest, p50; p95; max | windows over 50 ms | missed | verdict |
+|---|---|---|---|---|
+| tabs, `main` | 116; 300; 350 ms | 53 | 11.2 % | not held (p95, max, missed) |
+| tabs, all of it | **33; 100; 100 ms** | 12 | **1.6 %** | not held (p95, max) |
+| scroll, `main` | 17; 715; 748 ms | 17 | 1.8 % | not held (p95, max) |
+| scroll, all of it | **17; 50; 50 ms** | 0 | **0.3 %** | not held (p95) |
+
+- **Scroll**: missed under the bar, nothing over 50 ms; six windows of 60 hold a 50 ms interval — two frames lost
+  together — at 15.1, 31.3 and 40.5 s into a load: the loss's start, nine seconds apart. Its first frame lays the pieces
+  into the band, reads it and copies it clean (B-159) in about 33 ms on the phone.
+- **Tab switches**: missed under the bar. Over it: each tab's first visit in a load (83–100 ms, the frame that composes
+  the tab, round 1 above), and every return to Settings (50 ms), the heaviest tab.
+
+Owed, as round 2: the loss's first frame under one frame; a tab's composing frame, Settings' first.
