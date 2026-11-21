@@ -19,6 +19,8 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardSubtitle
@@ -31,6 +33,19 @@ import kotlin.math.abs
 @OptIn(kotlin.js.ExperimentalWasmJsInterop::class)
 @JsFun("(px) => { window.__scrolled = px; }")
 private external fun reportScrolled(px: Int)
+
+/**
+ * B-151: where the Demo screen's phone stands, in CSS pixels, for the touch bench, which cannot read the canvas:
+ * `window.__phone = [left, top, width, height]`.
+ */
+@OptIn(kotlin.js.ExperimentalWasmJsInterop::class)
+@JsFun("(l, t, w, h) => { window.__phone = [l, t, w, h]; }")
+private external fun reportPhone(
+    left: Double,
+    top: Double,
+    width: Double,
+    height: Double,
+)
 
 /**
  * B-73: the scenes of B-72's recorder, opened by `?scene=<name>` so the browser's recorder measures what the JVM's did.
@@ -67,6 +82,11 @@ internal fun benchScene(name: String?): (@Composable () -> Unit)? =
         // B-88's control: the Library screen without its keyframe loss.
         "DemoLibraryNoLoss" -> {
             { Alone(DemoScreen.Library, keyframeLoss = false) }
+        }
+
+        // B-151: the Library screen as DemoLibrary opens it, telling the touch bench where its phone stands.
+        "DemoTouch" -> {
+            { Alone(DemoScreen.Library, report = true) }
         }
 
         "DemoRecording" -> {
@@ -112,11 +132,26 @@ private fun Recorded(settings: SampleSettings) {
 private fun Alone(
     screen: DemoScreen,
     keyframeLoss: Boolean = true,
+    report: Boolean = false,
 ) {
     val strings = remember { SampleStrings(SampleLanguage.English) }
+    val density = LocalDensity.current.density
     MutantTheme {
         Box(Modifier.fillMaxSize().background(MutantTheme.colors.page).padding(24.dp)) {
-            DemoScreenFrame(screen, strings, keyframeLoss = keyframeLoss)
+            // The frame is the screen's title over its 360 × 720 phone: the phone is the frame's bottom 720 dp.
+            val where =
+                if (report) {
+                    Modifier.onGloballyPositioned { c ->
+                        val at = c.localToWindow(androidx.compose.ui.geometry.Offset.Zero)
+                        val w = c.size.width / density.toDouble()
+                        val h = 720.0
+                        val top = at.y / density.toDouble() + c.size.height / density - h
+                        reportPhone(at.x / density.toDouble(), top, w, h)
+                    }
+                } else {
+                    Modifier
+                }
+            Box(where) { DemoScreenFrame(screen, strings, keyframeLoss = keyframeLoss) }
         }
     }
 }
