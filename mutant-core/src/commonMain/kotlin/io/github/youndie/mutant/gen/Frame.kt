@@ -42,6 +42,23 @@ internal fun MutantGenerator.frame(
     /** B-110: false leaves the outline and highlight empty, for a body a shader draws from the field; not the flow lines (B-131). */
     paths: Boolean = true,
 ): BodyFrame {
+    val steps = frameSteps(g, cache, t, heat, pressed, steadyWebs, grow, paths)
+    var done = false
+    while (!done) done = steps.columns(Int.MAX_VALUE)
+    return steps.frame()
+}
+
+/** [frame] a few of its field's columns at a time (B-161): [FrameSteps.columns] until true, then [FrameSteps.frame]. */
+internal fun MutantGenerator.frameSteps(
+    g: Instance,
+    cache: FieldCache,
+    t: Double,
+    heat: Double = 0.0,
+    pressed: Boolean = false,
+    steadyWebs: Boolean = false,
+    grow: Boolean = true,
+    paths: Boolean = true,
+): FrameSteps {
     val el = g.slot
     val hot = heat > 0 || pressed
     val boilPhase = boilPhase(t, hot)
@@ -49,16 +66,43 @@ internal fun MutantGenerator.frame(
     val boil = boil0 * (1 + 2 * heat) + .6 * heat
     val prims = primitives(g, t, hot)
     if (heat > 0) prims += bubbles(g, t, heat)
-    val fd = distanceField(g, cache, prims, t, REST_ROUGH * el.calm, boilPhase, boil, heat, boil0, steadyWebs, grow)
-    val flow = if (g.flowLines.isEmpty()) GenPath.Empty else flowLinePath(g, t, boilPhase, boil)
-    if (!paths) return BodyFrame(GenPath.Empty, GenPath.Empty, flow, prims, fd, boilPhase, boil, steadyWebs)
-    val contour = smoothPath(march(fd, 0.0), .9, 5.0)
-    val highlight =
-        smoothPath(
-            march(fd, -3.4, ceil((el.r + 19) / fd.step).toInt() + fd.pad, floor((el.h + 7) / fd.step).toInt() + fd.pad),
-            1.1,
-        )
-    return BodyFrame(contour, highlight, flow, prims, fd, boilPhase, boil, steadyWebs)
+    val field = FieldSteps(g, cache, prims, t, REST_ROUGH * el.calm, boilPhase, boil, heat, boil0, steadyWebs, grow)
+    return FrameSteps(this, g, t, prims, field, boilPhase, boil, steadyWebs, paths)
+}
+
+/** A frame being built ([frameSteps]): its field a few columns at a time, then its lines. */
+internal class FrameSteps(
+    private val gen: MutantGenerator,
+    private val g: Instance,
+    private val t: Double,
+    private val prims: List<Primitive>,
+    private val field: FieldSteps,
+    private val boilPhase: Int,
+    private val boil: Double,
+    private val steadyWebs: Boolean,
+    private val paths: Boolean,
+) {
+    /** Computes up to [count] more of the field's columns; true once it is whole. */
+    fun columns(count: Int): Boolean = field.columns(count)
+
+    fun frame(): BodyFrame {
+        val el = g.slot
+        val fd = field.field()
+        val flow = if (g.flowLines.isEmpty()) GenPath.Empty else gen.flowLinePath(g, t, boilPhase, boil)
+        if (!paths) return BodyFrame(GenPath.Empty, GenPath.Empty, flow, prims, fd, boilPhase, boil, steadyWebs)
+        val contour = smoothPath(march(fd, 0.0), .9, 5.0)
+        val highlight =
+            smoothPath(
+                march(
+                    fd,
+                    -3.4,
+                    ceil((el.r + 19) / fd.step).toInt() + fd.pad,
+                    floor((el.h + 7) / fd.step).toInt() + fd.pad,
+                ),
+                1.1,
+            )
+        return BodyFrame(contour, highlight, flow, prims, fd, boilPhase, boil, steadyWebs)
+    }
 }
 
 /**

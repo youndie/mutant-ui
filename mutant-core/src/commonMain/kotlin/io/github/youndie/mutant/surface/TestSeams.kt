@@ -52,6 +52,12 @@ internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
 internal val LocalMutantFirstFrameWaits = staticCompositionLocalOf<Boolean?> { null }
 
 /**
+ * B-156: whether a surface leaving the composition gives its body to [BodyPool] and a later one takes it back; null
+ * follows the platform: the browser, where a body cannot be built on another thread. `true` for its tests on the desktop.
+ */
+internal val LocalMutantPoolBodies = staticCompositionLocalOf<Boolean?> { null }
+
+/**
  * Whether a resting body under a running clock is rasterised once per tick, ahead with its frame, and drawn as that
  * image until the next tick (B-82). Off only for a test or a bench comparing it with drawing the vectors
  * (`BodyAsImageTest`, `BodyRenderBench`).

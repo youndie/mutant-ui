@@ -32,6 +32,7 @@ import io.github.youndie.mutant.gen.MutantGenerator
 import io.github.youndie.mutant.gen.REST_ROUGH
 import io.github.youndie.mutant.gen.Slot
 import io.github.youndie.mutant.gen.frame
+import io.github.youndie.mutant.gen.frameSteps
 import io.github.youndie.mutant.gen.pourFront
 import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantColors
@@ -122,9 +123,11 @@ internal fun MutantSurface(
     val stage = LocalMutantStage.current
     val clock = readMutantClock()
     val registry = remember { CleanZoneRegistry() }
-    val held = remember { HeldInstance() }
-    val ahead = remember { FrameAhead() }
-    val stillLayers = remember { StillLayers() }
+    // B-156: kept across ticks, and given to the pool when the surface leaves, to be taken back by its next composition.
+    val keep = remember { BodyKeep() }
+    // B-160: a frame built in the frame, kept for the frames after it at the same tick (a slide, a pour, a boil).
+    val inFrame = remember { FrameMemo() }
+    keep.pooled = LocalMutantPoolBodies.current ?: !firstFrameWaits
     val stillOnce = LocalMutantStillLayersOnce.current
     val frameProbe = LocalMutantFrameProbe.current
     val skipParts = LocalMutantSkipBodyParts.current
@@ -292,15 +295,19 @@ internal fun MutantSurface(
                 view.place(it, reach)
                 // B-149: no instance yet, and a running clock: ask for the first build, started with the frame's others
                 // by the first body drawn in it. A standing clock's first build also makes its image (B-83): in its draw.
-                if (waits && offFrame && held.isEmpty && !held.starting && !clock.paused && clock.holds == 0) {
+                // B-156: a body the pool holds for this key is taken back in the draw instead, where its signature is
+                // whole (the clean zones registered by then).
+                val pooled = keep.pooled && BodyPool.holds(cassette, key)
+                val standing = clock.paused || clock.holds > 0
+                if (waits && offFrame && keep.held.isEmpty && !keep.held.starting && !standing && !pooled) {
                     val coords = it
                     FirstBuilds.ask {
-                        if (!coords.isAttached || !held.isEmpty) return@ask
+                        if (!coords.isAttached || !keep.held.isEmpty) return@ask
                         val (slot, signature, _) =
                             slotOf(densityNow, coords.size.width.toFloat(), coords.size.height.toFloat()) ?: return@ask
                         val still = state == BodyState.Disabled || state == BodyState.Success
                         val warmAt = clock.nowMs
-                        held.startFirst(signature, scope) {
+                        keep.held.startFirst(signature, scope) {
                             val gen = MutantGenerator(cassette)
                             val g = gen.instance(slot, key)
                             val built = Triple(g, FieldCache(), if (slot.dead) gen.deadPixels(g) else null)
@@ -323,7 +330,7 @@ internal fun MutantSurface(
             .graphicsLayer()
             .drawWithCache {
                 // An instance built off the frame arriving invalidates this cache.
-                held.arrivals
+                keep.held.arrivals
                 // B-149: the frame's first builds start together, every clean zone of the frame registered by now.
                 FirstBuilds.start()
                 // B-87: a body off the screen builds no tick and reads no clock; its layout tells it when it shows
@@ -394,7 +401,7 @@ internal fun MutantSurface(
                         } else {
                             if (!onWholePixels(registry.surface)) return null
                             val grid = Offset(slot.ox.toFloat(), slot.oy.toFloat())
-                            stillLayers.of(
+                            keep.stillLayers.of(
                                 g,
                                 listOf(
                                     look.slip,
@@ -447,7 +454,7 @@ internal fun MutantSurface(
                     // A frozen clock (fixtures, references) draws them as before, as it draws vectors and no tick image (B-82).
                     if (inFrame && (clock.frozen || moshScene != null || !onWholePixels(registry.surface))) return null
                     val grid = Offset(slot.ox.toFloat(), slot.oy.toFloat())
-                    return stillLayers.of(
+                    return keep.stillLayers.of(
                         g,
                         listOf(look.slip, colors, d, layoutDirection, skipParts, cassette, stage, wear, dead, grid),
                     ) {
@@ -494,25 +501,13 @@ internal fun MutantSurface(
                     }
 
                 // A resting frame at [next], built off the frame, with its image when the body is drawn as one (B-75, B-82).
-                fun buildAhead(
+                fun aheadOf(
                     g: Instance,
-                    cache: FieldCache,
                     dead: io.github.youndie.mutant.gen.DeadPixels?,
                     next: Double,
                     band: Rect?,
+                    f: io.github.youndie.mutant.gen.BodyFrame,
                 ): Ahead {
-                    // Built off the frame's thread: the field's grid is not grown here (B-97).
-                    val f =
-                        gen.frame(
-                            g,
-                            cache,
-                            next,
-                            0.0,
-                            pressed = false,
-                            steadyWebs = steadyWebs,
-                            grow = false,
-                            paths = !onGpu,
-                        )
                     // B-110: a body the shader draws gets its brush ahead, with its frame, and no image.
                     if (onGpu) {
                         return Ahead(
@@ -554,9 +549,50 @@ internal fun MutantSurface(
                         }
                     return Ahead(f, image, inputs)
                 }
+
+                fun buildAhead(
+                    g: Instance,
+                    cache: FieldCache,
+                    dead: io.github.youndie.mutant.gen.DeadPixels?,
+                    next: Double,
+                    band: Rect?,
+                    grow: Boolean = false,
+                ): Ahead {
+                    // Built off the frame's thread: the field's grid is not grown here (B-97), but for a body's first
+                    // frame in the browser, whose one thread is the frame's too (B-153).
+                    val f =
+                        gen.frame(
+                            g,
+                            cache,
+                            next,
+                            0.0,
+                            pressed = false,
+                            steadyWebs = steadyWebs,
+                            grow = grow,
+                            paths = !onGpu,
+                        )
+                    return aheadOf(g, dead, next, band, f)
+                }
+
+                // B-161: in the browser the frame's field is built a few columns at a time, the thread let go to the
+                // page's frames every few milliseconds, so a build between two frames does not hold the next one up.
+                suspend fun buildAheadInSteps(
+                    g: Instance,
+                    cache: FieldCache,
+                    dead: io.github.youndie.mutant.gen.DeadPixels?,
+                    next: Double,
+                    band: Rect?,
+                    grow: Boolean,
+                ): Ahead {
+                    val steps = gen.frameSteps(g, cache, next, 0.0, false, steadyWebs, grow, !onGpu)
+                    inSteps { steps.columns(it) }
+                    return aheadOf(g, dead, next, band, steps.frame())
+                }
+                // B-156: a body this signature left in the pool is taken back, with its last frame: nothing to build.
+                if (keep.held.isEmpty) keep.restore(signature)
                 // B-149: a first build started for this frame is taken here, waited for.
-                if (offFrame && held.isEmpty && waits) held.takeFirst(signature)
-                if (offFrame && held.isEmpty) {
+                if (offFrame && keep.held.isEmpty && waits) keep.held.takeFirst(signature)
+                if (offFrame && keep.held.isEmpty) {
                     // The static layers are what makes a first frame ten times a warm one: where the frame cannot wait
                     // for another thread (the browser), they are built there with the instance and the body is drawn
                     // from the frame that takes them, a stand-in until then (B-50, B-149).
@@ -600,19 +636,46 @@ internal fun MutantSurface(
                     if (waits) {
                         // Nothing was started for this frame (a standing clock, a slot changed since layout): built here.
                         val (built, first) = firstOf()
-                        held.of(signature) { built }
-                        first?.let { ahead.preset(built.first, firstAt, it) }
+                        keep.held.of(signature) { built }
+                        first?.let { keep.ahead.preset(built.first, firstAt, it) }
                     } else {
-                        held.buildOffFrame(
+                        // B-153: in the browser the first build is a task of its own between frames, never the frame's,
+                        // and it is the whole first picture: the frame of the tick it is drawn at, with its brush or its
+                        // image, so the frame that takes it builds nothing.
+                        keep.held.buildOffFrame(
                             signature,
                             scope,
-                            taken = { built, first: Ahead? -> first?.let { ahead.preset(built.first, firstAt, it) } },
-                        ) { firstOf() }
+                            taken = { built, first: Ahead? ->
+                                first?.let { keep.ahead.preset(built.first, firstAt, it) }
+                            },
+                        ) {
+                            val built = build()
+                            val (g, cache, dead) = built
+                            built to if (still) null else buildAheadInSteps(g, cache, dead, firstAt, null, grow = true)
+                        }
                         standInProbe?.invoke()
                         return@drawWithCache onDrawBehind { drawStandIn(slot, look, d) }
                     }
                 }
-                val (g, cache, dead) = held.of(signature, build)
+                // B-162: in the browser a body whose slot changed (a text zone, a size settled once its font came) goes
+                // on drawing the instance it has while the new one is built between frames, never in the frame.
+                val held = keep.held.current
+                val later =
+                    !waits && offFrame && held != null && keep.held.signatureNow != signature &&
+                        !keep.hasRecent(signature)
+                if (later) {
+                    val at = clock.restTimeMs()
+                    keep.held.buildOffFrame(
+                        signature,
+                        scope,
+                        taken = { built, first: Ahead? -> first?.let { keep.ahead.preset(built.first, at, it) } },
+                    ) {
+                        val built = build()
+                        val (bg, bcache, bdead) = built
+                        built to if (still) null else buildAheadInSteps(bg, bcache, bdead, at, null, grow = true)
+                    }
+                }
+                val (g, cache, dead) = if (later) held else keep.of(signature, build)
                 // Compared through a plain reference: reading the state here would make this cache depend on its own write.
                 if (drawnPlain[0] !== g) {
                     drawnPlain[0] = g
@@ -660,17 +723,34 @@ internal fun MutantSurface(
                 // ahead on a background thread and taken here (B-75). A pressed or heated body, a frozen clock and a
                 // frame not ready in time build in the frame, as before.
                 val resting = offFrame && !hot && !boil.on && k == 0.0
-                val early = if (resting) ahead.take(g, t) else null
+                // B-153, B-155: in the browser the latest frame done is drawn, a tick or more behind, rather than one built here.
+                val early = if (resting) keep.ahead.take(g, t, orEarlier = !waits) else null
 
                 var frame =
                     early?.frame
-                        ?: gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs, paths = !onGpu)
+                        ?: inFrame.of(g, t, k, boil.on, !onGpu) {
+                            gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs, paths = !onGpu)
+                        }
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
-                if (resting && cache.settledFor(g)) {
+                // B-155: in the browser the next tick is built ahead from the first, its cache filled there: the one thread
+                // is the frame's, so nothing reads the cache while the build writes it.
+                if (resting && (cache.settledFor(g) || !waits)) {
                     // B-89: the next tick's time as the clock will read it, so the frame built for it is found.
                     val next = clock.nextRestTimeMs()
-                    ahead.prepare(g, next, shown, scope) { band -> buildAhead(g, cache, dead, next, band) }
+                    keep.ahead.prepare(g, next, shown, scope) { band ->
+                        if (waits) {
+                            buildAhead(
+                                g,
+                                cache,
+                                dead,
+                                next,
+                                band,
+                            )
+                        } else {
+                            buildAheadInSteps(g, cache, dead, next, band, true)
+                        }
+                    }
                 }
                 val now = clock.nowMs
                 val pourP =
@@ -686,7 +766,10 @@ internal fun MutantSurface(
                 val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
                 // B-110: a pouring or sliding body is drawn by paths, as before.
                 if (onGpu && (pour != null || slideP < 1)) {
-                    frame = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                    frame =
+                        inFrame.of(g, t, k, boil.on, true) {
+                            gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                        }
                 } else if (onGpu) {
                     val shaded =
                         early?.shaded.takeIf { early?.frame === frame }
@@ -722,7 +805,10 @@ internal fun MutantSurface(
                             }
                         }
                     }
-                    frame = gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                    frame =
+                        inFrame.of(g, t, k, boil.on, true) {
+                            gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                        }
                 }
                 val imageInputs = imageInputsOf(dead)
                 val image =
