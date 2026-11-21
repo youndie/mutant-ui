@@ -154,11 +154,16 @@ internal fun CacheDrawScope.moshBehind(
         body.draw = block
         body.snapshot = snapshot
         if (scene == null) return@onDrawBehind block()
-        val cut = scene.cutIn(body.coords)
-        if (cut == null) {
+        // B-163: the band less its holes is one path in the scene's pixels, made once while it stands; a body moves the
+        // canvas to the scene's origin to clip by it, where each body combined its own copy at every frame.
+        val at = scene.originOf(body.coords)
+        val cut = if (at == null) null else scene.cutPath()
+        if (at == null || cut == null) {
             block()
         } else {
-            clipPath(cut, ClipOp.Difference) { block() }
+            translate(-at.x, -at.y) {
+                clipPath(cut, ClipOp.Difference) { translate(at.x, at.y) { block() } }
+            }
             scene.drawHolesOver(this, body.coords)
         }
     }
@@ -180,6 +185,7 @@ internal class MoshScene(
 
     // B-159: each body's picture for the next loss's snapshot, painted between frames ahead of it, and the window it is for.
     private val pieces = HashMap<MoshBody, BodyPiece>()
+    private val asked = HashSet<MoshBody>()
     private var piecesFor = -1L
 
     /** Told, at each draw under the content, whether a loss runs: for tests only, never for a consumer. */
@@ -207,19 +213,36 @@ internal class MoshScene(
     private var tries = 0
     private val tinted = HashSet<MoshRun>()
 
+    // B-163: the band less its holes in the scene's pixels, and the band and holes it was made for.
+    private var cut: Path? = null
+    private var cutFor: Triple<Float, Float, List<Rect>>? = null
+
+    /** Where [of] stands in the scene's pixels while a loss runs, or null while none does or the scene does not draw it. */
+    fun originOf(of: LayoutCoordinates?): Offset? {
+        if (bandTop.isNaN() || of == null) return null
+        return coords?.offsetOf(of)
+    }
+
     /**
-     * What the band covers in [of]'s own pixels — the band less its cleared blocks, which the engine's canvas leaves
-     * transparent over the bodies — or null while no loss runs.
+     * What the band covers in the scene's pixels — the band less its cleared blocks, which the engine's canvas leaves
+     * transparent over the bodies — or null while no loss runs. Made once for a band and its blocks (B-163).
      */
-    fun cutIn(of: LayoutCoordinates?): Path? {
+    fun cutPath(): Path? {
         val top = bandTop
         val bottom = bandBottom
-        if (top.isNaN() || of == null) return null
-        val at = coords?.offsetOf(of) ?: return null
-        val band = Path().apply { addRect(Rect(-HUGE, top - at.y, HUGE, bottom - at.y)) }
-        if (holes.isEmpty()) return band
-        val cut = Path().apply { for (h in holes) addRect(h.translate(-at.x, -at.y)) }
-        return Path.combine(PathOperation.Difference, band, cut)
+        if (top.isNaN()) return null
+        val key = Triple(top, bottom, holes)
+        cut?.let { if (cutFor == key) return it }
+        val band = Path().apply { addRect(Rect(-HUGE, top, HUGE, bottom)) }
+        val made =
+            if (holes.isEmpty()) {
+                band
+            } else {
+                Path.combine(PathOperation.Difference, band, Path().apply { for (h in holes) addRect(h) })
+            }
+        cut = made
+        cutFor = key
+        return made
     }
 
     /**
@@ -380,13 +403,16 @@ internal class MoshScene(
                 if (at.y - reach >= y1 || at.y + c.size.height + reach <= y0) null else Triple(b, c, at)
             }
         val missing = meets.filter { (b, _, _) -> pieces[b] == null }
-        band.paint(Density(d, scope.fontScale), scope.layoutDirection, ph) {
-            drawRect(ground, Offset(0f, y0), Size(size.width, y1 - y0))
-            for ((b, c, at) in missing) {
-                val saved = drawContext.size
-                drawContext.size = c.size.toSize()
-                translate(at.x, at.y) { b.inSnapshot?.invoke(this) }
-                drawContext.size = saved
+        // B-163: the ground filled in the band's memory; Skia paints only a body that has no piece, and then is read out.
+        band.fill(0f, y0, scope.size.width, y1, ground)
+        if (missing.isNotEmpty()) {
+            band.paint(Density(d, scope.fontScale), scope.layoutDirection, ph) {
+                for ((b, c, at) in missing) {
+                    val saved = drawContext.size
+                    drawContext.size = c.size.toSize()
+                    translate(at.x, at.y) { b.inSnapshot?.invoke(this) }
+                    drawContext.size = saved
+                }
             }
         }
         for ((b, _, at) in meets) {
@@ -419,22 +445,29 @@ internal class MoshScene(
     ) {
         val win = floor(t / EVERY_MS).toLong()
         val next = if (win != window && t - win * EVERY_MS <= OFFSET_MS) win else win + 1
-        if (next * EVERY_MS + OFFSET_MS - t > LEAD_MS || piecesFor == next) return
+        if (next * EVERY_MS + OFFSET_MS - t > LEAD_MS) return
         val sc = scope ?: return
         val me = coords ?: return
         val d = ds.density
         val w = (ds.size.width / d).toInt()
         val h = (ds.size.height / d).toInt()
         if (w < 16 || h < 16) return
-        piecesFor = next
-        pieces.clear()
+        if (piecesFor != next) {
+            piecesFor = next
+            pieces.clear()
+            asked.clear()
+        }
         val plan = moshPlan(cassette, count, w, h)
         val y0 = plan.y0 * d
         val y1 = (plan.y0 + plan.rows * ROW) * d
         val margin = (HOLE_REACH + SCROLL_ROOM) * d
         val density = Density(d, ds.fontScale)
         val direction = ds.layoutDirection
+        // Asked again at every tick until the loss for a body that had nothing to draw yet (a screen just composed, its
+        // bodies still stand-ins): the first loss of a page found none of its pieces painted (B-163).
         for (b in bodies.toList()) {
+            if (b in asked || b.inSnapshot == null) continue
+            asked += b
             sc.launch(aheadDispatcher) {
                 if (piecesFor != next || b !in bodies) return@launch
                 val c = b.coords ?: return@launch
