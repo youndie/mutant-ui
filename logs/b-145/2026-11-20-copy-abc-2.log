@@ -1,0 +1,38 @@
+# a: main (fa05977cdbb9be9f); ~b: B-145's pixel copy (3bc3817acac49f7c); ~c: the loss-free floor (1719bd18bb513da9). Second run, started at once on the owner's word, Telegram closed.
+# phone before:  AC powered: true; level: 94; temperature: 336; Capacity level: 2; big 1826000 2802000 
+# top on the phone:
+#     PID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ ARGS
+#   19743 u0_a503      20   0  22G 440M 190M S 17.2   7.8   0:06.75 com.telekom.telekomme
+#   20279 shell        20   0  10G 5.8M 4.4M R 13.7   0.1   0:00.06 top -b -n 1 -m 4
+#    2129 u0_a213       0 -10  18G 368M 214M S 10.3   6.5 290:14.79 com.android.systemui
+#    1493 system       18  -2  23G 582M 448M S  6.8  10.4 263:47.59 system_server
+# B-73 browser frame bench, 2026-11-20T13:05:46.046Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 94; temperature: 336; Capacity level: 2;
+# browser: Chrome/157.0.8103.78, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 1a7354a
+# build: bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8, dd9b2717504364b7a001.wasm fa05977cdbb9be9f; ~b: 90d12c312f0bec043cbc.wasm 3bc3817acac49f7c, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8; ~c: befeb7662207c7eed69d.wasm 1719bd18bb513da9, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 3 (round 1 not counted), 60000 ms a scene, first 1000 ms not counted; scenes ComponentsRest,ComponentsRest~b,ComponentsRest~c
+# viewport in the sample: 411x784 at 2.625x
+round 1 ComponentsRest     54.5 f/s  interval p95   16.7  >16.7  19.46 %  >33   2.97 %  work p50   6.20 p95  33.00  LoAF 77 (7430 ms)  busy  79.5 %  32.4 °C  big 2507/2704 MHz
+round 1 ComponentsRest~b   58.1 f/s  interval p95   16.7  >16.7  18.30 %  >33   1.69 %  work p50   6.80 p95  31.80  LoAF 33 (2685 ms)  busy  83.9 %  33.4 °C  big 1826/1826 MHz
+round 1 ComponentsRest~c   57.0 f/s  interval p95   16.8  >16.7  20.25 %  >33   4.71 %  work p50   8.60 p95  39.80  LoAF 52 (3120 ms)  busy  94.6 %  34.0 °C  big 1826/1826 MHz
+round 2 ComponentsRest~b   50.9 f/s  interval p95   33.3  >16.7  23.34 %  >33   9.39 %  work p50   9.60 p95  49.20  LoAF 148 (10947 ms)  busy  96.7 %  34.6 °C  big 1745/1745 MHz
+round 2 ComponentsRest~c   49.5 f/s  interval p95   49.8  >16.7  26.04 %  >33  12.67 %  work p50  10.10 p95  56.40  LoAF 211 (14273 ms)  busy  98.3 %  35.0 °C  big 1745/1745 MHz
+round 2 ComponentsRest     32.1 f/s  interval p95   83.7  >16.7  38.57 %  >33  27.29 %  work p50  17.80 p95 101.90  LoAF 381 (34391 ms)  busy  99.5 %  35.6 °C  big 1745/1745 MHz
+round 3 ComponentsRest~c   44.1 f/s  interval p95   50.0  >16.7  33.13 %  >33  20.25 %  work p50  12.50 p95  67.00  LoAF 333 (22667 ms)  busy  99.2 %  36.0 °C  big 1582/1582 MHz
+round 3 ComponentsRest     17.3 f/s  interval p95  132.9  >16.7  68.60 %  >33  57.87 %  work p50  60.70 p95 148.30  LoAF 461 (47094 ms)  busy  99.8 %  36.2 °C  big 1277/1277 MHz
+round 3 ComponentsRest~b   18.1 f/s  interval p95  116.4  >16.7  68.26 %  >33  58.05 %  work p50  58.90 p95 133.70  LoAF 482 (47102 ms)  busy  99.8 %  36.6 °C  big 1277/1277 MHz
+
+# counted rounds 2..3, pooled
+ComponentsRest     24.7 f/s  interval p95  116.4  >16.7  49.07 %  >33  37.99 %  work p50  24.10 p95 124.10  RED
+ComponentsRest~b   34.5 f/s  interval p95   99.7  >16.7  35.13 %  >33  22.16 %  work p50  15.10 p95 108.20  RED
+ComponentsRest~c   46.8 f/s  interval p95   49.9  >16.7  29.39 %  >33  16.24 %  work p50  11.20 p95  61.60  RED
+# ~b minus a, ComponentsRest, work p50: per counted round -8.20, -1.80ms; mean -5.00ms
+# ~b minus a, ComponentsRest, f/s: per counted round 18.85, 0.87; mean 9.86
+# ~b minus a, ComponentsRest, busy: per counted round -2.87, -0.01 pt; mean -1.44 pt
+# ~c minus a, ComponentsRest, work p50: per counted round -7.70, -48.20ms; mean -27.95ms
+# ~c minus a, ComponentsRest, f/s: per counted round 17.40, 26.87; mean 22.13
+# ~c minus a, ComponentsRest, busy: per counted round -1.27, -0.64 pt; mean -0.95 pt
+# phone after:  AC powered: true; level: 97; temperature: 366; Capacity level: 2; big 1277000 1277000 

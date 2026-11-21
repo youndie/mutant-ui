@@ -58,16 +58,15 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (4)
+## Open (3)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-145](docs/backlog/B-145-the-keyframe-losss-steps-off-the-slow-path.md) `[ ]` | The keyframe loss's steps off the slow path | P2 | M | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (146)
+## Closed (147)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -214,6 +213,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-142](docs/backlog/B-142-a-stall-every-nine-seconds-on-the-components-page.md) `[x]` - A stall every nine seconds on the resting Components page
 - [B-143](docs/backlog/B-143-the-keyframe-loss-reads-its-blocks-without-copying-strips.md) `[x]` - The keyframe loss reads its blocks without copying whole strips
 - [B-144](docs/backlog/B-144-the-keyframe-losss-draw-calls-per-step.md) `[x]` - The keyframe loss's draw calls per step
+- [B-145](docs/backlog/B-145-the-keyframe-losss-steps-off-the-slow-path.md) `[x]` - The keyframe loss's steps off the slow path
 - [B-146](docs/backlog/B-146-the-repository-put-in-order.md) `[x]` - The repository put in order, and a README
 - [B-147](docs/backlog/B-147-the-code-put-in-order.md) `[x]` - The code put in order
 - [B-148](docs/backlog/B-148-the-sample-for-a-consumer.md) `[x]` - The sample for a consumer, light on a phone

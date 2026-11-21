@@ -16,8 +16,8 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 
 /**
- * B-143: the operations of [StripPicture] land as on the one bitmap it stands for, pixel for pixel: blocks dragged
- * within it, some over the ones before, and a tint. The shapes painted into it are not compared (a strip rasterises a
+ * B-143, B-145: the operations of [StripPicture] land as on the one bitmap it stands for, pixel for pixel: blocks
+ * dragged within it, some over the ones before, opaque ones and ones with transparent pixels, and a tint. The shapes painted into it are not compared (a strip rasterises a
  * shape's edge moved up to its place, a channel off by one), only what is done to it after.
  */
 class StripPictureTest {
@@ -41,6 +41,9 @@ class StripPictureTest {
         val one = OneBitmap(width, height)
         val block: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit = {
             val r = Random(seed)
+            // Opaque ground under the left of it, none under the right: blocks with no transparent pixel, blocks with
+            // some, and blocks across the edge between them.
+            drawRect(Color(0xFF203040), size = Size(width * .6f, height.toFloat()))
             repeat(60) {
                 val c = Color(r.nextInt(256), r.nextInt(256), r.nextInt(256), 60 + r.nextInt(196))
                 drawCircle(c, 4f + r.nextFloat() * 40f, Offset(r.nextFloat() * width, r.nextFloat() * height))
