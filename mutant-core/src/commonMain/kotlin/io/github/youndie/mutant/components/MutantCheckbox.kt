@@ -124,20 +124,20 @@ internal fun CheckBoxControl(
     val tick = if (hidden) Color.Transparent else colors.onPrimary
     val ink = colors.onPrimary
     Control(MutantBody.Box, key, if (checked) colors.primary else null, enabled, source) {
-        // A disabled box draws its mark as it stands (the page's disabled cell); a live one melts it.
+        // A disabled box draws its mark as it stands (the page's disabled cell). A live one always draws it and lets the
+        // melt show or hide it, so that unchecked it melts out as the page's `data-on-only` mark does (B-168).
         val melt = if (enabled) Modifier.mutantMelt(checked) else Modifier
-        val shown = checked
         MutantIcon(
             remember { MutantIcons.stroked(MutantIcons.Done, MARK_LINE) },
             null,
-            melt.then(if (shown) Modifier.mutantCleanZone() else Modifier),
-            tint = if (shown) tick else Color.Transparent,
+            melt.then(if (checked) Modifier.mutantCleanZone() else Modifier),
+            tint = if (checked || enabled) tick else Color.Transparent,
             size = MARK,
         )
         if (enabled && blocks) {
             // Two burnt blocks in the corner (the page's `right: 2px` and `6px`, `bottom: 2px`, 4 dp each in 22).
-            Block(16, 16, .5f, ink, Modifier.mutantMelt(checked), shown)
-            Block(12, 16, .25f, ink, Modifier.mutantMelt(checked), shown)
+            Block(16, 16, .5f, ink, Modifier.mutantMelt(checked))
+            Block(12, 16, .25f, ink, Modifier.mutantMelt(checked))
         }
     }
 }
@@ -149,7 +149,6 @@ private fun BoxScope.Block(
     alpha: Float,
     ink: Color,
     melt: Modifier,
-    shown: Boolean,
 ) {
     Canvas(
         Modifier
@@ -158,7 +157,7 @@ private fun BoxScope.Block(
             .offset(x.dp, y.dp)
             .size(BLOCK)
             .then(melt),
-    ) { if (shown) drawRect(ink, alpha = alpha) }
+    ) { drawRect(ink, alpha = alpha) }
 }
 
 /** [MutantRadioButton]; [hidden] draws the dot and the label transparent for a fixture's bare twin. */

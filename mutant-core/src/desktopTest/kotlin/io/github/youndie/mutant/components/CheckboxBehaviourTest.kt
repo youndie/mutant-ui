@@ -123,6 +123,57 @@ class CheckboxBehaviourTest {
         assertTrue(pMid > 0 && pMid == pEnd, "paused: whole at once: $pMid, $pEnd")
     }
 
+    /** The burnt blocks' pixels (ink at 50 and 25 % on the acid) in the box's bottom right corner, rows 29–33. */
+    private fun ComposeUiTest.blocks(): Int =
+        onNodeWithTag("c").captureToImage().toPixelMap().let { px ->
+            (12 until 20).sumOf { x ->
+                (29 until 33).count { y -> px[x, y].let { it.green in .25f..0.7f && it.green > it.red * 1.2f } }
+            }
+        }
+
+    /** The tick's dark pixels after unchecking: at once, 112 ms in (the melt's first step) and 500 ms in. */
+    private fun meltOut(
+        reduceMotion: Boolean,
+        blocks: MutableList<Int> = ArrayList(),
+    ): List<Int> {
+        val counts = ArrayList<Int>()
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var on by mutableStateOf(true)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = reduceMotion) { Box { MutantCheckbox(on, {}, Modifier.testTag("c")) } }
+                }
+            }
+            mainClock.advanceTimeBy(600)
+            counts += tick()
+            blocks += blocks()
+            on = false
+            mainClock.advanceTimeByFrame()
+            counts += tick()
+            blocks += blocks()
+            mainClock.advanceTimeBy(96)
+            counts += tick()
+            mainClock.advanceTimeBy(400)
+            counts += tick()
+        }
+        return counts
+    }
+
+    @Test
+    fun `unchecked, the mark melts out over 330 ms, and goes at once when paused`() {
+        // B-168: the tick was tinted away the moment the box was unchecked, so its melt-out ran over nothing.
+        val blocks = ArrayList<Int>()
+        val (whole, first, step, end) = meltOut(reduceMotion = false, blocks)
+        assertTrue(whole > 0, "a tick while checked")
+        assertEquals(whole, first, "the first frame after unchecking still shows the whole tick")
+        assertTrue(blocks[0] > 0 && blocks[1] == blocks[0], "the blocks stay for the melt's first frame: $blocks")
+        assertTrue(step in 1 until whole, "partly melted 112 ms in: $step of $whole")
+        assertEquals(0, end, "gone once melted out")
+        val (pWhole, pFirst, _, pEnd) = meltOut(reduceMotion = true)
+        assertTrue(pWhole > 0 && pFirst == 0 && pEnd == 0, "paused: gone at once: $pWhole, $pFirst, $pEnd")
+    }
+
     @Test
     fun `the row is the 48 dp target, disabled it takes no click`() =
         runComposeUiTest {
