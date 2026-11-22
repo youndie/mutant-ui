@@ -116,12 +116,12 @@ class SegmentedBehaviourTest {
         }
 
     @Test
-    fun `the labels change colour 340 ms in`() =
+    fun `the chosen word turns black once the slime has reached it`() =
         runComposeUiTest {
             segmented()
             val text = MutantPalettes.Efir.text
 
-            // The third label's glyphs in the text's own colour: lit before the switch, none after it.
+            // The third label's glyphs in the text's own colour: lit before the lime comes, none once it lies under them.
             fun lit(): Int =
                 onNodeWithTag("s").captureToImage().toPixelMap().let { px ->
                     (232 until 296).sumOf { x -> (18 until 30).count { y -> px[x, y].near(text) } }
@@ -325,8 +325,15 @@ class SegmentedBehaviourTest {
         val rtl = inkColumns(LayoutDirection.Rtl)
         assertTrue(ltr.size > 40, "the pale words' ink: ${ltr.size} columns")
         // Within a pixel: the line's place right to left differs by a fraction, and an edge lands on the next pixel.
-        val off = (ltr.filter { x -> (x - 1..x + 1).none { it in rtl } } + rtl.filter { x -> (x - 1..x + 1).none { it in ltr } })
-        assertEquals(emptyList(), off, "columns of the pale words' ink more than a pixel from where they are left to right")
+        val off = (
+            ltr.filter { x -> (x - 1..x + 1).none { it in rtl } } +
+                rtl.filter { x -> (x - 1..x + 1).none { it in ltr } }
+        )
+        assertEquals(
+            emptyList(),
+            off,
+            "columns of the pale words' ink more than a pixel from where they are left to right",
+        )
     }
 
     @Test
@@ -335,6 +342,9 @@ class SegmentedBehaviourTest {
         val inks = inkColumns(LayoutDirection.Ltr, listOf("SP", "Extended play · six hours", "EP"))
         val middle = inks.filter { it in 100 until 220 }
         assertTrue(middle.size > 60, "the long word's ink: ${middle.size} columns")
-        assertTrue(middle.min() >= 108 && middle.max() < 212, "the long word's ink from ${middle.min()} to ${middle.max()}")
+        assertTrue(
+            middle.min() >= 108 && middle.max() < 212,
+            "the long word's ink from ${middle.min()} to ${middle.max()}",
+        )
     }
 }
