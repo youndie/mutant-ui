@@ -102,11 +102,12 @@ import kotlin.math.roundToInt
  *
  * With [visible] true, from the start or set later, it opens: scrim, band and window come up together in 320 ms
  * (`pause`); set false they go in 200 (`play`), the screen's clock running again, and it is gone from the composition
- * after. Both step twelve times a second, and under reduce motion are at once. A click on the scrim, Escape or the
- * system back gesture calls [onDismissRequest]. Focus moves into the dialog as it opens and stays there, a Tab on its
- * actions only, coming round from the last to the first and with Shift+Tab the other way. Once the dialog has gone it
- * goes to [returnFocusTo], a requester on whatever opened it, or with none is left to the window; through the close the
- * keys, like the pointer, reach nothing behind it.
+ * after. Both run on every frame, step twelve times a second under the theme's `steppedMotion` (B-100), and under
+ * reduce motion are at once; a close during the open, or an open during the close, goes on from where the dialog
+ * stands. A click on the scrim, Escape or the system back gesture calls [onDismissRequest]. Focus moves into the
+ * dialog as it opens and stays there, a Tab on its actions only, coming round from the last to the first and with
+ * Shift+Tab the other way. Once the dialog has gone it goes to [returnFocusTo], a requester on whatever opened it, or
+ * with none is left to the window; through the close the keys, like the pointer, reach nothing behind it.
  */
 @Composable
 public fun MutantDialog(
