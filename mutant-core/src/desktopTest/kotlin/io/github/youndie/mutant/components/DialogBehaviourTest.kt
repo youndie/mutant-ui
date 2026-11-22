@@ -48,6 +48,7 @@ import io.github.youndie.mutant.theme.MutantTheme
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -150,6 +151,69 @@ class DialogBehaviourTest {
             assertTrue(jumps.isEmpty(), "jumps: $jumps")
             assertEquals(.62f, last, .01f, "open again")
         }
+
+    @Test
+    fun `opened while the screen's keyframe loss runs, its window is drawn whole`() {
+        var running = false
+        open = false
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        io.github.youndie.mutant.theme.MutantScreenClock {
+                            Box(Modifier.size(360.dp, 300.dp).testTag("screen")) {
+                                io.github.youndie.mutant.surface.KeyframeLossBody(
+                                    Modifier.fillMaxSize(),
+                                    MutantTheme.colors.background,
+                                    null,
+                                    {
+                                        Column {
+                                            MutantCard(Modifier.size(320.dp, 120.dp), key = "loss-card") {}
+                                            MutantButton("Стереть", {}, key = "loss-button")
+                                        }
+                                        // A text long enough that the window stands across the whole screen, the band too.
+                                        MutantDialog(
+                                            open,
+                                            "Стереть запись?",
+                                            {},
+                                            text = "Плёнку можно стереть. ".repeat(40),
+                                        ) {
+                                            MutantDialogAction("Отмена", {})
+                                        }
+                                    },
+                                    probe = { running = it },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            while (!running && mainClock.currentTime < 12_000) mainClock.advanceTimeByFrame()
+            assertTrue(running, "a loss runs by 12 s")
+            open = true
+            repeat(40) { mainClock.advanceTimeByFrame() }
+            val window =
+                onAllNodesWithText("Стереть запись?")
+                    .fetchSemanticsNodes()
+                    .first()
+                    .let { title ->
+                        generateSequence(title) { it.parent }.first { SemanticsProperties.PaneTitle in it.config }
+                    }.boundsInRoot
+            // A column inside the window's right padding, clear of its words and its button: the window's fill alone.
+            val px = onNodeWithTag("screen").captureToImage().toPixelMap()
+            val x = (window.right - 8).toInt()
+            val top = maxOf(window.top.toInt() + 16, 0)
+            val bottom = minOf(window.bottom.toInt() - 16, px.height)
+            val column = (top until bottom).map { px[x, it] }
+            val fill = column.sortedBy { it.red + it.green + it.blue }[column.size / 2]
+
+            fun far(c: Color) = abs(c.red - fill.red) + abs(c.green - fill.green) + abs(c.blue - fill.blue) > .12f
+            val off = column.count(::far)
+            assertTrue(column.size > 200, "the window stands across the screen: $window")
+            assertEquals(0, off, "rows of the window's column that are not its fill $fill")
+        }
+    }
 
     @Test
     fun `under reduce motion it opens and closes at once`() =

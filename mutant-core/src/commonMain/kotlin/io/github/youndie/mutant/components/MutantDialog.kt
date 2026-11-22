@@ -74,6 +74,7 @@ import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.surface.BodyState
+import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
@@ -159,18 +160,22 @@ internal fun DialogFrame(
             onDispose { if (!gone) screen.holds-- }
         }
         if (gone) return@ProvideMutantClock
-        DialogScene(
-            visible,
-            title,
-            onDismissRequest,
-            modifier,
-            text,
-            actions,
-            shown.toFloat(),
-            windowTop,
-            hidden,
-            probe,
-        )
+        // The window floats over the screen, so the screen's keyframe loss does not take its bodies: a loss held
+        // mid-run by the dialog would cut its band out of the window for as long as it shows (B-98's rule, B-168).
+        androidx.compose.runtime.CompositionLocalProvider(LocalMutantMoshScene provides null) {
+            DialogScene(
+                visible,
+                title,
+                onDismissRequest,
+                modifier,
+                text,
+                actions,
+                shown.toFloat(),
+                windowTop,
+                hidden,
+                probe,
+            )
+        }
     }
 }
 
