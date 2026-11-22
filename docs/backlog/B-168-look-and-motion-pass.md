@@ -83,7 +83,7 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | # | Group (slug) | Components | Status |
 |---|---|---|---|
 | 1 | buttons | Button, TextButton, OutlinedButton | done: [report](../../logs/b-168/buttons.md), 1 fixed, 6 reported |
-| 2 | icon-fab | IconButton, Fab, ExtendedFab | open |
+| 2 | icon-fab | IconButton, Fab, ExtendedFab | done: [report](../../logs/b-168/icon-fab.md), 1 fixed, 5 reported |
 | 3 | chip | Chip | open |
 | 4 | checks-switch | Checkbox, RadioButton, Switch | open |
 | 5 | text-field | TextField | open |
