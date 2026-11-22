@@ -1,11 +1,15 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -417,6 +421,54 @@ class SliderBehaviourTest {
             onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionLeft) }
             onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionLeft) }
             assertEquals(9, value)
+        }
+
+    @Test
+    fun `a finger scrolling the page from the row scrolls it, and a finger across or a tap still takes the handle`() =
+        runComposeUiTest {
+            // B-168: the row took a finger at its first touch and consumed every move, so a scroll starting on it set
+            // the value under the finger and the page stood: −2 → −8 on the demo's Settings screen.
+            var value by mutableIntStateOf(0)
+            val scroll = ScrollState(0)
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Column(Modifier.height(400.dp).verticalScroll(scroll)) {
+                            MutantSlider(value, { value = it }, Modifier.width(300.dp).testTag("s"), label = "T")
+                            Spacer(Modifier.height(2_000.dp))
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            onNodeWithTag("s").performTouchInput {
+                down(Offset(middle(-8), row + 27))
+                repeat(10) { moveBy(Offset(1f, -20f)) }
+                up()
+            }
+            // Past the fling: a finger on a flinging page only stops it.
+            mainClock.advanceTimeBy(3_000)
+            assertEquals(0, value, "a scroll leaves the value")
+            assertTrue(scroll.value > 0, "and scrolls the page")
+            runOnIdle { scroll.dispatchRawDelta(-scroll.value.toFloat()) }
+            mainClock.advanceTimeByFrame()
+            // Across from the channel: the handle comes to the finger and follows it.
+            onNodeWithTag("s").performTouchInput {
+                down(Offset(middle(-8), row + 27))
+                repeat(4) { moveBy(Offset(-10f, 0f)) }
+                up()
+            }
+            mainClock.advanceTimeByFrame()
+            assertEquals(-10, value, "a finger across takes the handle")
+            // A tap on the channel.
+            onNodeWithTag("s").performTouchInput {
+                down(Offset(middle(6), row + 27))
+                up()
+            }
+            mainClock.advanceTimeByFrame()
+            assertEquals(6, value, "a tap takes the handle there")
+            assertEquals(0, scroll.value)
         }
 
     /** The first and last column of the handle's amber on the channel's middle row. */

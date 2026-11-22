@@ -3,6 +3,7 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -37,6 +38,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
@@ -76,8 +79,10 @@ import kotlin.math.roundToInt
  *
  * The value is a whole number in [valueRange], shown signed in the handle (`+3`, `−4`, `0`) and stepped one at a time.
  * The handle follows the pointer while it is held and settles on the value's place when let go. A press anywhere on
- * the 60 dp row takes the handle there; the row is the touch target. Arrows step the value, Home and End go to the
- * ends. Disabled, the handle loses its signal and the fill and the words grey.
+ * the 60 dp row takes the handle there; the row is the touch target. A finger away from the handle takes it once it
+ * moves across or lifts, so a scroll of the page that starts on the row scrolls the page. Arrows step the value, Home
+ * and End go to the ends. Disabled, the handle loses its signal and the fill and the words grey. Right to left the
+ * slider mirrors: its start, the range's first value, at the right.
  *
  * Its width is the one given; with none (a scrolling row), the page's 300 dp. A range of one value or a reversed one
  * draws the handle at the start and takes no input.
@@ -325,26 +330,60 @@ internal fun SliderBody(
                                     val left = atNow * travel
                                     // Held by the handle where it was taken; a press elsewhere takes it by its middle.
                                     val x0 = fromStart(down.position.x)
-                                    val grip = if (x0 in left..(left + handle)) x0 - left else handle / 2
-                                    val press = PressInteraction.Press(down.position)
-                                    source.tryEmit(press)
+                                    val onHandle = x0 in left..(left + handle)
+                                    val grip = if (onHandle) x0 - left else handle / 2
 
                                     fun follow(x: Float) {
                                         val f = ((fromStart(x) - grip) / travel).coerceIn(0f, 1f)
                                         held = f
                                         onMove(f)
                                     }
-                                    follow(down.position.x)
-                                    down.consume()
-                                    val ended =
-                                        drag(down.id) {
-                                            follow(it.position.x)
-                                            it.consume()
+                                    // A finger away from the handle may be starting a scroll of the page: it takes the
+                                    // handle once it has moved across by the touch slop, or where it lifts without
+                                    // moving (a tap); a scroll that takes it first leaves the value as it was. A mouse,
+                                    // and a finger on the handle itself, take it at once (B-168).
+                                    var from = down
+                                    if (down.type != PointerType.Mouse && !onHandle) {
+                                        val across =
+                                            awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
+                                                change.consume()
+                                            }
+                                        if (across == null) {
+                                            val up = currentEvent.changes.firstOrNull { it.id == down.id }
+                                            if (up == null || !up.changedToUp()) return@awaitEachGesture
+                                            val tap = PressInteraction.Press(down.position)
+                                            source.tryEmit(tap)
+                                            follow(down.position.x)
+                                            up.consume()
+                                            held = null
+                                            source.tryEmit(PressInteraction.Release(tap))
+                                            return@awaitEachGesture
                                         }
-                                    held = null
-                                    source.tryEmit(
-                                        if (ended) PressInteraction.Release(press) else PressInteraction.Cancel(press),
-                                    )
+                                        from = across
+                                    }
+                                    val press = PressInteraction.Press(from.position)
+                                    source.tryEmit(press)
+                                    var ended = false
+                                    try {
+                                        follow(from.position.x)
+                                        from.consume()
+                                        ended =
+                                            drag(from.id) {
+                                                follow(it.position.x)
+                                                it.consume()
+                                            }
+                                    } finally {
+                                        held = null
+                                        source.tryEmit(
+                                            if (ended) {
+                                                PressInteraction.Release(
+                                                    press,
+                                                )
+                                            } else {
+                                                PressInteraction.Cancel(press)
+                                            },
+                                        )
+                                    }
                                 }
                             }
                         } else {
