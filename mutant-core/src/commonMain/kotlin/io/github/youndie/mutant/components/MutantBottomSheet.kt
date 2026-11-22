@@ -65,8 +65,8 @@ import io.github.youndie.mutant.tokens.MutantBody
  * The design draws it open; its motion is designed here (D15): it rises from below over 330 ms (ease-out², in the kit's
  * transition steps) with the scrim coming in, and sinks in 200 ms; under reduce motion it is there at once. A sink
  * during the rise, or a rise during the sink, goes on from where the sheet stands. A click on
- * the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the sheet as it opens and goes
- * to [returnFocusTo] as it closes, or with none is left to the window. The sheet keeps its content above
+ * the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the sheet as it opens and,
+ * once it has sunk, goes to [returnFocusTo], or with none is left to the window. The sheet keeps its content above
  * [windowInsets]; its body runs on under them.
  */
 @Composable
@@ -98,7 +98,6 @@ internal fun SheetFrame(
     playIn: Boolean = true,
     height: Dp? = null,
 ) {
-    ReturnFocus(visible, returnFocusTo)
     val reduce = LocalMutantReduceMotion.current
     val screen = readMutantClock()
     // The sheet's own clock: the screen's stands while it shows, and the sheet and what is on it still move.
@@ -121,6 +120,9 @@ internal fun SheetFrame(
             if (!gone) screen.holds++
             onDispose { if (!gone) screen.holds-- }
         }
+        // Focus goes back once the sheet is gone, not as it starts to sink: through the sink the scrim still covers the
+        // screen, and an Enter pressed then would reach the opener under it and open the sheet again (B-168).
+        ReturnFocus(!gone, returnFocusTo)
         if (gone) return@ProvideMutantClock
         SheetScene(visible, onDismissRequest, modifier, windowInsets, key, content, shown.toFloat(), height)
     }

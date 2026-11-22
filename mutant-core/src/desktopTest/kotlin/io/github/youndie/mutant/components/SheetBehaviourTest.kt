@@ -15,12 +15,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.pressKey
@@ -230,4 +232,52 @@ class SheetBehaviourTest {
             assertTrue(jumps.isEmpty(), "jumps over ${.2f * travel} dp: $jumps")
             assertEquals(settled, last, 1f, "risen again")
         }
+
+    @Test
+    fun `through its sink the keys reach nothing behind it, and focus is back with the opener after`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var visible by mutableStateOf(false)
+            var opens = 0
+            val opener = FocusRequester()
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(Modifier.size(360.dp, 600.dp)) {
+                            MutantButton("Открыть", {
+                                opens++
+                                visible = true
+                            }, Modifier.focusRequester(opener).testTag("opener"))
+                            MutantBottomSheet(visible, { visible = false }, returnFocusTo = opener) {
+                                MutantButton("Готово", { visible = false }, Modifier.testTag("done"))
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            runOnIdle { opener.requestFocus() }
+            visible = true
+            mainClock.advanceTimeBy(500)
+            focusOn("done")
+            // Enter on Done, then Enter again as the sheet sinks.
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(0, opens, "the second Enter reached the opener under the scrim")
+            assertTrue(!visible, "sinking")
+            mainClock.advanceTimeBy(300)
+            onNodeWithTag("opener").assertIsFocused()
+        }
+
+    /** Tab until [tag] holds focus. */
+    private fun ComposeUiTest.focusOn(tag: String) {
+        repeat(6) {
+            if (onNodeWithTag(tag).fetchSemanticsNode().config.getOrElse(SemanticsProperties.Focused) { false }) return
+            onRoot().performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+        }
+        onNodeWithTag(tag).assertIsFocused()
+    }
 }
