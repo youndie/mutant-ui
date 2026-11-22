@@ -141,3 +141,30 @@ does (`before=Keyboard after=Touch`), so every press here is the mouse's.
 - **After.** `core/busy-loading-efir-0.png`: the fill stays acid through the press, the release and the mouse over it.
   The before-sheet is `before/busy-loading-efir-0.png`. A live button's press is unchanged: the largest per-frame
   change is 3913 and 5700 pixels for the filled and the outlined button, as before.
+- **Mutants**, after commit `7173e55`. Each was run against the aimed test, and each was killed by it:
+
+  | Mutant | The test's failure |
+  |---|---|
+  | the body hears the button's own source again | «hovered while loading, acid pixels: [6804, 6804, 0, 0, …]» |
+  | the hand shown while loading | «MutantHandCursor is NOT defined» fails |
+  | no hover let go when the work starts | «the simmer lets go when the work starts: [0, 0, …]» |
+  | no simmer back when the work ends | «idle under the mouse simmers: [7255, 7255, …]» |
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` at
+`7173e55`, with the scratch tests deleted.
+
+- The JUnit XML of both modules: 446 tests, 0 failures, 0 errors, 0 skipped.
+- The run's `ktlintDesktopTestSourceSetCheck` failed, all of it on the deleted scratch test. Rerun with
+  `--rerun-tasks`, both ktlint checks are clean.
+- The public API is unchanged, so there was no `updateKotlinAbi`.
+
+## Not verified
+
+- **The browser itself, Android and iOS.** The browser was looked at only through the JVM's seams.
+- **The phone's GPU** (B-167): the body shader was not looked at.
+- **Density 2 in the sample's section**: the section is taller than the test window at 2 and could not be captured.
+  The components were looked at at density 2 in a stage of their own.
+- **The real window.** That the mouse puts the window in touch mode was read from the test window, not from a real
+  one.
