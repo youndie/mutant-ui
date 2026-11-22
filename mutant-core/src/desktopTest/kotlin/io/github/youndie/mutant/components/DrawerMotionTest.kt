@@ -240,4 +240,25 @@ class DrawerMotionTest {
             mainClock.advanceTimeByFrame()
             onNode(hasText("Эфир")).assertIsFocused()
         }
+
+    @Test
+    fun `right to left it comes in from the right edge and its rows stand 12 dp from it`() =
+        drawer(rtl = true) { stage ->
+            stage.open = true
+            val xs =
+                List(30) {
+                    mainClock.advanceTimeByFrame()
+                    titleX()!!
+                }
+            val rest = xs.last()
+            // The window slides in from beyond the right edge, never crossing the screen from the left.
+            assertTrue(xs.first() > 300f, "the first frame's title stands beyond the screen's right edge: $xs")
+            assertTrue(xs.zipWithNext { a, b -> b <= a }.all { it }, "the title moves only leftwards: $xs")
+            val rows = onAllNodes(hasText("Поиск")).fetchSemanticsNodes().map { it.boundsInRoot }
+            assertEquals(
+                listOf(348f),
+                rows.map { it.right },
+                "the rows' right edge, 12 dp from the screen's (title at $rest)",
+            )
+        }
 }

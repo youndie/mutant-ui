@@ -55,12 +55,14 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigationevent.NavigationEventInfo
@@ -187,6 +189,8 @@ internal fun DrawerFrame(
             isBackEnabled = visible,
         ) { dismiss() }
         val slide = 1 - (1 - shown) * (1 - shown)
+        // It comes in from the screen's start: the left edge, or the right one right to left.
+        val from = if (LocalLayoutDirection.current == LayoutDirection.Rtl) 1 else -1
         Box(
             modifier
                 .fillMaxSize()
@@ -237,7 +241,7 @@ internal fun DrawerFrame(
                     rows,
                     Modifier
                         .fillMaxHeight()
-                        .graphicsLayer { translationX = -(1 - slide) * size.width }
+                        .graphicsLayer { translationX = from * (1 - slide) * size.width }
                         .semantics {
                             dismiss {
                                 dismiss()
@@ -271,11 +275,13 @@ internal fun DrawerWindow(
     val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
     run.steps = LocalMutantSteppedMotion.current
     val top = TOP + (if (title != null) TITLE + GAP else 0f)
+    // The rows stand 22 dp from the body's start: its left edge, or its right one right to left.
+    val rowX = if (LocalLayoutDirection.current == LayoutDirection.Rtl) BODY_WIDTH - START - ROW_WIDTH else START
     run.key = "$key-pill"
     run.cassette = cassette
     run.slot =
         { i ->
-            doubleArrayOf(START.toDouble(), (top + i * (ROW + GAP)).toDouble(), ROW_WIDTH.toDouble(), ROW.toDouble())
+            doubleArrayOf(rowX.toDouble(), (top + i * (ROW + GAP)).toDouble(), ROW_WIDTH.toDouble(), ROW.toDouble())
         }
     run.follow(selectedIndex, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
     val select by rememberUpdatedState(onSelect)
@@ -416,7 +422,7 @@ internal fun DrawerWindow(
                         }
                     var y = (TOP * d).roundToInt() + (titleP?.let { it.height + gap } ?: 0)
                     val tops = rows.map { r -> y.also { y += r.height + gap } }
-                    words.start = start
+                    words.start = if (layoutDirection == LayoutDirection.Rtl) w - start - rowW else start
                     words.rowW = rowW
                     words.tops = tops.toIntArray()
                     words.heights = rows.map { it.height }.toIntArray()
@@ -428,21 +434,21 @@ internal fun DrawerWindow(
                         }
                     layout(w, h) {
                         ink.place(0, 0)
-                        if (chosen) pill.place(start, tops[selectedIndex])
+                        if (chosen) pill.placeRelative(start, tops[selectedIndex])
                         fill.place(0, 0)
-                        titleP?.place(start, (TOP * d).roundToInt())
-                        rows.forEachIndexed { i, r -> r.place(start, tops[i]) }
+                        titleP?.placeRelative(start, (TOP * d).roundToInt())
+                        rows.forEachIndexed { i, r -> r.placeRelative(start, tops[i]) }
                     }
                 }
             }
         },
         modifier,
     ) { measurables, c ->
-        // The body runs off the window's start and top by 10 dp and past its foot by as much.
+        // The body runs off the window's start (the screen's, either way) and top by 10 dp and past its foot by as much.
         val off = (RUN_OFF * density).roundToInt()
         val h = if (c.hasBoundedHeight) c.maxHeight else (BODY_MIN * density).roundToInt()
         val body = measurables[0].measure(Constraints.fixed((BODY_WIDTH * density).roundToInt(), h + 2 * off))
-        layout(body.width - off, h) { body.place(-off, -off) }
+        layout(body.width - off, h) { body.placeRelative(-off, -off) }
     }
 }
 
