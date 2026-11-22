@@ -27,9 +27,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.InputMode
@@ -46,20 +52,30 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.MutantClock
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Instance
+import io.github.youndie.mutant.gen.jsToFixed
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
+import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
+import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlin.math.PI
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /** One destination of [MutantNavigationBar]: its label, always shown, its icon, and an optional [badge]. */
 @Immutable
@@ -108,8 +124,15 @@ internal fun NavigationBarBody(
     probe: ((Instance) -> Unit)? = null,
     pillProbe: ((Instance) -> Unit)? = null,
 ) {
+    val clock = readMutantClock()
     val from = remember { PillFrom(selectedIndex) }
-    from.follow(selectedIndex)
+    from.follow(
+        selectedIndex,
+        items.size,
+        clock.nowMs,
+        LocalMutantReduceMotion.current,
+        LocalMutantSteppedMotion.current,
+    )
     MutantSurface(
         MutantBody.Bar,
         key,
@@ -129,12 +152,29 @@ internal fun NavigationBarBody(
             val box = DpSize(ICON_BOX_W, ICON_BOX_H)
             // Where an item's icon box stands in its cell, from the measure of the items (written as they measure).
             val tops = remember(n) { IntArray(n) }
+            // The screen's direction of reading: the pill's run goes the other way in a right-to-left layout (B-65).
+            val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
+            // Where the pill is drawn, for the icons it stands over (B-168).
+            val place =
+                if (chosen) {
+                    PillPlace(
+                        from,
+                        clock,
+                        selectedIndex,
+                        cell.value.toDouble(),
+                        minOf(ICON_BOX_W, cell).value.toDouble(),
+                        side,
+                        LocalMutantReduceMotion.current,
+                        LocalMutantSteppedMotion.current,
+                    )
+                } else {
+                    null
+                }
             Layout(
                 content = {
                     if (chosen) {
-                        // The cell the pill came from, on the screen: to the other side in a right-to-left layout (B-65).
-                        val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
-                        val dx = if (from.at in items.indices) cell * (side * (from.at - selectedIndex)) else 0.dp
+                        // Where the pill stands, on the screen.
+                        val dx = cell * (side * from.cells).toFloat()
                         MutantSurface(
                             MutantBody.Pill,
                             pillKey,
@@ -149,7 +189,9 @@ internal fun NavigationBarBody(
                         }
                     }
                     items.forEachIndexed { i, item ->
-                        NavigationItem(item, i == selectedIndex, { onSelect(i) }, hidden) { tops[i] = it }
+                        NavigationItem(item, i == selectedIndex, { onSelect(i) }, hidden, { place?.over(i) }) {
+                            tops[i] = it
+                        }
                     }
                 },
                 modifier = Modifier.selectableGroup(),
@@ -199,6 +241,7 @@ private fun NavigationItem(
     selected: Boolean,
     onClick: () -> Unit,
     hidden: Boolean,
+    pill: () -> Rect?,
     top: (Int) -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -212,8 +255,9 @@ private fun NavigationItem(
             selected -> colors.text
             else -> colors.textSecondary
         }
-    // On the pill the icon is the page's literal black; elsewhere it is the label's colour.
-    val glyph = if (selected && !hidden && item.enabled) INK else word
+    // On the pill the icon is the page's literal black, elsewhere the label's colour; read where the pill is drawn, not
+    // from the pick: the pill reaches the chosen icon 330 ms after it, and passes over others on its way (B-168).
+    val inks = !hidden && item.enabled
     Box(
         Modifier
             .mutantHand(item.enabled)
@@ -244,7 +288,24 @@ private fun NavigationItem(
         ) {
             Box(Modifier.size(ICON_BOX_W, ICON_BOX_H), contentAlignment = Alignment.Center) {
                 // The engine's clean zone is its text runs, its icons and its bodies, not the boxes around them.
-                MutantIcon(item.icon, null, Modifier.mutantCleanZone(), tint = glyph, size = ICON)
+                Box(Modifier.size(ICON).mutantCleanZone()) {
+                    MutantIcon(
+                        item.icon,
+                        null,
+                        Modifier.underPill(pill, inks, onPill = false),
+                        tint = word,
+                        size = ICON,
+                    )
+                    if (inks) {
+                        MutantIcon(
+                            item.icon,
+                            null,
+                            Modifier.underPill(pill, true, onPill = true),
+                            tint = INK,
+                            size = ICON,
+                        )
+                    }
+                }
                 item.badge?.let {
                     BadgeBody(
                         it,
@@ -276,16 +337,104 @@ private fun NavigationItem(
     }
 }
 
-/** Follows the selected index from composition without writing state: the pill slides from where it stood. */
+/**
+ * The part of an icon on the pill ([onPill]) or off it, as the pill stands now: [pill] is its box from the icon's centre,
+ * dp. An icon wholly on one side is drawn as it is, unclipped; one the pill's edge crosses is cut along a capsule inside
+ * the pill's outline. With [inks] false the icon never turns, and is drawn whole.
+ */
+private fun Modifier.underPill(
+    pill: () -> Rect?,
+    inks: Boolean,
+    onPill: Boolean,
+): Modifier =
+    drawWithContent {
+        val box = if (inks) pill() else null
+        // In the icon's pixels, half the outline's width inside the pill's box: the lime the black reads on.
+        val inset = (MutantBody.Pill.profile.outline / 2).toFloat()
+        val r =
+            box?.let {
+                Rect(
+                    size.width / 2 + (it.left + inset) * density,
+                    size.height / 2 + (it.top + inset) * density,
+                    size.width / 2 + (it.right - inset) * density,
+                    size.height / 2 + (it.bottom - inset) * density,
+                )
+            }
+        val corner = r?.let { minOf(it.width, it.height) / 2 } ?: 0f
+        val whole =
+            r != null && r.left + corner <= 0 && r.right - corner >= size.width && r.top <= 0 && r.bottom >= size.height
+        val none = r == null || r.right <= 0 || r.left >= size.width || r.bottom <= 0 || r.top >= size.height
+        when {
+            whole -> {
+                if (onPill) drawContent()
+            }
+
+            none -> {
+                if (!onPill) drawContent()
+            }
+
+            else -> {
+                val capsule = Path().apply { addRoundRect(RoundRect(r, CornerRadius(corner))) }
+                clipPath(capsule, if (onPill) ClipOp.Intersect else ClipOp.Difference) {
+                    this@drawWithContent.drawContent()
+                }
+            }
+        }
+    }
+
+/**
+ * Where the pill is drawn now, from item [over]'s icon centre, dp: its box as the body slides it (`slid`: run home by
+ * `1 − (1 − p)²`, stretched `1 + .4 sin πp` along and squeezed `1 − .18 sin πp` across). While it runs, the reader reads
+ * every frame of the [clock].
+ */
+internal class PillPlace(
+    private val from: PillFrom,
+    private val clock: MutantClock,
+    private val chosen: Int,
+    private val cell: Double,
+    private val width: Double,
+    private val side: Int,
+    private val instant: Boolean,
+    private val steps: Boolean,
+) {
+    fun over(i: Int): Rect {
+        val p = if (instant) 1.0 else stepped(clock.nowMs - from.since, MutantMotion.SLIDE_MS, steps)
+        if (p < 1) clock.frame
+        val q = sin(PI * p)
+        val cx = side * cell * (chosen - i + from.cells * (1 - p).pow(2))
+        val hw = width / 2 * jsToFixed(1 + .4 * q, 2)
+        val hh = ICON_BOX_H.value / 2 * jsToFixed(1 - .18 * q, 2)
+        return Rect((cx - hw).toFloat(), (-hh).toFloat(), (cx + hw).toFloat(), hh.toFloat())
+    }
+}
+
+/**
+ * Follows the selected index from composition without writing state: the pill slides from where it stands. A pick while
+ * it is under way starts the new slide from the place it has reached, not from the cell picked before (B-168).
+ */
 internal class PillFrom(
     private var now: Int,
 ) {
-    var at: Int = -1
+    /** Where the pill's slide starts, in cells from the chosen one in reading order; 0 when it does not slide. */
+    var cells: Double = 0.0
         private set
 
-    fun follow(to: Int) {
+    /** When that slide started, the screen's clock ms. */
+    var since: Double = Double.NEGATIVE_INFINITY
+        private set
+
+    fun follow(
+        to: Int,
+        count: Int,
+        nowMs: Double,
+        instant: Boolean,
+        steps: Boolean,
+    ) {
         if (to == now) return
-        at = now
+        // What is left of the slide under way, as the body draws it: `dx · (1 − e)` with `e = 1 − (1 − p)²`.
+        val left = if (instant) 0.0 else (1 - stepped(nowMs - since, MutantMotion.SLIDE_MS, steps)).pow(2)
+        cells = if (now in 0 until count && to in 0 until count) now - to + cells * left else 0.0
+        since = nowMs
         now = to
     }
 }

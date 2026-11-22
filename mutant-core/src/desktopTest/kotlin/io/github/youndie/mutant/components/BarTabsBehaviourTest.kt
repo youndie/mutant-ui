@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -26,10 +28,12 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
@@ -398,5 +402,80 @@ class BarTabsBehaviourTest {
                 }
             assertTrue(px.height > 48, "the row grew: ${px.height}")
             assertTrue(barTop >= label.bottom, "the bar at $barTop, the label down to ${label.bottom}")
+        }
+
+    @Test
+    fun `a click during a run sends the bar on from where it stands, not from the tab it was running to`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var at by mutableIntStateOf(0)
+            tabs({ at }, onSelect = { at = it })
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Заметки").performMouseInput { click(center) }
+            mainClock.advanceTimeBy(48)
+            // Mid-run between the first label and the second, the second clicked away to the third (B-168). The press
+            // and the release each move the test's clock, so each edge is read with its time.
+            val xs = mutableListOf(mainClock.currentTime to acid(43)!!.first)
+            onNodeWithText("Копии").performMouseInput {
+                moveTo(center)
+                press()
+            }
+            xs += mainClock.currentTime to acid(43)!!.first
+            onNodeWithText("Копии").performMouseInput { release() }
+            xs += mainClock.currentTime to acid(43)!!.first
+            repeat(30) {
+                mainClock.advanceTimeByFrame()
+                xs += mainClock.currentTime to acid(43)!!.first
+            }
+            assertEquals(2, at, "the third selected")
+            // A run's fastest frame is its first, 1 - (1 - 16 / 330)^3 = 14 % of the way: under 20 px a frame here. The
+            // bar leapt 65 px in one frame to the second label.
+            val steps = xs.zipWithNext { (t0, a), (t1, b) -> (b - a) to ((t1 - t0) / 16).coerceAtLeast(1) }
+            assertTrue(steps.all { (d, frames) -> d in 0..20 * frames }, "the bar's left edge, (ms, px): $xs")
+            val end = onNodeWithText("Копии", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertEquals(end.left.toInt(), xs.last().second, "landed under the third label")
+        }
+
+    @Test
+    fun `the last tab's echo is drawn whole past the row, and a row that scrolls still clips its bar`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var many by mutableStateOf(false)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Box(Modifier.width(400.dp).testTag("all")) {
+                            if (many) {
+                                MutantTabs(List(12) { MutantTab("Вкладка $it") }, 2, {}, Modifier.width(200.dp))
+                            } else {
+                                MutantTabs(three, 2, {})
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val acid = MutantPalettes.Efir.primary
+            val label = onNodeWithText("Копии", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val px = onNodeWithTag("all").captureToImage().toPixelMap()
+            val ground = px[px.width - 1, 0]
+
+            fun Color.fromAcid() = abs(red - acid.red) + abs(green - acid.green) + abs(blue - acid.blue)
+            // Row 45: the echo's strokes, 10, 8 and 6 dp, start 4 dp past the bar, past its 1.5 dp ring; the row ends
+            // 12 dp past the label.
+            val lit =
+                (label.right.toInt() + 2 until px.width).count { x ->
+                    px[x, 45].fromAcid() < ground.fromAcid() - .05f
+                }
+            assertEquals(24, lit, "the echo's three strokes past the last label")
+            many = true
+            mainClock.advanceTimeByFrame()
+            val px2 = onNodeWithTag("all").captureToImage().toPixelMap()
+            val outside = (200 until px2.width).count { x -> px2[x, 44] != px2[px2.width - 1, 0] }
+            assertEquals(0, outside, "a row that scrolls draws nothing of its bar past its width")
+            // Scrolled to bring the third tab into view, the bar stands under its label where the scroll put it.
+            val third = onNodeWithText("Вкладка 2", useUnmergedTree = true).fetchSemanticsNode()
+            val bar = (0 until 200).first { x -> px2[x, 44].fromAcid() < .05f }
+            assertEquals(third.positionInRoot.x.toInt(), bar, "the bar under the scrolled label")
         }
 }
