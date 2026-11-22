@@ -1,8 +1,12 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
@@ -99,6 +103,44 @@ class EmptyStateBehaviourTest {
             }
         }
     }
+
+    @Test
+    fun `given less than its art's width, the art stands centred over the words`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Box(
+                            Modifier.testTag("stage").size(360.dp, 240.dp).background(MutantTheme.colors.background),
+                            contentAlignment = Alignment.TopCenter,
+                        ) {
+                            MutantEmptyState(MutantIllustrationKind.Cassette, "Пусто", Modifier.width(120.dp))
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val px = onNodeWithTag("stage").captureToImage().toPixelMap()
+            val ground = px[0, 0]
+            // The cassette's own rows, above its drips: the columns where anything but the ground is drawn.
+            val inked =
+                (0 until px.width).filter { x ->
+                    (20 until 120).any { y ->
+                        val c = px[x, y]
+                        abs(c.red - ground.red) + abs(c.green - ground.green) + abs(c.blue - ground.blue) > .2f
+                    }
+                }
+            val middle = (inked.first() + inked.last()) / 2f
+            assertTrue(
+                abs(middle - 180f) <= 4f,
+                "the art's middle at $middle, the column's at 180 (${inked.first()}..${inked.last()})",
+            )
+            assertTrue(
+                inked.last() - inked.first() >= 200,
+                "the art kept its width: ${inked.last() - inked.first() + 1}",
+            )
+        }
 
     private fun frames(reduceMotion: Boolean): Boolean {
         var changed = false

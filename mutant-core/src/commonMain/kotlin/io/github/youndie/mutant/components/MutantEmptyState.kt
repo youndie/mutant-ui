@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +27,8 @@ import io.github.youndie.mutant.type.cssLine
 /**
  * An empty state: one of the six illustrations ([kind]), 44 dp under it the [title] (Handjet 24, a heading) over the
  * [text] (Rubik 14, secondary), 6 dp apart, all centred in what it is given; and, given [action], that under the text
- * 20 dp apart (a [MutantButton], say — the page draws none). The words wrap and stay centred.
+ * 20 dp apart (a [MutantButton], say — the page draws none). The words wrap and stay centred. Given less than the
+ * art's width, the art keeps its size, centred, and overflows both sides alike.
  */
 @Composable
 public fun MutantEmptyState(
@@ -55,7 +57,10 @@ internal fun EmptyStateBody(
     val raster = LocalMutantTextRaster.current
     val hidden = !parts.text
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        IllustrationArt(kind, Modifier, parts, stage)
+        // Given less than the art's width, the art keeps its size and stands centred over the words, overflowing both
+        // sides alike: sized by a plain `size`, it was squeezed to the column and its bodies, placed from its left,
+        // ran off to the right alone.
+        IllustrationArt(kind, Modifier.requiredSize(kind.width.dp, kind.height.dp), parts, stage)
         Spacer(Modifier.height(ART_GAP))
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
