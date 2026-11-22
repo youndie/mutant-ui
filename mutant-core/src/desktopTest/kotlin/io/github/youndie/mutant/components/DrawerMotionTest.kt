@@ -216,4 +216,28 @@ class DrawerMotionTest {
             mainClock.advanceTimeBy(100)
             assertEquals(1 to 0, stage.picks to stage.at, "a row clicked during the exit")
         }
+
+    @Test
+    fun `opened, Down takes the keys to the chosen row, and the window itself never holds them`() =
+        drawer { stage ->
+            stage.opener.requestFocus()
+            mainClock.advanceTimeByFrame()
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeBy(500)
+            onRoot().performKeyInput { pressKey(Key.DirectionDown) }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Поиск")).assertIsFocused()
+            // A click on the window's foot, below the rows, leaves the keys where they were.
+            onNodeWithTag("screen").performMouseInput { click(Offset(100f, 300f)) }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Поиск")).assertIsFocused()
+            onRoot().performKeyInput { pressKey(Key.Escape) }
+            mainClock.advanceTimeBy(400)
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeBy(500)
+            // The first Tab goes to the first row, not to the window around the rows.
+            onRoot().performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Эфир")).assertIsFocused()
+        }
 }

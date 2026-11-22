@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +40,7 @@ import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -96,10 +99,11 @@ public class MutantDrawerItem(
  * stands in a clean window (body `pill`, radius 8), its words in black; a new one is reached by venom, as the menu's
  * (B-33). A row is its whole target, 42 dp tall: an owner-named exception to the 48 dp rule (research D19).
  *
- * The design draws it open; its motion is designed here (D15): it slides in from the start over 330 ms (ease-out², in the
- * kit's transition steps) with the scrim coming in, and out in 200 ms; under reduce motion it is there at once. A click
- * on the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the drawer as it opens and
- * goes to [returnFocusTo] as it closes. Up and Down move the focus from row to row.
+ * The design draws it open; its motion is designed here (D15): it slides in from the start over 330 ms (ease-out², on
+ * every frame, in the kit's transition steps under `steppedMotion`) with the scrim coming in, and out in 200 ms; turned
+ * round mid-way it goes on from where it stands, and under reduce motion it is there at once. A click on the scrim, Escape or the system back gesture calls
+ * [onDismissRequest]; from then on no row answers. Focus moves into the drawer as it opens, Up or Down there takes it to
+ * the chosen row and then from row to row; once the drawer has gone it goes to [returnFocusTo].
  */
 @Composable
 public fun MutantNavigationDrawer(
@@ -165,6 +169,7 @@ internal fun DrawerFrame(
         if (gone) return@ProvideMutantClock
         val dismiss by rememberUpdatedState(onDismissRequest)
         val focus = remember { FocusRequester() }
+        val rows = remember(items.size) { List(items.size) { FocusRequester() } }
         LaunchedEffect(visible) { if (visible) focus.requestFocus() }
         NavigationBackHandler(
             rememberNavigationEventState(NavigationEventInfo.None),
@@ -185,6 +190,14 @@ internal fun DrawerFrame(
                     } else {
                         false
                     }
+                }
+                // The drawer itself holds the keys as it opens; Up or Down there goes to the chosen row (or the first),
+                // where on a row they move from row to row (B-168).
+                .onKeyEvent {
+                    val arrow = it.key == Key.DirectionDown || it.key == Key.DirectionUp
+                    if (!visible || it.type != KeyEventType.KeyDown || !arrow) return@onKeyEvent false
+                    rows.getOrNull(if (selectedIndex in items.indices) selectedIndex else 0)?.requestFocus()
+                    true
                 }.focusable(),
         ) {
             Box(
@@ -210,6 +223,7 @@ internal fun DrawerFrame(
                     key,
                     hidden,
                     visible,
+                    rows,
                     Modifier
                         .fillMaxHeight()
                         .graphicsLayer { translationX = -(1 - slide) * size.width }
@@ -235,6 +249,7 @@ internal fun DrawerWindow(
     key: String,
     hidden: Boolean,
     open: Boolean,
+    focus: List<FocusRequester>,
     modifier: Modifier,
 ) {
     val colors = MutantTheme.colors
@@ -270,14 +285,16 @@ internal fun DrawerWindow(
         ).cssLine(MutantFaceMetrics.Rubik)
     val inkGoo = rememberGraphicsLayer()
     val fillGoo = rememberGraphicsLayer()
-    val focus = remember(items.size) { List(items.size) { FocusRequester() } }
     Layout(
         content = {
             MutantSurface(
                 MutantBody.Bar,
                 key,
-                // Its own clicks: none reaches the scrim under it.
-                Modifier.clickable(remember { MutableInteractionSource() }, indication = null) {},
+                // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a clickable is
+                // a Tab stop and takes focus on a press, and its body shows neither (B-168, the dialog's window).
+                Modifier
+                    .focusGroup()
+                    .pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false) } },
                 fill = colors.surface,
                 slip = SLIP,
                 shadow = colors.misregister,
