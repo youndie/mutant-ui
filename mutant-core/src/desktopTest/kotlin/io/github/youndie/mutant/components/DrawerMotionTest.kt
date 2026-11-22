@@ -2,6 +2,7 @@ package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -13,13 +14,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
@@ -27,6 +32,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.youndie.mutant.surface.KeyframeLossBody
 import io.github.youndie.mutant.theme.MutantScreenClock
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlin.math.abs
@@ -131,4 +137,32 @@ class DrawerMotionTest {
             // The slide's fastest frame moves the window 19 dp in, 30 dp out; a restart jumps 100 dp and more.
             assertTrue(steps.all { it < 40f }, "the window's steps frame by frame: $steps")
         }
+
+    @Test
+    fun `opened while the screen's keyframe loss runs, its window is drawn whole`() {
+        var running = false
+        drawer(
+            around = { content ->
+                KeyframeLossBody(
+                    Modifier.fillMaxSize(),
+                    MutantTheme.colors.background,
+                    null,
+                    { content() },
+                    probe = { running = it },
+                )
+            },
+        ) { stage ->
+            while (!running && mainClock.currentTime < 20_000) mainClock.advanceTimeByFrame()
+            assertTrue(running, "a loss runs by 20 s")
+            stage.open = true
+            repeat(40) { mainClock.advanceTimeByFrame() }
+            // A column of the window left of its words, run off the screen's start: the window's fill alone, top to foot.
+            val px = onNodeWithTag("screen").captureToImage().toPixelMap()
+            val column = (0 until px.height).map { px[5, it] }
+            val fill = column.sortedBy { it.red + it.green + it.blue }[column.size / 2]
+
+            fun far(c: Color) = abs(c.red - fill.red) + abs(c.green - fill.green) + abs(c.blue - fill.blue) > .12f
+            assertEquals(0, column.count(::far), "rows of the window's column that are not its fill $fill")
+        }
+    }
 }

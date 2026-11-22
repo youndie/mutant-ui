@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -57,6 +58,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.drawVenomFill
@@ -195,23 +197,27 @@ internal fun DrawerFrame(
                         enabled = visible,
                     ) { dismiss() },
             )
-            DrawerWindow(
-                items,
-                selectedIndex,
-                onSelect,
-                title,
-                key,
-                hidden,
-                Modifier
-                    .fillMaxHeight()
-                    .graphicsLayer { translationX = -(1 - slide) * size.width }
-                    .semantics {
-                        dismiss {
-                            dismiss()
-                            true
-                        }
-                    },
-            )
+            // The window floats over the screen, so the screen's keyframe loss does not take its bodies: a loss held
+            // mid-run by the drawer would cut its band out of the window for as long as it is open (B-98's rule, B-168).
+            CompositionLocalProvider(LocalMutantMoshScene provides null) {
+                DrawerWindow(
+                    items,
+                    selectedIndex,
+                    onSelect,
+                    title,
+                    key,
+                    hidden,
+                    Modifier
+                        .fillMaxHeight()
+                        .graphicsLayer { translationX = -(1 - slide) * size.width }
+                        .semantics {
+                            dismiss {
+                                dismiss()
+                                true
+                            }
+                        },
+                )
+            }
         }
     }
 }
