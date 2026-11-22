@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ComposeUiTest
@@ -32,6 +33,7 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
@@ -291,4 +293,39 @@ class SegmentedBehaviourTest {
             assertEquals(List(8) { 0 }, past, "lime after an index past the end")
             assertEquals(List(8) { 0 }, none, "lime after an index of -1")
         }
+
+    /** The columns of the label row (y 18…30) where a pale word's ink lies, at rest under reduce motion. */
+    private fun inkColumns(
+        direction: LayoutDirection,
+        labels: List<String> = options,
+    ): Set<Int> {
+        var columns = emptySet<Int>()
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalLayoutDirection provides direction) {
+                    MutantTheme(reduceMotion = true) {
+                        Box { MutantSegmentedButton(labels, 0, {}, Modifier.testTag("s")) }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val text = MutantPalettes.Efir.text
+            columns =
+                onNodeWithTag("s").captureToImage().toPixelMap().let { px ->
+                    (0 until px.width).filter { x -> (18 until 30).any { y -> px[x, y].near(text) } }.toSet()
+                }
+        }
+        return columns
+    }
+
+    @Test
+    fun `right to left, every word stands where it does left to right`() {
+        val ltr = inkColumns(LayoutDirection.Ltr)
+        val rtl = inkColumns(LayoutDirection.Rtl)
+        assertTrue(ltr.size > 40, "the pale words' ink: ${ltr.size} columns")
+        // Within a pixel: the line's place right to left differs by a fraction, and an edge lands on the next pixel.
+        val off = (ltr.filter { x -> (x - 1..x + 1).none { it in rtl } } + rtl.filter { x -> (x - 1..x + 1).none { it in ltr } })
+        assertEquals(emptyList(), off, "columns of the pale words' ink more than a pixel from where they are left to right")
+    }
 }
