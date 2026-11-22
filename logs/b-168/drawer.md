@@ -54,8 +54,10 @@ stage's corner, and the picks and dismissals the stage counted.
   the screen's loss scene. A loss running when the drawer opens is held mid-run with the screen's clock, and its band keeps
   cutting the window: the opener's slime stands over the title, a black bar lies across the chosen pill, for the drawer's
   whole life.
-- **Frames.** `before/core/loss-efir.png` (3904–4672 ms), `loss-kopiya.png`; the demo's Library phone:
-  `before/sample/demo-efir.png`, the band's line across the window from 972 ms to the end.
+- **Frames.** `before/core/loss-efir.png` (3904–4672 ms), `loss-kopiya.png`.
+- **Reach.** The demo's Library phone carries the loss, and its menu opens this drawer: `before/sample/demo-efir.png`
+  caught a loss running as the drawer opened (the mosaic at o876), with its band clear of the window. The 1 dp line across
+  the window and the screen there is the Tape's band, standing with the held screen, before and after the fix.
 - **The rule.** B-98: the loss covers the screen, not what floats over it; the dialog's F-dialog-02, fixed in its own
   file by providing no loss scene to its bodies.
 
@@ -94,8 +96,8 @@ stage's corner, and the picks and dismissals the stage counted.
   - 2 → 0 (`before/core/pick-2-0-efir.txt`): «Queue», passed over, pale on lime 64–352 ms (up to 52 % of its glyph
     pixels under 3:1); «On air», the new row, pale on the arriving lime 160–336 ms (up to 56 %); «Search», the row left,
     black on the dark body from 352 ms;
-  - row-frames with more than a fifth of the glyph under 3:1: 48 of 240 for 2 → 0, 17 for 0 → 1, 47 for 1 → 3, 75 with a
-    pick back during the run; the same under `steppedMotion`, at density 2 and in the browser's way; «Копия» 0;
+  - row-frames with more than a fifth of the glyph under 3:1: 47 of 240 for 2 → 0, 16 for 0 → 1, 46 for 1 → 3, 75 with a
+    pick back during the run; the same under `steppedMotion` and in the browser's way; «Копия» 0;
   - the sample: `before/core/pickclose-efir.png`, `before/sample/demo-efir.png` (p1544–p1864).
 - **The rule.** B-103 made the words follow the pick at the end of the run; the kit's rule since B-91/B-94 and
   cmp-ui-component §4: a word's colour follows the fill as drawn. The menu (F-menu-01) and the segmented button
@@ -157,4 +159,61 @@ stage's corner, and the picks and dismissals the stage counted.
 
 ## Fixes
 
-(Filled in after the fixes.)
+Each in its own commit, with a kept test in `DrawerMotionTest` (the sample's «Try it» stage: a screen of its own, the
+opener with a focus requester, the drawer closing on a pick) or `DrawerWordsOnSlimeTest`. Each mutant was run after
+committing against the aimed test, its failure read from the JUnit XML, and the file checked out again. After-frames:
+`/private/tmp/b168-drawer/after/` (the same throwaway tests on the fixed code; `before/` was recorded again from
+`662fa7a`'s drawer).
+
+| Finding | Commit | Test | Mutant | Result |
+|---|---|---|---|---|
+| F-drawer-01 | `fix(drawer): turn a slide round from where the window stands` | `turned round mid-way it goes on from where it stands - no frame jumps`: the title frame by frame through a close a third into the open and a reopen a third into the close, every step under 40 dp | the follower without its durations | killed (steps of 101.6 and 190.4 dp) |
+| F-drawer-02 | `fix(drawer): keep the window out of the screen's keyframe loss` | `opened while the screen's keyframe loss runs, its window is drawn whole`: a column of the window left of its words, under a loss held mid-run, all its fill | the window keeps the screen's scene | killed (144 rows not the window's fill) |
+| F-drawer-03 | `fix(drawer): give focus back once the drawer is gone` | `through its exit the keys reach nothing behind it, and focus is back with the opener after` | `ReturnFocus(visible, …)` again | killed (the Enter during the exit opened it again: 2 opens) |
+| F-drawer-04 | `fix(drawer): answer no row while the drawer closes` | `a closing drawer answers no row - through the hold after a pick and through the exit`, by the mouse | the rows enabled always | killed (a row clicked during the hold: picks 2, at 3) |
+| F-drawer-05 | `fix(drawer): take the keys to the rows and keep the window no Tab stop` | `opened, Down takes the keys to the chosen row, and the window itself never holds them`: Enter on the opener, Down, a mouse click on the window's foot, the first Tab after a reopen | the window a `clickable` again; Up/Down on the drawer focusing nothing | killed (the chosen row not focused); killed (the chosen row not focused) |
+| F-drawer-06 | `fix(drawer): turn each word black where the slime lies under it` | `every row's words read on the slime under them through a run across the drawer`: a bare twin on the same clock, every frame of a run 2 → 0, the tenth percentile of each row's glyph pixels against what lies under them | the words on the slime in the text's colour | killed (row 2 at 1.06:1 from frame 0) |
+| F-drawer-07 | `fix(drawer): come in from the right edge right to left` | `right to left it comes in from the right edge and its rows stand 12 dp from it` | the slide always from the left; the rows placed absolutely | killed (the first frame's title at 86 dp); killed (the rows' right edge at 360, not 348) |
+
+The KDoc now says that the slide runs on every frame (in the transition steps only under `steppedMotion`), that a slide
+turned round goes on from where it stands, that no row answers once the drawer is dismissed, where Up and Down take the
+keys, that focus goes back once the drawer has gone, and how the words follow the slime.
+
+- **After.**
+  - `after/core/reverse-efir.txt`: the close after Escape goes on from −104 dp (−124, −152, −182, gone); a reopen a third
+    into the close is held by the kept test.
+  - `after/core/loss-efir.png`: the window whole over a held loss, and through a pick.
+  - `after/core/keys-rftrue.txt`: Down from the drawer lands on the chosen row; Tab steps the rows only; Enter during
+    the exit reaches nothing, and the opener has the keys once the drawer is gone.
+  - `after/core/clicks.txt`, `pickclose-efir.txt`: a click on the window's foot focuses nothing; a row clicked during
+    the hold or the exit picks nothing.
+  - `after/core/pick-*.txt`: no row-frame over a fifth under 3:1 in «Эфир», «Копия», `steppedMotion` or the browser's way,
+    against 16–75 before.
+  - `after/core/rtl.png`, `rtl.txt`: the window comes in from the right edge (title 477 → 275 dp), its body runs off the
+    right edge, the rows stand 12 dp from it, the venom runs on them.
+  - `after/core/openclose-*`, `after/sample/*`: the slide in and out unchanged in every look.
+- **Density 2 in the words' harness.** The pair of drawers (the real one and its twin side by side) is 1 440 px wide at
+  density 2, wider than the test's 1 024 px window, so the twin's pixels past the window are not drawn and the harness
+  reads a wrong ground there: its density 2 numbers (35–64 row-frames, before and after alike) say nothing. A single
+  drawer at density 2 mid-run, `after/core/d2probe-d2-{160,224,288}.png` beside `d2probe-d1-*`, shows the words black
+  on the slime and pale off it, as at density 1.
+- **Shared with other groups.** The drawer now takes the dialog's three fixes through its own calls (`DialogFollow` with
+  durations, `ReturnFocus(!gone, …)`, no loss scene for the window). The bottom sheet calls the same two helpers and is
+  likely to need the same.
+
+## Not verified
+
+- An index outside `items` (no row chosen): not looked at. The drawer follows `selectedIndex` into `VenomRun` as the menu
+  did before F-menu-02, so a run to or from such an index very likely leaves the body as the menu's did; no sample or
+  demo passes one.
+- The phone and the browser themselves: the browser's way of drawing was looked at through the desktop's seams only, and
+  the body shader on a phone's GPU (B-167) not at all.
+- A real window: none was opened (the test window only), so the hand cursor over the rows and the system back gesture
+  were not seen.
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on this
+Mac, at the head of the fixes: green; from the JUnit XML, `mutant-core` 461 tests and `sample` 22, no failure, error or
+skip. `:mutant-core:compileKotlinIosSimulatorArm64` green (the words' pass and holder are `DrawerWordPass` and
+`DrawerWordInk`, so no private top-level name repeats the menu's or the segmented button's). The public API is unchanged.
