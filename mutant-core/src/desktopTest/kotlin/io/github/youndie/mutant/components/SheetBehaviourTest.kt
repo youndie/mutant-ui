@@ -1,6 +1,15 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.test.captureToImage
+import io.github.youndie.mutant.surface.KeyframeLossBody
+import io.github.youndie.mutant.theme.MutantScreenClock
+import kotlin.math.abs
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
@@ -318,5 +327,46 @@ class SheetBehaviourTest {
             onNodeWithTag("done").performMouseInput { click(center) }
             mainClock.advanceTimeByFrame()
             assertEquals(2, done, "a second click as it sinks")
+        }
+
+    @Test
+    fun `opened while the screen's keyframe loss runs, its body is drawn whole`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var visible by mutableStateOf(false)
+            var running = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        MutantScreenClock {
+                            Box(Modifier.size(360.dp, 600.dp).testTag("screen")) {
+                                KeyframeLossBody(Modifier.fillMaxSize(), MutantTheme.colors.background, null, {
+                                    Column(Modifier.padding(16.dp)) {
+                                        MutantCard(Modifier.size(320.dp, 120.dp), key = "loss-card") {}
+                                        repeat(4) { MutantListItem("Строка $it", key = "row$it") }
+                                    }
+                                    // Tall enough that the sheet stands across most of the screen, the band too.
+                                    MutantBottomSheet(visible, {}, windowInsets = WindowInsets(0)) {
+                                        Box(Modifier.size(300.dp, 500.dp).testTag("room"))
+                                    }
+                                }, probe = { running = it })
+                            }
+                        }
+                    }
+                }
+            }
+            while (!running && mainClock.currentTime < 12_000) mainClock.advanceTimeByFrame()
+            assertTrue(running, "a loss runs by 12 s")
+            visible = true
+            repeat(40) { mainClock.advanceTimeByFrame() }
+            // A column inside the body's right padding, from just under its top edge to the screen's foot: its fill alone.
+            val top = onNodeWithTag("room", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y.toInt() - 10
+            val px = onNodeWithTag("screen").captureToImage().toPixelMap()
+            val column = (top until 590).map { px[350, it] }
+            val fill = column.sortedBy { it.red + it.green + it.blue }[column.size / 2]
+
+            fun far(c: Color) = abs(c.red - fill.red) + abs(c.green - fill.green) + abs(c.blue - fill.blue) > .12f
+            assertTrue(top < 100, "the sheet stands across the screen: $top")
+            assertEquals(0, column.count(::far), "rows of the body's column that are not its fill $fill")
         }
 }

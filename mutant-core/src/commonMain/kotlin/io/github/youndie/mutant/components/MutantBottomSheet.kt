@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -49,6 +50,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
@@ -127,7 +129,11 @@ internal fun SheetFrame(
         // screen, and an Enter pressed then would reach the opener under it and open the sheet again (B-168).
         ReturnFocus(!gone, returnFocusTo)
         if (gone) return@ProvideMutantClock
-        SheetScene(visible, onDismissRequest, modifier, windowInsets, key, content, shown.toFloat(), height)
+        // The sheet floats over the screen, so the screen's keyframe loss does not take its body: a loss held mid-run by
+        // the sheet would cut its band out of the sheet for as long as it shows (B-98's rule, B-168).
+        CompositionLocalProvider(LocalMutantMoshScene provides null) {
+            SheetScene(visible, onDismissRequest, modifier, windowInsets, key, content, shown.toFloat(), height)
+        }
     }
 }
 
