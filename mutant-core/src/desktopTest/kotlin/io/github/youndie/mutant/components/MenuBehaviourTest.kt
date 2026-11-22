@@ -21,6 +21,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -120,6 +121,45 @@ class MenuBehaviourTest {
             onNode(hasText("ЦВЕТНОСТЬ")).performKeyInput { pressKey(Key.Escape) }
             mainClock.advanceTimeByFrame()
             assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size)
+        }
+
+    @Test
+    fun `opened from the keyboard the chosen row takes the keys - Down, Escape, and focus back on the anchor`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still { Box(Modifier.size(400.dp, 400.dp)) { MutantDropdown("Настройка", items, 1, {}) } }
+            }
+            mainClock.advanceTimeByFrame()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Настройка")).assertIsFocused()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeBy(48)
+            onNode(hasText("ЦВЕТНОСТЬ")).assertIsFocused()
+            onAllNodes(isRoot())[1].performKeyInput { pressKey(Key.DirectionDown) }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("ЧЁТКОСТЬ")).assertIsFocused()
+            onAllNodes(isRoot())[1].performKeyInput { pressKey(Key.Escape) }
+            mainClock.advanceTimeBy(48)
+            assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "Escape closes it")
+            onNode(hasText("Настройка")).assertIsFocused()
+        }
+
+    @Test
+    fun `opened by the mouse, Escape closes the menu`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still { Box(Modifier.size(400.dp, 400.dp)) { MutantDropdown("Настройка", items, 0, {}) } }
+            }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Настройка")).performMouseInput { click() }
+            mainClock.advanceTimeBy(48)
+            assertEquals(1, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "open")
+            onAllNodes(isRoot())[1].performKeyInput { pressKey(Key.Escape) }
+            mainClock.advanceTimeBy(48)
+            assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "Escape closes it")
         }
 
     /** Pixels of the focus brackets' colour in the window's own root, round the anchor (the menu is another root). */

@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -124,8 +125,8 @@ public fun MutantDropdown(
  * turns as the slime reaches it (the page turns the words 340 ms in). An index outside [items] shows no window and runs
  * no venom; a window shown again arrives at once.
  * A row is its whole target, 36 dp tall: an owner-named exception to the 48 dp rule (research D19).
- * Up and Down move the keyboard's focus from row to row, wrapping, Enter or Space picks, Escape and a press outside go
- * to [onDismissRequest].
+ * The chosen row (or the first) takes the keys as the menu opens. Up and Down move the keyboard's focus from row to
+ * row, wrapping, Enter or Space picks, Escape and a press outside go to [onDismissRequest].
  */
 @Composable
 public fun MutantMenu(
@@ -161,6 +162,7 @@ public fun MutantMenu(
             },
             key,
             "$key-pill",
+            focusOnOpen = true,
         )
     }
 }
@@ -244,6 +246,7 @@ internal fun MenuBody(
     key: String,
     pillKey: String,
     hidden: Boolean = false,
+    focusOnOpen: Boolean = false,
 ) {
     val colors = MutantTheme.colors
     val clock = readMutantClock()
@@ -291,6 +294,14 @@ internal fun MenuBody(
         }
     }
     val focus = remember(items.size) { List(items.size) { FocusRequester() } }
+    if (focusOnOpen) {
+        // The popup takes the keys as it opens; its chosen row (or its first) takes them from it, so the arrows,
+        // Enter and Escape answer from the start rather than after a Tab (B-168).
+        LaunchedEffect(Unit) {
+            withFrameNanos { }
+            focus.getOrNull(if (chosen) selectedIndex else 0)?.requestFocus()
+        }
+    }
     MutantSurface(
         MutantBody.Btn,
         key,
