@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.drawCornerBrackets
+import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlin.math.roundToInt
 
@@ -100,7 +103,8 @@ internal fun SearchBarBody(
     hidden: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    // The clear icon takes focus when pressed and leaves with the query: the field takes it back.
+    // The clear icon takes focus when pressed and leaves with the query: the field takes it back. So does a suggestion
+    // under it (B-168), which takes focus when pressed by a mouse or the keyboard and may leave as the query fills.
     val requester = remember { FocusRequester() }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(PART_GAP)) {
         TextFieldBody(
@@ -130,13 +134,17 @@ internal fun SearchBarBody(
                     }
                 },
         )
-        content()
+        CompositionLocalProvider(LocalSearchField provides requester) { content() }
     }
 }
 
+/** The field of the [MutantSearchBar] its content stands in, for a suggestion taken to hand focus back to (B-168). */
+private val LocalSearchField = staticCompositionLocalOf<FocusRequester?> { null }
+
 /**
  * The clear icon: 24 dp in the row, a touch on it widened to 48 dp by Compose's own minimum touch target, the hand
- * over it and the focus brackets around it from the keyboard (designed here, D15: the page draws it at rest only).
+ * over it and the focus brackets around it from the keyboard (designed here, D15: the page draws it at rest only). It is
+ * part of the field's clean zone, as the engine counts every `svg` in a slot: no mosaic or flow line runs under it.
  */
 @Composable
 private fun ClearIcon(
@@ -152,6 +160,7 @@ private fun ClearIcon(
     Box(
         Modifier
             .size(ICON)
+            .mutantCleanZone()
             .mutantHand(enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClickLabel = label) {
                 onClear()
@@ -185,7 +194,9 @@ private fun ClearIcon(
  * The suggestions under a [MutantSearchBar]: a [MutantChip] for each of [suggestions], 6 dp apart in a row and 8 dp
  * between rows when they wrap (Rubik 13/500, its label 14 dp from its sides, the page's). A press hands the suggestion to [onSuggestion]; the chip
  * named by [selected], if any, stands selected. Each chip's body is keyed by its place, `sg1`, `sg2`…, so a new set of
- * suggestions keeps the bodies where they were.
+ * suggestions keeps the bodies where they were. Under a [MutantSearchBar], a suggestion taken hands focus back to the
+ * bar's field, as its clear icon does: a chip pressed by a mouse or the keyboard takes focus, and leaves with it when
+ * the suggestions go as the query fills.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -220,6 +231,7 @@ internal fun SuggestionsBody(
     val measurer = rememberTextMeasurer()
     val label = buttonLabelStyle(CHIP_LABEL_SIZE, Color.Unspecified)
     val density = LocalDensity.current
+    val field = LocalSearchField.current
     FlowRow(
         modifier.layout { m, c ->
             val extra = (reach * 2).roundToPx()
@@ -249,7 +261,10 @@ internal fun SuggestionsBody(
             ChipBody(
                 s,
                 s == selected,
-                { onSuggestion(s) },
+                {
+                    onSuggestion(s)
+                    field?.requestFocus()
+                },
                 Modifier.layout { m, c ->
                     val p = m.measure(c)
                     layout(minOf(advance, p.width), p.height) { p.place(0, 0) }
@@ -316,7 +331,8 @@ internal fun searchMatch(
 /**
  * The row a [MutantSearchBar] shows while results come, 60 dp tall: a 40 dp [MutantCocoon] where the tile stands and
  * two 14 dp bars, 8 dp apart, of 70 % and 45 % of the row's text width. Its cocoons are keyed `[key]0`…`[key]2`; the
- * page's stand first on their stage, keys `0`, `1`, `2`.
+ * page's stand first on their stage, keys `0`, `1`, `2`. Several rows on one screen each take their own [key], or their
+ * mosaics flicker alike, in step.
  */
 @Composable
 public fun MutantSearchResultLoading(
