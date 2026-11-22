@@ -17,8 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
+import androidx.compose.ui.node.LayoutModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.icons.MutantIcon
@@ -33,6 +39,7 @@ import io.github.youndie.mutant.tokens.MutantBody
 /**
  * An icon action on a small slime body (body `icon`, 48 × 48, the touch target). The icon is the text's colour at
  * rest, the dark ink while pressed, when the body boils to amber, and grey when disabled, as the page draws them.
+ * In a slot that gives it less, the body keeps its 48 × 48, centred on the slot and overflowing it.
  */
 @Composable
 public fun MutantIconButton(
@@ -63,7 +70,10 @@ public fun MutantFab(
     ActionBody(ActionKind.Fab, icon, contentDescription, null, onClick, modifier, true, key, interactionSource)
 }
 
-/** The FAB with a label after its icon (the page's 136 × 56 «Запись»); 56 dp tall, as wide as its content. */
+/**
+ * The FAB with a label after its icon (the page's 136 × 56 «Запись»); 56 dp tall, as wide as its content and never
+ * under 56. Given less width the label ends in an ellipsis; the body keeps 56 × 56 at the least.
+ */
 @Composable
 public fun MutantExtendedFab(
     text: String,
@@ -116,9 +126,9 @@ internal fun ActionBody(
     val drawn = remember(icon, kind) { if (kind == ActionKind.Fab) MutantIcons.stroked(icon, FAB_LINE) else icon }
     val sized =
         if (text == null) {
-            Modifier.size(kind.side)
+            Modifier.notUnder(kind.side).size(kind.side)
         } else {
-            Modifier.defaultMinSize(minWidth = kind.side).height(kind.side)
+            Modifier.notUnder(kind.side).defaultMinSize(minWidth = kind.side).height(kind.side)
         }
     MutantSurface(
         kind.body,
@@ -140,6 +150,46 @@ internal fun ActionBody(
             MutantIcon(drawn, contentDescription, Modifier.mutantCleanZone(), tint = inkOnBody(tint))
             if (text != null) ButtonLabel(text, tint, Modifier.weight(1f, fill = false))
         }
+    }
+}
+
+/**
+ * Never under [side] either way (B-168): a slot that gives less (a row that has spent its width on a title, a 30 dp
+ * box) gets the body at [side], centred on the slot and overflowing it, where it was squeezed to 0 × 48, drawn nowhere
+ * and still focusable. A slot that gives as much or more is measured as before. An element equal for an equal [side],
+ * so a recomposition (a press, a focus) does not lay the body out again.
+ */
+private fun Modifier.notUnder(side: Dp): Modifier = this then NotUnder(side)
+
+private data class NotUnder(
+    val side: Dp,
+) : ModifierNodeElement<NotUnderNode>() {
+    override fun create() = NotUnderNode(side)
+
+    override fun update(node: NotUnderNode) {
+        node.side = side
+    }
+}
+
+private class NotUnderNode(
+    var side: Dp,
+) : Modifier.Node(),
+    LayoutModifierNode {
+    override fun MeasureScope.measure(
+        measurable: Measurable,
+        constraints: Constraints,
+    ): MeasureResult {
+        val least = side.roundToPx()
+        // Room for [side] at the least; the `size` or `defaultMinSize` after this takes it.
+        val placeable =
+            measurable.measure(
+                constraints.copy(
+                    maxWidth = maxOf(constraints.maxWidth, least),
+                    maxHeight = maxOf(constraints.maxHeight, least),
+                ),
+            )
+        // Reported past the slot's bounds, the layout is centred on the slot by Compose, as `requiredSize` is.
+        return layout(placeable.width, placeable.height) { placeable.place(0, 0) }
     }
 }
 
