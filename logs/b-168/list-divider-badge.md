@@ -140,3 +140,9 @@ Brackets in the corners of a row after a finger's touch are the test window's ke
 
 - A list under reduce motion inside the keyframe loss: that run hit the test's one-minute limit and was not repeated.
 - The phone's GPU (B-167), the real window and wasm: not run, by the pass's rules.
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+this Mac at `650e851`: exit 0; the JUnit XML holds 427 tests in `mutant-core` and 22 in `sample`, no failure, no error,
+none skipped. No public API changed.
