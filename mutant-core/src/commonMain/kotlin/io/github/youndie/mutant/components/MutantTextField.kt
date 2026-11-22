@@ -65,9 +65,9 @@ import kotlin.math.roundToInt
  * A text field: a line of the on-screen menu (body `field`, 52 dp tall). [prefix] is the OSD label before the
  * value (Handjet, the OSD colour), [placeholder] stands in while the value is empty. Focused, the damage drops to 30 %,
  * the corner brackets lock on and a block caret blinks after the text, or a thin one stands before the insertion point
- * inside it; [isError] corrupts the body (the red offset outline and blocks) and tells a screen reader what is wrong,
- * [errorDescription] (the generic `Ошибка` when the caller says nothing); disabled, it loses its signal and both
- * texts grey. A press anywhere on the body focuses it and puts the cursor at the nearest place in the text. The text
+ * inside it or before the placeholder; [isError] corrupts the body (the red offset outline and blocks) and tells a
+ * screen reader what is wrong, [errorDescription] (the generic `Ошибка` when the caller says nothing); disabled, it
+ * loses its signal and both texts grey. A press anywhere on the body focuses it and puts the cursor at the nearest place in the text. The text
  * and the caret are never moved by the body. One line; its direction is the text's.
  */
 @Composable
@@ -244,7 +244,12 @@ internal fun TextFieldBody(
                     },
                     // Only the value marks the clean zone: an empty field's box is the placeholder's.
                     modifier = (if (value.isEmpty()) Modifier else Modifier.mutantCleanZone()).fillMaxWidth(),
-                    measurePolicy = valueLinePolicy(line, field.selection.start),
+                    measurePolicy =
+                        valueLinePolicy(
+                            line,
+                            field.selection.start,
+                            overPlaceholder = value.isEmpty() && placeholder != null,
+                        ),
                 )
             }
             trailing?.invoke()
@@ -267,14 +272,16 @@ private class ValueLine {
  *
  * At the end of the text the caret is the page's block (9 × 20), 8 dp past the end on the side the text runs. Inside the
  * text, where a block would cover the next letter, it is a bar 2 dp wide standing just before the insertion point,
- * against the letter already typed (designed here, B-58). The line scrolls as little as keeps the whole block, or the
- * bar's insertion point, in view; the bar may stand in the padding or the gap before the text. The text is clipped to
+ * against the letter already typed (designed here, B-58). Over a placeholder it is the bar too, before the placeholder's
+ * first letter, which a block would cover (B-168). The line scrolls as little as keeps the whole block, or the bar's
+ * insertion point, in view; the bar may stand in the padding or the gap before the text. The text is clipped to
  * the line only while it overflows it. A value ending at the line's edge leaves the block's room past it, focused or
  * not, so focus does not move the text.
  */
 private fun valueLinePolicy(
     line: ValueLine,
     cursor: Int,
+    overPlaceholder: Boolean,
 ) = MeasurePolicy { measurables, constraints ->
     val bounded = constraints.hasBoundedWidth
     val text =
@@ -290,7 +297,7 @@ private fun valueLinePolicy(
     val l = line.layout
     val n = l?.layoutInput?.text?.length ?: 0
     val at = cursor.coerceIn(0, n)
-    val block = at == n
+    val block = at == n && !overPlaceholder
     val x = l?.let { if (n == 0) 0f else it.getHorizontalPosition(at, true) } ?: 0f
     val rtl =
         l?.let { n > 0 && it.getParagraphDirection(if (at == n) n - 1 else at) == ResolvedTextDirection.Rtl } ?: false

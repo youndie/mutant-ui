@@ -35,12 +35,13 @@ import kotlin.test.assertTrue
 
 /**
  * B-168: where the text field's caret stands against the text as drawn — past the end of a value longer than the field,
- * inside it, and on the frame a letter is typed. Read from pixels at density 1, the caret lit
+ * inside it, on the frame a letter is typed, and over a placeholder. Read from pixels at density 1, the caret lit
  * (reduce motion stands it lit).
  */
 @OptIn(ExperimentalTestApi::class)
 class TextFieldCaretPlacementTest {
     private val text = MutantPalettes.Efir.text
+    private val secondary = MutantPalettes.Efir.textSecondary
 
     private fun near(
         a: Color,
@@ -166,5 +167,37 @@ class TextFieldCaretPlacementTest {
             }
             assertEquals("Night to Tuesday", value)
             assertTrue(gaps.isNotEmpty() && gaps.all { it >= 6 }, "the gap before the block, each first frame: $gaps")
+        }
+
+    @Test
+    fun `over a placeholder the caret is the bar, before its first letter`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            val focus = FocusRequester()
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Box {
+                            MutantTextField(
+                                "",
+                                {},
+                                Modifier.width(240.dp).focusRequester(focus).testTag("f"),
+                                prefix = "ПОИСК",
+                                placeholder = "Найти запись",
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val first = shot().ink(secondary).filter { it > 20 }.min()
+            runOnIdle { focus.requestFocus() }
+            mainClock.advanceTimeByFrame()
+            mainClock.advanceTimeByFrame()
+            val px = shot()
+            val caret = px.caret()
+            assertEquals(2, caret.size, "the bar: $caret")
+            assertTrue(caret.last() < first, "the bar ${caret.last()} before the placeholder's first letter $first")
+            assertEquals(first, px.ink(secondary).filter { it > 20 }.min(), "the placeholder's first letter uncovered")
         }
 }
