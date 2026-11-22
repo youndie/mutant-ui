@@ -3,10 +3,12 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -243,5 +245,50 @@ class SegmentedBehaviourTest {
                     }
             assertEquals(emptyList(), cut)
             onNodeWithTag("none").captureToImage()
+        }
+
+    /** The lime pixels anywhere on a stage 40 dp round the button: the window's, and the venom's. */
+    private fun ComposeUiTest.limeOnStage(): Int =
+        onNodeWithTag("stage").captureToImage().toPixelMap().let { px ->
+            var n = 0
+            for (y in 0 until px.height) for (x in 0 until px.width) if (px[x, y].near(lime)) n++
+            n
+        }
+
+    @Test
+    fun `no venom runs where no window shows, disabled or at an index outside the options`() =
+        runComposeUiTest {
+            var chosen by mutableIntStateOf(0)
+            var enabled by mutableStateOf(true)
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(Modifier.testTag("stage").padding(40.dp)) {
+                            MutantSegmentedButton(options, chosen, { chosen = it }, enabled = enabled)
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(200)
+            assertTrue(limeOnStage() > 1_000, "the window at rest: ${limeOnStage()}")
+            // Disabled 240 ms into a run: the run draws nothing more.
+            chosen = 2
+            mainClock.advanceTimeBy(240)
+            enabled = false
+            mainClock.advanceTimeByFrame()
+            val disabled = (0 until 6).map { mainClock.advanceTimeBy(48).let { limeOnStage() } }
+            // Back at rest, then to one past the end and to -1: no window, and no run to a slot that is not there.
+            enabled = true
+            mainClock.advanceTimeBy(1_000)
+            chosen = 3
+            val past = (0 until 8).map { mainClock.advanceTimeBy(48).let { limeOnStage() } }
+            chosen = 0
+            mainClock.advanceTimeBy(1_000)
+            chosen = -1
+            val none = (0 until 8).map { mainClock.advanceTimeBy(48).let { limeOnStage() } }
+            assertEquals(List(6) { 0 }, disabled, "lime while disabled")
+            assertEquals(List(8) { 0 }, past, "lime after an index past the end")
+            assertEquals(List(8) { 0 }, none, "lime after an index of -1")
         }
 }

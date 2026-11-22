@@ -74,7 +74,8 @@ import kotlin.math.roundToInt
  * chosen segment is a clean window, a lime `pill` (r 9, calm 0.2) with its label in black. A new [selectedIndex] moves
  * the window by venom: tentacles shoot from the old window to the new place, the mass flows along them and the new
  * window springs (720 ms at 24 frames a second); the labels change colour 340 ms in. Under reduce motion, or a clock
- * that stands, it moves at once. An index outside [options] shows no window.
+ * that stands, it moves at once. An index outside [options] shows no window and runs no venom; a window shown again
+ * arrives at once.
  *
  * A segment is 104 dp where the button is given no width. The whole button is one focus stop, and the arrows choose.
  * A label wider than its segment ends where the segment does. Disabled, the body loses its signal, no window shows
@@ -113,7 +114,10 @@ internal fun SegmentedBody(
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val chosen = enabled && selectedIndex in options.indices
-    val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
+    // The segment the window stands on, or -1: a disabled button and an index outside the options show none, and the
+    // venom never runs to a slot that is not there. A window shown again arrives at once, with no run.
+    val shown = if (chosen) selectedIndex else -1
+    val run = remember { VenomRun(shown, PILL_RADIUS) }
     run.steps = LocalMutantSteppedMotion.current
     val geo = remember { SegmentGeometry() }
     run.key = pillKey
@@ -121,7 +125,7 @@ internal fun SegmentedBody(
     run.slot = geo::slot
     geo.inset = if (enabled) INSET else 0f
     // A clock that does not move (a still, reduce motion, a held screen) moves the window at once.
-    run.follow(selectedIndex, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
+    run.follow(shown, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
     val select by rememberUpdatedState(onSelect)
     val label =
         TextStyle(
@@ -179,7 +183,8 @@ internal fun SegmentedBody(
             content = {
                 // The venom's ink, under the window.
                 Canvas(Modifier.fillMaxSize()) {
-                    val v = run.now(clock, selectedIndex)?.second ?: return@Canvas
+                    if (shown < 0) return@Canvas
+                    val v = run.now(clock, shown)?.second ?: return@Canvas
                     gooLayer(inkGoo, density)
                     drawVenomInk(
                         v,
@@ -193,7 +198,7 @@ internal fun SegmentedBody(
                 // The window: shown once the venom has filled its place, springing after.
                 Box(
                     Modifier.graphicsLayer {
-                        val now = run.now(clock, selectedIndex)
+                        val now = if (shown < 0) null else run.now(clock, shown)
                         val v = now?.second
                         alpha = if (v != null && !v.full) 0f else 1f
                         val spring = if (now != null && v!!.full) venomSpring(now.first, v.vertical) else null
@@ -214,7 +219,8 @@ internal fun SegmentedBody(
                 }
                 // The venom's fill, over the window.
                 Canvas(Modifier.fillMaxSize()) {
-                    val v = run.now(clock, selectedIndex)?.second ?: return@Canvas
+                    if (shown < 0) return@Canvas
+                    val v = run.now(clock, shown)?.second ?: return@Canvas
                     gooLayer(fillGoo, density)
                     drawVenomFill(v, colors.primary, fillGoo, density)
                 }
@@ -251,7 +257,7 @@ internal fun SegmentedBody(
                             when {
                                 hidden -> Color.Transparent
                                 !enabled -> colors.textDisabled
-                                run.labelOn(i, clock, selectedIndex) -> colors.onPrimary
+                                shown >= 0 && run.labelOn(i, clock, shown) -> colors.onPrimary
                                 else -> colors.text
                             }
                         }
