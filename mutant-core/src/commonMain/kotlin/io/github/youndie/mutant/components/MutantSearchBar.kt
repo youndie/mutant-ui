@@ -331,7 +331,8 @@ internal fun searchMatch(
 /**
  * The row a [MutantSearchBar] shows while results come, 60 dp tall: a 40 dp [MutantCocoon] where the tile stands and
  * two 14 dp bars, 8 dp apart, of 70 % and 45 % of the row's text width. Its cocoons are keyed `[key]0`…`[key]2`; the
- * page's stand first on their stage, keys `0`, `1`, `2`.
+ * page's stand first on their stage, keys `0`, `1`, `2`. Several rows on one screen each take their own [key], or their
+ * mosaics flicker alike, in step.
  */
 @Composable
 public fun MutantSearchResultLoading(
