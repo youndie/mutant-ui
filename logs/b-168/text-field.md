@@ -92,8 +92,8 @@ The mouse is used for every press, so no focus is left by a test's touch.
 
 - **What.** The 2 dp bar stands just before the insertion point, against the letter already typed (B-58). After a
   letter whose ink reaches its advance (Rubik's «h», «n», «m», «l»), it covers that stem: «Nigh|t» reads «Nig|t».
-- **Frames.** `sample/demo-settings-efir-0.png`, 588–828 ms (the settings' name field clicked after «Nigh»). Enlarged:
-  `/private/tmp/b168-text-field/zoom1.png`.
+- **Frames.** `after/sample/demo-settings-efir-0.png`, 588–828 ms: the settings' name field clicked after «Nigh».
+  It is unchanged by the fixes, and the before-sheet was overwritten. Enlarged: `/private/tmp/b168-text-field/zoom1.png`.
 - **For the owner.** A 1 dp bar, or a bar centred on the insertion point, would each cover less. B-58's test strings
   («abc») never met it.
 
@@ -156,3 +156,83 @@ The mouse is used for every press, so no focus is left by a test's touch.
 - **Density 2.** The block is 18 × 40 px, the brackets and drips scale, and there is no unit error (`core/*-d2-*`).
 - **The demo's fields.** The library's search filters to the empty state and back, the settings' field takes a
   letter, and the rename sheet's field takes a long title. Each shows the faces above and nothing else.
+
+## Fixes
+
+After-frames are in `/private/tmp/b168-text-field/after/` (`core/` in all eight looks, the section and the settings
+demo in `sample/`). The before-frames are where the findings name them.
+
+### F-text-field-01 and F-text-field-02 — `220c848`
+
+- **The change.** `MutantTextField.kt` (`TextFieldBody`, `valueLinePolicy`). The value's line is a `Layout` of its own:
+  - it measures `BasicTextField` as wide as its text (never narrower than the line), so the field's own scroll never
+    moves;
+  - it scrolls the text itself, as little as keeps the whole block, or the bar's insertion point, in view;
+  - it places the caret in the same measure, from the layout `onTextLayout` has just handed over.
+  The text is clipped to the line, by its layer, only while it overflows. A press past the line's ends does not reach
+  the hidden text. Without overflow it is placed as before, with no clip and no layer, so no parity cell moves.
+- **What it chose.** The block's room past the end is kept focused or not. A long value unfocused ends 17 dp before the
+  line's edge, and focus does not move the text.
+- **The tests.** `TextFieldCaretPlacementTest`, read from pixels at density 1:
+  - «past the end of a value longer than the field, the block stands clear of the last letter»: the gap from the last
+    letter's ink to the block is at least 6 px, the block sits inside the padding, and no ink spills into the padding
+    before the line;
+  - «inside a value longer than the field, the bar stands at the insertion point»: after Left ×10 the bar is 2 px wide,
+    at least 40 px before the end, with a letter's ink on both sides;
+  - «on the frame a letter is typed, the block stands past it»: the gap on each letter's first frame, at least 6 px.
+  Before the change: the gap was 2 px, the bar stood past the block, and the gaps were `[0, 3, 9, 3, 0, 9, 0, 2, 1, 1,
+  1, 1, 1]`.
+- **After.** `after/core/long-*.png`: the block 8 dp past «end!», and the bar walks back through «the end» under Left.
+  `after/core/typing-*.png` at 1164 ms: «Nig █». `after/sample/section-efir-17.png`: the section's focused cell.
+- **Unchanged.** `TextFieldParityTest`, `SearchBarParityTest`, `OverlayAndMouseTest` (F04, F05, F12 and the
+  left-to-right case) and `KeyboardFocusSweepTest` pass as they were. Per-frame diffs of the eight looks keep their
+  peaks, within a few per cent.
+
+### F-text-field-03 — `5de114c`
+
+- **The change.** Over a placeholder, the caret at the line's start is the bar (B-58's rule), standing in the gap or
+  the padding before the placeholder.
+- **The test.** «over a placeholder the caret is the bar, before its first letter». The caret is 2 px wide and stands
+  before the placeholder's first ink, and that ink's column is the same as unfocused. Before the change: «the bar:
+  [65 … 73]».
+- **After.** `after/core/placeholder-*.png` and `after/core/typing-*.png`, 336–624 ms: «|Find a recording».
+
+### Mutants
+
+Each was run after its commit against `TextFieldCaretPlacementTest`, read from the JUnit XML, and reverted with
+`git checkout`.
+
+| Mutant | Killed by |
+|---|---|
+| the line never scrolls (`scroll = 0`) | «the gap … (216) and the block (217)»; «the bar 224 stands ten letters before the end, 217» |
+| the caret placed from the layout of the measure before | «the gap before the block, each first frame: [0, 3, 9, 3, 0, 9, 0, 2, 1, 1, 1, 1, 1]» |
+| only the insertion point kept in view, not the block's room | «the gap … (215) and the block (217)» |
+| the overflowing text not clipped (`clip = false`) | «the value's ink in the padding before its line: [2, 5, 6, 7, 8, 9, 10, 11]» |
+| the overflowing text placed unscrolled and unclipped | «the gap … (216) and the block (217)» |
+| the block over a placeholder (`block = at == n`) | «the bar: [65 … 73] expected: <2> but was: <9>» |
+| the placeholder flag inverted | «the bar: [65 … 73] expected: <2> but was: <9>» |
+
+### Reach
+
+`TextFieldBody` is shared with `MutantSearchBar` (group 6), so the search bar's line scrolls and places its caret the
+same way. Its parity and behaviour tests pass unchanged, and its look was not examined here.
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` at
+`5de114c`, with the scratch tests deleted. It exited 0.
+
+- The JUnit XML of both modules: 450 tests, 0 failures, 0 errors, 0 skipped.
+- Both ktlint checks are clean.
+- The public API is unchanged (the new pieces are private), so there was no `updateKotlinAbi`.
+
+## Not verified
+
+- **The browser itself, Android and iOS.** The browser was looked at only through the JVM's seams. A real IME
+  (composition, Chinese or Japanese input) was not typed, and neither was the on-screen keyboard.
+- **The phone's GPU** (B-167): the body shader was not looked at.
+- **A mouse drag that selects past the line's edge.** `BasicTextField` no longer scrolls itself, so a selection
+  dragged beyond the line does not scroll it. This was not tried.
+- **A long right-to-left value, scrolled.** It is covered only by reasoning: F12's short cases pass.
+- **The search bar's look** (group 6), which shares the line.
+- **Density 2 in the sample's section.** It was looked at in the component stage only.
