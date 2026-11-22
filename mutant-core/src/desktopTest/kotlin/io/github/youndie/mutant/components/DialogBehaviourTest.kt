@@ -148,6 +148,17 @@ class DialogBehaviourTest {
             assertTrue(last < opening, "closing from where it stood: $opening, then $last")
             open = true
             repeat(25) { frame() }
+            assertEquals(.62f, last, .01f, "open again")
+            // Closed from whole, and reopened about 60 ms into the close, two thirds still shown.
+            onNodeWithText("Отмена").performMouseInput { click(center) }
+            repeat(4) { frame() }
+            val closing = last
+            assertTrue(closing in .3f..0.55f, "two thirds into the close: $closing")
+            open = true
+            // The frame that reads the change still shows the close's step; the open goes on from there.
+            repeat(3) { frame() }
+            assertTrue(last > closing, "rising from where it stood: $closing, then $last")
+            repeat(25) { frame() }
             assertTrue(jumps.isEmpty(), "jumps: $jumps")
             assertEquals(.62f, last, .01f, "open again")
         }
