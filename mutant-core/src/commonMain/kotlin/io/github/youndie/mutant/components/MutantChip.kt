@@ -29,8 +29,9 @@ import io.github.youndie.mutant.tokens.MutantBody
 
 /**
  * A filter chip (body `chip`, 32 dp tall in a 48 dp touch target). Unselected, its fill has slipped 2 dp off the
- * outline; selected, the acid fill pours in from the top and the label turns to the ink 200 ms after the change,
- * as the engine's toggle does — at once under reduce motion. Disabled, it loses its signal and its label greys.
+ * outline; selected, the acid fill pours in from the top, and the label turns to the ink as the pour's front passes
+ * under its middle (B-94), not on a timer; unselected again, it turns back the same way. Under reduce motion the fill
+ * and the label turn at once. Disabled, it loses its signal and its label greys.
  */
 @Composable
 public fun MutantChip(

@@ -30,8 +30,8 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * B-94: a chip's label turns 200 ms after its fill starts to pour, on the screen clock as the pour does. Under a clock
- * a dialog holds, the fill stands, and the label stands with it: no frame shows a light word on a lime fill.
+ * B-94: a chip's label turns as its fill's pour passes under its middle, on the screen clock as the pour runs. Under a
+ * clock a dialog holds, the fill stands, and the label stands with it: no frame shows a light word on a lime fill.
  */
 @OptIn(ExperimentalTestApi::class)
 class ChipLabelFollowsFillTest {
