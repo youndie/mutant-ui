@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -472,5 +473,9 @@ class BarTabsBehaviourTest {
             val px2 = onNodeWithTag("all").captureToImage().toPixelMap()
             val outside = (200 until px2.width).count { x -> px2[x, 44] != px2[px2.width - 1, 0] }
             assertEquals(0, outside, "a row that scrolls draws nothing of its bar past its width")
+            // Scrolled to bring the third tab into view, the bar stands under its label where the scroll put it.
+            val third = onNodeWithText("Вкладка 2", useUnmergedTree = true).fetchSemanticsNode()
+            val bar = (0 until 200).first { x -> px2[x, 44].fromAcid() < .05f }
+            assertEquals(third.positionInRoot.x.toInt(), bar, "the bar under the scrolled label")
         }
 }
