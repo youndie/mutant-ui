@@ -1,10 +1,13 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -259,5 +262,24 @@ class ProgressBehaviourTest {
                     }
                 }
             }
+        }
+
+    @Test
+    fun `with no width to fill, the running band keeps the determinate track's 200 dp`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                Row(Modifier.horizontalScroll(rememberScrollState())) {
+                    MutantLinearProgress(Modifier.testTag("b"))
+                    MutantCircularProgress()
+                }
+            }
+            mainClock.advanceTimeBy(1000)
+            val size = onNodeWithTag("b").fetchSemanticsNode().size
+            assertEquals(200, size.width, "the track's width: $size")
+            // Drawn across it, not only measured: the band's solid half lies whole inside the track, and its black.
+            assertEquals(48, acidColumns("b").size, "the band's solid half")
+            val black = Color(0xFF05060C)
+            assertTrue(near(onNodeWithTag("b").captureToImage().toPixelMap()[199, 6], black), "the track to its end")
         }
 }

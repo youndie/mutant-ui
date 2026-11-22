@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
@@ -86,7 +87,8 @@ public fun MutantLinearProgress(
  * An indeterminate linear progress (`rewind`): the black track with a 96 dp band running through it — a quarter at
  * 15 % acid, a quarter at 40 %, half solid — 12 dp a scene tick, from beyond its start to beyond its end and round.
  * Under reduce motion it stands where the page's still frame has it (the engine's 5 s). Right to left it runs from the
- * right. It reads as indeterminate progress.
+ * right. With no width to fill (a horizontally scrolling row) it takes 200 dp, as the determinate track does. It reads
+ * as indeterminate progress.
  */
 @Composable
 public fun MutantLinearProgress(modifier: Modifier = Modifier) {
@@ -96,6 +98,7 @@ public fun MutantLinearProgress(modifier: Modifier = Modifier) {
     Canvas(
         modifier
             .fillMaxWidth()
+            .trackMinWhenUnbounded()
             .height(TRACK)
             .semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate },
     ) {
@@ -146,6 +149,22 @@ public fun MutantCircularProgress(modifier: Modifier = Modifier) {
 private inline fun DrawScope.fromStart(block: DrawScope.() -> Unit) {
     if (layoutDirection == LayoutDirection.Rtl) scale(-1f, 1f, center, block) else block()
 }
+
+/**
+ * With no width to fill (a horizontally scrolling row), exactly [TRACK_MIN] wide, as the determinate track (B-64): a
+ * `Canvas` given only a minimum measures 0 and stands centred in it, undrawn.
+ */
+private fun Modifier.trackMinWhenUnbounded(): Modifier =
+    layout { m, c ->
+        val p =
+            if (c.hasBoundedWidth) {
+                m.measure(c)
+            } else {
+                val w = maxOf(TRACK_MIN.roundToPx(), c.minWidth)
+                m.measure(c.copy(minWidth = w, maxWidth = w))
+            }
+        layout(p.width, p.height) { p.place(0, 0) }
+    }
 
 /** The track, its ring outside it (`box-shadow: 0 0 0 2px`). */
 private fun DrawScope.drawTrack(w: Float) {
