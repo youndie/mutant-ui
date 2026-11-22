@@ -552,7 +552,10 @@ public fun MutantTimePicker(
     TimePickerBody(hour, minute, onTimeChange, modifier, hourLabel, minuteLabel, key)
 }
 
-/** [MutantTimePicker]; [active] starts on the hours (0) or the minutes (1), [hidden] draws the digits transparent. */
+/**
+ * [MutantTimePicker]; [hidden] draws the digits transparent for a bare twin. [field], where given, is the field being
+ * set (0 the hours, 1 the minutes) in place of the one pressed, so a test turns a picker and its twin in one frame.
+ */
 @Composable
 internal fun TimePickerBody(
     hour: Int,
@@ -563,11 +566,13 @@ internal fun TimePickerBody(
     minuteLabel: String,
     key: String,
     hidden: Boolean = false,
+    field: Int? = null,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
     val raster = LocalMutantTextRaster.current
-    var active by remember { mutableIntStateOf(0) }
+    var pressed by remember { mutableIntStateOf(0) }
+    val active = field ?: pressed
     var colonWidth by remember { mutableFloatStateOf(0f) }
     val change by rememberUpdatedState(onTimeChange)
     val h = hour.mod(24)
@@ -577,7 +582,7 @@ internal fun TimePickerBody(
         horizontalArrangement = Arrangement.spacedBy(TIME_GAP.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TimeField(h, 24, active == 0, hourLabel, "$key-h", hidden, { active = 0 }) { change(it, m) }
+        TimeField(h, 24, active == 0, hourLabel, "$key-h", hidden, { pressed = 0 }) { change(it, m) }
         MutantText(
             ":",
             // Chrome lays the colon at its fractional width and the next field on the pixel nearest; Compose would
@@ -597,7 +602,7 @@ internal fun TimePickerBody(
                     platformStyle = raster,
                 ).cssLine(MutantFaceMetrics.Handjet),
         )
-        TimeField(m, 60, active == 1, minuteLabel, "$key-m", hidden, { active = 1 }) { change(h, it) }
+        TimeField(m, 60, active == 1, minuteLabel, "$key-m", hidden, { pressed = 1 }) { change(h, it) }
     }
 }
 

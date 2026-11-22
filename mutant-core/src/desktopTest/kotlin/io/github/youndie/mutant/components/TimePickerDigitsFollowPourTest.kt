@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -32,9 +35,13 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * B-168 (F-pickers-04): a time field's digits turn when the pour's front passes under them, not at the press. They
- * turned at the press while the acid took the pour's time to come or go: for about 20 frames the field being set
+ * B-168 (F-pickers-04): a time field's digits turn when the pour's front passes the body's middle, not at the press.
+ * They turned at the press while the acid took the pour's time to come or go: for about 20 frames the field being set
  * showed black digits on its dark fill and the one left light digits on acid, 1.06:1.
+ *
+ * What the fix guarantees, frame by frame: the digits are coloured for the fill under the body's middle, so every part
+ * of them over that fill reads. The part over the other fill, while the front crosses the 52 sp digits, does not
+ * (F-pickers-11: splitting the digits along the front needs the surface to give its content the front's path).
  */
 @OptIn(ExperimentalTestApi::class)
 class TimePickerDigitsFollowPourTest {
@@ -43,85 +50,153 @@ class TimePickerDigitsFollowPourTest {
         b: Color,
     ) = abs(a.red - b.red) + abs(a.green - b.green) + abs(a.blue - b.blue) > .35f
 
-    /** Per field, the share of its digits' ink that reads under 1.5:1 on what lies under it, read from a bare twin. */
-    private fun ComposeUiTest.unreadable(): List<Double> {
+    private fun lime(c: Color) = abs(c.red - ACID.red) + abs(c.green - ACID.green) + abs(c.blue - ACID.blue) < .35f
+
+    /** What a field shows on one frame, read against its bare twin. */
+    private class Read(
+        /** The fill across the body's middle row where the digits stand: true acid, false not, null both. */
+        val middle: Boolean?,
+        /** The share of the digits' ink over that fill that reads under 1.5:1 on it. */
+        val unreadableOverMiddle: Double,
+        /** The share of all the digits' ink that reads under 1.5:1 on what lies under it. */
+        val unreadable: Double,
+    )
+
+    private fun ComposeUiTest.read(): List<Read> {
         val whole = onNodeWithTag("W").captureToImage().toPixelMap()
         val bare = onNodeWithTag("B").captureToImage().toPixelMap()
         val origin = onNodeWithTag("W").fetchSemanticsNode().positionInRoot
         return listOf("h", "m").map { label ->
             val n = onNodeWithContentDescription(label).fetchSemanticsNode()
             val p = n.positionInRoot - origin
-            share(whole, bare, p.x.toInt(), p.y.toInt(), p.x.toInt() + n.size.width, p.y.toInt() + n.size.height)
+            read(whole, bare, p.x.toInt(), p.y.toInt(), n.size.width, n.size.height)
         }
     }
 
-    private fun share(
+    private fun read(
         whole: PixelMap,
         bare: PixelMap,
         x0: Int,
         y0: Int,
-        x1: Int,
-        y1: Int,
-    ): Double {
+        w: Int,
+        h: Int,
+    ): Read {
+        // The surface reads the front between 16 dp from each side, against half the body's height (B-94).
+        val row = (x0 + INSET until x0 + w - INSET).map { lime(bare[it, y0 + h / 2]) }.toSet()
+        val middle = row.singleOrNull()
         var ink = 0
         var bad = 0
-        for (y in y0 until y1) {
-            for (x in x0 until x1) {
-                if (apart(whole[x, y], bare[x, y])) {
-                    ink++
-                    if (contrast(whole[x, y].copy(alpha = 1f), bare[x, y].copy(alpha = 1f)) < 1.5f) bad++
+        var over = 0
+        var badOver = 0
+        for (y in y0 until y0 + h) {
+            for (x in x0 until x0 + w) {
+                if (!apart(whole[x, y], bare[x, y])) continue
+                val unreadable = contrast(whole[x, y].copy(alpha = 1f), bare[x, y].copy(alpha = 1f)) < 1.5f
+                ink++
+                if (unreadable) bad++
+                if (middle != null && lime(bare[x, y]) == middle) {
+                    over++
+                    if (unreadable) badOver++
                 }
             }
         }
-        return if (ink == 0) 0.0 else bad.toDouble() / ink
-    }
-
-    /** Clicks a field ([i]: 0 the hours, 1 the minutes) of the picker and of its twin, then takes the mouse away. */
-    private fun ComposeUiTest.pick(i: Int) {
-        val n = onNodeWithContentDescription(if (i == 0) "h" else "m").fetchSemanticsNode()
-        val w = onNodeWithTag("W").fetchSemanticsNode().positionInRoot
-        val at = n.positionInRoot - w + Offset(n.size.width / 2f, n.size.height / 2f)
-        onNodeWithTag("B").performMouseInput { click(at) }
-        onNodeWithTag("W").performMouseInput {
-            click(at)
-            moveTo(Offset(-40f, -40f))
-        }
+        return Read(
+            middle,
+            if (over == 0) 0.0 else badOver.toDouble() / over,
+            if (ink == 0) 0.0 else bad.toDouble() / ink,
+        )
     }
 
     @Test
-    fun `a time field's digits read on what is drawn under them through each pour`() =
+    fun `a press on a time field pours its acid in`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(MutantPalettes.Efir) {
+                        Box(Modifier.padding(40.dp).testTag("W")) {
+                            TimePickerBody(21, 30, { _, _ -> }, Modifier, "h", "m", "tp")
+                        }
+                    }
+                }
+            }
+            repeat(30) { mainClock.advanceTimeByFrame() }
+            val minutes = onNodeWithContentDescription("m").fetchSemanticsNode()
+            val at = minutes.positionInRoot - onNodeWithTag("W").fetchSemanticsNode().positionInRoot
+            onNodeWithTag("W").performMouseInput {
+                click(at + Offset(minutes.size.width / 2f, minutes.size.height / 2f))
+                moveTo(Offset(-20f, -20f))
+            }
+            repeat(60) { mainClock.advanceTimeByFrame() }
+            val px = onNodeWithTag("W").captureToImage().toPixelMap()
+            val acid =
+                listOf("h", "m").map { label ->
+                    val n = onNodeWithContentDescription(label).fetchSemanticsNode()
+                    val p = n.positionInRoot - onNodeWithTag("W").fetchSemanticsNode().positionInRoot
+                    (0 until n.size.width).count { lime(px[p.x.toInt() + it, p.y.toInt() + 4]) }.toDouble() /
+                        n.size.width
+                }
+            assertTrue(acid[0] < .2 && acid[1] > .6, "the acid across each field's top after the press: $acid")
+        }
+
+    @Test
+    fun `a time field's digits read on the fill under the body's middle through each pour`() =
         listOf(false, true).forEach { steps ->
             runComposeUiTest {
                 mainClock.autoAdvance = false
+                var field by mutableIntStateOf(0)
                 setContent {
                     CompositionLocalProvider(LocalDensity provides Density(1f)) {
                         MutantTheme(MutantPalettes.Efir, steppedMotion = steps) {
                             Row(Modifier.padding(40.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                                 Box(Modifier.testTag("W").padding(4.dp)) {
-                                    TimePickerBody(21, 30, { _, _ -> }, Modifier, "h", "m", "tp")
+                                    TimePickerBody(21, 30, { _, _ -> }, Modifier, "h", "m", "tp", field = field)
                                 }
                                 Box(Modifier.testTag("B").padding(4.dp).clearAndSetSemantics {}) {
-                                    TimePickerBody(21, 30, { _, _ -> }, Modifier, "", "", "tp", hidden = true)
+                                    TimePickerBody(21, 30, { _, _ -> }, Modifier, "", "", "tp", true, field)
                                 }
                             }
                         }
                     }
                 }
                 repeat(30) { mainClock.advanceTimeByFrame() }
-                for ((field, name) in listOf(1 to "the minutes", 0 to "the hours")) {
-                    pick(field)
+                for ((to, name) in listOf(1 to "the minutes", 0 to "the hours")) {
+                    // The picker and its twin turn on the same frame, unpressed: their bodies pour alike.
+                    field = to
+                    val crossing = IntArray(2)
                     repeat(48) { f ->
                         mainClock.advanceTimeByFrame()
-                        unreadable().forEachIndexed { k, s ->
+                        read().forEachIndexed { k, r ->
+                            if (r.middle == null) {
+                                crossing[k]++
+                                return@forEachIndexed
+                            }
                             assertTrue(
-                                s <= .4,
-                                "stepped $steps, $name picked, frame $f: ${"%.0f".format(
-                                    s * 100,
-                                )} % of field $k unreadable",
+                                r.unreadableOverMiddle <= .03,
+                                "stepped $steps, $name set, frame $f, field $k: " +
+                                    "${"%.0f".format(
+                                        r.unreadableOverMiddle * 100,
+                                    )} % of the digits over the middle's " +
+                                    "fill unreadable (${"%.0f".format(r.unreadable * 100)} % of all)",
                             )
                         }
                     }
+                    // The front stands across the middle row for 3 to 6 frames of a pour (about 100 ms at most).
+                    assertTrue(
+                        crossing.all {
+                            it <= 8
+                        },
+                        "stepped $steps, $name set: frames with the front across the middle ${crossing.toList()}",
+                    )
                 }
             }
         }
+
+    private companion object {
+        /** The theme's acid, `primary` in «Эфир». */
+        val ACID = MutantPalettes.Efir.primary
+
+        /** Where the surface reads the pour's front from each side, dp (`depthUnderLabel`). */
+        const val INSET = 16
+    }
 }
