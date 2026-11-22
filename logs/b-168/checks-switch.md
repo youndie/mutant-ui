@@ -53,6 +53,20 @@ itself is held by `KeyboardFocusSweepTest`, and was not filmed again.
 - **The design.** Every piece of the mark is `data-on-only` on the page; the engine's `toggle` melts each of them, on
   and off (`melt(x, on)`: «иначе стекает вниз»), and the handoff's motion table has `melt-out`, 330 ms, «индикатор
   оплывает вниз». B-18 states it: «the mark melts in and out».
+- **Fixed** (`a3c9e24`, `989c0dd`). A live box always draws its tick and blocks and leaves showing and hiding them to
+  the melt; a disabled one draws its tick only checked, as before. `CheckboxBehaviourTest` «unchecked, the mark melts
+  out over 330 ms, and goes at once when paused»: the tick's 25 dark pixels whole in the first frame after unchecking,
+  part of them 112 ms in, none at 500 ms, none at once under reduce motion; the blocks' pixels the same in the first
+  frame. Mutants, each killed by that test (`<failure>` read in the JUnit XML):
+  - the tick tinted only while checked (the old line): «the first frame after unchecking still shows the whole tick
+    ==> expected: <25> but was: <0>»;
+  - the blocks drawn only while checked: «the blocks stay for the melt's first frame: [13, 1]».
+- **After.** `after/check-Efir-toggle-r1.png`, `after/check-Kopiya-toggle-r1.png`: unchecked at 2528 ms, the tick and
+  blocks sink and stretch down out of the body in four steps and are gone by 2864, as the radio's dot does; under
+  reduce motion the toggle still lands in one frame (`after/check-Reduce-toggle.diff.txt`, the same three frames as
+  before). A check again during the melt-out restarts the melt-in from nothing (`after/check-Efir-interrupt-r0.png`,
+  3424 → 3440 ms), as the engine's `melt` restarts its entry. No golden or parity cell draws a melting mark, so none
+  moved.
 
 ### F-checks-switch-02 — a control turned disabled keeps its label's colour — reported (`MutantText.kt`, F-buttons-02's face)
 
@@ -111,3 +125,15 @@ itself is held by `KeyboardFocusSweepTest`, and was not filmed again.
 - **The sample**: the three sections and the Settings screen as composed; the three speed radios share their key
   `radio`, as the design's Demo page does.
 - **Hover**: the body simmers to amber and cools when the mouse leaves (B-63).
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+this Mac at `989c0dd`, the scratch tests deleted: `mutant-core` 424 tests and `sample` 22, no `<failure>` or `<error>`
+in the JUnit XML; both ktlint checks clean. The public API did not change.
+
+## Not verified
+
+- The phone and the browser itself: the browser's way was drawn through the test seams on the desktop JVM only, and
+  the body shader (B-167's class) not at all.
+- Keyboard focus was not filmed again (held by `KeyboardFocusSweepTest`); right to left was not looked at.
