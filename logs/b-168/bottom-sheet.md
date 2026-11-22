@@ -35,7 +35,7 @@ repository).
 
 - **What.** The sheet calls `DialogFollow(visible, start)` without the two durations, so the new direction restarts
   from its beginning wherever the old one stood (F-dialog-01's face).
-  - Escape about 112 ms into the rise: the sheet stood about a third up (its title 70 dp under the screen's foot) and
+  - Escape about 112 ms into the rise: the sheet stood about a third up (its title about 110 dp under where it settles) and
     stood whole on the next frame, then sank from there.
   - Reopened 96 ms into the sink, the sheet about half down: it vanished in one frame and rose again from below.
 - **Frames.** `core/reverse-efir-0.png`, 1120 → 1186 ms (risen whole in one frame) and 1266 → 1282 ms (gone in one).
@@ -141,3 +141,37 @@ repository).
 Each in its own commit with a kept test in `SheetBehaviourTest`; each mutant was run after committing against the
 aimed test, its failure read from the JUnit XML, and the file checked out again. After-frames:
 `/private/tmp/b168-bottom-sheet/after/`.
+
+| Finding | Commit | Test | Mutant | Result |
+|---|---|---|---|---|
+| F-bottom-sheet-01 | `8d76c66` `fix(bottom-sheet): reverse the rise or the sink from where it stands` | `reversed mid-way it goes on from where it stands - no frame jumps`: the title's position frame by frame through a sink a third into the rise and a rise half into the sink, no step over a fifth of the travel | the follower without the two durations | killed («sinking from where it stood: 45.8, then 14.6») |
+| F-bottom-sheet-02 | `3f54daf` `fix(bottom-sheet): give focus back once the sheet has sunk` | `through its sink the keys reach nothing behind it, and focus is back with the opener after` | `ReturnFocus(visible, …)` again | killed («the second Enter reached the opener under the scrim», 1) |
+| F-bottom-sheet-03 | `594ce44` `fix(bottom-sheet): answer no press or key while the sheet sinks` | `as it sinks, what is on it answers neither a click nor a key`: Enter twice on Done, a click on Done twice | keys answered while sinking; presses answered while sinking | killed («a second Enter as it sinks», 2); killed («a second click as it sinks», 3) |
+| F-bottom-sheet-04 | `4145a63` `fix(bottom-sheet): keep the sheet out of the screen's keyframe loss` | `opened while the screen's keyframe loss runs, its body is drawn whole`: a column of the body's right padding under a loss held mid-run, all its fill | the sheet keeps the screen's scene | killed (98 rows not the body's fill) |
+| F-bottom-sheet-05 | `f3ae940` `fix(bottom-sheet): give the sheet at most the screen's height` | `a content taller than the screen keeps its top on it, and one that scrolls is given its room`: the title 39 dp under the screen's top, plain and in a `verticalScroll`, which scrolls to its last line | the body measured with no height limit | killed (the plain content's title at −144) |
+| F-bottom-sheet-06 | `92bad4b` `fix(bottom-sheet): take no Tab stop that shows nothing` | `Tab comes round its controls only, and a click on its words focuses none`: Tab A, B, C, A; Shift+Tab C, B, A, C | the body's `clickable` back; no coming round | killed (Tab: `[A, B, C, ]`, the body a stop); killed (Tab: `[A, B, C, C]`) |
+| KDoc | `3d1179f` `docs(bottom-sheet): say how the sheet moves, reverses and keeps focus` | — | — | — |
+
+- **After.** `after/reverse-efir-*.png`: Escape a third into the rise sinks from there (1120 → 1218 ms), the opener takes
+  its brackets once the sheet has gone (1234 ms); a reopen half into the sink rises back from there (1890 ms on).
+  `after/loss-last-0.png`: the body is whole over a held loss (between the tear line and the body's top edge the
+  screen shows, as designed). `after/exit.log`: two Enters on Record fire it once, and clicks during the sink reach
+  nothing; `after/keys.log`: Tab and Shift+Tab come round the segmented button and Record, focus is back on the opener
+  after the sink (a click at the opener 200 ms after Escape reaches it: the sheet has gone by then).
+  `after/clicksheet.log`: a click on the title focuses nothing, Enter after it fires nothing. `after/tall.log`: the
+  timer's content keeps its title 39 dp under the top in a 300 dp screen, and in a `verticalScroll` it no longer
+  throws. `after/openclose-*.png`, `after/sample/*.png`: the rise and the sink as before, in every look and in the
+  sample.
+- **Found while fixing.**
+  - **F-bottom-sheet-09 — the date picker squeezed under its height overlaps its rows — reported (the pickers' group).**
+    Given less height than it wants (the timer's content in a 300 dp screen, after F-bottom-sheet-05's fix bounds the
+    sheet), `MutantDatePicker` does not keep its size: its first row of days rises about 30 dp into the weekday names
+    («1 2 3 4» over «ЧТ ПТ СБ ВС»), the rows below follow (`after/tall-0.png`). Before the fix the sheet gave it no
+    limit, so it kept its height and the sheet was cut at both ends instead. cmp-ui-component §9: a form squeezed
+    under its size keeps it. The demo's timer sheet fits its 720 dp phone and does not show it.
+  - A mouse click in a test advances the test clock by about 60 ms, so a click «during the sink» needs the sheet's
+    position read after the previous click: the first look's «opener=1» in `core/keys.log` was a click landing after
+    the sheet had gone, not through it.
+- **Not changed.** The window's semantics stay while it sinks (a reader's click on a control then is not stopped; the
+  dialog keeps its semantics through its close too). `SHEET_FOCUS_STEPS` (256) bounds the walk to the last control;
+  it is a loop guard, not a look.
