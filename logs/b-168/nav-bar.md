@@ -4,7 +4,7 @@ Group 9 of [B-168](../../docs/backlog/B-168-look-and-motion-pass.md), on `fix/b-
 on this Mac (the desktop JVM, `runComposeUiTest` with the clock driven by hand). The component lives in
 `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantNavigationBar.kt`; its numbers were
 decided in [B-24](../../docs/backlog/B-24-navigation-bar.md), [B-56](../../docs/backlog/B-56-navigation-bar-unbounded-width.md),
-[B-61](../../docs/backlog/B-61-text-grows-with-the-font-scale.md), [B-65](../../docs/backlog/B-65-tabs-and-navigation-in-rtl.md),
+[B-61](../../docs/backlog/B-61-text-under-font-scale.md), [B-65](../../docs/backlog/B-65-tabs-and-navigation-in-rtl.md),
 [B-66](../../docs/backlog/B-66-navigation-pill-in-narrow-cells.md) and [B-94](../../docs/backlog/B-94-the-navigation-bar-label-on-its-pill.md).
 The design draws the bar at rest only (handoff «Компоненты»: `bar` + `pill`, «активный пункт — pill 56×30», states
 `rest`); the pill's slide to a new pick is the kit's (B-24, D15), the body's `slide` (330 ms, ease-out², the stretch).
@@ -50,24 +50,54 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
 - **The design.** The page draws the pill's icon `#05060c` on the pill and the others in `--mu-text2` on the bar;
   B-24 chose the slide. The kit's rule from B-91/B-94 and `cmp-ui-component` §4: a word's colour follows the fill as
   drawn, never the logical state.
+- **Fixed** (`909505e`). Each icon is drawn twice over the same place: in the label's colour outside the pill and the
+  pill's black inside it, the pill read as the body slides it (`PillPlace`: its run home `1 − (1 − p)²`, its stretch,
+  half its outline inside its box, on every frame of the screen's clock while it runs). An icon wholly on one side is
+  drawn as it is, unclipped, so the standing bar draws as before: `NavigationBarParityTest`, the behaviour tests and the
+  QA sweeps unchanged. The chosen icon now takes the label's colour (`text`) until the pill reaches it.
+  `NavigationBarIconOnPillTest` «every icon reads on what is drawn under it through a slide across the bar»: «Эфир»,
+  a bare twin (`hidden`) read under every icon, a pick across the whole bar, every frame for 480 ms, with and without
+  `steppedMotion`: every icon's ink at least 2.5:1 against what lies under it (above 3 at rest). Mutants, each killed by
+  that test (`<failure>` read in the JUnit XML):
+  - the colour from the pick again (`{ if (i == selectedIndex) <whole bar> else null }` for the pill's box): «frame 0,
+    cell 0 reads 1.59:1»;
+  - an icon the pill's edge crosses drawn whole in the label's colour (no split): «frame 1, cell 0 reads 1.71:1».
+- **After** (`after/pick-*.ink.txt`, `after/fast-*.ink.txt`, `after/none-*.ink.txt`): no frame of any icon under
+  2.5:1 in «Эфир», «Копия», reduce motion, `steppedMotion`, density 2, the browser's way or right to left (34 such
+  icon-frames before in `core/pick-Efir`, 48 in `core/fast-Efir`); «Find» 7.7:1 on the bar until the pill comes, then
+  10.4:1; «Queue» passed over 9–11.7:1. Frames: `after/pick-Efir.png`, `after/pick-Rtl.png`, `after/fast-Efir.png`
+  — the black follows the pill's edge across each icon.
 
 ### F-nav-bar-02 — a pick during a slide jumps the pill to the cell last chosen — local
 
 - **What.** A new pick while the pill is under way starts its slide from the cell picked before, not from where the
   pill stands: the pill leaps there in one frame and slides back.
-- **Frames.** `core/fast-Efir.png`: at 1136 ms the pill stands near «Queue» on its way to «Settings»; at 1184 it stands
-  whole on «Settings» (~170 dp in one frame), then slides back to «Queue»; again at 1312 and 1408. Under
+- **Frames.** `core/fast-Efir.png`: at 1136 ms the pill stands near «Queue» on its way to «Settings»; at 1184 (the
+  click's two frames are not shot) it stands whole on «Settings», about 135 dp from where it was, then slides back to
+  «Queue»; again at 1312 and 1408. Under
   `steppedMotion` picks less than 83 ms apart never move the pill, it hops from cell to cell
   (`core/fast-Stepped.png`). The diff: 6 100–6 300 pixels on the jump frames against 3 000–3 700 for a slide
   (`core/fast-GpuEfir.diff.txt`). «Копия» the same (`core/fast-Kopiya.png`).
 - **Cause.** `PillFrom` remembers the previous index, and the slide is asked from `(previous − chosen) · cell`.
 - **The item.** B-93's class (a selection's slime jumping instead of moving).
+- **Fixed** (`78b01d9`). `PillFrom` keeps where the slide it asked for started, in cells, and when; a new pick asks
+  for a slide from what is left of that run at the screen clock's now (`dx · (1 − p)²`, `p` stepped under
+  `steppedMotion`), as the body draws it, so the new slide starts where the pill stands. `NavigationBarBehaviourTest`
+  «B-168 a pick while the pill slides starts the new slide from where the pill stands»: 0 → 3, then 1 after 176 ms;
+  the pill's centre never moves more than 24 px a frame (90 an 83 ms step under `steppedMotion`) and lands on the
+  second cell. Mutant: the slide asked from the cell picked before again (`now − to + 0.0 · cells · left`), killed —
+  «stepped false, frame 0: the pill leapt from 221 to 286».
+- **After** (`after/fast-*.png`, the lime's extent per frame in `after/fast-Efir.diff.txt`): at 1136 ms the pill's
+  centre stands at 175 px going right, at 1184 at 229 (two frames on, as the old run carried it), then it turns back
+  to «Queue» at 7 px a frame; the same on each later pick. Under `steppedMotion` it steps from where it stood
+  (`after/fast-Stepped.png`).
 
 ### F-nav-bar-03 — a slide re-aimed mid-way snaps its stretch back — reported (`surface/BodyTransitions.kt`, `slid`)
 
 - **What.** A new slide request restarts the body's stretch at zero: the pill, up to 1.4 times as wide and 0.82 as
   tall half-way, is its rest size in the next frame. Seen only once F-nav-bar-02 is fixed (the pill then starts where
-  it stands); numbers in the fix's after-frames below.
+  it stands): a 56 dp pill re-aimed half-way is 78 dp wide in one frame and 56 in the next, its centre where it was
+  (`after/fast-Efir.diff.txt`: 71 → 54 px of lime across the second pick).
 - **Where.** `slid` scales by `1 + .4 · sin(π p)` with `p` from the new request; `BodyMoves.follow` keeps no trace of a
   run in flight. Every slide shares it (the switch's thumb reversed mid-way, the calendar's day).
 
@@ -100,3 +130,20 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   way within a few hundred pixels of the desktop's through every scenario.
 - **The demo**: the bar is moved between the tabs' screens whole (`movableContentOf`), and its pill slides from the tab
   left to the tab taken across the screen change (`sample/demo-bar-*.png`).
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+this Mac at `909505e`, the scratch tests deleted: `mutant-core` 428 tests and `sample` 22, no `<failure>` or `<error>`
+in the JUnit XML; both ktlint checks clean. The public API did not change (`PillFrom`, `PillPlace` and the item's
+drawing are internal or private), so `updateKotlinAbi` was not run.
+
+## Not verified
+
+- The phone and the browser itself: the browser's way was drawn through the test seams on the desktop JVM only, and
+  the body shader (B-167's class) not at all.
+- The icon's split follows the pill's box (a capsule half its outline inside), not its generated contour: the body's
+  wobble (0.6) can put a pixel or two of an icon's edge on the wrong side of the outline for a frame; the per-frame
+  contrast reads it at 2.5:1 or more, and no frame was seen worse.
+- Right to left and the GPU looks of the first `pick` film timed out on the shared machine; they were filmed after the
+  fixes (`after/pick-Rtl.png`, `after/pick-GpuEfir.png`) only.
