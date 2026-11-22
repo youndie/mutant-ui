@@ -142,3 +142,29 @@ Two throwaway tests, deleted before committing. The frames stay in `/private/tmp
   the scrim during the exit reach nothing.
 - Density 2 and the browser's way of drawing: the same frames (the diffs within a few pixels of the desktop's).
 - «Чистый сигнал»: the window is clean in every look already.
+
+## Fixes
+
+Each in its own commit with a kept test in `DialogBehaviourTest`; each mutant was run after committing against the
+aimed test, its failure read from the JUnit XML, and the file checked out again. After-frames:
+`/private/tmp/b168-dialog/after/`.
+
+| Finding | Commit | Test | Mutant | Result |
+|---|---|---|---|---|
+| F-dialog-01 | `fix(dialog): reverse the open or the close from where it stands`, `test(dialog): reopen the dialog two thirds into its close` | `reversed mid-way it goes on from where it stands - no frame jumps`: the scrim's darkness frame by frame through Cancel a third into the open and a reopen two thirds into the close, no step above the close's rate | the new direction restarted (`since = now`); the reopen alone restarted | killed («closing from where it stood: 0.19, then 0.37»); killed («rising from where it stood: 0.47, then 0.06») |
+| F-dialog-02 | `fix(dialog): keep the window out of the screen's keyframe loss` | `opened while the screen's keyframe loss runs, its window is drawn whole`: a column of the window's right padding, under a loss held mid-run, all its fill | the dialog keeps the screen's scene | killed (174 rows not the window's fill) |
+| F-dialog-03 | `fix(dialog): take the window's clicks without moving focus` | `a click on the window's words focuses no action, and Enter after it fires none`, then Tab still goes to the first action | the unfocusable `clickable` back on the window; the window not a focus group (Tab from the dialog left it for the screen) | killed («no action takes focus»); killed (Tab: Cancel not focused) |
+| F-dialog-06 | `fix(dialog): give focus back once the dialog is gone` | `through its exit the keys reach nothing behind it, and focus is back with the opener after` | `ReturnFocus(visible, …)` again | killed («the second Enter reached the opener under the scrim», 1) |
+| F-dialog-04 | `docs(dialog): say the open and the close run on every frame` | — (KDoc) | — | — |
+
+- **After.** `after/reverse-efir-*.png`: Escape at 288 ms fades from where the open stood. The close from whole is
+  reversed at 914 ms and rises back to whole by 1026 ms. `after/loss-efir-1.png`: the window is whole over a held
+  loss. `after/clickwindow.log`: `[false, false]`, and Enter leaves the dialog open. `after/exitclicks.log`: Enter
+  during the exit reaches nothing (`open=false`). `after/keys-*.log`: Tab and Shift+Tab come round as before.
+- **Found while fixing.** The first version of F-dialog-03's fix took the window's `focusProperties { canFocus = false }`
+  along with the `clickable`, and Tab from the dialog itself then left for the screen behind. The window is now a focus
+  group, and F-dialog-03's test holds that Tab.
+- **Shared with other groups.** `DialogFollow` and `ReturnFocus` live in this file and are also called by
+  `MutantBottomSheet` and `MutantNavigationDrawer`. Their calls are unchanged. The follower restarts as before unless
+  it is given the two durations. Whether the sheet and the drawer take the same three fixes (F-dialog-01, -02, -06) is
+  their groups' call.
