@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,7 +84,7 @@ public fun MutantTabs(
     val marks = remember { TabMarks() }
     val slide = remember { TabSlide(selectedIndex) }
     val barWidth = LocalTabBarWidth.current
-    slide.follow(selectedIndex, clock.nowMs)
+    slide.follow(selectedIndex, clock.nowMs, marks, tabs.size, reduce, steps, barWidth)
     val scroll = rememberScrollState()
     val density = androidx.compose.ui.platform.LocalDensity.current.density
     // A newly selected tab out of view comes into it at once; a focused one is brought in by the scroll itself.
@@ -120,7 +121,7 @@ public fun MutantTabs(
                 .selectableGroup()
                 .drawWithContent {
                     drawContent()
-                    val p = if (reduce) 1.0 else stepped(clock.nowMs - slide.since, MutantMotion.SLIDE_MS, steps)
+                    val p = slide.progress(clock.nowMs, reduce, steps)
                     // While the bar runs it reads every frame; at rest it reads nothing.
                     if (p < 1) clock.frame
                     scale(
@@ -234,27 +235,74 @@ internal class TabMarks {
     val width = mutableStateMapOf<Int, Float>()
 }
 
-/** Follows the selected index from composition without writing state: a change starts the bar's run then. */
+/** Where the bar stands and how wide it is, dp, in the row's own coordinates. */
+private class BarPose(
+    val x: Float,
+    val width: Float,
+)
+
+/**
+ * Follows the selected index from composition without writing state: a change starts the bar's run then, from where the
+ * bar stands at that moment — under the tab it left, or partway along a run still going (B-168).
+ */
 internal class TabSlide(
     private var at: Int,
 ) {
-    var from: Int = -1
+    /** Where the run starts; null when no bar stood (nothing was selected), so the bar arrives with no run. */
+    var fromX: Float? = null
+        private set
+    var fromWidth: Float? = null
         private set
     var since: Double = Double.NEGATIVE_INFINITY
         private set
 
+    /** The run's progress at [now], 0 to 1: at once under reduce motion. */
+    fun progress(
+        now: Double,
+        reduce: Boolean,
+        steps: Boolean,
+    ): Double = if (reduce) 1.0 else stepped(now - since, MutantMotion.SLIDE_MS, steps)
+
     fun follow(
         to: Int,
         now: Double,
+        marks: TabMarks,
+        count: Int,
+        reduce: Boolean,
+        steps: Boolean,
+        width: Float?,
     ) {
         if (to == at) return
-        from = at
+        // The layout's marks are read without subscribing the composition to them.
+        val pose =
+            Snapshot.withoutReadObservation { barPose(marks, this, at, count, progress(now, reduce, steps), width) }
+        fromX = pose?.x
+        fromWidth = pose?.width
         at = to
         since = now
     }
 }
 
-/** The bar under [selected], run from [TabSlide.from] by [p]; with its ring and its echo. */
+/** The bar under [selected], [p] of the way along its run from where it set off; null when it shows none. */
+private fun barPose(
+    marks: TabMarks,
+    slide: TabSlide,
+    selected: Int,
+    count: Int,
+    p: Double,
+    width: Float?,
+): BarPose? {
+    if (selected !in 0 until count) return null
+    val toX = (marks.x[selected] ?: return null) + SIDE.value
+    val toW = width ?: marks.width[selected] ?: return null
+    val fromX = slide.fromX
+    val fromW = slide.fromWidth
+    if (p >= 1 || fromX == null || fromW == null) return BarPose(toX, toW)
+    val e = (1 - (1 - p).pow(3)).toFloat()
+    return BarPose(fromX + (toX - fromX) * e, fromW + (toW - fromW) * e)
+}
+
+/** The bar under [selected], run from where it set off by [p]; with its ring and its echo. */
 private fun DrawScope.drawIndicator(
     marks: TabMarks,
     slide: TabSlide,
@@ -265,16 +313,13 @@ private fun DrawScope.drawIndicator(
     width: Float?,
     rowHeight: Float,
 ) {
-    if (selected !in 0 until count) return
+    val pose = barPose(marks, slide, selected, count, p, width) ?: return
     val toX = (marks.x[selected] ?: return) + SIDE.value
-    val toW = width ?: marks.width[selected] ?: return
-    val from = slide.from
-    val fromX = marks.x[from]?.plus(SIDE.value)
-    val fromW = marks.width[from]
-    val run = p < 1 && from in 0 until count && fromX != null && fromW != null
+    val fromX = slide.fromX
+    val run = p < 1 && fromX != null && slide.fromWidth != null
     val e = if (run) (1 - (1 - p).pow(3)).toFloat() else 1f
-    val x = if (run) fromX + (toX - fromX) * e else toX
-    val w = if (run) fromW + (toW - fromW) * e else toW
+    val x = pose.x
+    val w = pose.width
     // 5 dp over the row's foot: at 43 in the page's 48, and under a label grown with the font.
     val y = rowHeight - (TAB_HEIGHT.value - BAR_Y)
     // The ring, the page's `box-shadow: 0 0 0 1.5px`, then the bar.
