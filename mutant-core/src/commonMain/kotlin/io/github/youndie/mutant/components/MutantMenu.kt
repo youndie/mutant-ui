@@ -126,7 +126,9 @@ public fun MutantDropdown(
  * no venom; a window shown again arrives at once.
  * A row is its whole target, 36 dp tall: an owner-named exception to the 48 dp rule (research D19).
  * The chosen row (or the first) takes the keys as the menu opens. Up and Down move the keyboard's focus from row to
- * row, wrapping, Enter or Space picks, Escape and a press outside go to [onDismissRequest].
+ * row, wrapping, Enter or Space picks, Escape and a press outside go to [onDismissRequest]. A press, Enter or Space on
+ * the chosen row hands nothing to [onSelect], as the page's menu ignores it: a caller that closes its menu on a pick is
+ * not closed by picking the row already chosen.
  */
 @Composable
 public fun MutantMenu(
