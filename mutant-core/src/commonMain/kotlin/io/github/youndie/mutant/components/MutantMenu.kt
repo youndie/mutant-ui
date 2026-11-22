@@ -276,7 +276,7 @@ internal fun MenuBody(
         ).cssLine(MutantFaceMetrics.Handjet, ROW.toFloat() / WORD_SIZE)
     val inkGoo = rememberGraphicsLayer()
     val fillGoo = rememberGraphicsLayer()
-    val ink = remember { WordInk() }
+    val ink = remember { MenuWordInk() }
     // Where the lime lies at run progress p, as a mask in the body's pixels: the venom's fat shapes through the goo, as
     // the fill recorded them this frame, its thin ones, and the window once it shows, springing about its middle.
     val slime: DrawScope.(Double, VenomShapes) -> Unit = { p, v ->
@@ -441,7 +441,7 @@ private fun MenuRow(
     style: TextStyle,
     hidden: Boolean,
     moves: Modifier,
-    ink: WordInk,
+    ink: MenuWordInk,
     slime: DrawScope.(Double, VenomShapes) -> Unit,
     onPick: () -> Unit,
 ) {
@@ -477,21 +477,21 @@ private fun MenuRow(
                 if (now == null || index !in ink.tops.indices) return@drawWithContent drawContent()
                 val bounds = Rect(Offset.Zero, size)
                 val canvas = drawContext.canvas
-                for (pass in listOf(WordPass.OffSlime, WordPass.OnSlime)) {
+                for (pass in listOf(MenuWordPass.OffSlime, MenuWordPass.OnSlime)) {
                     ink.pass = pass
                     canvas.saveLayer(bounds, Paint())
                     drawContent()
                     canvas.saveLayer(
                         bounds,
                         Paint().apply {
-                            blendMode = if (pass == WordPass.OnSlime) BlendMode.DstIn else BlendMode.DstOut
+                            blendMode = if (pass == MenuWordPass.OnSlime) BlendMode.DstIn else BlendMode.DstOut
                         },
                     )
                     translate(-ink.inset.toFloat(), -ink.tops[index].toFloat()) { slime(now.first, now.second) }
                     canvas.restore()
                     canvas.restore()
                 }
-                ink.pass = WordPass.Rest
+                ink.pass = MenuWordPass.Rest
             }.drawWithContent {
                 drawContent()
                 if (focused && keyboard) {
@@ -512,8 +512,8 @@ private fun MenuRow(
             color = {
                 when {
                     hidden -> Color.Transparent
-                    ink.pass == WordPass.OnSlime -> colors.onPrimary
-                    ink.pass == WordPass.OffSlime -> colors.text
+                    ink.pass == MenuWordPass.OnSlime -> colors.onPrimary
+                    ink.pass == MenuWordPass.OffSlime -> colors.text
                     index == selectedIndex -> colors.onPrimary
                     else -> colors.text
                 }
@@ -523,11 +523,11 @@ private fun MenuRow(
 }
 
 /** Which colour the words take in the draw under way: their own at rest, or one side of the slime through a run. */
-private enum class WordPass { Rest, OffSlime, OnSlime }
+private enum class MenuWordPass { Rest, OffSlime, OnSlime }
 
 /** The pass the words' colour reads, set by each row's draw around its passes, and where the rows stand, in pixels. */
-private class WordInk {
-    var pass = WordPass.Rest
+private class MenuWordInk {
+    var pass = MenuWordPass.Rest
     var inset = 0
     var rowW = 0
     var tops = IntArray(0)
