@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +54,7 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
@@ -262,9 +265,12 @@ private fun DialogScene(
                 (if (windowTop == null) Modifier else Modifier.offset(y = windowTop))
                     .widthIn(max = WINDOW)
                     .fillMaxWidth()
-                    // Its own clicks: none reaches the scrim under it. Not a Tab stop either (B-57).
-                    .focusProperties { canFocus = false }
-                    .clickable(remember { MutableInteractionSource() }, indication = null) {}
+                    // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a
+                    // press on a clickable asks for focus, which a target that cannot take it hands to its first
+                    // action, unseen, for the next Enter to fire (B-168). Not a Tab stop either (B-57), but a group:
+                    // Tab from the dialog itself goes into it, to the first action.
+                    .focusGroup()
+                    .pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false) } }
                     .semantics {
                         dialog()
                         paneTitle = title

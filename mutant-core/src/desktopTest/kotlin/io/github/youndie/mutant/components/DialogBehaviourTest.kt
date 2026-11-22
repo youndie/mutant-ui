@@ -216,6 +216,32 @@ class DialogBehaviourTest {
     }
 
     @Test
+    fun `a click on the window's words focuses no action, and Enter after it fires none`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            screen(reduceMotion = true)
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Плёнку можно будет записать заново.").performMouseInput { click(center) }
+            mainClock.advanceTimeByFrame()
+            val focused =
+                listOf("Отмена", "Стереть").flatMap { label ->
+                    onAllNodesWithText(label).fetchSemanticsNodes().filter {
+                        it.config.getOrElse(SemanticsProperties.Focused) { false }
+                    }
+                }
+            assertTrue(focused.isEmpty(), "no action takes focus from a click on the text")
+            onNodeWithTag("dialog").performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertTrue(open, "Enter cancelled nothing")
+            assertEquals(0, confirms, "Enter erased nothing")
+            assertEquals(0, dismissals, "and the click dismissed nothing")
+            // And Tab from there still goes into the window, not to the screen behind.
+            onNodeWithTag("dialog").performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Отмена").assertIsFocused()
+        }
+
+    @Test
     fun `under reduce motion it opens and closes at once`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
