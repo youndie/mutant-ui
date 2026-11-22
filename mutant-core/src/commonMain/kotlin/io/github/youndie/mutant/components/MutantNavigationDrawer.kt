@@ -209,6 +209,7 @@ internal fun DrawerFrame(
                     title,
                     key,
                     hidden,
+                    visible,
                     Modifier
                         .fillMaxHeight()
                         .graphicsLayer { translationX = -(1 - slide) * size.width }
@@ -233,6 +234,7 @@ internal fun DrawerWindow(
     title: String?,
     key: String,
     hidden: Boolean,
+    open: Boolean,
     modifier: Modifier,
 ) {
     val colors = MutantTheme.colors
@@ -343,7 +345,7 @@ internal fun DrawerWindow(
                                     focus[to].requestFocus()
                                     true
                                 }
-                            DrawerRow(item, i, run, selectedIndex, code, label, hidden, moves) { select(i) }
+                            DrawerRow(item, i, run, selectedIndex, code, label, hidden, open, moves) { select(i) }
                         }
                     },
                 ) { measurables, c ->
@@ -400,6 +402,7 @@ private fun DrawerRow(
     code: TextStyle,
     label: TextStyle,
     hidden: Boolean,
+    open: Boolean,
     moves: Modifier,
     onPick: () -> Unit,
 ) {
@@ -434,7 +437,8 @@ private fun DrawerRow(
                     }
                 }
             }.mutantHand(true)
-            .selectable(index == selectedIndex, source, indication = null, role = Role.Tab) {
+            // A closing drawer answers no row: through B-102's hold and through the exit a press picks nothing.
+            .selectable(index == selectedIndex, source, enabled = open, indication = null, role = Role.Tab) {
                 if (index != selectedIndex) onPick()
             }.drawWithContent {
                 drawContent()
