@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.drawCornerBrackets
+import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlin.math.roundToInt
 
@@ -136,7 +137,8 @@ internal fun SearchBarBody(
 
 /**
  * The clear icon: 24 dp in the row, a touch on it widened to 48 dp by Compose's own minimum touch target, the hand
- * over it and the focus brackets around it from the keyboard (designed here, D15: the page draws it at rest only).
+ * over it and the focus brackets around it from the keyboard (designed here, D15: the page draws it at rest only). It is
+ * part of the field's clean zone, as the engine counts every `svg` in a slot: no mosaic or flow line runs under it.
  */
 @Composable
 private fun ClearIcon(
@@ -152,6 +154,7 @@ private fun ClearIcon(
     Box(
         Modifier
             .size(ICON)
+            .mutantCleanZone()
             .mutantHand(enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClickLabel = label) {
                 onClear()
