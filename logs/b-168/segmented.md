@@ -49,6 +49,20 @@ name says so). Each `.txt` beside it has one line per 16 ms frame with:
 - **The design.** The page's `bindPicks` recolours the words in a `setTimeout(…, 340)`; the engine draws the same
   frames. The kit's rule since B-91/B-94 and `cmp-ui-component` §4: a word's colour follows the fill as drawn, never
   the logical state; the navigation bar's F-nav-bar-01 is the same case, fixed the same way.
+- **Fixed** (`4f45d64`). Through a run each word is drawn twice over its place: black inside the slime as drawn (the
+  venom's goo layer as the fill recorded it that frame, its thin shapes, and the window once it shows, springing about
+  its middle) and in the text's colour outside it (`DstIn` / `DstOut` against that mask). At rest the words draw as
+  before, so `SegmentedParityTest` does not move. The page's 340 ms timer is left (a departure from the engine's
+  `setTimeout`, said in the KDoc); `VenomRun.labelOn` stays for the menu and the drawer, which still use it.
+  `SegmentedWordsOnSlimeTest`: «Эфир», a bare twin read under every word, a pick across the button, every frame for
+  736 ms, every word's tenth percentile at least 3:1 against what lies under it.
+- **After** (`after/*.txt`, read per pixel by the ink that best explains it over the bare ground): no word-frame under
+  3:1 in «Эфир», «Копия», reduce motion, «Чистый сигнал», `steppedMotion`, density 2 in both palettes, the browser's
+  way, right to left, two options, the keys, fast picks and a pick during a run (each 0 against 29–36 before). «Копия»'s
+  worst tenth percentile 4.09:1, a dark word over a black tentacle, as before. `after/mouse-click-2-right-edge.txt`
+  still counts low frames: the click reaches the real button only, so the bare twin's venom goes elsewhere and its
+  ground is not the real one; its sheet reads right. Frames: `after/pick-0-2-efir.png`, `after/density2-efir.png`,
+  `after/sample/actions-efir.png` — the black follows the lime's edge across each word.
 
 ### F-segmented-02 — the venom runs where no window shows: disabled, and to an index outside the options — local
 
@@ -61,6 +75,11 @@ name says so). Each `.txt` beside it has one line per 16 ms frame with:
   - an index past the end runs to a slot off the right edge, out over the page (`before/to-past-end.png` 64–400), and
     a real index after it runs in from there, the tentacles reaching past the button's end (592–880).
 - **Where.** `SegmentedBody` follows `selectedIndex` itself, and `VenomRun` (shared) answers any slot it is given.
+- **Fixed** (`f4ff7ed`). The button follows the segment its window stands on, or none (−1 when disabled or out of
+  range), and draws no run without one; a window shown again arrives at once, with no run (`cmp-ui-component` §9). Test:
+  `SegmentedBehaviourTest` «no venom runs where no window shows, disabled or at an index outside the options» (no lime
+  on a stage 40 dp round the button, every 48 ms). After: `after/disable-mid-run.png`, `after/to-none.png`,
+  `after/to-past-end.png`.
 
 ### F-segmented-03 — right to left, every word stands off its segment by half the room beside it — local
 
@@ -69,6 +88,10 @@ name says so). Each `.txt` beside it has one line per 16 ms frame with:
   its place: «SP · 2 h» straddles the window's right edge, «EP · 6 h» runs into the body's end (`before/rtl.png`,
   every frame; `before/long-rtl.png`).
 - **The decided look.** B-31: "Every label lies where the page's does"; B-94's class (a label off its pill).
+- **Fixed** (`92cbeb4`). The line is laid out from the segment's left in either direction
+  (`wrapContentWidth(AbsoluteAlignment.Left)`), and the draw centres it from there; left to right nothing moves. Test:
+  `SegmentedBehaviourTest` «right to left, every word stands where it does left to right» (the pale words' ink columns
+  within a pixel of each other; a line right to left lands a fraction off). After: `after/rtl.png`.
 
 ### F-segmented-04 — a label wider than its segment spills over its neighbours and loses its start — local
 
@@ -78,6 +101,11 @@ name says so). Each `.txt` beside it has one line per 16 ms frame with:
   overlap, «SP • LP • EP •» (`before/narrow-96.png`).
 - **The decided look.** B-31's KDoc sentence; the kit's rule for a word that does not fit (`cmp-ui-component` §9) is
   an ellipsis at its end.
+- **Fixed** (`35365f3`). The label ends in an ellipsis at its segment's end, so its line fits and is centred; the KDoc
+  says so. Test: `SegmentedBehaviourTest` «a word wider than its segment ends inside it». After: `after/long.png`,
+  `after/narrow-96.png` («S…», «L…», «E…»). Right to left the ellipsis stands at the line's left
+  (`after/long-rtl.png`, «…Standard pl»): Skia ellipsises a Latin word in a right-to-left paragraph at its visual end,
+  which a right-to-left label wants. A hard cut at the segment's end instead of an ellipsis is the owner's to choose.
 
 ### F-segmented-05 — a pick during a run jumps the window to the segment picked before — reported (`VenomRun.kt`)
 
@@ -109,3 +137,35 @@ name says so). Each `.txt` beside it has one line per 16 ms frame with:
 - Enabled ↔ disabled at rest: one frame, the kit's known cut (F-icon-fab-04), nothing of the window left behind.
 - The keyboard: one stop, the brackets drawn; the arrows choose. Narrow widths 0–40 dp neither throw nor draw outside
   the body. The press point steers the mass (`before/mouse-click-2-right-edge.png`).
+
+## Mutants
+
+Each run after its fix was committed: the one line changed, the aimed test run, its `<failure>` read in the JUnit XML,
+`git checkout -- <file>`.
+
+| Mutant | Aimed test | Result |
+|---|---|---|
+| `shown = selectedIndex` (the venom follows any index) | «no venom runs where no window shows…» | killed: lime while disabled `[7357, 6605, …]` |
+| the fill's `if (shown < 0) return@Canvas` removed | the same | killed: lime while disabled `[5517, 6152, …]` |
+| `wrapContentWidth(Alignment.Start)` (relative again) | «right to left, every word stands…» | killed: columns 133–138 … off |
+| `TextOverflow.Clip` | «a word wider than its segment ends inside it» | killed: the long word's ink 51 columns |
+| no masked passes (the words from the pick) | `SegmentedWordsOnSlimeTest` | killed: frame 0, word 0 1.06:1; word 2 1.81:1 |
+| the window left out of the mask | `SegmentedWordsOnSlimeTest` | killed: frames 36–…, word 2 1.06:1 |
+| the venom's thin shapes left out of the mask | `SegmentedWordsOnSlimeTest` | survived: a thin tentacle a few pixels wide under a word leaves its tenth percentile above 3:1; a mutant removing the thin shapes changes only those pixels |
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+`4f45d64`, read from the JUnit XML: `mutant-core` 436 tests, 0 failures, 0 errors; `sample` 22 tests, 0 failures,
+0 errors. The run's ktlint step failed on the deleted scratch test: the plugin kept its old per-file result in
+`build/reports/ktlint`; with those reports removed, both `ktlintCheck`s pass (`--rerun-tasks`). The public API did not
+change (no `updateKotlinAbi`).
+
+## Not verified
+
+- The phone and the browser itself: the browser's way was looked at through the desktop seams only. The masked words
+  draw the venom's goo layer twice more per frame through a run (once per pass); its cost on a phone was not measured.
+- The demo's two segmented buttons (the Library's new-recording sheet, the Settings sleep timer) and the Overlays
+  section's sheet: the scratch could not find them by their words in time and was not pursued. They compose the same
+  `MutantSegmentedButton` with `fillMaxWidth`.
+- Hover: the segments show the hand alone (B-63 left their hover look to the owner's round).
