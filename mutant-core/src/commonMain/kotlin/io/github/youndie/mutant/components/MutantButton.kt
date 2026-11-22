@@ -2,7 +2,11 @@ package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.HoverInteraction
+import androidx.compose.foundation.interaction.Interaction
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,8 +19,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -53,12 +60,19 @@ import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 
 /** What a [MutantButton] is doing: at rest, working (the seek bands), or done (the clean frame, held). */
 public enum class MutantButtonState {
     Idle,
 
-    /** The seek bands run over the body (`seek`, 900 ms a cycle); the button takes no click. */
+    /**
+     * The seek bands run over the body (`seek`, 900 ms a cycle); the button keeps keyboard focus but takes no click, and
+     * its body shows no press and no hover.
+     */
     Loading,
 
     /** The clean frame, static, with the check before the label, until the caller changes the state. */
@@ -227,6 +241,9 @@ internal fun ButtonBody(
             state == MutantButtonState.Success -> BodyState.Success
             else -> BodyState.Rest
         }
+    // Busy, it takes no click, so its body shows neither a press nor the mouse (B-168).
+    val busy = rememberUpdatedState(loading)
+    val heard = remember(source) { QuietWhileBusy(source, busy) }
     MutantSurface(
         MutantBody.Btn,
         key,
@@ -241,14 +258,14 @@ internal fun ButtonBody(
                 }
             }
             // Loading keeps the button enabled, so keyboard focus stays on it through the work and its end (B-62); it
-            // takes no click while it lasts, and its semantics say it is busy.
-            .mutantHand(enabled)
+            // takes no click while it lasts, and its semantics say it is busy; the arrow, not the hand, says so too.
+            .mutantHand(enabled && !loading)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button) { if (!loading) onClick() },
         fill = if (outlined) colors.background else null,
         shadow = if (outlined && enabled) colors.misregister else null,
         state = body,
         focused = focused && keyboard,
-        interactionSource = source,
+        interactionSource = heard,
         heat = heat,
         profile = if (outlined) MutantBody.Btn.profile.with(overhang = OUTLINED_OVERHANG) else MutantBody.Btn.profile,
         stroke = if (outlined && enabled) colors.textAccent else null,
@@ -262,6 +279,38 @@ internal fun ButtonBody(
             ButtonLabel(text, label, Modifier.weight(1f, fill = false))
         }
     }
+}
+
+/**
+ * What a button's body hears of its interactions (B-168). While it is busy (Loading) it takes no click, so it shows no
+ * press and no hover: a press or a hover under way when the work starts lets go, and a mouse still over it when the work
+ * ends simmers again. Focus is read from the button's own source, not from this.
+ */
+private class QuietWhileBusy(
+    private val source: InteractionSource,
+    private val busy: State<Boolean>,
+) : InteractionSource {
+    override val interactions: Flow<Interaction> =
+        channelFlow {
+            var over: HoverInteraction.Enter? = null
+            launch {
+                source.interactions.collect {
+                    when (it) {
+                        is HoverInteraction.Enter -> over = it
+                        is HoverInteraction.Exit -> over = null
+                    }
+                    if (!busy.value || (it !is PressInteraction.Press && it !is HoverInteraction.Enter)) send(it)
+                }
+            }
+            snapshotFlow { busy.value }.drop(1).collect { now ->
+                if (now) {
+                    send(PressInteraction.Cancel(PressInteraction.Press(Offset.Zero)))
+                    over?.let { send(HoverInteraction.Exit(it)) }
+                } else {
+                    over?.let { send(it) }
+                }
+            }
+        }
 }
 
 /** A button's label: Rubik 500 at 15 (a chip's at 13), on Blink's line box (research §1.14), one line. */
