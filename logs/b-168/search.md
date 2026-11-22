@@ -13,7 +13,9 @@ data-mu-toggle`; a result row, a divider and a loading row of three cocoons), th
 ## What was looked at
 
 Frames in `/private/tmp/b168-search/` (scratch tests, deleted). A sheet is a frame a cell, 16 ms apart, labelled with
-the clock and the event; `*-diff.txt` counts the pixels more than 16 levels apart between consecutive frames.
+the clock and the event; `*-diff.txt` counts the pixels more than 16 levels apart between consecutive frames. The
+stock kit's `s-flow-efir`, `s-flow-kopiya` and `d-efir` frames, which the findings below cite, moved to `before/` when
+those three were recorded again after the fixes.
 
 | Sheets | What it composes | States and transitions |
 |---|---|---|
@@ -66,18 +68,15 @@ focus back to the field. The suggestions, the other control in the bar that writ
 `components/MutantSearchBar.kt` (`SuggestionsBody`). On a touch screen the chip takes no focus and the field keeps it;
 not seen here, no phone.
 
-### F-search-03 — the caret stands where the last layout put it, for one frame on every change (reported: the text-field group, `MutantTextField.kt`)
+### F-search-03 — the caret placed by the last layout: withdrawn, the text-field group's
 
-Seen through the bar, all in `Caret`:
-- on the frame a letter is typed, the block is placed by the previous layout's end and covers the new letter
-  (`s-flow-efir-p1.png` 2076, 2140, 2204, 2268; `z3.png`); three letters at once draw it over the second
-  (`seams-d1-p1.png` 1352, «н▌ч»);
-- on the frame the clear icon empties the query, the caret is the 2 dp bar inside a text that is no longer there
-  (`seams-d1-p1.png` 1192);
-- a focused empty field with a placeholder draws the block over the placeholder's first letter for as long as it is
-  focused (`d-efir-p0.png` 2024–2184, «▌ind a recording»);
-- a query past the bar's end draws the block over its last letter, at the field's edge (`s-flow-efir-p6.png`
-  4352–4560, «the ba▌»), the B-59 class.
+Seen through the bar, all in `MutantTextField.kt`'s `Caret`: the block over a just-typed letter (`s-flow-efir-p1.png`
+2076–2268, `z3.png`; three letters at once, `seams-d1-p1.png` 1352), the 2 dp bar inside a text no longer there on the
+frame the clear icon empties it (`seams-d1-p1.png` 1192), the block over a placeholder's first letter
+(`d-efir-p0.png` 2024–2184) and over the last letter of a query past the bar's end (`s-flow-efir-p6.png` 4352–4560).
+The text-field group has changed `TextFieldBody` on its branch (the line scrolls itself and the caret is placed in the
+same measure; a bar, not the block, before a placeholder), not yet on `main`; this worktree still draws the old caret.
+Not reported again; the bar's frames should be looked at once both branches are in.
 
 ### F-search-04 — the result's match follows the query late, and under reduce motion until something else redraws (reported: shared, `MutantText.kt`; a new face of F-buttons-02)
 
@@ -96,13 +95,14 @@ agree). The brief says the cocoon «настраивается» into the compon
 row is a separate composable from the row it stands for. Whether a result should tune in from its cocoon is the owner's,
 and kit-wide (Card, Cocoon).
 
-### F-search-06 — the bar's focus look comes and goes in one frame, and leaves when focus moves to its own clear icon (reported: the text-field group, `MutantTextField.kt`; the owner)
+### F-search-06 — the bar drops its focus look when focus moves to its own clear icon (reported: the owner; a new face of F-text-field-08)
 
-Focus in and out swap the field's calm (drips at 0.3 and back) and its brackets between two frames (`s-flow-efir-p0.png`
-1692; `s-flow-efir-p4.png` 3380), where the brief's table gives TextField `focus` → `lock-on`, 200 ms, `lock`. And Tab
-from the field to the clear icon moves focus inside the bar, yet the bar drops its focused look in that frame (drips
-back, its brackets replaced by the icon's, `s-flow-efir-p7.png` 4642); the page's focused bar is one state for the whole
-line. Whether the bar keeps its look while focus is anywhere in it is the owner's.
+Tab from the field to the clear icon moves focus within the bar, yet the bar drops its focused look in that frame: the
+drips grow back from the 0.3 calm and the field's brackets give way to the icon's (`s-flow-efir-p7.png` 4642, 1119
+pixels apart from the frame before). The page's focused bar is one state for the whole line (`data-calm=".3"
+data-brackets` on the slot that holds the svg). The cut itself is F-text-field-08 (focus in and out swap the calm in one
+frame, `s-flow-efir-p0.png` 1692, `s-flow-efir-p4.png` 3380); new here is that it happens while focus stays inside the
+bar. Whether the bar keeps its look while focus is anywhere in it is the owner's.
 
 ### F-search-07 — several loading rows flicker alike unless keyed, and the KDoc does not say so (local)
 
@@ -114,4 +114,59 @@ they flicker alike»). The default is the page's (B-44) and stays; the KDoc says
 
 ## Fixes
 
-To be filled after the fixes.
+### F-search-01 — fixed in `f9cb893`
+
+- **Cause and fix.** `ClearIcon`'s box now carries `mutantCleanZone()`, as the icon button's and the button's icons do:
+  the field's zone runs from the prefix to the cross, as the engine's from the text to the svg. It is marked only while
+  the icon shows (with a query), as the icon itself.
+- **Test.** `SearchBarParityTest`, «the bar's own clean zone takes in the clear icon, as the page's does»: the page's bar
+  (328 dp, `ночь`, words hidden, frozen at the page's time) drawn by the zone the kit measures itself and by the zone
+  the engine measured (the parity fixture's `LocalMutantTextZone`, withheld for the field only): 0 of 17 056 pixels
+  apart in each theme, where the stock kit read 570 and 577.
+- **Mutant**, run on the committed code, the `<failure>` read from the JUnit XML, the file restored: the marker dropped
+  from `ClearIcon` → killed («Efir: 17056 pixels of the bar, 570 apart / Kopiya: … 577 apart»).
+- **After.** `s-flow-efir-p1.png`, `s-flow-efir-p2.png`, `s-flow-kopiya-p*.png` recorded again (the stock ones in
+  `before/`): the cross stands on the plain fill, the mosaic block that stood beside and under its right arm is gone;
+  the bar without a query keeps its mosaic at the edge, as before. The zone now grows by the icon on the frame the
+  first letter is typed and shrinks with the last one deleted: the same frame in which the field's zone already changes
+  (F-text-field-07), so no frame of change is added. No golden, reference or parity cell moved:
+  `SearchBarParityTest`'s page cell passes unchanged (its fixture hands in the engine's zone).
+
+### F-search-02 — fixed in `f9a1b0c`
+
+- **Cause and fix.** A chip takes focus when pressed outside touch mode, and `SuggestionsBody` only handed its words
+  over. `SearchBarBody` now provides its field's `FocusRequester` to its content through a private local, and a
+  suggestion taken under a bar hands focus back to it after `onSuggestion`, as the clear icon does (B-44). Suggestions
+  outside a bar are untouched. The KDoc of `MutantSearchSuggestions` says so.
+- **Test.** `SearchBarBehaviourTest`, «a suggestion taken by the mouse or the keyboard hands focus back to the field»: a
+  bar whose suggestions leave as the query fills (the demo's way), a suggestion clicked by the mouse — the query is
+  filled, the suggestions are gone and the field is focused; then suggestions that stay (the sample's way), one focused
+  and taken by Enter — the field is focused.
+- **Mutant**: the `requestFocus` dropped from the suggestion's click → killed («Failed to assert the following:
+  (Focused = 'true')», the field with `EditableText = 'ночной эфир'`, `Focused = 'false'`).
+- **After.** `s-flow-efir-p2.png` 2552–2792: after «night air» the field keeps its brackets, calm and caret (the caret's
+  first frame stands inside the new words: F-search-03); `d-efir-p2.png` 3152–3200: after «rain» the demo's field is
+  focused, the scratch test read it as the one focused node in all three themes. On a touch screen the field already
+  kept its focus; there it is asked for again and stays.
+
+### F-search-07 — fixed in `195c8d7`
+
+KDoc only: `MutantSearchResultLoading` says that several rows on one screen each take their own key. No behaviour, so no
+test and no mutant.
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+`195c8d7`, this Mac: exit 0; the JUnit XML reads `mutant-core` 427 tests, 0 failed, 0 skipped, and `sample` 22 tests,
+0 failed, 0 skipped; both lint checks pass. The public API did not change (a private local and KDoc), so no ABI dump.
+The text-field group's change to `TextFieldBody` is not on this branch: the bar passes it `trailing` and
+`focusRequester` as before, and should be looked at once both are in.
+
+## Not verified
+
+- A touch screen: no phone was used. That a touch on a suggestion leaves the field focused, and that the soft keyboard
+  stays up after F-search-02's request, is read from Compose's touch mode, not seen.
+- The browser itself: the browser's way was drawn on the desktop through the surface's seams, not in Chrome or on the
+  Pixel; nothing in this group's fixes touches the shader.
+- The seams run at density 2 timed out in its teardown after its frames were written (`seams-d2-p*.png`, looked at);
+  the density-2 sample flow (`s-flow-d2-p*.png`) ran whole.
