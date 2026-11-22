@@ -35,6 +35,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.semantics
@@ -66,7 +68,8 @@ import io.github.youndie.mutant.tokens.MutantBody
  * transition steps) with the scrim coming in, and sinks in 200 ms; under reduce motion it is there at once. A sink
  * during the rise, or a rise during the sink, goes on from where the sheet stands. A click on
  * the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the sheet as it opens and,
- * once it has sunk, goes to [returnFocusTo], or with none is left to the window. The sheet keeps its content above
+ * once it has sunk, goes to [returnFocusTo], or with none is left to the window. As it starts to sink, it and what is on it
+ * answer no press and no key. The sheet keeps its content above
  * [windowInsets]; its body runs on under them.
  */
 @Composable
@@ -155,11 +158,28 @@ private fun SheetScene(
             .focusGroup()
             .focusRequester(focus)
             .onPreviewKeyEvent {
-                if (visible && it.type == KeyEventType.KeyDown && it.key == Key.Escape) {
-                    dismiss()
-                    true
-                } else {
-                    false
+                when {
+                    // Sinking, it answers no key: an Enter on the control that closed it would fire it again (B-168).
+                    !visible -> {
+                        true
+                    }
+
+                    it.type == KeyEventType.KeyDown && it.key == Key.Escape -> {
+                        dismiss()
+                        true
+                    }
+
+                    else -> {
+                        false
+                    }
+                }
+            }
+            // Nor a press: what is on it stops answering as it starts to sink, as the scrim does (B-168).
+            .pointerInput(visible) {
+                if (!visible) {
+                    awaitPointerEventScope {
+                        while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                    }
                 }
             }.focusable(),
     ) {

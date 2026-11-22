@@ -280,4 +280,43 @@ class SheetBehaviourTest {
         }
         onNodeWithTag(tag).assertIsFocused()
     }
+
+    @Test
+    fun `as it sinks, what is on it answers neither a click nor a key`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var visible by mutableStateOf(true)
+            var done = 0
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(Modifier.size(360.dp, 600.dp)) {
+                            MutantBottomSheet(visible, { visible = false }) {
+                                MutantButton("Готово", {
+                                    done++
+                                    visible = false
+                                }, Modifier.testTag("done"))
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(500)
+            focusOn("done")
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(1, done, "Enter on Done closes")
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(1, done, "a second Enter as it sinks")
+            visible = true
+            mainClock.advanceTimeBy(500)
+            onNodeWithTag("done").performMouseInput { click(center) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(2, done, "a click on Done closes")
+            // Done where it stands now, a frame into the sink.
+            onNodeWithTag("done").performMouseInput { click(center) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(2, done, "a second click as it sinks")
+        }
 }
