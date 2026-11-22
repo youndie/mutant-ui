@@ -3,10 +3,12 @@ package io.github.youndie.mutant.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorProducer
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.IntrinsicMeasurable
 import androidx.compose.ui.layout.IntrinsicMeasureScope
@@ -16,6 +18,10 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -41,6 +47,10 @@ import kotlin.math.roundToInt
  * style and constraints, in a measurer shared by every label of a density, direction and font resolver, and a label
  * shown again takes it. What is drawn is the layout's paragraph, as `BasicText` draws it: the same size, baselines,
  * clipping and colour; its semantics carry the words and the layout.
+ *
+ * The layout is kept without the style's colour, which [TextDraw] lays on as it draws (B-169): a change of the colour
+ * alone measures nothing again, and redraws the words in the next frame. A span's colour is in the paragraph's runs, so
+ * a change of a span lays the words out again, as `BasicText` does, and redraws them too.
  */
 @Composable
 internal fun MutantText(
@@ -79,9 +89,10 @@ internal fun MutantText(
 ) {
     val measurer = sharedMeasurer(LocalFontFamilyResolver.current, LocalDensity.current, LocalLayoutDirection.current)
     val held = remember { arrayOfNulls<TextLayoutResult>(1) }
+    val measured = remember(style) { style.withoutColour() }
     val policy =
-        remember(measurer, text, style, overflow, softWrap, maxLines, onTextLayout) {
-            TextPolicy(measurer, text, style, overflow, softWrap, maxLines) { r ->
+        remember(measurer, text, measured, overflow, softWrap, maxLines, onTextLayout) {
+            TextPolicy(measurer, text, measured, overflow, softWrap, maxLines) { r ->
                 held[0] = r
                 onTextLayout?.invoke(r)
             }
@@ -95,17 +106,82 @@ internal fun MutantText(
                     out.add(r)
                     true
                 }
-            }.drawBehind {
-                val r = held[0] ?: return@drawBehind
-                val tint = color?.invoke() ?: Color.Unspecified
-                if (r.hasVisualOverflow && overflow != TextOverflow.Visible) {
-                    clipRect(0f, 0f, size.width, size.height) { drawText(r, tint) }
-                } else {
-                    drawText(r, tint)
-                }
-            },
+            }.then(TextDraw(held, text, style, color, overflow)),
         policy,
     )
+}
+
+/** The style the layout is kept by: the colour is laid on at draw, so two colours of the same words share a layout. */
+private fun TextStyle.withoutColour(): TextStyle = if (color.isSpecified) copy(color = Color.Unspecified) else this
+
+/**
+ * Draws the kept layout in [color], or the [style]'s colour where no producer is given or it produces none. Any change of
+ * what it draws by — the words (a span's colour), the style (its colour, which measures nothing again), the producer —
+ * updates the node, and the update redraws the words (B-169).
+ */
+private class TextDraw(
+    val held: Array<TextLayoutResult?>,
+    val text: AnnotatedString,
+    val style: TextStyle,
+    val color: ColorProducer?,
+    val overflow: TextOverflow,
+) : ModifierNodeElement<TextDrawNode>() {
+    override fun create() = TextDrawNode(held, style.color, color, overflow)
+
+    override fun update(node: TextDrawNode) = node.update(style.color, color, overflow)
+
+    override fun InspectorInfo.inspectableProperties() {
+        name = "mutantText"
+    }
+
+    override fun equals(other: Any?): Boolean =
+        other is TextDraw &&
+            held === other.held &&
+            text == other.text &&
+            style == other.style &&
+            color === other.color &&
+            overflow == other.overflow
+
+    override fun hashCode(): Int {
+        var h = text.hashCode()
+        h = 31 * h + style.hashCode()
+        h = 31 * h + (color?.hashCode() ?: 0)
+        return 31 * h + overflow.hashCode()
+    }
+}
+
+private class TextDrawNode(
+    private val held: Array<TextLayoutResult?>,
+    private var tint: Color,
+    private var color: ColorProducer?,
+    private var overflow: TextOverflow,
+) : Modifier.Node(),
+    DrawModifierNode {
+    override val shouldAutoInvalidate: Boolean get() = false
+
+    fun update(
+        tint: Color,
+        color: ColorProducer?,
+        overflow: TextOverflow,
+    ) {
+        this.tint = tint
+        this.color = color
+        this.overflow = overflow
+        invalidateDraw()
+    }
+
+    override fun ContentDrawScope.draw() {
+        val r = held[0]
+        if (r != null) {
+            val ink = (color?.invoke() ?: Color.Unspecified).takeOrElse { tint }
+            if (r.hasVisualOverflow && overflow != TextOverflow.Visible) {
+                clipRect(0f, 0f, size.width, size.height) { drawText(r, ink) }
+            } else {
+                drawText(r, ink)
+            }
+        }
+        drawContent()
+    }
 }
 
 private class TextPolicy(
