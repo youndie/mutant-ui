@@ -91,7 +91,7 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 7 | card-cocoon | Card, Cocoon (skeleton) | done: [report](../../logs/b-168/card-cocoon.md), 0 fixed, 5 reported |
 | 8 | app-bar-tabs | TopAppBar, Tabs | done: [report](../../logs/b-168/app-bar-tabs.md), 2 fixed, 5 reported |
 | 9 | nav-bar | NavigationBar | open |
-| 10 | list-divider-badge | ListItem, Divider, Badge | open |
+| 10 | list-divider-badge | ListItem, Divider, Badge | done: [report](../../logs/b-168/list-divider-badge.md), 1 fixed, 3 reported |
 | 11 | snackbar | Snackbar | open |
 | 12 | progress | LinearProgress, CircularProgress | open |
 | 13 | dialog | Dialog | open |
