@@ -61,29 +61,39 @@ What holds and is not a finding:
   (`core/rtl.png`, `core/look-rtl.png`).
 - **The item that decided it.** B-65: the kit mirrors in a right-to-left layout (the tabs and the navigation bar were
   made to; the list item, snackbar and top app bar already did). The design draws no RTL.
-- **Fix.** Both bars draw their picture mirrored under RTL; the reel, a spool, keeps its turn.
+- **Fixed** in `93f20dd`: both bars draw their picture mirrored under RTL; the reel, a spool, keeps its turn. Test:
+  `ProgressBehaviourTest` «right to left both bars draw their left-to-right picture mirrored» (every pixel of each bar
+  equals its LTR twin flipped). Mutant: the mirror dropped — killed (`det at 0, 0`). After: `core/rtl.png`,
+  `core/look-rtl.png`.
 
 ### F-progress-02 — the indeterminate bar is 0 dp wide where no width is given — local
 
 - **What.** In a horizontally scrolling row the indeterminate bar measures 0 × 12 and vanishes (`core/unbounded.txt`:
   `ind 0 x 12`), the determinate one beside it 250 × 23. B-64 fixed this (F14) for the determinate track only.
 - **The item that decided it.** B-64: the progress track has no width of its own, so it takes `TRACK_MIN`, 200 dp.
-- **Fix.** The indeterminate track takes the same 200 dp when its width is unbounded; bounded, it fills as before.
+- **Fixed** in `ea9c313`: the indeterminate track takes the same 200 dp when its width is unbounded; bounded, it fills
+  as before. A plain `defaultMinSize` was not enough: the node measured 200 dp, but a `Canvas` given only a minimum
+  measures 0 and stands undrawn in its middle (seen in `core/unbounded.png` on the first try), so the width is fixed.
+  Test: «with no width to fill, the running band keeps the determinate track's 200 dp» (its size and its 48 solid
+  columns). Mutants: the modifier dropped — killed (`0 x 12`); only a minimum given — killed (`solid half 0`).
 
 ### F-progress-03 — a reel given another size draws in its box's top-left corner — local
 
 - **What.** Given `Modifier.size(60.dp)` the spool stands in the top-left 36 dp of the 60 dp box; given `size(20.dp)`
   it overflows only right and down; given `width(120.dp)` it stands at the left (`core/widths.png`, the last row).
 - **The rule.** cmp-ui-component §9, squeezed or given room: the form keeps its size, centred.
-- **Fix.** The reel keeps 36 dp, centred in whatever box it is given. At its own size nothing moves.
+- **Fixed** in `a1e66cd`: the reel keeps 36 dp, centred in whatever box it is given. At its own size nothing moves
+  (`ProgressParityTest` unchanged). Test: «given a box of another size, the reel keeps its 36 dp in the box's middle».
+  Mutant: the centre back at (18, 18) — killed (`big across: 1..33 in 60`). After: `core/widths.png`, the last row.
 
 ### F-progress-04 — a narrow row cuts the value: `042%` reads `04` — local
 
 - **What.** At 20 dp the value is measured into what the row has left and cut to `04` (`core/widths.png`, the second
   row); `100%` would read `10`, another number.
 - **The rule.** cmp-ui-component §9: a number grows or shares, never cut.
-- **Fix.** The value is always laid out whole and stands past the row's end when the row is narrower than it; the track
-  takes what is left, as before.
+- **Fixed** in `fcffb12`: the value is laid out whole and stands past the row's end when the row is narrower than it;
+  the track takes what is left, as before. Test: «in a row too narrow for it, the value stays whole past the row's
+  end». Mutant: the value's modifier dropped — killed (`ink 1..19, whole 38`). After: `core/widths.png`.
 
 ### F-progress-05 — paused, the band leaves the track empty at some widths — reported (owner: B-27's number)
 
@@ -114,6 +124,11 @@ What holds and is not a finding:
   transition has gone"; B-100's list names the transitions and the venom run, not the stage's `rewind` and `reel`. The
   spec page calls them «линейно, по тикам», the brief «квантование». Whether the band is movement (every frame) or the
   stage's quantised look (its tick) is the owner's word; the kit keeps the tick until then.
+
+## After the fixes
+
+The look strips and per-frame diffs of every look but RTL are identical to before, frame for frame (`looks.txt`); the
+RTL strips mirror the LTR ones; the sample's section strips look as before. `ProgressParityTest` holds unchanged.
 
 ## Not verified
 
