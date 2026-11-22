@@ -126,16 +126,8 @@ internal fun PullToRefreshBody(
         }
     }
     val doneShown = waited.let { glide.pill(clock.nowMs, still) }
+    // Refreshing boils the tongue: pressed by the tongue itself, once its body listens (B-168).
     val boil = remember { MutableInteractionSource() }
-    LaunchedEffect(refreshing) {
-        if (refreshing) {
-            boil.emit(
-                PressInteraction.Press(Offset.Zero),
-            )
-        } else {
-            boil.emit(PressInteraction.Release(PressInteraction.Press(Offset.Zero)))
-        }
-    }
 
     /** Where the content stands now, dp: a new pull takes it up from there, never from 0. */
     fun standing(): Float = if (holding) dragged else glide.at(clock.nowMs, stillNow)
@@ -384,6 +376,18 @@ private fun Tongue(
                 }
             }
         }
+    }
+    // After the body, whose effect then already collects [boil]: a press emitted before it is dropped (B-168). The
+    // component's own effect pressed it, so refreshing started with no tongue hanging yet (by code, by a reader's
+    // action) or a screen composed refreshing never boiled; only a tongue already pulled out did.
+    LaunchedEffect(boil, boiling) {
+        boil.emit(
+            if (boiling) {
+                PressInteraction.Press(Offset.Zero)
+            } else {
+                PressInteraction.Release(PressInteraction.Press(Offset.Zero))
+            },
+        )
     }
 }
 
