@@ -160,6 +160,11 @@ internal fun ListItemBody(
                 }
             }
         }
+        // Each word is also tinted at drawing time: the kit's text keeps the layout it measured while only its colour
+        // changes, so a row disabled or enabled in place kept its words' old colours (B-168).
+        val headlineInk = ink(colors.text)
+        val supportingInk = ink(colors.textSecondary)
+        val osdInk = ink(colors.textOsd)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(LINE_GAP)) {
             MutantText(
                 // A headline's own colours (a search result's match, B-44) give way to the row's grey or a bare twin's
@@ -170,12 +175,13 @@ internal fun ListItemBody(
                         fontFamily = fonts?.text,
                         fontWeight = FontWeight.Medium,
                         fontSize = HEADLINE_SIZE.sp,
-                        color = ink(colors.text),
+                        color = headlineInk,
                         platformStyle = raster,
                     ).cssLine(MutantFaceMetrics.Rubik),
                 maxLines = 1,
                 softWrap = false,
                 overflow = TextOverflow.Ellipsis,
+                color = { headlineInk },
             )
             if (supporting != null) {
                 MutantText(
@@ -184,12 +190,13 @@ internal fun ListItemBody(
                         TextStyle(
                             fontFamily = fonts?.text,
                             fontSize = SUPPORTING_SIZE.sp,
-                            color = ink(colors.textSecondary),
+                            color = supportingInk,
                             platformStyle = raster,
                         ).cssLine(MutantFaceMetrics.Rubik),
                     maxLines = 1,
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis,
+                    color = { supportingInk },
                 )
             }
         }
@@ -205,11 +212,12 @@ internal fun ListItemBody(
                         TextStyle(
                             fontFamily = fonts?.display,
                             fontSize = OSD_SIZE.sp,
-                            color = ink(colors.textOsd),
+                            color = osdInk,
                             platformStyle = raster,
                         ).cssLine(MutantFaceMetrics.Handjet),
                     maxLines = 1,
                     softWrap = false,
+                    color = { osdInk },
                 )
             }
         }

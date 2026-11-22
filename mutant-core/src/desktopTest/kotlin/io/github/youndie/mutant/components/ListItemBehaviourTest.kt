@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -140,6 +141,54 @@ class ListItemBehaviourTest {
                     "$word greys",
                 )
             }
+        }
+
+    @Test
+    fun `a row disabled in place greys its words, and enabled gives them back`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var enabled by mutableStateOf(true)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        MutantListItem(
+                            "Настроечная таблица",
+                            Modifier.width(328.dp),
+                            supporting = "Копия 4-го поколения",
+                            leadingIcon = MutantIcons.Home,
+                            trailingText = "12:04",
+                            onClick = {},
+                            enabled = enabled,
+                        )
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val efir = MutantPalettes.Efir
+            val words =
+                listOf(
+                    "Настроечная таблица" to efir.text,
+                    "Копия 4-го поколения" to efir.textSecondary,
+                    "12:04" to efir.textOsd,
+                )
+
+            fun inked(
+                word: String,
+                ink: Color,
+            ) = onNodeWithText(word, useUnmergedTree = true).captureToImage().toPixelMap().let { px ->
+                (0 until px.width * px.height).count { near(px[it % px.width, it / px.width], ink) }
+            }
+            val first = words.map { (word, ink) -> inked(word, ink) }
+            assertTrue(first.all { it > 10 }, "every word in its colour at first: $first")
+            enabled = false
+            mainClock.advanceTimeByFrame()
+            for ((word, ink) in words) {
+                assertTrue(inked(word, efir.textDisabled) > 10, "$word greys in the first frame disabled")
+                assertEquals(0, inked(word, ink), "$word keeps none of its colour disabled")
+            }
+            enabled = true
+            mainClock.advanceTimeByFrame()
+            assertEquals(first, words.map { (word, ink) -> inked(word, ink) }, "every word back in its colour")
         }
 
     @Test
