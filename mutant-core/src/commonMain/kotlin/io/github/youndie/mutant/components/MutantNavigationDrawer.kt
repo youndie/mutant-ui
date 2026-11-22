@@ -131,7 +131,6 @@ internal fun DrawerFrame(
     playIn: Boolean = true,
     hidden: Boolean = false,
 ) {
-    ReturnFocus(visible, returnFocusTo)
     val reduce = LocalMutantReduceMotion.current
     val screen = readMutantClock()
     // The drawer's own clock: the screen's stands while it shows, and the drawer still moves.
@@ -160,6 +159,9 @@ internal fun DrawerFrame(
             if (!gone) screen.holds++
             onDispose { if (!gone) screen.holds-- }
         }
+        // Focus goes back once the drawer is gone, not as it starts to close: through the exit the scrim still covers the
+        // screen, and an Enter pressed then would reach the opener under it and open the drawer again (B-168).
+        ReturnFocus(!gone, returnFocusTo)
         if (gone) return@ProvideMutantClock
         val dismiss by rememberUpdatedState(onDismissRequest)
         val focus = remember { FocusRequester() }

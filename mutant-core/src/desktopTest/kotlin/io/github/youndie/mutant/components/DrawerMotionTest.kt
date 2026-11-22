@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
@@ -165,4 +166,23 @@ class DrawerMotionTest {
             assertEquals(0, column.count(::far), "rows of the window's column that are not its fill $fill")
         }
     }
+
+    @Test
+    fun `through its exit the keys reach nothing behind it, and focus is back with the opener after`() =
+        drawer { stage ->
+            stage.opener.requestFocus()
+            mainClock.advanceTimeByFrame()
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeBy(500)
+            assertEquals(1, stage.opens, "Enter on the opener opens the drawer")
+            // Escape, then Enter as the drawer slides out.
+            onRoot().performKeyInput { pressKey(Key.Escape) }
+            mainClock.advanceTimeByFrame()
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(1, stage.opens, "the Enter during the exit reached the opener under the scrim")
+            assertTrue(!stage.open, "closing")
+            mainClock.advanceTimeBy(300)
+            onNodeWithTag("opener").assertIsFocused()
+        }
 }
