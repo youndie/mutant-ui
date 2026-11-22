@@ -90,6 +90,46 @@ tick's frame instead of the hot tick's, and their drips change in one frame (`pr
 2320 ms, `press-reduce-p1.png`). The engine does the same (`drawItem`: a pressed body draws at `tsH`, a resting one at
 `ts`). Listed for the owner beside F-04: reduce motion leaves a press without a visible answer.
 
+### F-icon-fab-06 — a press draws the rest picture for its first two frames (reported: shared, `surface/`)
+
+Found while proving that the fix of F-01 moves nothing. With a finger down just before a frame, the icon button's first
+two frames after it (1744 and 1760 ms in `press-efir`) are the resting picture; the third shows the press (the hot
+frame's running mosaic, the greyer fill, the highlight). A first version of the fix, a `layout { }` lambda re-created on
+every recomposition, laid the body out again when the press recomposed it, and then the press showed from the first
+frame: `press-first-frame-stock.png` against `press-first-frame-relaid.png` (the same frame, ×4), 87 pixels apart in
+«Эфир», 174 in «Копия», over the body's top. So the surface keeps drawing what it had (its tick's image, B-82) until
+something else asks; a layout pass is one such thing. At heat 0.05–0.1 the fill has barely moved, so the eye sees at most
+the mosaic tile 32 ms late; it is listed because it is B-166's class (a stale look for a frame) and its cause is the
+surface's, not this group's. The fix's modifier is now an element equal for an equal side, which lays nothing out again,
+and every frame of the press sheets is the stock kit's to the pixel.
+
 ## Fixes
 
-Filled in as each is made: F-icon-fab-01.
+### F-icon-fab-01 — fixed in `2f877e7`
+
+- **Cause and fix.** `ActionBody` sized the bodies with `size` and `defaultMinSize` / `height`, which yield to a smaller
+  incoming maximum. A layout element before them, `NotUnder`, raises the incoming maxima to the body's side (48 or 56)
+  and leaves every other constraint as it was: a slot that gives less gets the body at its side, centred on the slot and
+  overflowing it, as `requiredSize` lays out; a slot that gives as much or more is measured as before (a consumer's
+  `size(64)` still gives a 64 dp body). It is a data-class element, so a recomposition does not lay the body out again
+  (F-06). The rule is the one cmp-ui-component §9 states for a form squeezed by its row («the form keeps its size, the
+  words give way»): the extended FAB keeps 56 × 56 at the least and its label gives way first, as before.
+- **Rejected.** `requiredSize` / `requiredWidthIn`: it also ignores a larger incoming minimum, so a consumer's
+  `width(200)` extended FAB would have shrunk to its content, centred in 200, and a `size(64)` icon button to 48.
+- **Test.** `IconButtonBehaviourTest`, «squeezed by its slot, each keeps its size, draws its body and takes a click»:
+  the icon button and the FAB after a title that fills a 200 dp row, the extended FAB in a 20 dp box, a FAB in a 20 dp
+  tall box. Each is displayed, measures its side at the least, the rows show more than 300 pixels of each body's fill,
+  and each takes a finger's click (4 of 4).
+- **Mutants**, each run on the committed code, the `<failure>` read from the JUnit XML, the file restored:
+  1. the width's maximum not raised → killed («The component with TestTag = 'i' is not displayed»);
+  2. the height's maximum not raised → killed («low measures 56 x 20, under 56»);
+  3. the extended FAB without the element → killed («x measures 20 x 56, under 56»);
+  4. the square bodies without the element → killed («'i' is not displayed»).
+  Not held by a test: the element as a plain class (re-laid out on every recomposition); its only visible effect is
+  F-06's press drawn two frames sooner.
+- **After.** `squeezed-after.png` and `squeezed.txt`: 48 × 48, 56 × 56, 70 × 56, 48 × 48 where the same probe read
+  0 × 48, 0 × 56, 70 × 56 (label gone, unchanged), 30 × 48. The press, rest and appear sheets of the sample were
+  recorded again: the specimens stand where they stood (`rest-efir-sem.txt` unchanged), and the per-frame diffs of
+  `rest-efir` and `press-efir` are the stock kit's to the pixel count; the icon button's first three pressed frames in
+  «Эфир», «Копия» and «Чистый сигнал» equal the stock kit's to the pixel. No golden, parity cell
+  or reference moved: `IconButtonParityTest` passes unchanged.
