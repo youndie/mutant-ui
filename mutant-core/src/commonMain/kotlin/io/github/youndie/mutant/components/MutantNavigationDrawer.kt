@@ -135,7 +135,9 @@ internal fun DrawerFrame(
     // The drawer's own clock: the screen's stands while it shows, and the drawer still moves.
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
-    val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    // Given its two durations, a close during the slide in (or an open during the slide out) goes on from where the
+    // window stands instead of starting over from the other end (B-168).
+    val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, IN_MS, OUT_MS) }
     val pick = remember { PickHold(selectedIndex) }
     val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
