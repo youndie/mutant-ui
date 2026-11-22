@@ -1,6 +1,8 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,6 +15,7 @@ import kotlin.math.abs
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -369,4 +372,41 @@ class SheetBehaviourTest {
             assertTrue(top < 100, "the sheet stands across the screen: $top")
             assertEquals(0, column.count(::far), "rows of the body's column that are not its fill $fill")
         }
+
+    @Test
+    fun `a content taller than the screen keeps its top on it, and one that scrolls is given its room`() {
+        for (scrolls in listOf(false, true)) {
+            val scroll = ScrollState(0)
+            runComposeUiTest {
+                mainClock.autoAdvance = false
+                setContent {
+                    CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                        MutantTheme {
+                            Box(Modifier.size(360.dp, 300.dp)) {
+                                MutantBottomSheet(true, {}, windowInsets = WindowInsets(0)) {
+                                    val rows = @Composable {
+                                        BasicText("Таймер", Modifier.testTag("title"))
+                                        repeat(12) { BasicText("Строка $it", Modifier.size(200.dp, 40.dp)) }
+                                        BasicText("Готово", Modifier.testTag("last"))
+                                    }
+                                    if (scrolls) Column(Modifier.verticalScroll(scroll)) { rows() } else rows()
+                                }
+                            }
+                        }
+                    }
+                }
+                mainClock.advanceTimeBy(500)
+                val title = onNodeWithTag("title", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y
+                // The window from the screen's top: the tear line, the body 14 dp down, the grabber and the gap under it.
+                assertEquals(14f + 12f + 5f + 8f, title, 1f, "scrolls=$scrolls: the title under the window's top")
+                if (scrolls) {
+                    assertTrue(scroll.maxValue > 0, "it scrolls: ${scroll.maxValue}")
+                    runOnIdle { scroll.dispatchRawDelta(scroll.maxValue.toFloat()) }
+                    mainClock.advanceTimeByFrame()
+                    val last = onNodeWithTag("last", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y
+                    assertTrue(last < 300f, "scrolled to its end, the last line shows: $last")
+                }
+            }
+        }
+    }
 }

@@ -72,7 +72,8 @@ import io.github.youndie.mutant.tokens.MutantBody
  * the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the sheet as it opens and,
  * once it has sunk, goes to [returnFocusTo], or with none is left to the window. As it starts to sink, it and what is on it
  * answer no press and no key. The sheet keeps its content above
- * [windowInsets]; its body runs on under them.
+ * [windowInsets]; its body runs on under them. It is at most as tall as the screen: a content taller than that is given
+ * the room left and scrolls if it is made to (`verticalScroll`, a lazy list), or runs off the screen's foot.
  */
 @Composable
 public fun MutantBottomSheet(
@@ -283,7 +284,10 @@ private fun SheetWindow(
             if (height != null) {
                 measurables[0].measure(Constraints.fixed(w + 2 * side, height.roundToPx() - top + bleed))
             } else {
-                measurables[0].measure(Constraints(minWidth = w + 2 * side, maxWidth = w + 2 * side))
+                // At most as tall as the screen: a content that scrolls learns its room (with none it threw), and a
+                // taller one runs off the foot with its top kept, where it was centred and cut at both ends (B-168).
+                val room = if (c.hasBoundedHeight) (c.maxHeight - top + bleed).coerceAtLeast(0) else Constraints.Infinity
+                measurables[0].measure(Constraints(minWidth = w + 2 * side, maxWidth = w + 2 * side, maxHeight = room))
             }
         val line = measurables[1].measure(Constraints.fixed(w, LINE_H.roundToPx()))
         layout(w, body.height - bleed + top) {
