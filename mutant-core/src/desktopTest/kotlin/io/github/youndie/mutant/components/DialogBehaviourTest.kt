@@ -36,6 +36,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
@@ -116,6 +117,38 @@ class DialogBehaviourTest {
             assertEquals(0, onAllNodesWithText("Отмена").fetchSemanticsNodes().size, "gone, nothing composed")
             mainClock.advanceTimeByFrame()
             onNodeWithTag("opener").assertIsFocused()
+        }
+
+    @Test
+    fun `reversed mid-way it goes on from where it stands - no frame jumps`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            screen()
+            var last = 0f
+            var lastAt = mainClock.currentTime
+            val jumps = mutableListOf<String>()
+
+            // The scrim's darkness may move by the faster of the two rates (the close's 200 ms) over the time that passed.
+            fun frame() {
+                mainClock.advanceTimeByFrame()
+                val now = corner()
+                val at = mainClock.currentTime
+                val allowed = .62f * (at - lastAt) / 200f + .02f
+                if (kotlin.math.abs(now - last) > allowed) jumps += "$lastAt..$at: $last -> $now"
+                last = now
+                lastAt = at
+            }
+            repeat(7) { frame() }
+            val opening = last
+            assertTrue(opening in .1f..0.4f, "about a third into the open: $opening")
+            // Cancel, about 110 ms into the open, and the dialog reopened about 100 ms into the close.
+            onNodeWithText("Отмена").performMouseInput { click(center) }
+            repeat(6) { frame() }
+            assertTrue(last < opening, "closing from where it stood: $opening, then $last")
+            open = true
+            repeat(25) { frame() }
+            assertTrue(jumps.isEmpty(), "jumps: $jumps")
+            assertEquals(.62f, last, .01f, "open again")
         }
 
     @Test

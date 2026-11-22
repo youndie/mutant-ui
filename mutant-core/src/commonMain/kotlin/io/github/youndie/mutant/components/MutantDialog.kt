@@ -142,7 +142,8 @@ internal fun DialogFrame(
     // A frozen screen (a still, a fixture) freezes it too.
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
-    val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    val follow =
+        remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, OPEN_MS, CLOSE_MS) }
     val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
         val clock = readMutantClock()
@@ -489,10 +490,17 @@ internal fun ReturnFocus(
     }
 }
 
-/** Follows [visible] from composition without writing state: a change starts the open or the close then. */
+/**
+ * Follows [visible] from composition without writing state: a change starts the open or the close then. Given the
+ * open's and the close's durations ([openMs], [closeMs]), the new one starts from where the other one stands: a close
+ * half-way into the open fades from half, and a reopen half-way into the close rises from half, where without them each
+ * starts from its beginning, a jump (B-168).
+ */
 internal class DialogFollow(
     private var shown: Boolean,
     start: Double,
+    private val openMs: Double? = null,
+    private val closeMs: Double? = null,
 ) {
     var since: Double = if (shown) start else Double.NEGATIVE_INFINITY
         private set
@@ -503,7 +511,14 @@ internal class DialogFollow(
     ) {
         if (visible == shown) return
         shown = visible
-        since = now
+        if (openMs == null || closeMs == null) {
+            since = now
+            return
+        }
+        // How much of the dialog shows now, and the new direction started as far in as that.
+        val done = ((now - since) / (if (visible) closeMs else openMs)).coerceIn(0.0, 1.0)
+        val standing = if (visible) 1 - done else done
+        since = now - (if (visible) standing * openMs else (1 - standing) * closeMs)
     }
 }
 
