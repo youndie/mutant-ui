@@ -46,19 +46,25 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
+import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
+import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /** One destination of [MutantNavigationBar]: its label, always shown, its icon, and an optional [badge]. */
@@ -108,8 +114,15 @@ internal fun NavigationBarBody(
     probe: ((Instance) -> Unit)? = null,
     pillProbe: ((Instance) -> Unit)? = null,
 ) {
+    val clock = readMutantClock()
     val from = remember { PillFrom(selectedIndex) }
-    from.follow(selectedIndex)
+    from.follow(
+        selectedIndex,
+        items.size,
+        clock.nowMs,
+        LocalMutantReduceMotion.current,
+        LocalMutantSteppedMotion.current,
+    )
     MutantSurface(
         MutantBody.Bar,
         key,
@@ -132,9 +145,9 @@ internal fun NavigationBarBody(
             Layout(
                 content = {
                     if (chosen) {
-                        // The cell the pill came from, on the screen: to the other side in a right-to-left layout (B-65).
+                        // Where the pill stands, on the screen: to the other side in a right-to-left layout (B-65).
                         val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
-                        val dx = if (from.at in items.indices) cell * (side * (from.at - selectedIndex)) else 0.dp
+                        val dx = cell * (side * from.cells).toFloat()
                         MutantSurface(
                             MutantBody.Pill,
                             pillKey,
@@ -276,16 +289,33 @@ private fun NavigationItem(
     }
 }
 
-/** Follows the selected index from composition without writing state: the pill slides from where it stood. */
+/**
+ * Follows the selected index from composition without writing state: the pill slides from where it stands. A pick while
+ * it is under way starts the new slide from the place it has reached, not from the cell picked before (B-168).
+ */
 internal class PillFrom(
     private var now: Int,
 ) {
-    var at: Int = -1
+    /** Where the pill's slide starts, in cells from the chosen one in reading order; 0 when it does not slide. */
+    var cells: Double = 0.0
         private set
 
-    fun follow(to: Int) {
+    /** When that slide started, the screen's clock ms. */
+    var since: Double = Double.NEGATIVE_INFINITY
+        private set
+
+    fun follow(
+        to: Int,
+        count: Int,
+        nowMs: Double,
+        instant: Boolean,
+        steps: Boolean,
+    ) {
         if (to == now) return
-        at = now
+        // What is left of the slide under way, as the body draws it: `dx · (1 − e)` with `e = 1 − (1 − p)²`.
+        val left = if (instant) 0.0 else (1 - stepped(nowMs - since, MutantMotion.SLIDE_MS, steps)).pow(2)
+        cells = if (now in 0 until count && to in 0 until count) now - to + cells * left else 0.0
+        since = nowMs
         now = to
     }
 }

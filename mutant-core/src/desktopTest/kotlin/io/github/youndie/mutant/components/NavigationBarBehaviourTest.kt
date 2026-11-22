@@ -244,6 +244,46 @@ class NavigationBarBehaviourTest {
         }
 
     @Test
+    fun `B-168 a pick while the pill slides starts the new slide from where the pill stands`() =
+        listOf(false, true).forEach { steps ->
+            runComposeUiTest {
+                mainClock.autoAdvance = false
+                var at by mutableIntStateOf(0)
+                setContent {
+                    CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                        MutantTheme(steppedMotion = steps) {
+                            Box {
+                                MutantNavigationBar(
+                                    four,
+                                    at,
+                                    {},
+                                    Modifier.width(328.dp).testTag("n"),
+                                    windowInsets = WindowInsets(0),
+                                )
+                            }
+                        }
+                    }
+                }
+                mainClock.advanceTimeByFrame()
+                at = 3
+                mainClock.advanceTimeBy(176)
+                // Each frame from here on: the pill's centre never leaps, and it lands on the second destination.
+                var last = pill()!!.let { (it.first + it.last) / 2 }
+                assertTrue(last in 60..240, "under way to the fourth: $last")
+                at = 1
+                // The pill moves at most a frame's run, or an 83 ms step's (76 px here); the leap back to the fourth is 135.
+                val bound = if (steps) 90 else 24
+                repeat(30) { i ->
+                    mainClock.advanceTimeByFrame()
+                    val centre = pill()!!.let { (it.first + it.last) / 2 }
+                    assertTrue(abs(centre - last) <= bound, "stepped $steps, frame $i: the pill leapt from $last to $centre")
+                    last = centre
+                }
+                assertTrue(abs(last - 123) <= 2, "landed on the second: $last")
+            }
+        }
+
+    @Test
     fun `a new selection slides the pill over from the cell it left, at once when paused`() {
         runComposeUiTest {
             mainClock.autoAdvance = false
