@@ -36,6 +36,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
@@ -47,6 +48,7 @@ import io.github.youndie.mutant.theme.MutantTheme
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -115,6 +117,173 @@ class DialogBehaviourTest {
             mainClock.advanceTimeBy(300)
             assertEquals(0, onAllNodesWithText("Отмена").fetchSemanticsNodes().size, "gone, nothing composed")
             mainClock.advanceTimeByFrame()
+            onNodeWithTag("opener").assertIsFocused()
+        }
+
+    @Test
+    fun `reversed mid-way it goes on from where it stands - no frame jumps`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            screen()
+            var last = 0f
+            var lastAt = mainClock.currentTime
+            val jumps = mutableListOf<String>()
+
+            // The scrim's darkness may move by the faster of the two rates (the close's 200 ms) over the time that passed.
+            fun frame() {
+                mainClock.advanceTimeByFrame()
+                val now = corner()
+                val at = mainClock.currentTime
+                val allowed = .62f * (at - lastAt) / 200f + .02f
+                if (kotlin.math.abs(now - last) > allowed) jumps += "$lastAt..$at: $last -> $now"
+                last = now
+                lastAt = at
+            }
+            repeat(7) { frame() }
+            val opening = last
+            assertTrue(opening in .1f..0.4f, "about a third into the open: $opening")
+            // Cancel, about 110 ms into the open, and the dialog reopened about 100 ms into the close.
+            onNodeWithText("Отмена").performMouseInput { click(center) }
+            repeat(6) { frame() }
+            assertTrue(last < opening, "closing from where it stood: $opening, then $last")
+            open = true
+            repeat(25) { frame() }
+            assertEquals(.62f, last, .01f, "open again")
+            // Closed from whole, and reopened about 60 ms into the close, two thirds still shown.
+            onNodeWithText("Отмена").performMouseInput { click(center) }
+            repeat(4) { frame() }
+            val closing = last
+            assertTrue(closing in .3f..0.55f, "two thirds into the close: $closing")
+            open = true
+            // The frame that reads the change still shows the close's step; the open goes on from there.
+            repeat(3) { frame() }
+            assertTrue(last > closing, "rising from where it stood: $closing, then $last")
+            repeat(25) { frame() }
+            assertTrue(jumps.isEmpty(), "jumps: $jumps")
+            assertEquals(.62f, last, .01f, "open again")
+        }
+
+    @Test
+    fun `opened while the screen's keyframe loss runs, its window is drawn whole`() {
+        var running = false
+        open = false
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        io.github.youndie.mutant.theme.MutantScreenClock {
+                            Box(Modifier.size(360.dp, 300.dp).testTag("screen")) {
+                                io.github.youndie.mutant.surface.KeyframeLossBody(
+                                    Modifier.fillMaxSize(),
+                                    MutantTheme.colors.background,
+                                    null,
+                                    {
+                                        Column {
+                                            MutantCard(Modifier.size(320.dp, 120.dp), key = "loss-card") {}
+                                            MutantButton("Стереть", {}, key = "loss-button")
+                                        }
+                                        // A text long enough that the window stands across the whole screen, the band too.
+                                        MutantDialog(
+                                            open,
+                                            "Стереть запись?",
+                                            {},
+                                            text = "Плёнку можно стереть. ".repeat(40),
+                                        ) {
+                                            MutantDialogAction("Отмена", {})
+                                        }
+                                    },
+                                    probe = { running = it },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            while (!running && mainClock.currentTime < 12_000) mainClock.advanceTimeByFrame()
+            assertTrue(running, "a loss runs by 12 s")
+            open = true
+            repeat(40) { mainClock.advanceTimeByFrame() }
+            val window =
+                onAllNodesWithText("Стереть запись?")
+                    .fetchSemanticsNodes()
+                    .first()
+                    .let { title ->
+                        generateSequence(title) { it.parent }.first { SemanticsProperties.PaneTitle in it.config }
+                    }.boundsInRoot
+            // A column inside the window's right padding, clear of its words and its button: the window's fill alone.
+            val px = onNodeWithTag("screen").captureToImage().toPixelMap()
+            val x = (window.right - 8).toInt()
+            val top = maxOf(window.top.toInt() + 16, 0)
+            val bottom = minOf(window.bottom.toInt() - 16, px.height)
+            val column = (top until bottom).map { px[x, it] }
+            val fill = column.sortedBy { it.red + it.green + it.blue }[column.size / 2]
+
+            fun far(c: Color) = abs(c.red - fill.red) + abs(c.green - fill.green) + abs(c.blue - fill.blue) > .12f
+            val off = column.count(::far)
+            assertTrue(column.size > 200, "the window stands across the screen: $window")
+            assertEquals(0, off, "rows of the window's column that are not its fill $fill")
+        }
+    }
+
+    @Test
+    fun `a click on the window's words focuses no action, and Enter after it fires none`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            screen(reduceMotion = true)
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Плёнку можно будет записать заново.").performMouseInput { click(center) }
+            mainClock.advanceTimeByFrame()
+            val focused =
+                listOf("Отмена", "Стереть").flatMap { label ->
+                    onAllNodesWithText(label).fetchSemanticsNodes().filter {
+                        it.config.getOrElse(SemanticsProperties.Focused) { false }
+                    }
+                }
+            assertTrue(focused.isEmpty(), "no action takes focus from a click on the text")
+            onNodeWithTag("dialog").performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertTrue(open, "Enter cancelled nothing")
+            assertEquals(0, confirms, "Enter erased nothing")
+            assertEquals(0, dismissals, "and the click dismissed nothing")
+            // And Tab from there still goes into the window, not to the screen behind.
+            onNodeWithTag("dialog").performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Отмена").assertIsFocused()
+        }
+
+    @Test
+    fun `through its exit the keys reach nothing behind it, and focus is back with the opener after`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var opens = 0
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(Modifier.size(360.dp, 600.dp)) {
+                            MutantButton("Открыть", {
+                                opens++
+                                open = true
+                            }, Modifier.focusRequester(opener).testTag("opener"))
+                            MutantDialog(open, "Стереть запись?", { open = false }, returnFocusTo = opener) {
+                                MutantDialogAction("Отмена", { open = false })
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(400)
+            onRoot().performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Отмена").assertIsFocused()
+            // Enter on Cancel, then Enter again as the dialog fades.
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(0, opens, "the second Enter reached the opener under the scrim")
+            assertTrue(!open, "closing")
+            mainClock.advanceTimeBy(300)
             onNodeWithTag("opener").assertIsFocused()
         }
 

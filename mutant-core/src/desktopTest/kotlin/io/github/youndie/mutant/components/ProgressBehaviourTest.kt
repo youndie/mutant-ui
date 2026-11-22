@@ -1,15 +1,21 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -23,6 +29,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
@@ -227,5 +234,116 @@ class ProgressBehaviourTest {
             val row = onNodeWithTag("p").fetchSemanticsNode().boundsInRoot
             val value = onAllNodesWithText("040%", useUnmergedTree = true).fetchSemanticsNodes().last().boundsInRoot
             assertTrue(value.right <= row.right + .5f && value.width > 0, "the value whole: $value in $row")
+        }
+
+    @Test
+    fun `right to left both bars draw their left-to-right picture mirrored`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                // Apart, so no ring (drawn 2 dp outside its track) reaches into the next bar.
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (dir in LayoutDirection.entries) {
+                        CompositionLocalProvider(LocalLayoutDirection provides dir) {
+                            MutantLinearProgress(.3f, Modifier.width(200.dp).testTag("det$dir"), showValue = false)
+                            MutantLinearProgress(Modifier.width(200.dp).testTag("ind$dir"))
+                        }
+                    }
+                }
+            }
+            // A few ticks in, the band stands wholly inside the track.
+            mainClock.advanceTimeBy(1000)
+            for (bar in listOf("det", "ind")) {
+                val ltr = onNodeWithTag("${bar}Ltr").captureToImage().toPixelMap()
+                val rtl = onNodeWithTag("${bar}Rtl").captureToImage().toPixelMap()
+                assertTrue((0 until ltr.width).any { near(ltr[it, 6], acid) }, "$bar: some acid to compare")
+                for (y in 0 until ltr.height) {
+                    for (x in 0 until ltr.width) {
+                        assertEquals(ltr[x, y], rtl[ltr.width - 1 - x, y], "$bar at $x, $y")
+                    }
+                }
+            }
+        }
+
+    @Test
+    fun `with no width to fill, the running band keeps the determinate track's 200 dp`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                Row(Modifier.horizontalScroll(rememberScrollState())) {
+                    MutantLinearProgress(Modifier.testTag("b"))
+                    MutantCircularProgress()
+                }
+            }
+            mainClock.advanceTimeBy(1000)
+            val size = onNodeWithTag("b").fetchSemanticsNode().size
+            assertEquals(200, size.width, "the track's width: $size")
+            // Drawn across it, not only measured: the band's solid half lies whole inside the track, and its black.
+            assertEquals(48, acidColumns("b").size, "the band's solid half")
+            val black = Color(0xFF05060C)
+            assertTrue(near(onNodeWithTag("b").captureToImage().toPixelMap()[199, 6], black), "the track to its end")
+        }
+
+    @Test
+    fun `given a box of another size, the reel keeps its 36 dp in the box's middle`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                Row {
+                    MutantCircularProgress(Modifier.size(60.dp).testTag("big"))
+                    MutantCircularProgress(Modifier.size(120.dp, 36.dp).testTag("wide"))
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val black = Color(0xFF05060C)
+            for ((tag, w, h) in listOf(Triple("big", 60, 60), Triple("wide", 120, 36))) {
+                val px = onNodeWithTag(tag).captureToImage().toPixelMap()
+                // The ring's outermost black along the middle row and column: 36 + 2 · 2.5 dp across, centred.
+                val row = (0 until px.width).filter { near(px[it, h / 2], black) }
+                val col = (0 until px.height).filter { near(px[w / 2, it], black) }
+                assertTrue(
+                    abs(row.first() + row.last() - (w - 1)) <= 1,
+                    "$tag across: ${row.first()}..${row.last()} in $w",
+                )
+                // In a box of its own height the ring stands past the capture: read down only in the taller box.
+                if (h > 36) {
+                    assertTrue(
+                        abs(col.first() + col.last() - (h - 1)) <= 1,
+                        "$tag down: ${col.first()}..${col.last()} in $h",
+                    )
+                }
+                assertTrue(row.last() - row.first() in 38..41, "$tag: its own size, ${row.last() - row.first()}")
+            }
+        }
+
+    @Test
+    fun `in a row too narrow for it, the value stays whole past the row's end`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (w in listOf(120, 20)) {
+                        Box(
+                            Modifier.width(120.dp).testTag("room$w"),
+                        ) { MutantLinearProgress(.42f, Modifier.width(w.dp)) }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val amber = MutantPalettes.Efir.textOsd
+
+            fun ink(tag: String): IntRange {
+                val px = onNodeWithTag(tag).captureToImage().toPixelMap()
+                val cols = (0 until px.width).filter { x -> (0 until px.height).any { near(px[x, it], amber, .2f) } }
+                return cols.first()..cols.last()
+            }
+            // The value's width, read where its row has room for it.
+            val whole =
+                onAllNodesWithText("042%", useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .first()
+                    .size.width
+            val narrow = ink("room20")
+            assertTrue(narrow.last - narrow.first + 1 >= whole - 4, "the value's ink $narrow, whole $whole px wide")
         }
 }

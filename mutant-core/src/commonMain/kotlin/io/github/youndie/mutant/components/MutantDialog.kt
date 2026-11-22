@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +54,7 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
@@ -74,6 +77,7 @@ import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.surface.BodyState
+import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
@@ -98,10 +102,12 @@ import kotlin.math.roundToInt
  *
  * With [visible] true, from the start or set later, it opens: scrim, band and window come up together in 320 ms
  * (`pause`); set false they go in 200 (`play`), the screen's clock running again, and it is gone from the composition
- * after. Both step twelve times a second, and under reduce motion are at once. A click on the scrim, Escape or the
- * system back gesture calls [onDismissRequest]. Focus moves into the dialog as it opens and stays there, a Tab on its
- * actions only, coming round from the last to the first and with Shift+Tab the other way. On closing it
- * goes to [returnFocusTo], a requester on whatever opened it, or with none is left to the window.
+ * after. Both run on every frame, step twelve times a second under the theme's `steppedMotion` (B-100), and under
+ * reduce motion are at once; a close during the open, or an open during the close, goes on from where the dialog
+ * stands. A click on the scrim, Escape or the system back gesture calls [onDismissRequest]. Focus moves into the
+ * dialog as it opens and stays there, a Tab on its actions only, coming round from the last to the first and with
+ * Shift+Tab the other way. Once the dialog has gone it goes to [returnFocusTo], a requester on whatever opened it, or
+ * with none is left to the window; through the close the keys, like the pointer, reach nothing behind it.
  */
 @Composable
 public fun MutantDialog(
@@ -135,14 +141,14 @@ internal fun DialogFrame(
     hidden: Boolean = false,
     probe: ((Instance) -> Unit)? = null,
 ) {
-    ReturnFocus(visible, returnFocusTo)
     val reduce = LocalMutantReduceMotion.current
     val screen = readMutantClock()
     // The dialog's own clock: the screen's stands while it shows, and the window and its button must still move.
     // A frozen screen (a still, a fixture) freezes it too.
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
-    val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    val follow =
+        remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, OPEN_MS, CLOSE_MS) }
     val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
         val clock = readMutantClock()
@@ -157,19 +163,26 @@ internal fun DialogFrame(
             if (!gone) screen.holds++
             onDispose { if (!gone) screen.holds-- }
         }
+        // Focus goes back once the dialog is gone, not as it starts to close: through the exit the scrim still covers
+        // the screen, and an Enter pressed then would reach the opener under it and open the dialog again (B-168).
+        ReturnFocus(!gone, returnFocusTo)
         if (gone) return@ProvideMutantClock
-        DialogScene(
-            visible,
-            title,
-            onDismissRequest,
-            modifier,
-            text,
-            actions,
-            shown.toFloat(),
-            windowTop,
-            hidden,
-            probe,
-        )
+        // The window floats over the screen, so the screen's keyframe loss does not take its bodies: a loss held
+        // mid-run by the dialog would cut its band out of the window for as long as it shows (B-98's rule, B-168).
+        androidx.compose.runtime.CompositionLocalProvider(LocalMutantMoshScene provides null) {
+            DialogScene(
+                visible,
+                title,
+                onDismissRequest,
+                modifier,
+                text,
+                actions,
+                shown.toFloat(),
+                windowTop,
+                hidden,
+                probe,
+            )
+        }
     }
 }
 
@@ -256,9 +269,12 @@ private fun DialogScene(
                 (if (windowTop == null) Modifier else Modifier.offset(y = windowTop))
                     .widthIn(max = WINDOW)
                     .fillMaxWidth()
-                    // Its own clicks: none reaches the scrim under it. Not a Tab stop either (B-57).
-                    .focusProperties { canFocus = false }
-                    .clickable(remember { MutableInteractionSource() }, indication = null) {}
+                    // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a
+                    // press on a clickable asks for focus, which a target that cannot take it hands to its first
+                    // action, unseen, for the next Enter to fire (B-168). Not a Tab stop either (B-57), but a group:
+                    // Tab from the dialog itself goes into it, to the first action.
+                    .focusGroup()
+                    .pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false) } }
                     .semantics {
                         dialog()
                         paneTitle = title
@@ -489,10 +505,17 @@ internal fun ReturnFocus(
     }
 }
 
-/** Follows [visible] from composition without writing state: a change starts the open or the close then. */
+/**
+ * Follows [visible] from composition without writing state: a change starts the open or the close then. Given the
+ * open's and the close's durations ([openMs], [closeMs]), the new one starts from where the other one stands: a close
+ * half-way into the open fades from half, and a reopen half-way into the close rises from half, where without them each
+ * starts from its beginning, a jump (B-168).
+ */
 internal class DialogFollow(
     private var shown: Boolean,
     start: Double,
+    private val openMs: Double? = null,
+    private val closeMs: Double? = null,
 ) {
     var since: Double = if (shown) start else Double.NEGATIVE_INFINITY
         private set
@@ -503,7 +526,14 @@ internal class DialogFollow(
     ) {
         if (visible == shown) return
         shown = visible
-        since = now
+        if (openMs == null || closeMs == null) {
+            since = now
+            return
+        }
+        // How much of the dialog shows now, and the new direction started as far in as that.
+        val done = ((now - since) / (if (visible) closeMs else openMs)).coerceIn(0.0, 1.0)
+        val standing = if (visible) 1 - done else done
+        since = now - (if (visible) standing * openMs else (1 - standing) * closeMs)
     }
 }
 

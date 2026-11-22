@@ -142,6 +142,37 @@ class SnackbarBehaviourTest {
         }
 
     @Test
+    fun `turned back half-way, it rides back from where it stands, never jumping to the far end`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            visible = false
+            snack()
+            mainClock.advanceTimeBy(200)
+            visible = true
+            val tops = ArrayList<Float>()
+
+            fun frames(n: Int) =
+                repeat(n) {
+                    mainClock.advanceTimeByFrame()
+                    tops += top()
+                }
+            // Hidden three frames into its entrance, shown again three frames into its leaving (B-168).
+            frames(3)
+            visible = false
+            frames(3)
+            visible = true
+            frames(20)
+            // A whole ride's first frame moves it 11 dp (in) or 12 (out); the restart from the far end moved it 37.
+            val moves = tops.zipWithNext { a, b -> b - a }
+            assertTrue(moves.all { abs(it) <= 13f }, "no jump: $tops")
+            // The frame of each change stands where the ride it leaves had come to; the new ride moves from there.
+            assertTrue(moves.subList(3, 5).all { it > 0f }, "rides down from where it stood: $tops")
+            assertTrue(moves.subList(6, 8).all { it < 0f }, "and back up: $tops")
+            assertTrue(tops.last() <= 4f, "at its place: $tops")
+            assertEquals(0, hiddenCalls, "it never left")
+        }
+
+    @Test
     fun `a short action is still a target at least 48 wide`() =
         runComposeUiTest {
             mainClock.autoAdvance = false

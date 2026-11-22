@@ -1,10 +1,15 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -17,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -33,8 +39,11 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.tokens.MutantPalettes
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -297,6 +306,205 @@ class SliderBehaviourTest {
                         }.map { it.layoutInput.text.text }
                 }
             assertEquals(emptyList(), cut)
+        }
+
+    @Test
+    fun `when the label and the range do not both fit, the label gives way and the range stays whole`() {
+        // B-168: the header's row gave the label all it wanted and cut the range after it: at font scale 2 on 280 dp
+        // the range read «−10 …», on 80 dp at scale 1 «−10».
+        for ((scale, width) in listOf(2f to 280, 1f to 110)) {
+            runComposeUiTest {
+                mainClock.autoAdvance = false
+                setContent {
+                    CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = scale)) {
+                        MutantTheme {
+                            Box {
+                                MutantSlider(3, {}, Modifier.width(width.dp).testTag("s"), label = "TRACKING SPEED")
+                            }
+                        }
+                    }
+                }
+                mainClock.advanceTimeByFrame()
+                val right = onNodeWithTag("s").fetchSemanticsNode().let { it.positionInRoot.x + it.size.width }
+                val texts =
+                    onAllNodes(hasGetTextLayoutResult(), useUnmergedTree = true).fetchSemanticsNodes().mapNotNull { n ->
+                        val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                        n.config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+                        results.firstOrNull()?.let { it to n.positionInRoot.x }
+                    }
+                val (range, rangeX) =
+                    texts.single {
+                        it.first.layoutInput.text.text
+                            .contains('…')
+                    }
+                val (label, labelX) = texts.single { it.first.layoutInput.text.text == "TRACKING SPEED" }
+                assertTrue(
+                    range.multiParagraph.intrinsics.maxIntrinsicWidth <= range.size.width + .5f &&
+                        rangeX + range.size.width <= right + .5f,
+                    "scale $scale, $width dp: the range ${range.multiParagraph.intrinsics.maxIntrinsicWidth} wide " +
+                        "in ${range.size.width}, ending at ${rangeX + range.size.width} of $right",
+                )
+                assertEquals(androidx.compose.ui.text.style.TextOverflow.Ellipsis, label.layoutInput.overflow)
+                assertTrue(labelX + label.size.width <= rangeX - 8 + .5f, "the label ends 8 dp before the range")
+            }
+        }
+    }
+
+    @Test
+    fun `right to left it mirrors - the start at the right, the pointer and the arrows with it, the numbers whole`() =
+        runComposeUiTest {
+            // B-168: right to left only the header mirrored; the channel, the pointer and the arrows stayed left to
+            // right, and the numbers were laid out right to left: «3+», «10+ … 10−».
+            var value by mutableIntStateOf(5)
+            val focus = FocusRequester()
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(
+                    LocalDensity provides Density(1f),
+                    LocalLayoutDirection provides LayoutDirection.Rtl,
+                ) {
+                    MutantTheme(reduceMotion = true) {
+                        Box {
+                            MutantSlider(
+                                value,
+                                { value = it },
+                                Modifier.width(300.dp).focusRequester(focus).testTag("s"),
+                                label = "T",
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            // +5 stands three quarters of the way from the right; the fill runs from the right end to it.
+            val span = amberSpan("s")
+            val handle = (span.first + span.last) / 2f
+            assertTrue(
+                abs(handle - (300 - middle(5))) <= 3,
+                "the handle's middle at $handle, ${300 - middle(5)} wanted",
+            )
+            val px = onNodeWithTag("s").captureToImage().toPixelMap()
+            val lime = MutantPalettes.Efir.primary
+            val fill =
+                (0 until px.width).filter { x ->
+                    val c = px[x, px.height - 33]
+                    abs(c.red - lime.red) < .1f && abs(c.green - lime.green) < .1f && abs(c.blue - lime.blue) < .1f
+                }
+            assertTrue(fill.isNotEmpty() && fill.all { it > span.last - 2 }, "the fill right of the handle: $fill")
+            // The numbers are laid out left to right, the range from the channel's left end.
+            val texts =
+                onAllNodes(hasGetTextLayoutResult(), useUnmergedTree = true).fetchSemanticsNodes().mapNotNull { n ->
+                    val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                    n.config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+                    results.firstOrNull()
+                }
+            for (t in texts.filter { it.layoutInput.text.text != "T" }) {
+                assertEquals(
+                    androidx.compose.ui.text.style.ResolvedTextDirection.Ltr,
+                    t.multiParagraph.getParagraphDirection(0),
+                    "«${t.layoutInput.text.text}» laid out left to right",
+                )
+            }
+            assertTrue(texts.any { it.layoutInput.text.text == "+10 … −10" }, "the range from the left end")
+            // A press 40 dp from the left edge is 260 from the start: +8.
+            onNodeWithTag("s").performMouseInput {
+                moveTo(Offset(40f, row + 27))
+                press()
+                release()
+            }
+            mainClock.advanceTimeByFrame()
+            assertEquals(8, value)
+            // The right arrow steps towards the start.
+            runOnIdle { focus.requestFocus() }
+            onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionRight) }
+            assertEquals(7, value)
+            onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionLeft) }
+            onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionLeft) }
+            assertEquals(9, value)
+        }
+
+    @Test
+    fun `a finger scrolling the page from the row scrolls it, and a finger across or a tap still takes the handle`() =
+        runComposeUiTest {
+            // B-168: the row took a finger at its first touch and consumed every move, so a scroll starting on it set
+            // the value under the finger and the page stood: −2 → −8 on the demo's Settings screen.
+            var value by mutableIntStateOf(0)
+            val scroll = ScrollState(0)
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Column(Modifier.height(400.dp).verticalScroll(scroll)) {
+                            MutantSlider(value, { value = it }, Modifier.width(300.dp).testTag("s"), label = "T")
+                            Spacer(Modifier.height(2_000.dp))
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            onNodeWithTag("s").performTouchInput {
+                down(Offset(middle(-8), row + 27))
+                repeat(10) { moveBy(Offset(1f, -20f)) }
+                up()
+            }
+            // Past the fling: a finger on a flinging page only stops it.
+            mainClock.advanceTimeBy(3_000)
+            assertEquals(0, value, "a scroll leaves the value")
+            assertTrue(scroll.value > 0, "and scrolls the page")
+            runOnIdle { scroll.dispatchRawDelta(-scroll.value.toFloat()) }
+            mainClock.advanceTimeByFrame()
+            // Across from the channel: the handle comes to the finger and follows it.
+            onNodeWithTag("s").performTouchInput {
+                down(Offset(middle(-8), row + 27))
+                repeat(4) { moveBy(Offset(-10f, 0f)) }
+                up()
+            }
+            mainClock.advanceTimeByFrame()
+            assertEquals(-10, value, "a finger across takes the handle")
+            // A tap on the channel.
+            onNodeWithTag("s").performTouchInput {
+                down(Offset(middle(6), row + 27))
+                up()
+            }
+            mainClock.advanceTimeByFrame()
+            assertEquals(6, value, "a tap takes the handle there")
+            assertEquals(0, scroll.value)
+        }
+
+    /** The first and last column of the handle's amber on the channel's middle row. */
+    private fun ComposeUiTest.amberSpan(tag: String): IntRange {
+        val px = onNodeWithTag(tag).captureToImage().toPixelMap()
+        val amber = MutantPalettes.Efir.amber
+        val y = px.height - 33
+        val cols =
+            (0 until px.width).filter { x ->
+                val c = px[x, y]
+                abs(c.red - amber.red) < .1f && abs(c.green - amber.green) < .1f && abs(c.blue - amber.blue) < .1f
+            }
+        return cols.first()..cols.last()
+    }
+
+    @Test
+    fun `at font scale 2 the handle keeps one width whatever value it shows`() =
+        runComposeUiTest {
+            // B-168: the handle fitted the value shown, 34 dp at 0, 38 at +9 and 53 at +10, so a finger dragging across
+            // them widened the knob under it and regenerated its body. It fits the range's widest value instead.
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = 2f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Column {
+                            for (v in listOf(0, 9, 10)) {
+                                MutantSlider(v, {}, Modifier.width(300.dp).testTag("v$v"), label = "T", key = "same")
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val widths = listOf(0, 9, 10).map { amberSpan("v$it").let { r -> r.last - r.first } }
+            assertTrue(widths.max() - widths.min() <= 1, "the handle's amber at 0, +9, +10: $widths")
+            assertTrue(widths.min() >= 45, "wide enough for +10 with its room: $widths")
         }
 
     private fun hasGetTextLayoutResult() =

@@ -62,8 +62,8 @@ import kotlin.math.roundToInt
  * It enters (`osd-in`) as it is composed with [visible] true, or when [visible] becomes true: it rides up from its own
  * height and 8 dp below its place in 240 ms, stepped twelve times a second, eased out. Hidden (`osd-out`), it rides
  * back down in 200 ms, its action no longer answering from the moment it starts to leave, and once gone it is not
- * composed at all and [onHidden] is called. Under reduce motion both are at once. Whatever holds it at the screen's
- * bottom hides what has ridden off.
+ * composed at all and [onHidden] is called. Turned back half-way, it rides back from where it stands. Under reduce
+ * motion both are at once. Whatever holds it at the screen's bottom hides what has ridden off.
  */
 @Composable
 public fun MutantSnackbar(
@@ -101,10 +101,8 @@ internal fun SnackbarBody(
     val reduce = LocalMutantReduceMotion.current
     val steps = LocalMutantSteppedMotion.current
     val ride = remember { SnackbarRide(visible, if (playIn) clock.nowMs else Double.NEGATIVE_INFINITY) }
-    ride.follow(visible, clock.nowMs)
-    val duration = if (visible) IN_MS else OUT_MS
-    val elapsed = if (reduce) Double.POSITIVE_INFINITY else clock.nowMs - ride.since
-    val p = stepped(elapsed, duration, steps)
+    ride.follow(visible, clock.nowMs, reduce, steps)
+    val p = ride.progress(clock.nowMs, reduce, steps)
     // While it rides it reads every frame, so composition follows it and it leaves the moment it is gone. Stepped, it
     // lands a step after its duration (250 ms for 200): asked by the time alone, it would stand at 83 % for ever.
     if (p < 1) clock.frame
@@ -113,7 +111,7 @@ internal fun SnackbarBody(
     LaunchedEffect(gone) { if (gone && ride.left) done() }
     if (gone) return
     // How far below its place it stands: all the way before it enters and after it leaves.
-    val out = if (visible) (1 - p).pow(3) else 1 - (1 - p).pow(3)
+    val out = ride.out(p)
     MutantSurface(
         MutantBody.Bar,
         key,
@@ -229,7 +227,8 @@ private const val ACTION_SHARE = .5f
 
 /**
  * Follows [visible] from composition without writing state: a change starts the ride then. It starts settled where it
- * is first composed visible — at the start of its entrance — and hidden, as gone.
+ * is first composed visible — at the start of its entrance — and hidden, as gone. A ride turned back half-way starts
+ * from where the bar stands (B-168): the new one keeps its duration and its curve over what is left of the way.
  */
 internal class SnackbarRide(
     private var shown: Boolean,
@@ -242,14 +241,39 @@ internal class SnackbarRide(
     var left: Boolean = false
         private set
 
+    /** How far below its place, as a share of the whole way, the bar stood when this ride began. */
+    private var from: Double = 1.0
+
+    /** How far the ride has come at [now], 0 to 1: at its end at once under reduce motion. */
+    fun progress(
+        now: Double,
+        reduce: Boolean,
+        steps: Boolean,
+    ): Double =
+        if (reduce) {
+            1.0
+        } else {
+            stepped(now - since, if (shown) IN_MS else OUT_MS, steps)
+        }
+
+    /** How far below its place the bar stands at [p], as a share of the whole way: eased out by the cube. */
+    fun out(p: Double): Double {
+        val eased = 1 - (1 - p).pow(3)
+        return if (shown) from * (1 - eased) else from + (1 - from) * eased
+    }
+
     fun follow(
         visible: Boolean,
         now: Double,
+        reduce: Boolean,
+        steps: Boolean,
     ) {
         if (visible == shown) return
+        val at = out(progress(now, reduce, steps))
         shown = visible
         since = now
         left = !visible
+        from = at
     }
 }
 

@@ -3,6 +3,7 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -36,11 +38,14 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
@@ -49,7 +54,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.surface.BodyState
@@ -70,8 +79,10 @@ import kotlin.math.roundToInt
  *
  * The value is a whole number in [valueRange], shown signed in the handle (`+3`, `−4`, `0`) and stepped one at a time.
  * The handle follows the pointer while it is held and settles on the value's place when let go. A press anywhere on
- * the 60 dp row takes the handle there; the row is the touch target. Arrows step the value, Home and End go to the
- * ends. Disabled, the handle loses its signal and the fill and the words grey.
+ * the 60 dp row takes the handle there; the row is the touch target. A finger away from the handle takes it once it
+ * moves across or lifts, so a scroll of the page that starts on the row scrolls the page. Arrows step the value, Home
+ * and End go to the ends. Disabled, the handle loses its signal and the fill and the words grey. Right to left the
+ * slider mirrors: its start, the range's first value, at the right.
  *
  * Its width is the one given; with none (a scrolling row), the page's 300 dp. A range of one value or a reversed one
  * draws the handle at the start and takes no input.
@@ -97,9 +108,11 @@ public fun MutantSlider(
         modifier = modifier,
         label = label,
         rangeText = "${signed(valueRange.first)} … ${signed(valueRange.last)}",
+        rangeTextRtl = "${signed(valueRange.last)} … ${signed(valueRange.first)}",
         enabled = enabled && span > 0,
         key = key,
         interactionSource = interactionSource,
+        widest = listOf(signed(valueRange.first), signed(valueRange.last)),
         range = {
             if (span >
                 0
@@ -121,8 +134,8 @@ internal fun signed(v: Int): String =
     }
 
 /**
- * [MutantSlider] by its handle's place: [fraction] of the travel, 0…1. [hidden] draws the words transparent, a bare
- * twin's.
+ * [MutantSlider] by its handle's place: [fraction] of the travel, 0…1. The handle is wide enough for its value and for
+ * each of [widest], the values the range can show at its widest. [hidden] draws the words transparent, a bare twin's.
  */
 @Composable
 internal fun SliderBody(
@@ -136,6 +149,8 @@ internal fun SliderBody(
     enabled: Boolean,
     key: String,
     interactionSource: MutableInteractionSource?,
+    widest: List<String> = emptyList(),
+    rangeTextRtl: String = rangeText,
     range: () -> Triple<Float, ClosedFloatingPointRange<Float>, Int>? = { null },
     hidden: Boolean = false,
 ) {
@@ -144,6 +159,10 @@ internal fun SliderBody(
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    // Right to left the slider mirrors (B-65's rule): the start, and the range's first value, at the right. Positions
+    // are kept from the start and turned at the edges: the pointer as it comes in, the handle and the fill as drawn.
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val rtlNow by rememberUpdatedState(rtl)
     // While held, the handle follows the pointer; let go, it stands where the value puts it.
     var held by remember { mutableStateOf<Float?>(null) }
     val at = (held ?: fraction).let { if (it.isNaN()) 0f else it.coerceIn(0f, 1f) }
@@ -160,16 +179,23 @@ internal fun SliderBody(
     // The platform's raster even in a parity fixture: ChromePlacedText already places the line at Chrome's fraction,
     // and the fixture's subpixel positioning would shift it a second time (B-85).
     val header = styles.osd(HEADER_SIZE.sp).copy(color = words)
+    // Numbers read left to right in either direction: laid out right to left, «−4» read «4−» and the range «10+ … 10−».
+    // Right to left the range is written from the channel's left end, its last value, to its right.
+    val numbers = header.copy(textDirection = TextDirection.Ltr)
     val valueStyle =
         styles
             .display(VALUE_SIZE.sp)
             .cssLine(MutantFaceMetrics.Handjet, 1f)
-            .copy(color = if (hidden) Color.Transparent else colors.onPrimary)
+            .copy(color = if (hidden) Color.Transparent else colors.onPrimary, textDirection = TextDirection.Ltr)
     // The handle is the page's 34 dp drop while its value fits with room around it; a value that does not (font scale
-    // 2) widens it, and a number is never cut (designed here, D15).
+    // 2) widens it, and a number is never cut (designed here, D15). It fits the range's widest value, not the one
+    // shown, so it keeps its width while the value changes under a finger (B-168).
     val measurer = rememberTextMeasurer()
     val px = LocalDensity.current
-    val fit = measurer.measure(valueText, valueStyle, maxLines = 1).size
+    val fit =
+        (widest + valueText)
+            .map { measurer.measure(it, valueStyle, maxLines = 1).size }
+            .reduce { a, b -> IntSize(maxOf(a.width, b.width), maxOf(a.height, b.height)) }
     val handleW = with(px) { maxOf(HANDLE.dp.roundToPx(), fit.width + 2 * VALUE_ROOM.dp.roundToPx()) }
     val handleH = with(px) { maxOf(HANDLE.dp.roundToPx(), fit.height + 2 * VALUE_ROOM.dp.roundToPx()) }
     val handleNow by rememberUpdatedState(handleW)
@@ -196,8 +222,10 @@ internal fun SliderBody(
             }.onKeyEvent {
                 if (!enabled || it.type != KeyEventType.KeyDown) return@onKeyEvent false
                 when (it.key) {
-                    Key.DirectionRight, Key.DirectionUp -> step(1)
-                    Key.DirectionLeft, Key.DirectionDown -> step(-1)
+                    Key.DirectionUp -> step(1)
+                    Key.DirectionDown -> step(-1)
+                    Key.DirectionRight -> step(if (rtl) -1 else 1)
+                    Key.DirectionLeft -> step(if (rtl) 1 else -1)
                     Key.MoveHome -> onMove(0f)
                     Key.MoveEnd -> onMove(1f)
                     else -> return@onKeyEvent false
@@ -207,8 +235,16 @@ internal fun SliderBody(
         verticalArrangement = Arrangement.spacedBy(HEADER_GAP.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            MutantText(label.orEmpty(), style = header, maxLines = 1)
-            ChromePlacedText(rangeText, header, Modifier, InkPlace.End)
+            // The range is numbers and keeps its width; a label that does not fit beside it ends in an ellipsis, 8 dp
+            // short of the range (designed here, B-168).
+            MutantText(
+                label.orEmpty(),
+                Modifier.weight(1f, fill = false).padding(end = HEADER_ROOM.dp),
+                style = header,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+            )
+            ChromePlacedText(if (rtl) rangeTextRtl else rangeText, numbers, Modifier, InkPlace.End)
         }
         val fill = if (enabled) colors.primary else colors.textDisabled
         Layout(
@@ -262,10 +298,11 @@ internal fun SliderBody(
                             style = Stroke(ring),
                         )
                         val fh = FILL_HEIGHT * d
+                        val fw = left + handle / 2 - FILL_SHORT * d
                         drawRoundRect(
                             fill,
-                            Offset(FILL_INSET * d, top + FILL_INSET * d),
-                            Size(left + handle / 2 - FILL_SHORT * d, fh),
+                            Offset(if (rtl) size.width - FILL_INSET * d - fw else FILL_INSET * d, top + FILL_INSET * d),
+                            Size(fw, fh),
                             CornerRadius(fh / 2),
                         )
                     }.drawWithContent {
@@ -284,39 +321,69 @@ internal fun SliderBody(
                     }.then(
                         if (enabled) {
                             Modifier.pointerInput(source) {
+                                // The pointer's distance from the start edge.
+                                fun fromStart(x: Float) = if (rtlNow) size.width - x else x
                                 awaitEachGesture {
                                     val down = awaitFirstDown()
                                     val handle = handleNow.toFloat()
                                     val travel = (size.width - handle).coerceAtLeast(1f)
                                     val left = atNow * travel
                                     // Held by the handle where it was taken; a press elsewhere takes it by its middle.
-                                    val grip =
-                                        if (down.position.x in
-                                            left..(left + handle)
-                                        ) {
-                                            down.position.x - left
-                                        } else {
-                                            handle / 2
-                                        }
-                                    val press = PressInteraction.Press(down.position)
-                                    source.tryEmit(press)
+                                    val x0 = fromStart(down.position.x)
+                                    val onHandle = x0 in left..(left + handle)
+                                    val grip = if (onHandle) x0 - left else handle / 2
 
                                     fun follow(x: Float) {
-                                        val f = ((x - grip) / travel).coerceIn(0f, 1f)
+                                        val f = ((fromStart(x) - grip) / travel).coerceIn(0f, 1f)
                                         held = f
                                         onMove(f)
                                     }
-                                    follow(down.position.x)
-                                    down.consume()
-                                    val ended =
-                                        drag(down.id) {
-                                            follow(it.position.x)
-                                            it.consume()
+                                    // A finger away from the handle may be starting a scroll of the page: it takes the
+                                    // handle once it has moved across by the touch slop, or where it lifts without
+                                    // moving (a tap); a scroll that takes it first leaves the value as it was. A mouse,
+                                    // and a finger on the handle itself, take it at once (B-168).
+                                    var from = down
+                                    if (down.type != PointerType.Mouse && !onHandle) {
+                                        val across =
+                                            awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
+                                                change.consume()
+                                            }
+                                        if (across == null) {
+                                            val up = currentEvent.changes.firstOrNull { it.id == down.id }
+                                            if (up == null || !up.changedToUp()) return@awaitEachGesture
+                                            val tap = PressInteraction.Press(down.position)
+                                            source.tryEmit(tap)
+                                            follow(down.position.x)
+                                            up.consume()
+                                            held = null
+                                            source.tryEmit(PressInteraction.Release(tap))
+                                            return@awaitEachGesture
                                         }
-                                    held = null
-                                    source.tryEmit(
-                                        if (ended) PressInteraction.Release(press) else PressInteraction.Cancel(press),
-                                    )
+                                        from = across
+                                    }
+                                    val press = PressInteraction.Press(from.position)
+                                    source.tryEmit(press)
+                                    var ended = false
+                                    try {
+                                        follow(from.position.x)
+                                        from.consume()
+                                        ended =
+                                            drag(from.id) {
+                                                follow(it.position.x)
+                                                it.consume()
+                                            }
+                                    } finally {
+                                        held = null
+                                        source.tryEmit(
+                                            if (ended) {
+                                                PressInteraction.Release(
+                                                    press,
+                                                )
+                                            } else {
+                                                PressInteraction.Cancel(press)
+                                            },
+                                        )
+                                    }
                                 }
                             }
                         } else {
@@ -328,7 +395,7 @@ internal fun SliderBody(
             val travel = (c.maxWidth - handleW).coerceAtLeast(0)
             // Centred on the channel, as the page's 34 dp handle at 10 dp down is.
             val top = (CHANNEL_TOP + CHANNEL_HEIGHT / 2).dp.roundToPx() - handleH / 2
-            layout(c.maxWidth, c.maxHeight) { p.place((at * travel).roundToInt(), top) }
+            layout(c.maxWidth, c.maxHeight) { p.placeRelative((at * travel).roundToInt(), top) }
         }
     }
 }
@@ -381,6 +448,9 @@ private const val PAGE_WIDTH = 300
 private const val HEADER_SIZE = 20
 private const val HEADER_GAP = 2
 private const val ROW_HEIGHT = 60
+
+/** The room a label keeps before the range when the two do not both fit (designed here, B-168). */
+private const val HEADER_ROOM = 8
 
 /** The channel: from 20 dp down, 14 tall, a 2 dp inset ring. The fill: 3 dp in, 8 tall, to 3 dp short of the handle's middle. */
 private const val CHANNEL_TOP = 20f
