@@ -75,14 +75,17 @@ import io.github.youndie.mutant.tokens.MutantBody
  * (the tracking divider) 2 dp under the window's top, above the sheet. Behind it a scrim darkens the screen and holds
  * its clock, as a dialog does.
  *
- * The design draws it open; its motion is designed here (D15): it rises from below over 330 ms (ease-out², in the kit's
- * transition steps) with the scrim coming in, and sinks in 200 ms; under reduce motion it is there at once. A sink
- * during the rise, or a rise during the sink, goes on from where the sheet stands. A click on
- * the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the sheet as it opens and,
- * once it has sunk, goes to [returnFocusTo], or with none is left to the window. As it starts to sink, it and what is on it
- * answer no press and no key. The sheet keeps its content above
- * [windowInsets]; its body runs on under them. It is at most as tall as the screen: a content taller than that is given
- * the room left and scrolls if it is made to (`verticalScroll`, a lazy list), or runs off the screen's foot.
+ * The design draws it open; its motion is designed here (D15): it rises from below over 330 ms (ease-out²) with the
+ * scrim coming in, and sinks in 200 ms, both on every frame and in the kit's 83 ms steps under `steppedMotion`; under
+ * reduce motion it is there at once. A sink during the rise, or a rise during the sink, goes on from where the sheet
+ * stands. It is not dragged. A click on the scrim, Escape or the system back gesture calls [onDismissRequest]. Focus
+ * moves into the sheet as it opens and stays there, a Tab on its controls only, coming round from the last to the
+ * first and with Shift+Tab the other way; once it has sunk focus goes to [returnFocusTo], or with none is left to the
+ * window. As it starts to sink, it and what is on it answer no press and no key.
+ *
+ * The sheet keeps its content above [windowInsets]; its body runs on under them. It is at most as tall as the screen: a
+ * content taller than that is given the room left and scrolls if it is made to (`verticalScroll`, a lazy list), or
+ * runs off the screen's foot.
  */
 @Composable
 public fun MutantBottomSheet(
