@@ -27,10 +27,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -68,7 +72,9 @@ public class MutantTab(
  * lands at once. An index outside the tabs, -1 for none, shows no bar. Each tab is a target 48 dp tall reaching half
  * the gap to each side (at least 48 wide), so the row stands 12 dp wider each side and 1 dp taller each way than
  * what it draws; keyboard focus draws the corner brackets around a tab. Tabs that need more than the row's width keep
- * their own: the row scrolls, and brings the focused tab and a newly selected one into view (B-60).
+ * their own: the row scrolls, and brings the focused tab and a newly selected one into view (B-60). The echo is drawn
+ * past the row's ends, as a body's drips hang past its slot: a row that fits never cuts it; a row that scrolls cuts the
+ * bar and its echo at its edges.
  */
 @Composable
 public fun MutantTabs(
@@ -117,29 +123,47 @@ public fun MutantTabs(
                         }
                     val p = m.measure(bounded)
                     layout(p.width, p.height) { p.place(0, 0) }
-                }.horizontalScroll(scroll)
-                .selectableGroup()
+                }.onPlaced { marks.viewport = it }
                 .drawWithContent {
                     drawContent()
                     val p = slide.progress(clock.nowMs, reduce, steps)
                     // While the bar runs it reads every frame; at rest it reads nothing.
                     if (p < 1) clock.frame
-                    scale(
-                        density,
-                        Offset.Zero,
-                    ) {
-                        drawIndicator(
-                            marks,
-                            slide,
-                            selectedIndex,
-                            tabs.size,
-                            p,
-                            colors,
-                            barWidth,
-                            size.height / density,
-                        )
+                    // Drawn over the scroll, not in it, so the echo past the first or the last tab is not cut at the
+                    // row's edge (B-168); read as the row scrolls, and cut at its edges only while it can.
+                    scroll.value
+                    val viewport = marks.viewport
+                    val row = marks.row
+                    val at =
+                        if (viewport != null && row != null && viewport.isAttached && row.isAttached) {
+                            viewport.localPositionOf(row, Offset.Zero)
+                        } else {
+                            Offset.Zero
+                        }
+                    val indicator: DrawScope.() -> Unit = {
+                        translate(at.x, at.y) {
+                            scale(density, Offset.Zero) {
+                                drawIndicator(
+                                    marks,
+                                    slide,
+                                    selectedIndex,
+                                    tabs.size,
+                                    p,
+                                    colors,
+                                    barWidth,
+                                    size.height / density,
+                                )
+                            }
+                        }
                     }
-                },
+                    if (scroll.maxValue > 0) {
+                        clipRect(0f, -size.height, size.width, 2 * size.height, block = indicator)
+                    } else {
+                        indicator()
+                    }
+                }.horizontalScroll(scroll)
+                .selectableGroup()
+                .onPlaced { marks.row = it },
     ) { measurables, constraints ->
         // Each tab its own width: inside the scroll the row has no limit, and one too wide for the window scrolls.
         val h = TAB_HEIGHT.roundToPx()
@@ -219,6 +243,9 @@ private fun TabItem(
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Ellipsis,
+            // Handed over as well, so a selection's colour alone redraws the word: a kept layout whose style changes only
+            // its colour is not redrawn by itself (F-buttons-02 of B-168), and the bar no longer redraws the row's layer.
+            color = { color },
         )
     }
 }
@@ -233,6 +260,10 @@ internal val LocalTabBarWidth = staticCompositionLocalOf<Float?> { null }
 internal class TabMarks {
     val x = mutableStateMapOf<Int, Float>()
     val width = mutableStateMapOf<Int, Float>()
+
+    /** The row's window and the scrolled row inside it, as placed: the bar is drawn over the one at the other's place. */
+    var viewport: LayoutCoordinates? = null
+    var row: LayoutCoordinates? = null
 }
 
 /** Where the bar stands and how wide it is, dp, in the row's own coordinates. */

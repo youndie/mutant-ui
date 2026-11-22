@@ -434,4 +434,43 @@ class BarTabsBehaviourTest {
             val end = onNodeWithText("Копии", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             assertEquals(end.left.toInt(), xs.last().second, "landed under the third label")
         }
+
+    @Test
+    fun `the last tab's echo is drawn whole past the row, and a row that scrolls still clips its bar`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var many by mutableStateOf(false)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Box(Modifier.width(400.dp).testTag("all")) {
+                            if (many) {
+                                MutantTabs(List(12) { MutantTab("Вкладка $it") }, 2, {}, Modifier.width(200.dp))
+                            } else {
+                                MutantTabs(three, 2, {})
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val acid = MutantPalettes.Efir.primary
+            val label = onNodeWithText("Копии", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val px = onNodeWithTag("all").captureToImage().toPixelMap()
+            val ground = px[px.width - 1, 0]
+
+            fun Color.fromAcid() = abs(red - acid.red) + abs(green - acid.green) + abs(blue - acid.blue)
+            // Row 45: the echo's strokes, 10, 8 and 6 dp, start 4 dp past the bar, past its 1.5 dp ring; the row ends
+            // 12 dp past the label.
+            val lit =
+                (label.right.toInt() + 2 until px.width).count { x ->
+                    px[x, 45].fromAcid() < ground.fromAcid() - .05f
+                }
+            assertEquals(24, lit, "the echo's three strokes past the last label")
+            many = true
+            mainClock.advanceTimeByFrame()
+            val px2 = onNodeWithTag("all").captureToImage().toPixelMap()
+            val outside = (200 until px2.width).count { x -> px2[x, 44] != px2[px2.width - 1, 0] }
+            assertEquals(0, outside, "a row that scrolls draws nothing of its bar past its width")
+        }
 }
