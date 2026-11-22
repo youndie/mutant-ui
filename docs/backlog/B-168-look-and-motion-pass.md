@@ -103,7 +103,7 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 19 | drawer | NavigationDrawer | open |
 | 20 | bottom-sheet | BottomSheet | open |
 | 21 | pull-to-refresh | PullToRefresh | open |
-| 22 | pickers | DatePicker, TimePicker | open |
+| 22 | pickers | DatePicker, TimePicker | done: [report](../../logs/b-168/pickers.md), 4 fixed, 7 reported |
 | 23 | data-table | DataTable | open |
 | 24 | carousel | Carousel | open |
 | 25 | foundations | the Foundations section: surface states, the Tape, keyframe loss (report-only: shared code) | open |
