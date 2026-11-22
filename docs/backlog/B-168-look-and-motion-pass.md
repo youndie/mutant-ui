@@ -99,7 +99,7 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 15 | slider | Slider | done: [report](../../logs/b-168/slider.md), 4 fixed, 2 reported |
 | 16 | segmented | SegmentedButton | done: [report](../../logs/b-168/segmented.md), 4 fixed, 2 reported |
 | 17 | tooltip | TooltipBox | done: [report](../../logs/b-168/tooltip.md), 1 fixed, 4 reported |
-| 18 | menu | Menu, Dropdown | open |
+| 18 | menu | Menu, Dropdown | done: [report](../../logs/b-168/menu.md), 4 fixed and a KDoc, 5 reported |
 | 19 | drawer | NavigationDrawer | open |
 | 20 | bottom-sheet | BottomSheet | open |
 | 21 | pull-to-refresh | PullToRefresh | open |
