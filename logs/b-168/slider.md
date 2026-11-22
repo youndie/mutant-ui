@@ -41,6 +41,20 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
 - **The design.** The engine drags only its knob (`bindDrags`: `pointerdown` on the `data-mu-drag` node); B-30 chose
   that "a press anywhere on the 60 dp row takes the handle there", a press, not a scroll. The skill's rule: a control
   inside a scrolling ancestor takes a finger only past its slop (cmp-ui-component §4).
+- **Fixed** (`87e5446`). A finger away from the handle takes it once it has moved across by the touch slop
+  (`awaitHorizontalTouchSlopOrCancellation`), or where it lifts without moving (a tap, B-30's press); a scroll that
+  claims the finger first leaves the value as it was. A mouse, and a finger on the handle itself, take it at once as
+  before. The press is now let go in a `finally`, so a gesture cut off still releases it. KDoc says so.
+  `SliderBehaviourTest` «a finger scrolling the page from the row scrolls it, and a finger across or a tap still takes
+  the handle». Mutants, each killed by it (`<failure>` read in the JUnit XML):
+  - every finger taken at once (the old path): «a scroll leaves the value ==> expected: <0> but was: <-7>»;
+  - a tap not taking the handle: «a tap takes the handle there ==> expected: <6> but was: <-10>».
+- **After.** The demo's Settings screen scrolls (the slider from y 593 to 288) and keeps −2
+  (`after-sample/log-demo.txt`); the plain column scrolls 415 px, value kept (`after/log-specials.txt`). Mouse and
+  finger drags from the handle unchanged (`after/*-mousedrag.png`, `after/*-touchdrag.png`, the same values and
+  places per frame as before).
+- **Left.** A finger on the 34 dp handle itself still takes it at once, so a scroll starting exactly there moves
+  the value; and a finger away from the handle shows the boil only once it is taken (after the slop, or at the lift).
 
 ### F-slider-02 — right to left, the numbers read backwards and only the header mirrors — local
 
@@ -52,6 +66,18 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
 - **The design.** It draws no right-to-left slider. The kit's rule is to mirror ([B-65](../../docs/backlog/B-65-tabs-and-navigation-in-rtl.md),
   "both mirror; the rejected alternative is documenting LTR only"; the list item, snackbar and top bar mirror too), and
   a number is never damaged (brief, «Порча смысла»).
+- **Fixed** (`42666da`). The slider mirrors: the handle placed with `placeRelative`, the fill drawn from the right
+  end, the pointer measured from the start edge, Left and Right swapped (Up and Down not). The value and the range are
+  laid out left to right; right to left, the range is written from the channel's left end, `+10 … −10`. KDoc says so.
+  `SliderBehaviourTest` «right to left it mirrors…». Mutants, each killed by it:
+  - the handle placed with `place`: «the handle's middle at 215.5, 83.5 wanted»;
+  - the value laid out in the layout's direction: ««+5» laid out left to right ==> expected: <Ltr> but was: <Rtl>»;
+  - the pointer not mirrored: «expected: <8> but was: <-8>»;
+  - the right arrow stepping up: «expected: <7> but was: <9>»;
+  - the fill drawn from the left: «the fill right of the handle: [3, 4, 5, …]».
+- **After.** `after/special-rtl.png`, `after/Rtl-*.png`, `after/GpuKopiya-*.png` (right to left in the browser's way):
+  `+3`, `−2`, `−4` whole, the fill from the right, a press 40 dp from the left then 40 dp right sets +5. Left to right
+  nothing moved: `SliderParityTest` unchanged.
 
 ### F-slider-03 — a narrow row or a large font cuts the range off the header — local
 
@@ -61,6 +87,13 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   (`core/special-narrow-d2.png`).
 - **The rule.** A number grows or shares, a word ends in an ellipsis (cmp-ui-component §9; B-30's AC: "a constraint
   sweep … neither throws nor clips the content"). B-30's font-scale test used `ТРЕКИНГ` and 300 dp, which fit.
+- **Fixed** (`da2734b`). The range keeps its width; the label takes what is left, ends in an ellipsis, and keeps 8 dp
+  before the range (a number designed here: `HEADER_ROOM`). Where both fit nothing moves (`SliderParityTest`
+  unchanged). `SliderBehaviourTest` «when the label and the range do not both fit…» at font scale 2 on 280 dp and at
+  scale 1 on 110 dp. Mutant: the label without its weight — killed, «scale 2.0, 280 dp: the range 153.0 wide in 41».
+- **After.** `after/special-fontscale-2.0.png`: `TRACK…  −10 … +10`.
+- **Left.** Under about 78 dp the range alone does not fit and is still cut (`after/special-narrow-d2.png`: `−1` at
+  20 dp, `−10 …` at 48 dp). The slider is then narrower than two handles; a range that wraps or hides is the owner's.
 
 ### F-slider-04 — at a larger font the handle changes width as the value changes, and jumps while dragged — local
 
@@ -73,6 +106,11 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   of −100…100 widens only at ±100 (38). Frames: `core/special-fontscale-2.0.png`, +9 → +10.
 - **The rule.** B-150's class: a layout that changes width on a state change. B-30's number stays — 4 dp of room — and
   the value to fit is the widest the range can show.
+- **Fixed** (`263b105`). The handle fits the widest of the range's two ends and the value shown, with B-30's 4 dp of
+  room. At font scale 1 every value of −10…+10 still fits 34 dp, so no parity cell moves. `SliderBehaviourTest` «at
+  font scale 2 the handle keeps one width whatever value it shows». Mutant: the value shown alone measured — killed,
+  «the handle's amber at 0, +9, +10: [33, 37, 52]».
+- **After.** `after/special-fontscale-2.0.png`: the knob 53 dp from +6 to +10 and back, its body the same.
 
 ### F-slider-05 — a value set from outside while the handle is held is shown at the pointer's place — reported (owner)
 
@@ -98,6 +136,12 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   rule ("every change of a discrete input is a transition") would make them moves, but the duration and curve for the
   slider are a number to decide, not to take here.
 
+## After the fixes
+
+The scratch tests re-run on the fixed code into `/private/tmp/b168-slider/after/` («Эфир», «Копия», density 2, right to
+left, the browser's way in «Эфир» and in «Копия» right to left; keys; the specials) and `after-sample/` (the demo's
+scroll): every drag, tap and key as before in left to right, frame for frame in the logged values and places.
+
 ## Looked at and found right
 
 - **Dragging**, by mouse and by finger, every look: the value and the handle follow every move (each finger move in
@@ -115,3 +159,18 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
 - **Density 2**: every part where it stands at density 1, the value's raster smooth (B-85 nothing new on this Mac).
 - **Appear**: the first frame draws the whole slider, its body at rest.
 - **The sample**: the three cells as composed, the rest slider dragged by mouse on the page; the demo's two sliders.
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+this Mac at `87e5446`, the scratch tests deleted: `mutant-core` 436 tests and `sample` 22, no `<failure>` or `<error>`
+in the JUnit XML; both ktlint checks clean. The public API did not change (`SliderBody` is internal).
+
+## Not verified
+
+- The phone and the browser itself: the browser's way was drawn through the test seams on the desktop JVM only, and
+  the body shader (B-167's class) not at all. The touch slop that decides F-slider-01 is the desktop test window's;
+  a phone's is its own.
+- A scroll that starts on the handle itself (left as it was, F-slider-01) and a horizontally scrolling ancestor
+  (a slider in a pager or carousel, where the finger's horizontal slop is contested) were not looked at.
+- The sample's Components page was looked at by mouse only; a finger on it is the demo's case.
