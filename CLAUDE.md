@@ -91,6 +91,10 @@ record of where the kit started, not a source to re-import: the design system ch
 - **Text goes through `cssLine`** (research §1.14): Compose ignores a line height equal to the font size
   and centres unrounded metrics, so a label without it sits a pixel or two under Chrome's. Text parity is
   held by where the ink lies (top row exactly), not by a pixel count: the glyph masks differ on most edges.
+- **The body shader runs on a phone's GPU, which no golden sees** (B-167): the goldens, the tests and headless Chrome
+  compute at full precision; a phone works out an expression of `half`s at half precision. In the shader a texture's
+  channel becomes a number only through `c5`, `c6`, `c8` (`BodyShaderPrecisionTest`), and a change to the shader is
+  looked at on the phone before it merges.
 - **Never edit the vendored design, a golden or a reference to make parity pass**, and never raise
   a tolerance to get green. Leaving the design on purpose is a departure (D20), recorded, not a
   loosened check. A gap is a number in the commit body with its cause.
