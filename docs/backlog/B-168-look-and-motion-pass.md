@@ -95,7 +95,7 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 11 | snackbar | Snackbar | done: [report](../../logs/b-168/snackbar.md), 1 fixed, 6 reported |
 | 12 | progress | LinearProgress, CircularProgress | done: [report](../../logs/b-168/progress.md), 4 fixed, 3 reported |
 | 13 | dialog | Dialog | done: [report](../../logs/b-168/dialog.md), 4 fixed and a KDoc, 5 reported |
-| 14 | empty-state | EmptyState and its illustrations | open |
+| 14 | empty-state | EmptyState and its illustrations | done: [report](../../logs/b-168/empty-state.md), 1 fixed, 4 reported |
 | 15 | slider | Slider | open |
 | 16 | segmented | SegmentedButton | open |
 | 17 | tooltip | TooltipBox | open |
