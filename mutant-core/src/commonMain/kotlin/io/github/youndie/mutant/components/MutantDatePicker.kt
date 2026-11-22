@@ -66,6 +66,7 @@ import io.github.youndie.mutant.gen.jsToFixed
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
@@ -654,11 +655,13 @@ private fun TimeField(
                         fontFamily = fonts?.display,
                         fontSize = DIGITS_SIZE.sp,
                         fontWeight = FontWeight.SemiBold,
+                        // The digits turn when the pour's front passes under them (B-94, as the chip's label), not at
+                        // the press: the acid takes the pour's time to come or go (B-168).
                         color =
                             when {
                                 hidden -> Color.Transparent
-                                active -> colors.onPrimary
-                                else -> colors.text
+                                active -> inkOnBody(colors.onPrimary, colors.text)
+                                else -> inkOnBody(colors.text, colors.onPrimary)
                             },
                         platformStyle = raster,
                     ).cssLine(MutantFaceMetrics.Handjet),
