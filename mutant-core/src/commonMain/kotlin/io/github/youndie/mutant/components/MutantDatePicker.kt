@@ -45,6 +45,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.MutantClock
@@ -236,7 +238,9 @@ private fun DayGrid(
     val from = remember { DropFrom(selectedDay ?: 0, lead, days) }
     from.follow(selectedDay ?: 0, lead, days, clock.nowMs, instant, steps)
     val cellDp = remember { floatArrayOf(CELL.toFloat()) }
-    val place = if (chosen) DropPlace(from, clock, lead + selectedDay - 1, cellDp, instant, steps) else null
+    // Right to left the grid is mirrored with its weekday row, the drop's run and the arrow keys with it (B-168).
+    val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
+    val place = if (chosen) DropPlace(from, clock, lead + selectedDay - 1, cellDp, side, instant, steps) else null
     val dayStyle = { weight: FontWeight, color: Color ->
         TextStyle(
             fontFamily = fonts?.text,
@@ -270,7 +274,7 @@ private fun DayGrid(
                     "$key-day",
                     Modifier.size(CELL.dp),
                     profile = MutantBody.Pill.profile.with(radius = DROP_RADIUS),
-                    slide = SlideRequest(from.run, from.cols * cellDp[0], from.rows * cellDp[0]),
+                    slide = SlideRequest(from.run, side * from.cols * cellDp[0], from.rows * cellDp[0]),
                 ) {}
             }
             for (d in 1..days) {
@@ -285,8 +289,8 @@ private fun DayGrid(
                         if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                         val to =
                             when (it.key) {
-                                Key.DirectionRight -> d + 1
-                                Key.DirectionLeft -> d - 1
+                                Key.DirectionRight -> d + side
+                                Key.DirectionLeft -> d - side
                                 Key.DirectionDown -> d + 7
                                 Key.DirectionUp -> d - 7
                                 else -> return@onPreviewKeyEvent false
@@ -313,11 +317,11 @@ private fun DayGrid(
         layout(cell * 7, cell * rows) {
             if (drop != null) {
                 val i = lead + selectedDay!! - 1
-                drop.place(i % 7 * cell, i / 7 * cell)
+                drop.placeRelative(i % 7 * cell, i / 7 * cell)
             }
             cells.forEachIndexed { k, p ->
                 val i = lead + k
-                p.place(i % 7 * cell, i / 7 * cell)
+                p.placeRelative(i % 7 * cell, i / 7 * cell)
             }
         }
     }
@@ -431,13 +435,14 @@ private fun inOval(
 /**
  * Where the drop is drawn now, from the middle of cell [over], dp: its oval as the body slides it (`slid`: run home by
  * `1 − (1 − p)²`, stretched `1 + .4 sin πp` along its run and squeezed `1 − .18 sin πp` across), half its outline inside.
- * While it runs, the reader reads every frame of the [clock].
+ * [side] is -1 right to left, where the grid is mirrored. While it runs, the reader reads every frame of the [clock].
  */
 private class DropPlace(
     private val from: DropFrom,
     private val clock: MutantClock,
     private val chosen: Int,
     private val cell: FloatArray,
+    private val side: Int,
     private val instant: Boolean,
     private val steps: Boolean,
 ) {
@@ -447,7 +452,7 @@ private class DropPlace(
         val q = sin(PI * p)
         val left = (1 - p).pow(2)
         val c = cell[0].toDouble()
-        val x = c * (chosen % 7 - i % 7 + from.cols * left)
+        val x = side * c * (chosen % 7 - i % 7 + from.cols * left)
         val y = c * (chosen / 7 - i / 7 + from.rows * left)
         val along = jsToFixed(1 + .4 * q, 2)
         val across = jsToFixed(1 - .18 * q, 2)
