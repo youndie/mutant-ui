@@ -125,4 +125,19 @@ does (`before=Keyboard after=Touch`), so every press here is the mouse's.
 
 ## Fixes
 
-*(filled in as they land)*
+### F-buttons-01
+
+- **The change.** `MutantButton.kt` (`ButtonBody`): the body hears the button's interactions through `QuietWhileBusy`.
+  - While the button is Loading, presses and hovers do not reach the body.
+  - When the work starts, a press or a hover under way is let go.
+  - When the work ends with the mouse still over the button, the mouse's simmer comes back.
+  - Focus is read from the button's own source as before, so B-62's focus through the work stands.
+  - The hand cursor shows only while the button takes a click.
+- **The test.** `ButtonBehaviourTest`, «a loading button shows no press, no simmer and no hand, and simmers again under
+  the mouse when done». By the real mouse it reads, frame by frame, how many of the body's pixels show the acid fill
+  while Loading: hovered, pressed and released. It also checks the hand's absence, the simmer under the mouse once Idle,
+  and that the simmer lets go when the work starts again.
+  - Before the change: «hovered while loading, acid pixels per frame: [6804, 6804, 0, 0, …] against 5365».
+- **After.** `core/busy-loading-efir-0.png`: the fill stays acid through the press, the release and the mouse over it.
+  The before-sheet is `before/busy-loading-efir-0.png`. A live button's press is unchanged: the largest per-frame
+  change is 3913 and 5700 pixels for the filled and the outlined button, as before.
