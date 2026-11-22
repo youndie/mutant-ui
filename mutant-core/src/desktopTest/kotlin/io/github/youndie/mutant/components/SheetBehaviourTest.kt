@@ -1,20 +1,14 @@
 package io.github.youndie.mutant.components
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toPixelMap
-import androidx.compose.ui.test.captureToImage
-import io.github.youndie.mutant.surface.KeyframeLossBody
-import io.github.youndie.mutant.theme.MutantScreenClock
-import kotlin.math.abs
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -24,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -31,6 +27,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -43,7 +40,10 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
+import io.github.youndie.mutant.surface.KeyframeLossBody
+import io.github.youndie.mutant.theme.MutantScreenClock
 import io.github.youndie.mutant.theme.MutantTheme
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -363,7 +363,11 @@ class SheetBehaviourTest {
             visible = true
             repeat(40) { mainClock.advanceTimeByFrame() }
             // A column inside the body's right padding, from just under its top edge to the screen's foot: its fill alone.
-            val top = onNodeWithTag("room", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y.toInt() - 10
+            val top =
+                onNodeWithTag("room", useUnmergedTree = true)
+                    .fetchSemanticsNode()
+                    .positionInRoot.y
+                    .toInt() - 10
             val px = onNodeWithTag("screen").captureToImage().toPixelMap()
             val column = (top until 590).map { px[350, it] }
             val fill = column.sortedBy { it.red + it.green + it.blue }[column.size / 2]
@@ -409,4 +413,51 @@ class SheetBehaviourTest {
             }
         }
     }
+
+    @Test
+    fun `Tab comes round its controls only, and a click on its words focuses none`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var fired = ""
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(Modifier.size(360.dp, 600.dp)) {
+                            MutantBottomSheet(true, {}) {
+                                BasicText("Скорость записи", Modifier.testTag("title"))
+                                for (label in listOf("A", "B", "C")) {
+                                    MutantButton(label, { fired += label }, Modifier.testTag(label))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(500)
+            // A mouse click on its words: no control takes focus, and Enter after it fires none.
+            onNodeWithTag("title", useUnmergedTree = true).performMouseInput { click(center) }
+            mainClock.advanceTimeByFrame()
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals("", fired, "Enter after a click on the words")
+
+            fun focused() =
+                listOf("A", "B", "C").filter {
+                    onNodeWithTag(it).fetchSemanticsNode().config.getOrElse(SemanticsProperties.Focused) { false }
+                }
+
+            fun press(back: Boolean): String {
+                onRoot().performKeyInput {
+                    if (back) keyDown(Key.ShiftLeft)
+                    pressKey(Key.Tab)
+                    if (back) keyUp(Key.ShiftLeft)
+                }
+                mainClock.advanceTimeByFrame()
+                return focused().joinToString()
+            }
+            val forward = List(4) { press(back = false) }
+            assertEquals(listOf("A", "B", "C", "A"), forward, "Tab")
+            val backward = List(4) { press(back = true) }
+            assertEquals(listOf("C", "B", "A", "C"), backward, "Shift+Tab")
+        }
 }

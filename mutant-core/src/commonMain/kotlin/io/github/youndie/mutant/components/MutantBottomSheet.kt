@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,24 +23,31 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
@@ -152,6 +161,10 @@ private fun SheetScene(
     val colors = MutantTheme.colors
     val dismiss by rememberUpdatedState(onDismissRequest)
     val focus = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    // Whether the sheet itself holds focus (as it opens, and where Shift+Tab from its first control would stop): it shows
+    // nothing there.
+    var onSelf by remember { mutableStateOf(false) }
     LaunchedEffect(visible) { if (visible) focus.requestFocus() }
     NavigationBackHandler(rememberNavigationEventState(NavigationEventInfo.None), isBackEnabled = visible) { dismiss() }
     // Ease-out²: the sheet rises fast and settles.
@@ -176,6 +189,18 @@ private fun SheetScene(
                         true
                     }
 
+                    // Tab past the last control comes round to the first, Shift+Tab past the first to the last, as in the
+                    // dialog (B-57): never onto the sheet itself, which shows nothing (B-168).
+                    it.type == KeyEventType.KeyDown && it.key == Key.Tab -> {
+                        val back = it.isShiftPressed
+                        if (!focusManager.moveFocus(if (back) FocusDirection.Previous else FocusDirection.Next) ||
+                            onSelf
+                        ) {
+                            sheetFocusRound(focus, focusManager, back)
+                        }
+                        true
+                    }
+
                     else -> {
                         false
                     }
@@ -188,7 +213,8 @@ private fun SheetScene(
                         while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
                     }
                 }
-            }.focusable(),
+            }.onFocusChanged { onSelf = it.isFocused }
+            .focusable(),
     ) {
         // The scrim: it takes every click above the sheet, and a click on it dismisses. Not a Tab stop.
         Box(
@@ -236,8 +262,9 @@ private fun SheetWindow(
             MutantSurface(
                 MutantBody.Blob,
                 key,
-                // Its own clicks: none reaches the scrim under it.
-                Modifier.clickable(remember { MutableInteractionSource() }, indication = null) {},
+                // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a press on
+                // a clickable asks for focus, and the body took it, a Tab stop that shows nothing (B-57, B-168).
+                Modifier.pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false) } },
                 fill = colors.surface,
                 // The page's `data-r="22" data-over="0" data-wob="1.6" data-marks="0"`.
                 profile = MutantBody.Blob.profile.with(radius = RADIUS, overhang = 0.0, wobble = WOBBLE, marks = false),
@@ -286,7 +313,14 @@ private fun SheetWindow(
             } else {
                 // At most as tall as the screen: a content that scrolls learns its room (with none it threw), and a
                 // taller one runs off the foot with its top kept, where it was centred and cut at both ends (B-168).
-                val room = if (c.hasBoundedHeight) (c.maxHeight - top + bleed).coerceAtLeast(0) else Constraints.Infinity
+                val room =
+                    if (c.hasBoundedHeight) {
+                        (c.maxHeight - top + bleed).coerceAtLeast(
+                            0,
+                        )
+                    } else {
+                        Constraints.Infinity
+                    }
                 measurables[0].measure(Constraints(minWidth = w + 2 * side, maxWidth = w + 2 * side, maxHeight = room))
             }
         val line = measurables[1].measure(Constraints.fixed(w, LINE_H.roundToPx()))
@@ -296,6 +330,28 @@ private fun SheetWindow(
         }
     }
 }
+
+/**
+ * Takes focus round the sheet's [sheet] group from its other end: to its first control going forward, to its last going
+ * [back]. Compose gives no way to name them, so it steps from the sheet itself; with no control it stays there.
+ */
+private fun sheetFocusRound(
+    sheet: FocusRequester,
+    focusManager: FocusManager,
+    back: Boolean,
+) {
+    sheet.requestFocus()
+    if (!focusManager.moveFocus(FocusDirection.Next)) return
+    if (back) {
+        var steps = 0
+        while (steps++ < SHEET_FOCUS_STEPS && focusManager.moveFocus(FocusDirection.Next)) {
+            continue
+        }
+    }
+}
+
+/** The most controls [sheetFocusRound] steps over to reach the last: a bound, not a number of the design. */
+private const val SHEET_FOCUS_STEPS = 256
 
 /** The page's scrim: `rgba(5, 6, 12, .5)`. */
 private val SCRIM = Color(0x8005060C)
