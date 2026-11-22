@@ -34,6 +34,10 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   Date picker section scrolled into view and the 20th clicked (`page-date-*.png`), the Time picker section and its
   minutes clicked (`page-time-*.png`).
 
+The fixes' frames are in `after/`, written by the same test with each fix in place; its files also carry `bad=`, per
+number the share of its ink that reads under 1.5:1 against what lies under it (a stricter reading than the median).
+The `core/date-pick-*` and `core/date-fast-*` files were rewritten on the code before the fixes with that column added.
+
 ## Findings
 
 ### F-pickers-01 — the days' numbers turn by a half-cell rule, not under the drop: light on lime, black on the bar — local
@@ -51,6 +55,21 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   paper and on lime alike).
 - **The decision.** B-93's AC «the number stays readable on every frame»; the kit's rule (`cmp-ui-component` §4,
   F-nav-bar-01): a word's colour follows the fill as drawn.
+- **Fixed** (`0c55678`). Each number is drawn twice over the same place: light and regular outside the drop, the
+  pill's black and bold inside it, the drop read as the body slides it (`DropPlace`: its run home `1 − (1 − p)²`, its
+  stretch along the run, half its outline inside its box, on every frame of the screen's clock while it runs). A number
+  wholly on one side is drawn as it is, unclipped, so the resting calendar draws as before: `DatePickerParityTest`, the
+  behaviour tests and the QA sweeps unchanged. The black copy is hidden from a reader and never sizes the cell.
+  `CalendarNumbersOnDropTest` «every day's number reads on what is drawn under it through the drop's runs»: «Эфир», a
+  bare twin, the run 5 → 18 and three picks into running runs, every frame, with and without `steppedMotion`: no
+  number with more than 25 % of its ink under 1.5:1 against what lies under it. It failed on the code before («stepped
+  false, frame 3: 31 % of the 12th unreadable»). Mutant: the drop's oval read without its run (`from.cols * 0.0`),
+  killed — «frame 0: 100 % of the 5th unreadable».
+- **After** (`after/date-pick-*.txt`, `after/date-fast-*.txt`, the share of a number's ink under 1.5:1 as `bad=`):
+  before, up to 100 % of a number (the 12th, the 11th, the 19th in `core/date-fast-Efir.txt`) and 66 % of the 18th in
+  `core/date-pick-Efir.txt`; after, at most 19 %, the pixels along the drop's edge where the slime's wobble leaves the
+  oval (`after/date-pick-Efir.png`, `after/date-fast-Efir.png`: the black follows the drop's edge across each
+  number). The same in every look with a twin; «Копия» and reduce motion none (density 2 has no twin: looked at, not counted).
 
 ### F-pickers-02 — a pick during the drop's run leaps it to the day picked before — local
 
@@ -61,6 +80,15 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   from (100, 200) to (80, 138) on the third pick. 2 645–2 872 pixels change on those frames against 900–1 100 on the
   run's frames. The same in every look but reduce motion.
 - **Cause.** `DayRun` keeps the previous chosen day and the slide is asked from `(previous − chosen) · cell`.
+- **Fixed** (`f2f23ea`). `DropFrom` keeps where the run it asked for started, in columns and rows from the chosen
+  cell, and when; a new pick asks for a run from what is left of that one at the screen clock's now
+  (`(1 − p)²`, `p` stepped under `steppedMotion`), as the body draws it, and the body's slide restarts only on a new
+  run (its id is the run's count, so a month change or a deselection starts none). `CalendarRunTest` «B-168 a pick
+  while the drop runs starts the new run from where the drop stands»: 5 → 25, then the 3rd 128 ms later, density 2;
+  the drop's lime never moves more than 30 px a frame and lands on the 3rd. Mutant: the run asked from the day picked
+  before again (`cols * 0.0`), killed — «frame 8: the drop leapt 100 px».
+- **After** (`after/date-fast-Efir.txt`): on the re-aimed frames the middle moves on from where it stood ((132, 199)
+  → (122, 227) over the click's 76 ms, then back towards the 3rd at 4–9 px a frame).
 
 ### F-pickers-03 — right to left, the days stand under the wrong weekdays — local
 
@@ -70,6 +98,13 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
 - **Frames.** `core/date-pick-Rtl.png`, `core/date-keys-Rtl.png`.
 - **The rule.** B-65 mirrored tabs and the navigation bar; the calendar mirrors half of itself already (its rows). A
   grid that agrees with its own weekday row is not a look to decide.
+- **Fixed** (`ffa93d5`). The grid places its cells and the drop with `placeRelative`; the drop's run and its oval are
+  mirrored on x, and Right and Left step the focus by the screen's direction. `CalendarRightToLeftTest`: right to left,
+  the 1st to the 7th each stand under their own weekday (within 2 px), and a pick of the 18th lands the lime on it while
+  Right moves the focus to the 17th, which stands right of it. Mutant: the cells placed with `place` again, killed —
+  «day 1 stands 216 px off ВС» and «the lime stands at 224, the 18th at 152».
+- **After** (`after/date-pick-Rtl.png`, `after/date-keys-Rtl.png`): the 1st under ВС, the drop runs from the 5th (ЧТ)
+  to the 18th (СР) mirrored, the numbers split along it.
 
 ### F-pickers-04 — the time picker's digits turn at the click, the field's acid pours for 350 ms — local
 
@@ -84,10 +119,24 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
   the sample's `sample/page-time-Efir.png`.
 - **The decision.** B-94's rule as the chip holds it: a label turns when the pour's front passes under it
   (`inkOnBody`, the ground the surface provides).
+- **Fixed** (`2d0afd9`). The digits take `inkOnBody`: the fill under the body's middle while it pours, whichever of the
+  two colours reads better on it, as the chip's label (B-94). `TimePickerDigitsFollowPourTest`: «Эфир», a bare twin,
+  the minutes picked then the hours, every frame for 768 ms each, with and without `steppedMotion`, the mouse taken off
+  both: no field with more than 40 % of its digits' ink under 1.5:1. Mutant: the colour from the press again, killed —
+  «stepped false, the minutes picked, frame 0: 60 % of field 0 unreadable».
+- **After** (`after/time-switch-*.png`, `after/time-switchfast-Efir.txt`): each field keeps its colour until the front
+  passes its middle. **What remains**: while the front crosses the 52 sp digits a part of them stands on the other fill,
+  up to a third of the ink on the flip frame (`bad=[0.33, 0.25]` at 312 ms, under 0.2 within 50 ms,
+  `after/time-switch-Efir.txt`). Splitting the digits along the front, as the calendar's numbers along the drop, needs
+  the body's pour front from `MutantSurface` (the content gets only the ground under the middle,
+  `LocalMutantBodyGround`): reported as F-pickers-11.
 
 ### F-pickers-05 — a pick re-aimed mid-run snaps the drop's stretch — reported (`surface/BodyTransitions.kt`, F-nav-bar-03)
 
-- The calendar's face of F-nav-bar-03, seen once F-pickers-02 is fixed; numbers in «After» below.
+- The calendar's face of F-nav-bar-03, seen once F-pickers-02 is fixed: a drop stretched tall along a run down the
+  grid is 46 px tall on the frame before a new pick and 33 px (its rest) on the next, its middle where it was
+  (`after/date-fast-Efir.txt` 220 → 296 ms: the lime's box 175..220 → 210..242; 2 402 pixels change on that frame
+  against ~1 000). Every re-aimed pick shows it.
 
 ### F-pickers-06 — the calendar's height follows the month: 4, 5 or 6 rows — reported (owner; B-45, B-150's class)
 
@@ -129,6 +178,15 @@ Two throwaway tests, deleted before committing; the frames stay in `/private/tmp
 - **Frames.** `core/date-pick-Rtl.png` (any frame, the header's left end).
 - **Question.** Which way do the month arrows point and stand in a right-to-left calendar (B-65 settled tabs and the
   bar only; segmented's F-segmented-06 asks the same)? The 30 dp gap is fixed with whatever answer that gets.
+
+### F-pickers-11 — a time field's digits cannot be split along the pour's front — reported (`surface/MutantSurface.kt`)
+
+- **What.** After F-pickers-04's fix the digits turn as the front passes the body's middle; the front takes about
+  150 ms to cross the 52 sp digits, and meanwhile up to a third of their ink stands on the other fill (`bad=` in
+  `after/time-switch-Efir.txt`, 296–440 ms; `after/time-switch-Efir.png`). The surface gives its content only the fill
+  under its middle (`LocalMutantBodyGround`); a content drawn twice, clipped along the front (as the calendar does along
+  the drop, the navigation bar along its pill), needs the front's path. Every pouring body with large words shares it
+  (the chip's label is small enough to hide it).
 
 ### Known faces, not new
 
