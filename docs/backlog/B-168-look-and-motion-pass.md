@@ -89,7 +89,7 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 5 | text-field | TextField | done: [report](../../logs/b-168/text-field.md), 3 fixed, 6 reported |
 | 6 | search | SearchBar, its suggestions and results | done: [report](../../logs/b-168/search.md), 3 fixed (one a KDoc), 3 reported, 1 withdrawn to text-field |
 | 7 | card-cocoon | Card, Cocoon (skeleton) | done: [report](../../logs/b-168/card-cocoon.md), 0 fixed, 5 reported |
-| 8 | app-bar-tabs | TopAppBar, Tabs | open |
+| 8 | app-bar-tabs | TopAppBar, Tabs | done: [report](../../logs/b-168/app-bar-tabs.md), 2 fixed, 5 reported |
 | 9 | nav-bar | NavigationBar | open |
 | 10 | list-divider-badge | ListItem, Divider, Badge | open |
 | 11 | snackbar | Snackbar | open |
