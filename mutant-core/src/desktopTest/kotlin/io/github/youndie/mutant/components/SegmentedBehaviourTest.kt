@@ -328,4 +328,13 @@ class SegmentedBehaviourTest {
         val off = (ltr.filter { x -> (x - 1..x + 1).none { it in rtl } } + rtl.filter { x -> (x - 1..x + 1).none { it in ltr } })
         assertEquals(emptyList(), off, "columns of the pale words' ink more than a pixel from where they are left to right")
     }
+
+    @Test
+    fun `a word wider than its segment ends inside it`() {
+        // The middle segment, 104 dp from x 108, holds a word some 160 dp long; the others are short.
+        val inks = inkColumns(LayoutDirection.Ltr, listOf("SP", "Extended play · six hours", "EP"))
+        val middle = inks.filter { it in 100 until 220 }
+        assertTrue(middle.size > 60, "the long word's ink: ${middle.size} columns")
+        assertTrue(middle.min() >= 108 && middle.max() < 212, "the long word's ink from ${middle.min()} to ${middle.max()}")
+    }
 }

@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,7 +82,7 @@ import kotlin.math.roundToInt
  * arrives at once.
  *
  * A segment is 104 dp where the button is given no width. The whole button is one focus stop, and the arrows choose.
- * A label wider than its segment ends where the segment does. Disabled, the body loses its signal, no window shows
+ * A label wider than its segment ends where the segment does, in an ellipsis. Disabled, the body loses its signal, no window shows
  * and the labels grey.
  */
 @Composable
@@ -337,6 +338,8 @@ private fun SegmentLabel(
                 translate(x, y) { this@drawWithContent.drawContent() }
             },
         style = style,
+        // A word wider than its segment ends in an ellipsis at the segment's end, so its line fits and is centred.
+        overflow = TextOverflow.Ellipsis,
         maxLines = 1,
         softWrap = false,
         color = color,
