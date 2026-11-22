@@ -1,7 +1,7 @@
 ---
 id: B-167
 title: "On the phone, the bodies the shader draws have no outline"
-status: wip
+status: done
 priority: P0
 size: S
 stage: stage-6-later
@@ -40,3 +40,9 @@ precision emulations (`--emulate-shader-precision` over Metal or SwiftShader) sh
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyShader.kt`
 
 ## Findings
+
+### 2026-11-22
+
+- On the phone, the Library screen with this ([screenshot](../../logs/b-167/2026-11-22-phone-library-fixed.png)): every
+  body's outline drawn — the cards, the chips, the field, the button, the FAB, the bar — where `main` drew none
+  ([screenshot](../../logs/b-167/2026-11-22-phone-library-565.png)).
