@@ -18,6 +18,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
@@ -27,6 +28,8 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -152,6 +155,48 @@ class SearchBarBehaviourTest {
                     clear.config.contains(SemanticsProperties.Disabled),
             )
             assertEquals("ночь", query)
+        }
+
+    /**
+     * B-168: a chip takes focus when pressed by a mouse or the keyboard, and the field lost it to every suggestion taken;
+     * where the suggestions leave as the query fills, as the demo's do, nothing was focused at all.
+     */
+    @Test
+    fun `a suggestion taken by the mouse or the keyboard hands focus back to the field`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var query by mutableStateOf("")
+            var keep by mutableStateOf(false)
+            setContent {
+                Still {
+                    MutantSearchBar(query, { query = it }, Modifier.width(320.dp)) {
+                        if (keep || query.isEmpty()) {
+                            MutantSearchSuggestions(listOf("ночь на вторник", "ночной эфир"), { query = it })
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            onNode(field).performMouseInput { click(center) }
+            mainClock.advanceTimeByFrame()
+            onNode(field).assertIsFocused()
+            // The suggestions leave as the query fills.
+            onNode(hasText("ночной эфир") and hasClickAction()).performMouseInput { click(center) }
+            mainClock.advanceTimeByFrame()
+            assertEquals("ночной эфир", query)
+            assertEquals(0, onAllNodes(hasText("ночь на вторник")).fetchSemanticsNodes().size)
+            onNode(field).assertIsFocused()
+            // The suggestions stay, taken from the keyboard.
+            keep = true
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("ночь на вторник") and hasClickAction())
+                .performSemanticsAction(SemanticsActions.RequestFocus)
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("ночь на вторник") and hasClickAction()).assertIsFocused()
+            onNode(hasText("ночь на вторник") and hasClickAction()).performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals("ночь на вторник", query)
+            onNode(field).assertIsFocused()
         }
 
     @Test
