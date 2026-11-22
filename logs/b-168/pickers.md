@@ -120,14 +120,25 @@ The `core/date-pick-*` and `core/date-fast-*` files were rewritten on the code b
 - **The decision.** B-94's rule as the chip holds it: a label turns when the pour's front passes under it
   (`inkOnBody`, the ground the surface provides).
 - **Fixed** (`2d0afd9`). The digits take `inkOnBody`: the fill under the body's middle while it pours, whichever of the
-  two colours reads better on it, as the chip's label (B-94). `TimePickerDigitsFollowPourTest`: «Эфир», a bare twin,
-  the minutes picked then the hours, every frame for 768 ms each, with and without `steppedMotion`, the mouse taken off
-  both: no field with more than 40 % of its digits' ink under 1.5:1. Mutant: the colour from the press again, killed —
-  «stepped false, the minutes picked, frame 0: 60 % of field 0 unreadable».
+  two colours reads better on it, as the chip's label (B-94).
+- **The test** (`84fd3b6`, which replaced the first one). `TimePickerDigitsFollowPourTest` «a time field's digits read
+  on the fill under the body's middle through each pour»: «Эфир», the picker and a bare twin turned on the same frame
+  through `TimePickerBody`'s internal `field`, neither pressed, the minutes set then the hours, every frame for 768 ms
+  each, with and without `steppedMotion`. On every frame where the fill across the body's middle row (16 dp from each
+  side, where the surface reads the front) is one fill, at most 3 % of the digits' ink over that fill may read under
+  1.5:1: measured 0.50 % unstepped, 0.43 % stepped. The front stands across that row on at most 8 frames per field and
+  pour: measured 3 to 6. «a press on a time field pours its acid in» holds the real path: a mouse press on the minutes
+  makes their top acid (over 60 % of the row) and leaves the hours' top dark. Mutant: the colour from the press again,
+  killed — «stepped false, the minutes set, frame 0, field 0: 100 % of the digits over the middle's fill unreadable».
+  - **Why the first test failed on the CI Mac** («frame 10: 41 % of field 1 unreadable» against 40 %). It bounded the
+    unreadable share of all the digits' ink, 40 %, on every frame, with the twin pressed one click before the picker:
+    the two bodies' pours and press heats ran apart by that click, and the reading rested on the offset. Here the worst
+    frame was 39 % (the minutes, frame 11, unstepped), a point under the limit. With the twin in step the crossing
+    frames reach 48 %: the bound sat on the physics F-pickers-11 describes, not on the fix.
 - **After** (`after/time-switch-*.png`, `after/time-switchfast-Efir.txt`): each field keeps its colour until the front
   passes its middle. **What remains**: while the front crosses the 52 sp digits a part of them stands on the other fill,
-  up to a third of the ink on the flip frame (`bad=[0.33, 0.25]` at 312 ms, under 0.2 within 50 ms,
-  `after/time-switch-Efir.txt`). Splitting the digits along the front, as the calendar's numbers along the drop, needs
+  up to 48 % of the ink on the 3 to 6 frames when the front crosses the middle row (38 % on a frame after it), falling
+  to none within about 150 ms. Splitting the digits along the front, as the calendar's numbers along the drop, needs
   the body's pour front from `MutantSurface` (the content gets only the ground under the middle,
   `LocalMutantBodyGround`): reported as F-pickers-11.
 
@@ -182,8 +193,8 @@ The `core/date-pick-*` and `core/date-fast-*` files were rewritten on the code b
 ### F-pickers-11 — a time field's digits cannot be split along the pour's front — reported (`surface/MutantSurface.kt`)
 
 - **What.** After F-pickers-04's fix the digits turn as the front passes the body's middle; the front takes about
-  150 ms to cross the 52 sp digits, and meanwhile up to a third of their ink stands on the other fill (`bad=` in
-  `after/time-switch-Efir.txt`, 296–440 ms; `after/time-switch-Efir.png`). The surface gives its content only the fill
+  150 ms to cross the 52 sp digits, and meanwhile up to 48 % of their ink stands on the other fill (with a twin
+  turned in step, `TimePickerDigitsFollowPourTest`'s measurement; `after/time-switch-Efir.png` 296–440 ms). The surface gives its content only the fill
   under its middle (`LocalMutantBodyGround`); a content drawn twice, clipped along the front (as the calendar does along
   the drop, the navigation bar along its pill), needs the front's path. Every pouring body with large words shares it
   (the chip's label is small enough to hide it).
