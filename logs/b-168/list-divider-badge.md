@@ -65,6 +65,14 @@ Brackets in the corners of a row after a finger's touch are the test window's ke
   spans keep their colours under the tint (a red span drew 112 red pixels, checked by a scratch test), so the search
   result's match (B-44) is untouched. After: `live-colours.txt` `disabled-live … headline=8a90a6 supporting=8a90a6
   time=8a90a6`, `enabled-again` the enabled colours, `live-disabled-live.png`.
+- **Held** (`d468b05`) by `ListItemBehaviourTest` «a row disabled in place greys its words, and enabled gives them
+  back»: a live row flipped to disabled shows each word in `textDisabled` in its first frame and none of its own colour,
+  and flipped back every word's pixels in its colour count as before. Mutants, each read in the JUnit XML:
+  - the three tints removed: killed («Настроечная таблица greys in the first frame disabled»);
+  - the time's tint ignoring `enabled` (`osdInk = colors.textOsd`): killed («12:04 greys in the first frame disabled»);
+  - one word's tint removed alone (headline, supporting line, time): survived, and equivalent here — the three words
+    lie in one layer, so either of the other two tints redraws it with them. All three are kept, so no word depends on
+    sharing a layer with another.
 
 ### F-list-divider-badge-02 — the keyframe loss leaves the dividers out of its picture — reported (shared: `surface/MutantKeyframeLoss.kt`)
 
@@ -114,7 +122,7 @@ Brackets in the corners of a row after a finger's touch are the test window's ke
 ## Looked at, nothing wrong
 
 - **The tile's icon by a real press**: no frame under 4.37:1 against the fill under it in «Эфир» (5.07 on the way up,
-  4.37 on the way down, 288 ms after the release, where the icon turns back light) and none under 11.04:1 in «Копия», the same in the
+  4.37 on the way down, 272 ms after the release, where the icon turns back light) and none under 11.04:1 in «Копия», the same in the
   browser's way (`contrast-*.txt`).
 - **A finger's press** boils the tile and leaves the words where they are; release cools it over ~400 ms
   (`press-touch.png`).
