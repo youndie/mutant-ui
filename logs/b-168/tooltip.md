@@ -24,7 +24,7 @@ says otherwise); `*.txt` beside a sheet holds its numbers, the per-frame diff co
 | `edges.png`, `edges.txt` | six FABs in a window-filling stage: at the left edge, the right edge, the top, the top-left corner, 16 dp in from the bottom-right corner, and a long text in the middle | each hovered in turn |
 | `neighbour-{none,keyboard,touch-linger,hover-neighbour}.png`, `neighbour.txt` | a button where the plate stands, as B-32's test | a mouse click on the button under the plate's words with the plate hidden, held by keyboard focus, lingering after a long press, and with the mouse resting on the button first; a finger's tap on it while the plate lingers |
 | `focus.txt` | the anchor and a button below | Tab after a mouse click on the anchor, after a finger's tap on it, after a click elsewhere, from nothing |
-| `scroll-longpress.png`, `scroll-longpress.txt` | the anchor in a scrolling column | a finger landing on the anchor and scrolling the column 142 px over 640 ms, then lifting |
+| `scroll-longpress-after.png`, `scroll-longpress-after.txt` | the anchor in a scrolling column | a finger landing on the anchor and scrolling the column 142 px over 640 ms, then lifting |
 | `hover-scroll.png`, `hover-scroll.txt` | the same | the mouse resting on the anchor while the column scrolls 200 px |
 | `text-change.png`, `text-change.txt` | the rich plate over a FAB, reduce motion on | the first line a running time, `REC · 0:42:17` → `:18` → `:19` → `:20` |
 | `components-section.png` | `MutantUiSample(group = Communication)`, the Tooltip section scrolled into view | a mouse over the share button, then over the FAB; a finger's long press on the FAB, lift, 1 s and 1.6 s after |
@@ -65,7 +65,7 @@ Held as designed, and looked at:
 
 A finger that lands on the anchor and scrolls the page shows the plate once the long-press timeout runs out, though the
 finger has moved 142 px and the page scrolled under it; the plate then stays 1.5 s after the lift
-(`scroll-longpress.png`, `scroll-longpress.txt`: `shown while held=true`, `1 s after lift shown=true`). A user scrolling
+(before the fix: `shown while held=true`, `1 s after lift shown=true`; the before-sheet was overwritten by the after-run, the numbers are its). A user scrolling
 the Components page, or a list of anchors, raises plates they never asked for. The platform's long press is cancelled
 once the finger leaves the touch slop; B-32 says «after a finger's long press», the platform's timeout, and a scroll is
 none.
@@ -123,4 +123,14 @@ stands at once. The stand-in is shared code (`surface/`), F-buttons-03's.
 
 ## Fixed here
 
-(filled in below as each fix lands)
+- **F-tooltip-01** (`38ae0c0`): the pointer loop remembers where a finger came down and cancels the pending long press
+  once the finger moves past `viewConfiguration.touchSlop`; a long press already shown keeps its linger. The KDoc says
+  so. Kept test: `TooltipBehaviourTest` «a finger scrolling the page from the anchor is no long press» — a finger on the
+  anchor in a scrolling column moves 160 px over 640 ms (the page scrolls over 100 px under it, asserted), and no plate
+  shows while it is held or after the lift; B-32's long-press test (no movement) still shows the plate and its linger.
+  Mutant: the cancel on movement removed — killed («held, after a scroll»). After: `scroll-longpress-after.png`,
+  `scroll-longpress-after.txt` (`shown while held=false`, `1 s after lift shown=false`); the neighbour and focus checks
+  run again unchanged.
+
+Reported: F-tooltip-02 (placement at the window's edges, owner), F-tooltip-03 (long text and the header's hint, owner and
+sample), F-tooltip-04 (face of F-icon-fab-03), F-tooltip-05 (face of F-buttons-03).
