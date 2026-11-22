@@ -142,3 +142,56 @@ Three throwaway tests, deleted before committing; the frames stay in `/private/t
 - **Long items** end in an ellipsis inside the row (`edges-0.png`, «ПЕРЕЗАПИСЬ ПОВЕРХ …»).
 - **The keyframe loss over an open menu**: the menu, in its own root, draws whole over every frame of the loss and a
   pick during it runs its venom; the band cuts only the screen under it (`loss-open-mid.png`), as B-98 decided.
+
+## Fixes
+
+| Finding | Commit | Kept test | After |
+|---|---|---|---|
+| F-menu-02 | `648b820` fix(menu): run no venom where no window shows | `MenuBehaviourTest` «no venom runs where no window shows, to an index outside the rows or from one»: no lime in the menu and 40 dp round it, every 48 ms, after 2 → 7 and 1 → −1; the window whole in the first frame after 7 → 1 | `after/2-to-past-end-efir.png`, `after/past-end-to-1-efir.png`, `after/2-to-none-efir.png`: no lime outside a window; the window back at once |
+| F-menu-01 | `a4c2754` fix(menu): turn each word black where the slime lies under it | `MenuWordsOnSlimeTest`: «Эфир», a bare twin read under every word, a pick across the menu, every frame for 736 ms, every word's tenth percentile at least 3:1 against what lies under it | `after/*.txt`: no word-frame with a fifth of its glyph under 3:1 in any look (39–76 before in «Эфир»); `after/pick-0-2-efir.png`, `after/sample/components-efir.png`: the black follows the lime's edge across each word |
+| F-menu-04 | `79024b2` fix(menu): draw no focus brackets on the anchor while its menu is open | `MenuBehaviourTest` «while its menu is open the anchor draws no focus brackets» (focus-coloured pixels round the anchor: 0 closed, many focused, 0 open) | `after/popup-keys.png`: one focus mark at a time; Escape brings the anchor's back |
+| F-menu-03 | `ae910b8` fix(menu): give the keys to the chosen row as the menu opens | `MenuBehaviourTest` «opened from the keyboard the chosen row takes the keys…» (Tab, Enter: the chosen row focused; Down moves; Escape closes and the anchor has focus) and «opened by the mouse, Escape closes the menu» | `after/popup-keys.log`: Enter → row 1 focused, Down → row 2, Escape closes; `after/popup-mouse.log`/`.png`: a mouse-opened menu focuses its chosen row with no brackets (the mouse leaves keyboard mode) |
+| F-menu-08 | `39ac66a` docs(menu): say a press on the chosen row hands nothing to onSelect | — (KDoc) | — |
+
+- **How the words turn.** Through a run each row is drawn twice in a layer of its own: black inside the slime as drawn
+  (the venom's goo layer as the fill recorded it that frame, its thin shapes, and the window once it shows, springing
+  about its middle) and in the text's colour outside it. At rest the words draw as before, so `MenuParityTest` does not
+  move. `VenomRun.labelOn` is no longer read by the menu; the drawer still reads it.
+- **Focus on opening.** The chosen row, or the first, takes focus a frame after the popup opens. A key pressed in the
+  opening frame itself still reaches nothing (`after/popup-mouse.log`, Escape sent 16 ms after the press); a person
+  cannot press that fast. On Android in touch mode a row does not take focus, as before.
+- **Found while fixing.** Nothing new; the after-frames show the open, the pick, the close and the keys as before but
+  for the fixed points.
+
+## Mutants
+
+Each run after its fix was committed: the one line changed, the aimed test run, its `<failure>` read in the JUnit XML,
+`git checkout -- <file>`.
+
+| Mutant | Aimed test | Result |
+|---|---|---|
+| `val shown = selectedIndex` (the venom follows any index) | «no venom runs where no window shows…» | killed: lime past the end `[7355, 7712, 8236, …]` |
+| the fill canvas's `if (shown < 0) return@Canvas` removed | the same | killed: lime past the end `[7070, 7447, …]` and to none `[6876, …]` |
+| no masked passes (`val now = null`: the words from the pick at once) | `MenuWordsOnSlimeTest` | killed: frame 0, word 0 1.06:1, word 2 1.46:1 |
+| the window left out of the mask | `MenuWordsOnSlimeTest` | killed: frames 36–…, word 2 1.06:1 |
+| `focusOnOpen = false` in `MutantMenu` | «opened from the keyboard…», «opened by the mouse, Escape…» | killed: the chosen row not focused; Escape left the menu open |
+| `focused = focused && keyboard` (the anchor's brackets while open) | «while its menu is open the anchor draws no focus brackets» | killed: 52 focus pixels against 0 |
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+`39ac66a`, the scratch tests deleted and `build/reports/ktlint` removed first, read from the JUnit XML: `mutant-core`
+445 tests, 0 failures, 0 errors; `sample` 22 tests, 0 failures, 0 errors; both `ktlintCheck`s pass (exit 0). The public
+API did not change (`MenuBody`, `DropdownAnchor` are internal; no `updateKotlinAbi`).
+
+## Not verified
+
+- The phone and the browser itself: the browser's way was looked at through the desktop seams only. The masked words
+  draw the venom's goo layer twice more per row per frame through a run; its cost on a phone was not measured.
+- The demo Settings screen's «Picture» dropdown: in the phone it stands at 702 dp of the window, under the phone's
+  navigation bar until the screen is scrolled, and the scratch's press did not open it; it composes the same
+  `MutantDropdown`.
+- Focus on opening on Android and iOS (touch mode): Android's rows do not take focus in touch mode, so nothing should
+  change there; not run.
+- F-menu-08's press on the chosen row was read in code and in `popup-keys.log` (Enter on the chosen row, `sel`
+  unchanged), not by a test of the demo's sort menu.
