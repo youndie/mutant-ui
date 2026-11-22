@@ -94,7 +94,8 @@ import kotlin.math.sin
  * A press on a day hands it to [onSelect]; the arrows go to [onMonthChange] with the month before or after, their
  * targets 48 dp at least. A day's cell is its whole target, 36 dp: an owner-named exception to the 48 dp rule
  * (research D19); the cells tile the grid. The arrow keys move the keyboard's focus a day or a week; Enter or Space
- * picks. The design is a still: all of this is designed here (D15), the drop standing at once on its new day.
+ * picks. The design is a still: all of this is designed here (D15). The drop runs to a new day in 330 ms (B-93), each
+ * number black where the drop covers it; a new month moves it at once. Right to left the grid mirrors with its weekdays.
  */
 @Composable
 public fun MutantDatePicker(
@@ -533,7 +534,8 @@ private fun Arrow(
 /**
  * A time picker, the recording timer's: the hours and the minutes, each in a field (body `field`, 76 × 72 dp, drips to
  * 14 dp) in Handjet 52 semibold, two digits, a colon between them in the on-screen-display amber, 10 dp apart. The field
- * being set is acid with black digits (the page's «часы выбраны, минуты ждут»); a press on the other makes it the one.
+ * being set is acid with black digits (the page's «часы выбраны, минуты ждут»); a press on the other makes it the one,
+ * its acid pouring in, and the digits turn as the pour passes them.
  * Up and Down step the one focused, wrapping (23 → 0, 59 → 0), and each reads to a screen reader as a value in its
  * range that can be set; [hourLabel] and [minuteLabel] name them. Designed here (D15): the design is a still.
  */
