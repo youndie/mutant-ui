@@ -110,18 +110,57 @@ changed since the last frame.
 ## Looked at and found right
 
 - **The ride.** In 240 ms, out 200, eased by the cube: on every look the bar rises from 56 dp below its place to it
-  and leaves the composition at 224 ms after a 200 ms ride out (`core-efir.txt`). Under `steppedMotion` its steps show at
-  112, 192 and 272 ms (the frames after 83, 167 and 250). Under reduce motion it stands at its place in the change's frame and goes in the next,
-  its body still (`core-reduce.txt`, `try-reduce.txt`).
+  and leaves the composition at 224 ms after a 200 ms ride out (`core-efir.txt`). Under `steppedMotion` its steps show
+  at 112, 192 and 272 ms (the frames after 83, 167 and 250). Under reduce motion it stands at its place in the change's
+  frame and goes in the next, its body still (`core-reduce.txt`, `try-reduce.txt`).
 - **The browser's way.** The second entrance takes its body from the pool and draws it from the first frame
   (`core-efir-web-again.png`). The very first frame draws the stand-in, a flat rectangle without the slime's edge
   (`core-efir-web-in.png`, 16 ms): F-buttons-03's face, one frame, nothing new.
 - **Density 2** draws the same strips at twice the pixels (`core-efir-d2-*`, `try-efir-d2-*`).
-- **Long words** (B-70). At density 2 a long message ends in an ellipsis before the action; a 39-character
-  action ends in an ellipsis within half the bar
-  (`core-long-efir-d2.png`). No mosaic, drip or flow line enters the words.
+- **Long words** (B-70). At density 2 a long message ends in an ellipsis before the action; a 39-character action ends
+  in an ellipsis within half the bar (`core-long-efir-d2.png`). No mosaic, drip or flow line enters the words.
 - **What a hidden snackbar answers: nothing.** Composed hidden, nothing is composed. Leaving, the action is disabled:
   Enter, a click on it and Tab do nothing, no node is focused (`core-keyboard.txt`); its message stays a polite live
   region for the 200 ms of the ride. Gone, no node with its words is left, `onHidden` ran once, and Tab and Enter do
   nothing.
 - **Keyboard focus** draws the field's brackets around the action (`core-focus.png`).
+
+## Fixed
+
+### F-snackbar-01 — `f5154ea`
+
+- **The cause.** `SnackbarRide.follow` set only the ride's start time on a change; `out` was a function of the new
+  direction and its progress alone, so a new ride began at the far end of the way.
+- **The fix.** The ride remembers how far below its place the bar stood when it began (`from`, the old ride's
+  position at the moment of the change) and runs B-26's curve over what is left: in, `from · (1 − e)`; out,
+  `from + (1 − from) · e`, with `e = 1 − (1 − p)³` over the same 240 and 200 ms. A ride from rest or from nothing has
+  `from` 1 or 0 and draws as before, so no golden or parity cell moves. Under `steppedMotion` the new ride holds where
+  the bar stood until its first step, 83 ms after the change; under reduce motion both still land at once.
+- **The kept test.** `SnackbarBehaviourTest.turned back half-way, it rides back from where it stands, never jumping
+  to the far end` reads the bar's top as drawn on every frame through an entrance turned back after three frames and
+  a leaving turned back after three more: no frame moves it more than 13 dp (a whole ride's first frame moves it 11
+  or 12), it rides down after the hide and up after the show, and it ends at its place with `onHidden` never called.
+- **After.** On the bar alone, hidden 48 ms in: 54, 46, 52, 57 … 73 dp below its top line, then gone; shown 48 ms into
+  its leaving: 40, 49, 43, 38 … 17 (`core-interrupted.txt`). In the sample, UNDO 64 ms in: 119, 107, 116, 124 … 148,
+  gone at 304 ms; shown again 32 ms into the leaving: 103, 122, 116, 112 … 91 (`try-efir.txt`; density 2 the same,
+  `try-efir-d2.txt`). Under `steppedMotion` a hide before the first step leaves the bar where it stood, below, until
+  the ride ends (`try-stepped-undo-rising`). The frame of each change stands where the ride it leaves had come to,
+  so the turn shows one frame late, as every frame of the ride is drawn from the composition of its frame
+  (`try-efir-undo-rising.png`). F-snackbar-02's vanish at the far end stays.
+- **Mutants**, each run against `SnackbarBehaviourTest` and read from its JUnit XML:
+  - the reversed ride from the far end again (`from = if (visible) 1.0 else 0.0`): killed, the kept test's "no jump"
+    (`[57, 47, 38, 1, 13, 24, 57, …]`);
+  - the leaving ride ignoring where it began (`else eased`): killed, the same assertion (`[…, 38, 1, 13, …]`).
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+this Mac at `f5154ea` with the scratch tests deleted: exit 0; the JUnit XML holds 427 tests in `mutant-core` and 22 in
+`sample`, no failure, error or skip. No public API changed (`SnackbarRide` is internal), so no `updateKotlinAbi`.
+
+## Not verified
+
+- The phone and the browser itself: the browser's way was drawn through the desktop seams only, and the body shader
+  on a phone's GPU (B-167) not at all.
+- A real window: the mouse and keyboard came from the test harness. Whether a screen reader announces the polite
+  region again when a snackbar turned back mid-leave rides in again was not checked.
