@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -17,6 +20,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -145,6 +149,79 @@ class PullToRefreshMorphTest {
             )
         }
 
+    /**
+     * The share of the hanging slime that is the clean pill's lime rather than the boiled tongue's amber: of the
+     * bright, saturated pixels above the list, those greener than red by [LIME_LEAD].
+     */
+    private fun ComposeUiTest.limeShare(): Double {
+        val img = onNodeWithTag("s").captureToImage().toAwtImage()
+        var slime = 0
+        var lime = 0
+        for (y in 0 until TOP_ROWS) {
+            for (x in 0 until img.width) {
+                val p = img.getRGB(x, y)
+                val r = p shr 16 and 255
+                val g = p shr 8 and 255
+                val b = p and 255
+                if (maxOf(r, g) > 150 && b < 110) {
+                    slime++
+                    if (g > r + LIME_LEAD) lime++
+                }
+            }
+        }
+        return if (slime == 0) 0.0 else lime.toDouble() / slime
+    }
+
+    @Test
+    fun `the boiling tongue fades out over the pill as it becomes it, instead of standing until the pill cuts in`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var refreshing by mutableStateOf(false)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        MutantScreenClock {
+                            Box(Modifier.size(300.dp, 200.dp).background(MutantTheme.colors.background).testTag("s")) {
+                                MutantPullToRefresh(
+                                    refreshing,
+                                    { refreshing = true },
+                                    Modifier.fillMaxSize(),
+                                    refreshingLabel = "REFRESHING",
+                                    doneLabel = "REFRESHED",
+                                ) {
+                                    Column(Modifier.verticalScroll(rememberScrollState()).testTag("list")) {
+                                        repeat(8) { MutantListItem("Untitled ${it + 1}", key = "r$it") }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(500)
+            // A finger past the line: a pulled tongue boils as refreshing starts.
+            onNodeWithTag("list").performTouchInput {
+                down(Offset(150f, 40f))
+                repeat(10) { moveBy(Offset(0f, 20f)) }
+                up()
+            }
+            mainClock.advanceTimeBy(1_500)
+            val boiling = limeShare()
+            refreshing = false
+            val shares =
+                List(MORPH_FRAMES) {
+                    mainClock.advanceTimeByFrame()
+                    limeShare()
+                }
+            mainClock.advanceTimeBy(200)
+            val standing = limeShare()
+            assertTrue(boiling < .1, "refreshing, the tongue boils amber: lime $boiling")
+            assertTrue(standing > .9, "the standing pill is lime: $standing")
+            // Two frames in, the tongue is still mostly there; ten frames in (160 ms), it has faded over the pill.
+            assertTrue(shares[1] < .5, "the tongue does not vanish at once: lime ${shares[1]} at 32 ms, $shares")
+            assertTrue(shares[9] > .8, "the tongue has faded over the pill by 160 ms: lime ${shares[9]}, $shares")
+        }
+
     private companion object {
         /** The rows the body hangs in: above the list once the gap closes to the pill's. */
         const val TOP_ROWS = 72
@@ -155,5 +232,11 @@ class PullToRefreshMorphTest {
         /** The most the body's width or height may change from one frame to the next, dp. */
         const val MAX_STEP = 8
         const val FRAME_MS = 16.0
+
+        /** How much greener than red a pixel is to count as the clean pill's lime, not the boil's amber or yellow. */
+        const val LIME_LEAD = 30
+
+        /** The frames read through the move: past its 300 ms. */
+        const val MORPH_FRAMES = 20
     }
 }
