@@ -9,11 +9,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -27,11 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -42,6 +43,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.ResolvedTextDirection
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.readMutantClock
@@ -141,7 +145,9 @@ internal fun TextFieldBody(
         } else {
             plain.cssLine(MutantFaceMetrics.Rubik)
         }
-    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    // The value's line, scrolled by the field itself (B-168): its text layout as the line last measured it, and how far
+    // it is scrolled.
+    val line = remember { ValueLine() }
     // The cursor is the field's own, kept here so a press on the body can place it; a value changed from outside puts
     // it at the end. Focus by Tab finds it at the end too.
     var held by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
@@ -163,7 +169,7 @@ internal fun TextFieldBody(
                 if (!enabled) return@pointerInput
                 detectTapGestures { at ->
                     requester.requestFocus()
-                    val l = layout ?: return@detectTapGestures
+                    val l = line.layout ?: return@detectTapGestures
                     val b = body ?: return@detectTapGestures
                     val t = textBox ?: return@detectTapGestures
                     if (!b.isAttached || !t.isAttached) return@detectTapGestures
@@ -215,92 +221,144 @@ internal fun TextFieldBody(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                BasicTextField(
-                    field,
-                    {
-                        held = it
-                        if (it.text != value) onValueChange(it.text)
+                Layout(
+                    content = {
+                        BasicTextField(
+                            field,
+                            {
+                                held = it
+                                if (it.text != value) onValueChange(it.text)
+                            },
+                            Modifier.focusRequester(requester).onGloballyPositioned { textBox = it },
+                            enabled = enabled,
+                            textStyle = valueStyle.copy(textDirection = TextDirection.Content),
+                            keyboardOptions = keyboardOptions,
+                            keyboardActions = keyboardActions,
+                            singleLine = true,
+                            interactionSource = source,
+                            // The design's caret is a block after the text, drawn below; the field's own is hidden.
+                            cursorBrush = SolidColor(Color.Transparent),
+                            onTextLayout = { line.layout = it },
+                        )
+                        if (focused && enabled) Caret(tint(colors.text))
                     },
                     // Only the value marks the clean zone: an empty field's box is the placeholder's.
-                    (if (value.isEmpty()) Modifier else Modifier.mutantCleanZone())
-                        .fillMaxWidth()
-                        .focusRequester(requester)
-                        .onGloballyPositioned { textBox = it },
-                    enabled = enabled,
-                    textStyle = valueStyle.copy(textDirection = TextDirection.Content),
-                    keyboardOptions = keyboardOptions,
-                    keyboardActions = keyboardActions,
-                    singleLine = true,
-                    interactionSource = source,
-                    // The design's caret is a block after the text, drawn below; the field's own is hidden.
-                    cursorBrush = SolidColor(Color.Transparent),
-                    onTextLayout = { layout = it },
+                    modifier = (if (value.isEmpty()) Modifier else Modifier.mutantCleanZone()).fillMaxWidth(),
+                    measurePolicy = valueLinePolicy(line, field.selection.start),
                 )
-                if (focused && enabled) Caret(layout, value, field.selection.start, tint(colors.text))
             }
             trailing?.invoke()
         }
     }
 }
 
+/** The value's line as its last measure left it: the text's layout and how far the line is scrolled, px. */
+private class ValueLine {
+    var layout: TextLayoutResult? = null
+    var scroll = 0
+}
+
 /**
- * The caret, shown five scene ticks in eight — 625 ms in each second — and standing under reduce motion. At the end of
- * the text it is the page's block (9 × 20, `data-mu-anim="blink"`), 8 dp past the end on the side the text runs. Inside
- * the text, where a block would cover the next letter, it is a bar 2 dp wide standing just before the insertion point,
- * against the letter already typed (designed here, B-58). It never leaves the field: it stops at its edges.
+ * The value's line (B-168): the text field measured as wide as its text, scrolled by the line itself so the caret stays
+ * in view, and the caret placed in the same measure, from the layout the text has just made. A text field that scrolls
+ * itself cannot be read, and a caret drawn over it stood in the text's unscrolled place: past the end of a long value
+ * the block covered its last letters, and inside it the bar stood at the field's edge. A caret placed from a layout
+ * read a frame later stood at the last text's end for the frame a letter was typed.
+ *
+ * At the end of the text the caret is the page's block (9 × 20), 8 dp past the end on the side the text runs. Inside the
+ * text, where a block would cover the next letter, it is a bar 2 dp wide standing just before the insertion point,
+ * against the letter already typed (designed here, B-58). The line scrolls as little as keeps the whole block, or the
+ * bar's insertion point, in view; the bar may stand in the padding or the gap before the text. The text is clipped to
+ * the line only while it overflows it. A value ending at the line's edge leaves the block's room past it, focused or
+ * not, so focus does not move the text.
  */
-@Composable
-private fun Caret(
-    layout: TextLayoutResult?,
-    value: String,
+private fun valueLinePolicy(
+    line: ValueLine,
     cursor: Int,
-    color: Color,
-) {
+) = MeasurePolicy { measurables, constraints ->
+    val bounded = constraints.hasBoundedWidth
+    val text =
+        measurables[0].measure(
+            Constraints(
+                minWidth = if (bounded) constraints.maxWidth else 0,
+                maxWidth = Constraints.Infinity,
+                minHeight = 0,
+                maxHeight = constraints.maxHeight,
+            ),
+        )
+    // The layout the text has just made: on the frame a value changes, the one made for it.
+    val l = line.layout
+    val n = l?.layoutInput?.text?.length ?: 0
+    val at = cursor.coerceIn(0, n)
+    val block = at == n
+    val x = l?.let { if (n == 0) 0f else it.getHorizontalPosition(at, true) } ?: 0f
+    val rtl =
+        l?.let { n > 0 && it.getParagraphDirection(if (at == n) n - 1 else at) == ResolvedTextDirection.Rtl } ?: false
+    val gap = if (n == 0) 0f else GAP.toPx()
+    val w = (if (block) CARET_W else CARET_BAR).roundToPx()
+    val h = CARET_H.roundToPx()
+    val left =
+        when {
+            // The block past the end, on the side the text runs.
+            block && !rtl -> x + gap
+
+            block -> x - gap - w
+
+            // The bar against the letter before the insertion point.
+            !rtl -> x - w
+
+            else -> x
+        }.roundToInt()
+    // What stays in view: the whole block, or the bar's insertion point.
+    val lo = if (block) left else x.roundToInt()
+    val hi = if (block) left + w else x.roundToInt()
+    val start = if (block) minOf(0, left) else 0
+    val end = maxOf(text.width, if (block) left + w else 0)
+    val view = if (bounded) constraints.maxWidth else end - start
+    var scroll = line.scroll
+    if (lo < scroll) scroll = lo
+    if (hi > scroll + view) scroll = hi - view
+    scroll = scroll.coerceIn(start, maxOf(start, end - view))
+    line.scroll = scroll
+    val caret = measurables.getOrNull(1)?.measure(Constraints.fixed(w, h))
+    val height = maxOf(text.height, caret?.height ?: 0)
+    val overflows = scroll != 0 || text.width > view
+    layout(view, height) {
+        val ty = (height - text.height) / 2
+        if (overflows) {
+            val window = RectangleWindow(scroll.toFloat(), view.toFloat())
+            text.placeWithLayer(-scroll, ty) {
+                clip = true
+                shape = window
+            }
+        } else {
+            text.place(0, ty)
+        }
+        // The bar may stand in the padding or the gap before the text, the block never leaves the line.
+        val min = if (block) 0 else -w
+        caret?.place((left - scroll).coerceAtMost(view - w).coerceAtLeast(min), (height - h) / 2)
+    }
+}
+
+/** The part of a scrolled text that stands in its line: [from] to [from] + [width], px, its whole height. */
+private class RectangleWindow(
+    private val from: Float,
+    private val width: Float,
+) : Shape {
+    override fun createOutline(
+        size: androidx.compose.ui.geometry.Size,
+        layoutDirection: LayoutDirection,
+        density: Density,
+    ): Outline = Outline.Rectangle(Rect(from, 0f, from + width, size.height))
+}
+
+/** The caret, shown five scene ticks in eight — 625 ms in each second — and standing under reduce motion. */
+@Composable
+private fun Caret(color: Color) {
     val clock = readMutantClock()
     val still = LocalMutantReduceMotion.current
-    // Asked of the text the layout holds: on the frame a value changes, the layout is still the last one's, and asking
-    // it about the new value throws.
-    val n = layout?.layoutInput?.text?.length ?: 0
-    val at = cursor.coerceIn(0, n)
-    val atEnd = at == n
-    val x = layout?.let { if (n == 0) 0f else it.getHorizontalPosition(at, true) } ?: 0f
-    val rtl =
-        layout?.let { n > 0 && it.getParagraphDirection(if (atEnd) n - 1 else at) == ResolvedTextDirection.Rtl }
-            ?: false
-    val gap = if (value.isEmpty()) 0.dp else GAP
-    val width = if (atEnd) CARET_W else CARET_BAR
-    Canvas(
-        Modifier
-            .layout { measurable, constraints ->
-                val p = measurable.measure(constraints.copy(minWidth = 0))
-                val left =
-                    when {
-                        // The block past the end, on the side the text runs.
-                        atEnd && !rtl -> x + gap.toPx()
-
-                        atEnd -> x - gap.toPx() - p.width
-
-                        // The bar against the letter before the insertion point.
-                        !rtl -> x - p.width
-
-                        else -> x
-                    }
-                // The bar may stand in the padding or the gap before the text, the block never leaves the line.
-                val min = if (atEnd) 0 else -p.width
-                val px = left.roundToInt().coerceAtMost(constraints.maxWidth - p.width).coerceAtLeast(min)
-                layout(constraints.maxWidth, p.height) { p.place(px, 0) }
-            }.size(width, CARET_H)
-            .mutantCleanZone(),
-    ) {
-        val shown = still || clock.sceneTick % BLINK_PERIOD < BLINK_ON
-        if (shown) {
-            drawRect(
-                color,
-                size =
-                    androidx.compose.ui.geometry
-                        .Size(width.toPx(), CARET_H.toPx()),
-            )
-        }
+    Canvas(Modifier.mutantCleanZone()) {
+        if (still || clock.sceneTick % BLINK_PERIOD < BLINK_ON) drawRect(color)
     }
 }
 
