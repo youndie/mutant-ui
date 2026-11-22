@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +41,8 @@ import kotlin.math.roundToInt
 /**
  * A determinate linear progress: a 12 dp black track ringed 2 dp in black, filled to [progress] (0…1) with acid
  * segments 6 dp long and 2 apart, and, given [showValue], the value in the on-screen-display amber 12 dp after it
- * (Handjet 20, three digits: `042%`). It reads as a progress bar of that value. Right to left it mirrors: the fill grows
+ * (Handjet 20, three digits: `042%`), whole even past the end of a row too narrow for it. It reads as a progress bar
+ * of that value. Right to left it mirrors: the fill grows
  * from the right, the value stands on the left.
  */
 @Composable
@@ -69,6 +71,8 @@ public fun MutantLinearProgress(
         if (showValue) {
             MutantText(
                 "${(value * 100).roundToInt().toString().padStart(3, '0')}%",
+                // Whole in any row: a number cut (`042%` to `04`) is another number. Past a narrow row's end it overflows.
+                Modifier.wrapContentWidth(Alignment.Start, unbounded = true),
                 style =
                     TextStyle(
                         fontFamily = LocalMutantFonts.current?.display,

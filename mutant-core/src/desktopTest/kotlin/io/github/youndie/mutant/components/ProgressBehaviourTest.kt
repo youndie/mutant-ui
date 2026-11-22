@@ -315,4 +315,35 @@ class ProgressBehaviourTest {
                 assertTrue(row.last() - row.first() in 38..41, "$tag: its own size, ${row.last() - row.first()}")
             }
         }
+
+    @Test
+    fun `in a row too narrow for it, the value stays whole past the row's end`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (w in listOf(120, 20)) {
+                        Box(
+                            Modifier.width(120.dp).testTag("room$w"),
+                        ) { MutantLinearProgress(.42f, Modifier.width(w.dp)) }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val amber = MutantPalettes.Efir.textOsd
+
+            fun ink(tag: String): IntRange {
+                val px = onNodeWithTag(tag).captureToImage().toPixelMap()
+                val cols = (0 until px.width).filter { x -> (0 until px.height).any { near(px[x, it], amber, .2f) } }
+                return cols.first()..cols.last()
+            }
+            // The value's width, read where its row has room for it.
+            val whole =
+                onAllNodesWithText("042%", useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .first()
+                    .size.width
+            val narrow = ink("room20")
+            assertTrue(narrow.last - narrow.first + 1 >= whole - 4, "the value's ink $narrow, whole $whole px wide")
+        }
 }
