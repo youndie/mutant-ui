@@ -31,10 +31,18 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
@@ -61,6 +69,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.gen.VenomShapes
 import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
@@ -69,6 +78,7 @@ import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
+import io.github.youndie.mutant.surface.toPath
 import io.github.youndie.mutant.surface.venomSpring
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
@@ -97,7 +107,8 @@ public class MutantDrawerItem(
  * In it, 26 dp down, the [title] in the on-screen-display amber (Handjet 20, tracked 1) and the [items], 42 dp rows 4
  * dp apart: the channel's code (Handjet 20, tracked 1) and its label (Rubik 15) 12 dp after it. The [selectedIndex]
  * stands in a clean window (body `pill`, radius 8), its words in black; a new one is reached by venom, as the menu's
- * (B-33). A row is its whole target, 42 dp tall: an owner-named exception to the 48 dp rule (research D19).
+ * (B-33). Through a run a word is black where the lime lies under it and in the text's colour elsewhere, so it turns as
+ * the slime reaches it (the page turns the words 340 ms in). A row is its whole target, 42 dp tall: an owner-named exception to the 48 dp rule (research D19).
  *
  * The design draws it open; its motion is designed here (D15): it slides in from the start over 330 ms (ease-out², on
  * every frame, in the kit's transition steps under `steppedMotion`) with the scrim coming in, and out in 200 ms; turned
@@ -285,6 +296,25 @@ internal fun DrawerWindow(
         ).cssLine(MutantFaceMetrics.Rubik)
     val inkGoo = rememberGraphicsLayer()
     val fillGoo = rememberGraphicsLayer()
+    val words = remember { DrawerWordInk() }
+    // Where the lime lies at run progress p, as a mask in the body's pixels: the venom's fat shapes through the goo, as
+    // the fill recorded them this frame, its thin ones, and the window once it shows, springing about its middle.
+    val slime: DrawScope.(Double, VenomShapes) -> Unit = { p, v ->
+        drawLayer(fillGoo)
+        scale(density, density, Offset.Zero) {
+            for (t in v.thin) drawPath(t.toPath(evenOdd = false), Color.Black)
+        }
+        if (v.full && selectedIndex in words.tops.indices) {
+            val l = words.start.toFloat()
+            val t = words.tops[selectedIndex].toFloat()
+            val w = words.rowW.toFloat()
+            val h = words.heights[selectedIndex].toFloat()
+            val spring = venomSpring(p, v.vertical)
+            scale(spring?.first ?: 1f, spring?.second ?: 1f, Offset(l + w / 2, t + h / 2)) {
+                drawRoundRect(Color.Black, Offset(l, t), Size(w, h), CornerRadius(PILL_RADIUS.toFloat() * density))
+            }
+        }
+    }
     Layout(
         content = {
             MutantSurface(
@@ -362,7 +392,9 @@ internal fun DrawerWindow(
                                     focus[to].requestFocus()
                                     true
                                 }
-                            DrawerRow(item, i, run, selectedIndex, code, label, hidden, open, moves) { select(i) }
+                            DrawerRow(item, i, run, selectedIndex, code, label, hidden, open, moves, words, slime) {
+                                select(i)
+                            }
                         }
                     },
                 ) { measurables, c ->
@@ -384,6 +416,10 @@ internal fun DrawerWindow(
                         }
                     var y = (TOP * d).roundToInt() + (titleP?.let { it.height + gap } ?: 0)
                     val tops = rows.map { r -> y.also { y += r.height + gap } }
+                    words.start = start
+                    words.rowW = rowW
+                    words.tops = tops.toIntArray()
+                    words.heights = rows.map { it.height }.toIntArray()
                     val pill =
                         if (chosen) {
                             measurables[1].measure(Constraints.fixed(rowW, rows[selectedIndex].height))
@@ -421,6 +457,8 @@ private fun DrawerRow(
     hidden: Boolean,
     open: Boolean,
     moves: Modifier,
+    words: DrawerWordInk,
+    slime: DrawScope.(Double, VenomShapes) -> Unit,
     onPick: () -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -431,10 +469,13 @@ private fun DrawerRow(
 
     // A lambda, not a reference to a local function: two references to `ink` compare equal whatever selection they
     // captured, so the words' node kept the first one and coloured the rows by the selection it was composed with (B-103).
+    // Through a run the words take the colour of the side of the slime the pass draws; at rest the chosen row's are black.
     val ink = {
         when {
             hidden -> Color.Transparent
-            run.labelOn(index, clock, selectedIndex) -> colors.onPrimary
+            words.pass == DrawerWordPass.OnSlime -> colors.onPrimary
+            words.pass == DrawerWordPass.OffSlime -> colors.text
+            index == selectedIndex -> colors.onPrimary
             else -> colors.text
         }
     }
@@ -457,6 +498,29 @@ private fun DrawerRow(
             // A closing drawer answers no row: through B-102's hold and through the exit a press picks nothing.
             .selectable(index == selectedIndex, source, enabled = open, indication = null, role = Role.Tab) {
                 if (index != selectedIndex) onPick()
+            }.drawWithContent {
+                // Through a run the row is drawn twice: its words black where the slime lies under them, in the text's
+                // colour elsewhere, so they turn as the lime reaches them (B-168; the page turns the words on a 340 ms
+                // timer, which left pale words on the passing lime and a black one on the dark body, 1.06:1).
+                val now = if (hidden) null else run.now(clock, selectedIndex)
+                if (now == null || index !in words.tops.indices) return@drawWithContent drawContent()
+                val bounds = Rect(Offset.Zero, size)
+                val canvas = drawContext.canvas
+                for (pass in listOf(DrawerWordPass.OffSlime, DrawerWordPass.OnSlime)) {
+                    words.pass = pass
+                    canvas.saveLayer(bounds, Paint())
+                    drawContent()
+                    canvas.saveLayer(
+                        bounds,
+                        Paint().apply {
+                            blendMode = if (pass == DrawerWordPass.OnSlime) BlendMode.DstIn else BlendMode.DstOut
+                        },
+                    )
+                    translate(-words.start.toFloat(), -words.tops[index].toFloat()) { slime(now.first, now.second) }
+                    canvas.restore()
+                    canvas.restore()
+                }
+                words.pass = DrawerWordPass.Rest
             }.drawWithContent {
                 drawContent()
                 if (focused && keyboard) {
@@ -529,6 +593,18 @@ private class PickHold(
         at = index
         if (showing) pickedAt = nowMs
     }
+}
+
+/** Which colour the words take in the draw under way: their own at rest, or one side of the slime through a run. */
+private enum class DrawerWordPass { Rest, OffSlime, OnSlime }
+
+/** The pass the words' colour reads, set by each row's draw around its passes, and where the rows stand, in pixels. */
+private class DrawerWordInk {
+    var pass = DrawerWordPass.Rest
+    var start = 0
+    var rowW = 0
+    var tops = IntArray(0)
+    var heights = IntArray(0)
 }
 
 /** After the venom run lands, how long the drawer stands with the pill on its new row before it goes (D15, B-102). */
