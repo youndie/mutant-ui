@@ -1,5 +1,6 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -10,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -23,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
@@ -227,5 +230,34 @@ class ProgressBehaviourTest {
             val row = onNodeWithTag("p").fetchSemanticsNode().boundsInRoot
             val value = onAllNodesWithText("040%", useUnmergedTree = true).fetchSemanticsNodes().last().boundsInRoot
             assertTrue(value.right <= row.right + .5f && value.width > 0, "the value whole: $value in $row")
+        }
+
+    @Test
+    fun `right to left both bars draw their left-to-right picture mirrored`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                // Apart, so no ring (drawn 2 dp outside its track) reaches into the next bar.
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (dir in LayoutDirection.entries) {
+                        CompositionLocalProvider(LocalLayoutDirection provides dir) {
+                            MutantLinearProgress(.3f, Modifier.width(200.dp).testTag("det$dir"), showValue = false)
+                            MutantLinearProgress(Modifier.width(200.dp).testTag("ind$dir"))
+                        }
+                    }
+                }
+            }
+            // A few ticks in, the band stands wholly inside the track.
+            mainClock.advanceTimeBy(1000)
+            for (bar in listOf("det", "ind")) {
+                val ltr = onNodeWithTag("${bar}Ltr").captureToImage().toPixelMap()
+                val rtl = onNodeWithTag("${bar}Rtl").captureToImage().toPixelMap()
+                assertTrue((0 until ltr.width).any { near(ltr[it, 6], acid) }, "$bar: some acid to compare")
+                for (y in 0 until ltr.height) {
+                    for (x in 0 until ltr.width) {
+                        assertEquals(ltr[x, y], rtl[ltr.width - 1 - x, y], "$bar at $x, $y")
+                    }
+                }
+            }
         }
 }

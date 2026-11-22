@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.MutantClock
@@ -38,7 +39,8 @@ import kotlin.math.roundToInt
 /**
  * A determinate linear progress: a 12 dp black track ringed 2 dp in black, filled to [progress] (0…1) with acid
  * segments 6 dp long and 2 apart, and, given [showValue], the value in the on-screen-display amber 12 dp after it
- * (Handjet 20, three digits: `042%`). It reads as a progress bar of that value.
+ * (Handjet 20, three digits: `042%`). It reads as a progress bar of that value. Right to left it mirrors: the fill grows
+ * from the right, the value stands on the left.
  */
 @Composable
 public fun MutantLinearProgress(
@@ -55,10 +57,12 @@ public fun MutantLinearProgress(
     ) {
         // At least TRACK_MIN wide when the row has no width of its own to share (B-64).
         Canvas(Modifier.weight(1f).defaultMinSize(minWidth = TRACK_MIN).height(TRACK)) {
-            scale(density, Offset.Zero) {
-                val w = size.width / density
-                drawTrack(w)
-                clipRect(0f, 0f, w * value, TRACK.value) { drawSegments(w * value, acid) }
+            fromStart {
+                scale(density, Offset.Zero) {
+                    val w = size.width / density
+                    drawTrack(w)
+                    clipRect(0f, 0f, w * value, TRACK.value) { drawSegments(w * value, acid) }
+                }
             }
         }
         if (showValue) {
@@ -81,8 +85,8 @@ public fun MutantLinearProgress(
 /**
  * An indeterminate linear progress (`rewind`): the black track with a 96 dp band running through it — a quarter at
  * 15 % acid, a quarter at 40 %, half solid — 12 dp a scene tick, from beyond its start to beyond its end and round.
- * Under reduce motion it stands where the page's still frame has it (the engine's 5 s). It reads as indeterminate
- * progress.
+ * Under reduce motion it stands where the page's still frame has it (the engine's 5 s). Right to left it runs from the
+ * right. It reads as indeterminate progress.
  */
 @Composable
 public fun MutantLinearProgress(modifier: Modifier = Modifier) {
@@ -97,15 +101,17 @@ public fun MutantLinearProgress(modifier: Modifier = Modifier) {
     ) {
         // Paused, it stands where the page's still frame has it: the clock's own tick 0 would leave it before the track.
         val tick = if (reduce) STILL_TICK else clock.sceneTick
-        scale(density, Offset.Zero) {
-            // The engine measures the track and the band whole (`offsetWidth`).
-            val w = jsRound(size.width / density.toDouble()).toFloat()
-            drawTrack(size.width / density)
-            val x = ((tick * BAND_STEP) % (w + BAND).toLong()).toFloat() - BAND
-            clipRect(0f, 0f, size.width / density, TRACK.value) {
-                drawRect(acid, Offset(x, 0f), Size(BAND / 4, TRACK.value), alpha = .15f)
-                drawRect(acid, Offset(x + BAND / 4, 0f), Size(BAND / 4, TRACK.value), alpha = .4f)
-                drawRect(acid, Offset(x + BAND / 2, 0f), Size(BAND / 2, TRACK.value))
+        fromStart {
+            scale(density, Offset.Zero) {
+                // The engine measures the track and the band whole (`offsetWidth`).
+                val w = jsRound(size.width / density.toDouble()).toFloat()
+                drawTrack(size.width / density)
+                val x = ((tick * BAND_STEP) % (w + BAND).toLong()).toFloat() - BAND
+                clipRect(0f, 0f, size.width / density, TRACK.value) {
+                    drawRect(acid, Offset(x, 0f), Size(BAND / 4, TRACK.value), alpha = .15f)
+                    drawRect(acid, Offset(x + BAND / 4, 0f), Size(BAND / 4, TRACK.value), alpha = .4f)
+                    drawRect(acid, Offset(x + BAND / 2, 0f), Size(BAND / 2, TRACK.value))
+                }
             }
         }
     }
@@ -131,6 +137,14 @@ public fun MutantCircularProgress(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+/**
+ * Draws [block] from the layout's start: as it is left to right, mirrored right to left, so a fill grows from the start
+ * and the band runs toward the end, as the rest of the kit mirrors (B-65).
+ */
+private inline fun DrawScope.fromStart(block: DrawScope.() -> Unit) {
+    if (layoutDirection == LayoutDirection.Rtl) scale(-1f, 1f, center, block) else block()
 }
 
 /** The track, its ring outside it (`box-shadow: 0 0 0 2px`). */
