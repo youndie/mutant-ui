@@ -63,6 +63,19 @@ top; density 2 and right to left move the same gaps frame for frame (`touch-full
 - **The design.** B-105: "the tongue over it, its drips drawn back up, fades out draw by draw"; the rejected cross-fade
   of two whole bodies does not apply (one body, the pill's, stands under).
 - **Local**: `MutantPullToRefresh.kt` (`Tongue`).
+- **Fixed** (`3650b49`). The tongue fades through a saved layer drawn around it (`pullTongueFade`), which takes its
+  child layers, 64 dp past its box (the surface's own reach) so its drips fade with it; only while it becomes the pill,
+  so the page's frames draw as before. `PullToRefreshMorphTest` «the boiling tongue fades out over the pill as it
+  becomes it…»: a finger pulls past the line, refreshing two seconds, then of the hanging slime the share that is the
+  clean pill's lime (greener than red by 30) per frame. Boiling 0.0 (limit < 0.1); two frames in 0.004 (limit < 0.5:
+  still mostly tongue); ten frames in, 160 ms, 0.9987 (limit > 0.8); the standing pill 1.0 (limit > 0.9). Mutants, each
+  killed by it (`<failure>` read in the JUnit XML):
+  - the old fade, `graphicsLayer { alpha; ModulateAlpha }`: «the tongue has faded over the pill by 160 ms: lime
+    0.0039»;
+  - the tongue gone at once (`pullTongueFade(0f)`): «the tongue does not vanish at once: lime 1.0 at 32 ms».
+- **After.** `after/morph-<look>.png`: the boiled tongue thins over the clean pill as both take its shape, the pill
+  whole by about 160 ms; the frame the move ends changes 64 px (3006 before), `after/Efir/touch-full.txt` 3872 → 3888.
+  The same in «Копия», the browser's way, density 2 and the demo (`after-sample/queue-*-end-0.png`).
 
 ### F-pull-to-refresh-02 — refreshing started without a pull never boils — local
 
@@ -77,6 +90,21 @@ top; density 2 and right to left move the same gaps frame for frame (`touch-full
   (a gap under 16 dp when refreshing starts from rest) nobody collects: the `SharedFlow` drops the press either way,
   and nothing emits it again. A pulled tongue was already collecting, so a pull boils.
 - **Local**: `MutantPullToRefresh.kt`.
+- **Fixed** (`1fc8023`). The tongue presses its own body, from an effect after the body's, so the body already collects
+  when the press comes; whenever the tongue is composed anew it presses again. `PullToRefreshMorphTest` «refreshing
+  boils the tongue on a screen composed refreshing and when started with no pull»: the share of lime in the hanging
+  slime after a second, 0.0 in both cases (limit < 0.1; 1.0 before the fix, NaN, which fails, if nothing hangs).
+  Mutant: the press effect moved back before the body: «composed refreshing, the tongue boils amber: lime share 1.0»,
+  killed.
+- **The size reader moved with it.** `PullToRefreshMorphTest` «the long tongue becomes the pill with no jump in its
+  size» read the body from slime at full strength (green over 140). With the tongue now boiled amber, its fade over the
+  pill (F-01) dropped out of that reading on one frame, 121 × 40 → 114 × 30, a frame that draws no jump
+  (`after/morph-*.png`). It now reads slime faded to a tenth (red or green 24 over the page's); its steps are 5 dp at
+  most against the 8 B-105 allows. B-105's mutant, the move taken out (`morph` always 1), still fails it: «1520 ms:
+  126×39 → 94×26».
+- **After.** `after/Efir/second-pull-0.png`: refreshing set by the caller from rest, the tongue heats as it grows and
+  boils amber; `after-sample/page-*-0.png`: the «Состояния» cell boils, rising over the press's 320 ms from the page's
+  first frame (a screen composed refreshing does not start hot: the body's heat starts with its press).
 
 ### F-pull-to-refresh-03 — reduce motion: refreshing shows no boil — reported (= F-buttons-06, new face)
 
