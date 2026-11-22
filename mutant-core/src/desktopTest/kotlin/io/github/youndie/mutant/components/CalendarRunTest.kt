@@ -42,7 +42,7 @@ class CalendarRunTest {
     )
 
     private fun ComposeUiTest.centreOf(day: String): Offset =
-        onNodeWithText(day, useUnmergedTree = true).getBoundsInRoot().let {
+        onNodeWithText(day).getBoundsInRoot().let {
             Offset(((it.left + it.right) / 2).value * D, ((it.top + it.bottom) / 2).value * D)
         }
 
