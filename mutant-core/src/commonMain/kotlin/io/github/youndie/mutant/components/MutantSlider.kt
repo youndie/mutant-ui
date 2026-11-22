@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.surface.BodyState
@@ -100,6 +101,7 @@ public fun MutantSlider(
         enabled = enabled && span > 0,
         key = key,
         interactionSource = interactionSource,
+        widest = listOf(signed(valueRange.first), signed(valueRange.last)),
         range = {
             if (span >
                 0
@@ -121,8 +123,8 @@ internal fun signed(v: Int): String =
     }
 
 /**
- * [MutantSlider] by its handle's place: [fraction] of the travel, 0…1. [hidden] draws the words transparent, a bare
- * twin's.
+ * [MutantSlider] by its handle's place: [fraction] of the travel, 0…1. The handle is wide enough for its value and for
+ * each of [widest], the values the range can show at its widest. [hidden] draws the words transparent, a bare twin's.
  */
 @Composable
 internal fun SliderBody(
@@ -136,6 +138,7 @@ internal fun SliderBody(
     enabled: Boolean,
     key: String,
     interactionSource: MutableInteractionSource?,
+    widest: List<String> = emptyList(),
     range: () -> Triple<Float, ClosedFloatingPointRange<Float>, Int>? = { null },
     hidden: Boolean = false,
 ) {
@@ -166,10 +169,14 @@ internal fun SliderBody(
             .cssLine(MutantFaceMetrics.Handjet, 1f)
             .copy(color = if (hidden) Color.Transparent else colors.onPrimary)
     // The handle is the page's 34 dp drop while its value fits with room around it; a value that does not (font scale
-    // 2) widens it, and a number is never cut (designed here, D15).
+    // 2) widens it, and a number is never cut (designed here, D15). It fits the range's widest value, not the one
+    // shown, so it keeps its width while the value changes under a finger (B-168).
     val measurer = rememberTextMeasurer()
     val px = LocalDensity.current
-    val fit = measurer.measure(valueText, valueStyle, maxLines = 1).size
+    val fit =
+        (widest + valueText)
+            .map { measurer.measure(it, valueStyle, maxLines = 1).size }
+            .reduce { a, b -> IntSize(maxOf(a.width, b.width), maxOf(a.height, b.height)) }
     val handleW = with(px) { maxOf(HANDLE.dp.roundToPx(), fit.width + 2 * VALUE_ROOM.dp.roundToPx()) }
     val handleH = with(px) { maxOf(HANDLE.dp.roundToPx(), fit.height + 2 * VALUE_ROOM.dp.roundToPx()) }
     val handleNow by rememberUpdatedState(handleW)

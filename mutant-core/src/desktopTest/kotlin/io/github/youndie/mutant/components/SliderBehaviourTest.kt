@@ -2,6 +2,7 @@ package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -35,6 +36,8 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.tokens.MutantPalettes
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -297,6 +300,42 @@ class SliderBehaviourTest {
                         }.map { it.layoutInput.text.text }
                 }
             assertEquals(emptyList(), cut)
+        }
+
+    /** The first and last column of the handle's amber on the channel's middle row. */
+    private fun ComposeUiTest.amberSpan(tag: String): IntRange {
+        val px = onNodeWithTag(tag).captureToImage().toPixelMap()
+        val amber = MutantPalettes.Efir.amber
+        val y = px.height - 33
+        val cols =
+            (0 until px.width).filter { x ->
+                val c = px[x, y]
+                abs(c.red - amber.red) < .1f && abs(c.green - amber.green) < .1f && abs(c.blue - amber.blue) < .1f
+            }
+        return cols.first()..cols.last()
+    }
+
+    @Test
+    fun `at font scale 2 the handle keeps one width whatever value it shows`() =
+        runComposeUiTest {
+            // B-168: the handle fitted the value shown, 34 dp at 0, 38 at +9 and 53 at +10, so a finger dragging across
+            // them widened the knob under it and regenerated its body. It fits the range's widest value instead.
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = 2f)) {
+                    MutantTheme(reduceMotion = true) {
+                        Column {
+                            for (v in listOf(0, 9, 10)) {
+                                MutantSlider(v, {}, Modifier.width(300.dp).testTag("v$v"), label = "T", key = "same")
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val widths = listOf(0, 9, 10).map { amberSpan("v$it").let { r -> r.last - r.first } }
+            assertTrue(widths.max() - widths.min() <= 1, "the handle's amber at 0, +9, +10: $widths")
+            assertTrue(widths.min() >= 45, "wide enough for +10 with its room: $widths")
         }
 
     private fun hasGetTextLayoutResult() =
