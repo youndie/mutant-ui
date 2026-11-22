@@ -1,8 +1,13 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -177,5 +182,65 @@ class IconButtonBehaviourTest {
             for (node in onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes()) {
                 assertTrue(node.boundsInRoot.height <= 56f, "label ${node.boundsInRoot}")
             }
+        }
+
+    /** B-168 (F-icon-fab-01): the pixels of [tag]'s capture within 12 levels of [fill] in every channel. */
+    private fun ComposeUiTest.fillPixels(
+        tag: String,
+        fill: Color,
+    ): Int =
+        pixels(tag).count {
+            maxOf(
+                kotlin.math.abs(it.red - fill.red),
+                kotlin.math.abs(it.green - fill.green),
+                kotlin.math.abs(it.blue - fill.blue),
+            ) < 12f / 255f
+        }
+
+    @Test
+    fun `squeezed by its slot, each keeps its size, draws its body and takes a click`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var clicks by mutableIntStateOf(0)
+            val title = "A title long enough to take the whole row before the action"
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Column(Modifier.padding(40.dp), verticalArrangement = Arrangement.spacedBy(60.dp)) {
+                            Row(Modifier.width(200.dp).testTag("rowI")) {
+                                BasicText(title)
+                                MutantIconButton(MutantIcons.Share, "i", { clicks++ }, Modifier.testTag("i"))
+                            }
+                            Row(Modifier.width(200.dp).testTag("rowF")) {
+                                BasicText(title)
+                                MutantFab(MutantIcons.Add, "f", { clicks++ }, Modifier.testTag("f"))
+                            }
+                            Box(Modifier.width(20.dp).testTag("boxX")) {
+                                MutantExtendedFab("Запись", MutantIcons.Add, { clicks++ }, Modifier.testTag("x"))
+                            }
+                            Box(Modifier.height(20.dp)) {
+                                MutantFab(MutantIcons.Add, "low", { clicks++ }, Modifier.testTag("low"))
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(1_000)
+            for ((tag, side) in listOf("i" to 48, "f" to 56, "x" to 56, "low" to 56)) {
+                val size = onNodeWithTag(tag).assertIsDisplayed().fetchSemanticsNode().size
+                assertTrue(size.width >= side && size.height == side, "$tag measures $size, under $side")
+            }
+            // The body is drawn where the row ends, half inside it: its fill, not only its box.
+            val ib = fillPixels("rowI", efir().surfaceVariant)
+            val fab = fillPixels("rowF", efir().primary)
+            assertTrue(ib > 300, "the icon button's fill in its row: $ib px")
+            assertTrue(fab > 300, "the FAB's fill in its row: $fab px")
+            for (tag in listOf("i", "f", "x", "low")) {
+                onNodeWithTag(tag).performTouchInput { down(center) }
+                mainClock.advanceTimeByFrame()
+                onNodeWithTag(tag).performTouchInput { up() }
+                mainClock.advanceTimeByFrame()
+            }
+            assertEquals(4, clicks, "a click on each")
         }
 }
