@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -34,6 +35,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
@@ -343,6 +345,79 @@ class SliderBehaviourTest {
             }
         }
     }
+
+    @Test
+    fun `right to left it mirrors - the start at the right, the pointer and the arrows with it, the numbers whole`() =
+        runComposeUiTest {
+            // B-168: right to left only the header mirrored; the channel, the pointer and the arrows stayed left to
+            // right, and the numbers were laid out right to left: «3+», «10+ … 10−».
+            var value by mutableIntStateOf(5)
+            val focus = FocusRequester()
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(
+                    LocalDensity provides Density(1f),
+                    LocalLayoutDirection provides LayoutDirection.Rtl,
+                ) {
+                    MutantTheme(reduceMotion = true) {
+                        Box {
+                            MutantSlider(
+                                value,
+                                { value = it },
+                                Modifier.width(300.dp).focusRequester(focus).testTag("s"),
+                                label = "T",
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            // +5 stands three quarters of the way from the right; the fill runs from the right end to it.
+            val span = amberSpan("s")
+            val handle = (span.first + span.last) / 2f
+            assertTrue(
+                abs(handle - (300 - middle(5))) <= 3,
+                "the handle's middle at $handle, ${300 - middle(5)} wanted",
+            )
+            val px = onNodeWithTag("s").captureToImage().toPixelMap()
+            val lime = MutantPalettes.Efir.primary
+            val fill =
+                (0 until px.width).filter { x ->
+                    val c = px[x, px.height - 33]
+                    abs(c.red - lime.red) < .1f && abs(c.green - lime.green) < .1f && abs(c.blue - lime.blue) < .1f
+                }
+            assertTrue(fill.isNotEmpty() && fill.all { it > span.last - 2 }, "the fill right of the handle: $fill")
+            // The numbers are laid out left to right, the range from the channel's left end.
+            val texts =
+                onAllNodes(hasGetTextLayoutResult(), useUnmergedTree = true).fetchSemanticsNodes().mapNotNull { n ->
+                    val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                    n.config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+                    results.firstOrNull()
+                }
+            for (t in texts.filter { it.layoutInput.text.text != "T" }) {
+                assertEquals(
+                    androidx.compose.ui.text.style.ResolvedTextDirection.Ltr,
+                    t.multiParagraph.getParagraphDirection(0),
+                    "«${t.layoutInput.text.text}» laid out left to right",
+                )
+            }
+            assertTrue(texts.any { it.layoutInput.text.text == "+10 … −10" }, "the range from the left end")
+            // A press 40 dp from the left edge is 260 from the start: +8.
+            onNodeWithTag("s").performMouseInput {
+                moveTo(Offset(40f, row + 27))
+                press()
+                release()
+            }
+            mainClock.advanceTimeByFrame()
+            assertEquals(8, value)
+            // The right arrow steps towards the start.
+            runOnIdle { focus.requestFocus() }
+            onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionRight) }
+            assertEquals(7, value)
+            onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionLeft) }
+            onNodeWithTag("s").performKeyInput { pressKey(Key.DirectionLeft) }
+            assertEquals(9, value)
+        }
 
     /** The first and last column of the handle's amber on the channel's middle row. */
     private fun ComposeUiTest.amberSpan(tag: String): IntRange {
