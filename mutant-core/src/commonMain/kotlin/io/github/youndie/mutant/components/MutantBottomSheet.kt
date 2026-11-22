@@ -63,7 +63,8 @@ import io.github.youndie.mutant.tokens.MutantBody
  * its clock, as a dialog does.
  *
  * The design draws it open; its motion is designed here (D15): it rises from below over 330 ms (ease-out², in the kit's
- * transition steps) with the scrim coming in, and sinks in 200 ms; under reduce motion it is there at once. A click on
+ * transition steps) with the scrim coming in, and sinks in 200 ms; under reduce motion it is there at once. A sink
+ * during the rise, or a rise during the sink, goes on from where the sheet stands. A click on
  * the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the sheet as it opens and goes
  * to [returnFocusTo] as it closes, or with none is left to the window. The sheet keeps its content above
  * [windowInsets]; its body runs on under them.
@@ -103,7 +104,10 @@ internal fun SheetFrame(
     // The sheet's own clock: the screen's stands while it shows, and the sheet and what is on it still move.
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
-    val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    // Given both durations, a sink during the rise goes down from where the sheet stands, and a rise during the sink
+    // goes up from there, instead of restarting each from its end (B-168).
+    val follow =
+        remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, RISE_MS, SINK_MS) }
     val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
         val clock = readMutantClock()

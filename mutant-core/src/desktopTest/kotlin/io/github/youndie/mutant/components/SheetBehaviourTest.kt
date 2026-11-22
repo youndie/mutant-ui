@@ -184,4 +184,50 @@ class SheetBehaviourTest {
             // The content ends 12 dp above the inset.
             assertEquals(600f - 40f - 12f, last.bottom, 1f)
         }
+
+    @Test
+    fun `reversed mid-way it goes on from where it stands - no frame jumps`() =
+        runComposeUiTest {
+            val s = sheet(start = false)
+            // Where it settles, and how far below that its first frame stands: the travel of the rise.
+            s.show(true)
+            mainClock.advanceTimeByFrame()
+            val first = titleTop()
+            mainClock.advanceTimeBy(500)
+            val settled = titleTop()
+            val travel = first - settled
+            s.show(false)
+            mainClock.advanceTimeBy(400)
+            var last = Float.NaN
+            val jumps = mutableListOf<String>()
+
+            // The fastest the sheet moves on its own: the sink's 200 ms through ease-out² is under a fifth of the travel
+            // a frame; a restart from either end moves it by half the travel or more.
+            fun frame() {
+                mainClock.advanceTimeByFrame()
+                val now = runCatching { titleTop() }.getOrDefault(settled + travel)
+                if (!last.isNaN() && kotlin.math.abs(now - last) > .2f * travel) {
+                    jumps += "${mainClock.currentTime}: $last -> $now"
+                }
+                last = now
+            }
+            s.show(true)
+            repeat(7) { frame() }
+            val rising = last
+            assertTrue(rising > settled + .2f * travel, "a third into the rise: ${rising - settled} of $travel")
+            s.show(false)
+            repeat(6) { frame() }
+            assertTrue(last > rising, "sinking from where it stood: ${rising - settled}, then ${last - settled}")
+            s.show(true)
+            repeat(30) { frame() }
+            assertEquals(settled, last, 1f, "risen again")
+            s.show(false)
+            repeat(5) { frame() }
+            val sinking = last
+            assertTrue(sinking - settled in .1f * travel..0.8f * travel, "half into the sink: ${sinking - settled}")
+            s.show(true)
+            repeat(30) { frame() }
+            assertTrue(jumps.isEmpty(), "jumps over ${.2f * travel} dp: $jumps")
+            assertEquals(settled, last, 1f, "risen again")
+        }
 }
