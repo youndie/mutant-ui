@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -163,6 +164,65 @@ class MenuBehaviourTest {
             mainClock.advanceTimeBy(1_000)
             val settled = acidInRow(2)
             assertTrue(settled > 2_000 && early * 2 < settled, "acid in the third row: 160 ms $early, settled $settled")
+        }
+
+    /** Lime pixels anywhere in [tag]'s capture, the menu and the 40 dp round it. */
+    private fun androidx.compose.ui.test.ComposeUiTest.limeIn(tag: String): Int {
+        val m = onNode(SemanticsMatcher.expectValue(SemanticsProperties.TestTag, tag)).captureToImage().toPixelMap()
+        val acid = io.github.youndie.mutant.tokens.MutantPalettes.Efir.primary
+        var n = 0
+        for (y in 0 until m.height) {
+            for (x in 0 until m.width) {
+                val c = m[x, y]
+                if (kotlin.math.abs(c.red - acid.red) < .03f && kotlin.math.abs(c.green - acid.green) < .03f &&
+                    kotlin.math.abs(c.blue - acid.blue) < .03f
+                ) {
+                    n++
+                }
+            }
+        }
+        return n
+    }
+
+    @Test
+    fun `no venom runs where no window shows, to an index outside the rows or from one`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var selected by mutableIntStateOf(2)
+            setContent {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalDensity provides
+                        androidx.compose.ui.unit
+                            .Density(1f),
+                ) {
+                    io.github.youndie.mutant.theme.MutantTheme {
+                        Box(Modifier.testTag("stage").padding(40.dp)) {
+                            MenuBody(items, selected, { selected = it }, Modifier, "menu", "menu-pill")
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(1_000)
+            val settled = limeIn("stage")
+            val seen = mutableListOf<Int>()
+            // Past the end, then back to a row from there, then to none: no lime while no window shows, and the window
+            // whole in the first frame it shows again.
+            for (to in listOf(7, 1, -1)) {
+                selected = to
+                repeat(15) {
+                    mainClock.advanceTimeBy(48)
+                    seen += limeIn("stage")
+                }
+            }
+            val pastEnd = seen.subList(0, 15)
+            val back = seen.subList(15, 30)
+            val none = seen.subList(30, 45)
+            assertTrue(settled > 2_000, "a settled window: $settled")
+            assertTrue(pastEnd.all { it == 0 } && none.all { it == 0 }, "lime with no window shown: $pastEnd $none")
+            assertTrue(
+                back.all { kotlin.math.abs(it - settled) * 10 < settled },
+                "the window back at once: $back of $settled",
+            )
         }
 
     @Test

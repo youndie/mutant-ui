@@ -110,8 +110,10 @@ public fun MutantDropdown(
  * standing [offset] from its parent's start, its [items] 36 dp tall in Handjet 20, tracked 1, each a step further in
  * than the one above (30, 38, 46, 54 dp, the ladder repeating every four). The [selectedIndex] stands in a clean
  * window (body `pill`, radius 6) with a play mark, its word in black; a new one is reached by venom, as the segmented
- * button's (B-31). A row is its whole target, 36 dp tall: an owner-named exception to the 48 dp rule (research D19).
- * Up and Down move the keyboard's focus from row to row, wrapping, Enter or Space picks, Escape and a press outside go to [onDismissRequest].
+ * button's (B-31). An index outside [items] shows no window and runs no venom; a window shown again arrives at once.
+ * A row is its whole target, 36 dp tall: an owner-named exception to the 48 dp rule (research D19).
+ * Up and Down move the keyboard's focus from row to row, wrapping, Enter or Space picks, Escape and a press outside go
+ * to [onDismissRequest].
  */
 @Composable
 public fun MutantMenu(
@@ -233,13 +235,16 @@ internal fun MenuBody(
     val reduce = LocalMutantReduceMotion.current
     val cassette = LocalMutantCassette.current
     val chosen = selectedIndex in items.indices
-    val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
+    // The row the window stands on, or none: an index outside the rows shows no window and runs no venom, and a window
+    // shown again arrives at once (B-168, as the segmented button's).
+    val shown = if (chosen) selectedIndex else -1
+    val run = remember { VenomRun(shown, PILL_RADIUS) }
     run.steps = LocalMutantSteppedMotion.current
     run.key = pillKey
     run.cassette = cassette
     run.slot =
         { i -> doubleArrayOf(INSET.toDouble(), (INSET + i * ROW).toDouble(), ROW_WIDTH.toDouble(), ROW.toDouble()) }
-    run.follow(selectedIndex, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
+    run.follow(shown, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
     val select by rememberUpdatedState(onSelect)
     val word =
         TextStyle(
@@ -268,7 +273,8 @@ internal fun MenuBody(
         Layout(
             content = {
                 Canvas(Modifier.fillMaxSize()) {
-                    val v = run.now(clock, selectedIndex)?.second ?: return@Canvas
+                    if (shown < 0) return@Canvas
+                    val v = run.now(clock, shown)?.second ?: return@Canvas
                     gooLayer(inkGoo, density)
                     drawVenomInk(
                         v,
@@ -281,7 +287,7 @@ internal fun MenuBody(
                 }
                 Box(
                     Modifier.graphicsLayer {
-                        val now = run.now(clock, selectedIndex)
+                        val now = if (shown < 0) null else run.now(clock, shown)
                         val v = now?.second
                         alpha = if (v != null && !v.full) 0f else 1f
                         val spring = if (now != null && v!!.full) venomSpring(now.first, v.vertical) else null
@@ -313,7 +319,8 @@ internal fun MenuBody(
                     }
                 }
                 Canvas(Modifier.fillMaxSize()) {
-                    val v = run.now(clock, selectedIndex)?.second ?: return@Canvas
+                    if (shown < 0) return@Canvas
+                    val v = run.now(clock, shown)?.second ?: return@Canvas
                     gooLayer(fillGoo, density)
                     drawVenomFill(v, colors.primary, fillGoo, density)
                 }
@@ -331,7 +338,7 @@ internal fun MenuBody(
                             focus[to].requestFocus()
                             true
                         }
-                    MenuRow(text, i, run, selectedIndex, word, hidden, moves) { select(i) }
+                    MenuRow(text, i, run, shown, word, hidden, moves) { select(i) }
                 }
             },
         ) { measurables, c ->
@@ -429,7 +436,7 @@ private fun MenuRow(
             color = {
                 when {
                     hidden -> Color.Transparent
-                    run.labelOn(index, clock, selectedIndex) -> colors.onPrimary
+                    selectedIndex >= 0 && run.labelOn(index, clock, selectedIndex) -> colors.onPrimary
                     else -> colors.text
                 }
             },
