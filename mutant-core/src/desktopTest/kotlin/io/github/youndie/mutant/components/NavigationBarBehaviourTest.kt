@@ -276,7 +276,10 @@ class NavigationBarBehaviourTest {
                 repeat(30) { i ->
                     mainClock.advanceTimeByFrame()
                     val centre = pill()!!.let { (it.first + it.last) / 2 }
-                    assertTrue(abs(centre - last) <= bound, "stepped $steps, frame $i: the pill leapt from $last to $centre")
+                    assertTrue(
+                        abs(centre - last) <= bound,
+                        "stepped $steps, frame $i: the pill leapt from $last to $centre",
+                    )
                     last = centre
                 }
                 assertTrue(abs(last - 123) <= 2, "landed on the second: $last")
