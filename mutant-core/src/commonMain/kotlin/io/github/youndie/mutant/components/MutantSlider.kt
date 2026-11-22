@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -49,6 +50,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -214,7 +216,15 @@ internal fun SliderBody(
         verticalArrangement = Arrangement.spacedBy(HEADER_GAP.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            MutantText(label.orEmpty(), style = header, maxLines = 1)
+            // The range is numbers and keeps its width; a label that does not fit beside it ends in an ellipsis, 8 dp
+            // short of the range (designed here, B-168).
+            MutantText(
+                label.orEmpty(),
+                Modifier.weight(1f, fill = false).padding(end = HEADER_ROOM.dp),
+                style = header,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+            )
             ChromePlacedText(rangeText, header, Modifier, InkPlace.End)
         }
         val fill = if (enabled) colors.primary else colors.textDisabled
@@ -388,6 +398,9 @@ private const val PAGE_WIDTH = 300
 private const val HEADER_SIZE = 20
 private const val HEADER_GAP = 2
 private const val ROW_HEIGHT = 60
+
+/** The room a label keeps before the range when the two do not both fit (designed here, B-168). */
+private const val HEADER_ROOM = 8
 
 /** The channel: from 20 dp down, 14 tall, a 2 dp inset ring. The fill: 3 dp in, 8 tall, to 3 dp short of the handle's middle. */
 private const val CHANNEL_TOP = 20f

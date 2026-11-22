@@ -302,6 +302,48 @@ class SliderBehaviourTest {
             assertEquals(emptyList(), cut)
         }
 
+    @Test
+    fun `when the label and the range do not both fit, the label gives way and the range stays whole`() {
+        // B-168: the header's row gave the label all it wanted and cut the range after it: at font scale 2 on 280 dp
+        // the range read «−10 …», on 80 dp at scale 1 «−10».
+        for ((scale, width) in listOf(2f to 280, 1f to 110)) {
+            runComposeUiTest {
+                mainClock.autoAdvance = false
+                setContent {
+                    CompositionLocalProvider(LocalDensity provides Density(1f, fontScale = scale)) {
+                        MutantTheme {
+                            Box {
+                                MutantSlider(3, {}, Modifier.width(width.dp).testTag("s"), label = "TRACKING SPEED")
+                            }
+                        }
+                    }
+                }
+                mainClock.advanceTimeByFrame()
+                val right = onNodeWithTag("s").fetchSemanticsNode().let { it.positionInRoot.x + it.size.width }
+                val texts =
+                    onAllNodes(hasGetTextLayoutResult(), useUnmergedTree = true).fetchSemanticsNodes().mapNotNull { n ->
+                        val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                        n.config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+                        results.firstOrNull()?.let { it to n.positionInRoot.x }
+                    }
+                val (range, rangeX) =
+                    texts.single {
+                        it.first.layoutInput.text.text
+                            .contains('…')
+                    }
+                val (label, labelX) = texts.single { it.first.layoutInput.text.text == "TRACKING SPEED" }
+                assertTrue(
+                    range.multiParagraph.intrinsics.maxIntrinsicWidth <= range.size.width + .5f &&
+                        rangeX + range.size.width <= right + .5f,
+                    "scale $scale, $width dp: the range ${range.multiParagraph.intrinsics.maxIntrinsicWidth} wide " +
+                        "in ${range.size.width}, ending at ${rangeX + range.size.width} of $right",
+                )
+                assertEquals(androidx.compose.ui.text.style.TextOverflow.Ellipsis, label.layoutInput.overflow)
+                assertTrue(labelX + label.size.width <= rangeX - 8 + .5f, "the label ends 8 dp before the range")
+            }
+        }
+    }
+
     /** The first and last column of the handle's amber on the channel's middle row. */
     private fun ComposeUiTest.amberSpan(tag: String): IntRange {
         val px = onNodeWithTag(tag).captureToImage().toPixelMap()
