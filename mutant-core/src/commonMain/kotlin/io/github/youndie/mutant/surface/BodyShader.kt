@@ -67,12 +67,32 @@ uniform float2 flowDims;
 
 half4 node(float2 ij) { return field.eval(clamp(ij, float2(0.0), dims - 1.0) + 0.5); }
 
-// A node's 16-bit word from its 5-6-5 channels.
-float word(half4 t) {
-    return floor(float(t.r) * 31.0 + 0.5) * 2048.0 + floor(float(t.g) * 63.0 + 0.5) * 32.0 + floor(float(t.b) * 31.0 + 0.5);
+
+// B-167: a node's value and its flags from its channels, never through the whole 16-bit word: a channel is a half, and a
+// phone's GPU (the Pixel 6a's, in Chrome) works out an expression of halves at half precision, where a number past 2048
+// loses its low bits — the word's flags among them, and with them every outline. The parts stay under 2048 here.
+float c5(half v) { return floor(float(v) * 31.0 + 0.5); }
+float c6(half v) { return floor(float(v) * 63.0 + 0.5); }
+
+float val(half4 t) {
+    float r = c5(t.r);
+    float g = c6(t.g);
+    float b = c5(t.b);
+    return (r * 512.0 + g * 8.0 + floor(b / 4.0)) / ${FIELD_STEPS} * 64.0 - 32.0;
 }
 
-float val(half4 t) { return floor(word(t) / 4.0) / ${FIELD_STEPS} * 64.0 - 32.0; }
+float flagsOf(half4 t) {
+    float b = c5(t.b);
+    return b - floor(b / 4.0) * 4.0;
+}
+
+// A 16-bit word from its 5-6-5 channels (the flow lines' tables), each channel a float before the word is summed.
+float word(half4 t) {
+    float r = c5(t.r);
+    float g = c6(t.g);
+    float b = c5(t.b);
+    return r * 2048.0 + g * 32.0 + b;
+}
 
 float texel(float2 ij) { return val(node(ij)); }
 
@@ -130,8 +150,7 @@ float sdist(float2 p, float iso, float r, float bit) {
     if (g.x < 0.0 || g.y < 0.0 || g.x > dims.x - 1.0 || g.y > dims.y - 1.0) return 1000.0;
     float v = bil(g) - iso;
     float2 c0 = floor(g);
-    float w = word(node(c0));
-    float flags = w - floor(w / 4.0) * 4.0;
+    float flags = flagsOf(node(c0));
     bool near = bit == 1.0 ? mod(flags, 2.0) >= 1.0 : flags >= 2.0;
     float best = 1000.0;
     if (near) {
@@ -146,7 +165,13 @@ float sdist(float2 p, float iso, float r, float bit) {
     return v < 0.0 ? -best : best;
 }
 
-float u16(half hi, half lo) { return floor(float(hi) * 255.0 + 0.5) * 256.0 + floor(float(lo) * 255.0 + 0.5); }
+float c8(half v) { return floor(float(v) * 255.0 + 0.5); }
+
+float u16(half hi, half lo) {
+    float h = c8(hi);
+    float l = c8(lo);
+    return h * 256.0 + l;
+}
 
 // The signed distance to the flow lines, negative inside by the non-zero rule: the winding at the bin's centre, changed at
 // every segment the line from the centre to p crosses, and the nearest of the bin's segments.
@@ -155,7 +180,7 @@ float flowSd(float2 p) {
     if (b.x < 0.0 || b.y < 0.0 || b.x >= flowDims.x || b.y >= flowDims.y) return 1000.0;
     half4 h = flowBins.eval(b + 0.5);
     float first = u16(h.r, h.g);
-    float cb = floor(float(h.b) * 255.0 + 0.5);
+    float cb = c8(h.b);
     float wind = floor(cb / 32.0) - 4.0;
     float count = cb - floor(cb / 32.0) * 32.0;
     float2 c = flowOrigin + (b + 0.5) * ${FLOW_BIN_DP};

@@ -67,7 +67,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (162)
+## Closed (163)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -235,6 +235,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-164](docs/backlog/B-164-the-kits-text-layouts-kept.md) `[x]` - The kit's text layouts are kept between compositions
 - [B-165](docs/backlog/B-165-glyphs-warmed-ahead.md) `[-]` - In the browser, a screen's first frames warm the kit's glyphs
 - [B-166](docs/backlog/B-166-a-chip-flicks-back-to-its-old-fill.md) `[x]` - A chosen chip flicks back to its old fill
+- [B-167](docs/backlog/B-167-outlines-lost-on-the-phone.md) `[x]` - On the phone, the bodies the shader draws have no outline
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
