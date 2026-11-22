@@ -127,3 +127,11 @@ no brackets in `try-mouse.png`. The brackets are the harness's, not a finding (t
   highlight's fill-coloured stroke normally covers then shows near the left of the wide index chips, 10 dp in, for the
   pour's 420 ms (`mark-efir-d2-Founda.png`, `zoom-idx.png`). The engine hides the highlight the same way
   (`H.HG.style.display = 'none'` while `fx.pour` runs), so the design draws it too.
+
+## Fixed here
+
+- **F-chip-01** in `ad96bc5`: `MutantChip`'s KDoc and `ChipLabelFollowsFillTest`'s say the label turns as the pour's
+  front passes under its middle, not on a timer. Documentation only: nothing drawn changes, so there are no new frames.
+  The behaviour it states is held by the kept `ChipLabelFollowsFillTest` and `ChipBehaviourTest`. The mutant
+  `val other = label` turns the word with the selection rather than with the fill. It fails both cases of
+  `ChipLabelFollowsFillTest` at 1.75:1 on turn 1, frame 1. Killed.
