@@ -242,6 +242,41 @@ class DialogBehaviourTest {
         }
 
     @Test
+    fun `through its exit the keys reach nothing behind it, and focus is back with the opener after`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var opens = 0
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(Modifier.size(360.dp, 600.dp)) {
+                            MutantButton("Открыть", {
+                                opens++
+                                open = true
+                            }, Modifier.focusRequester(opener).testTag("opener"))
+                            MutantDialog(open, "Стереть запись?", { open = false }, returnFocusTo = opener) {
+                                MutantDialogAction("Отмена", { open = false })
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(400)
+            onRoot().performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+            onNodeWithText("Отмена").assertIsFocused()
+            // Enter on Cancel, then Enter again as the dialog fades.
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            onRoot().performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(0, opens, "the second Enter reached the opener under the scrim")
+            assertTrue(!open, "closing")
+            mainClock.advanceTimeBy(300)
+            onNodeWithTag("opener").assertIsFocused()
+        }
+
+    @Test
     fun `under reduce motion it opens and closes at once`() =
         runComposeUiTest {
             mainClock.autoAdvance = false

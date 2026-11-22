@@ -104,8 +104,9 @@ import kotlin.math.roundToInt
  * (`pause`); set false they go in 200 (`play`), the screen's clock running again, and it is gone from the composition
  * after. Both step twelve times a second, and under reduce motion are at once. A click on the scrim, Escape or the
  * system back gesture calls [onDismissRequest]. Focus moves into the dialog as it opens and stays there, a Tab on its
- * actions only, coming round from the last to the first and with Shift+Tab the other way. On closing it
- * goes to [returnFocusTo], a requester on whatever opened it, or with none is left to the window.
+ * actions only, coming round from the last to the first and with Shift+Tab the other way. Once the dialog has gone it
+ * goes to [returnFocusTo], a requester on whatever opened it, or with none is left to the window; through the close the
+ * keys, like the pointer, reach nothing behind it.
  */
 @Composable
 public fun MutantDialog(
@@ -139,7 +140,6 @@ internal fun DialogFrame(
     hidden: Boolean = false,
     probe: ((Instance) -> Unit)? = null,
 ) {
-    ReturnFocus(visible, returnFocusTo)
     val reduce = LocalMutantReduceMotion.current
     val screen = readMutantClock()
     // The dialog's own clock: the screen's stands while it shows, and the window and its button must still move.
@@ -162,6 +162,9 @@ internal fun DialogFrame(
             if (!gone) screen.holds++
             onDispose { if (!gone) screen.holds-- }
         }
+        // Focus goes back once the dialog is gone, not as it starts to close: through the exit the scrim still covers
+        // the screen, and an Enter pressed then would reach the opener under it and open the dialog again (B-168).
+        ReturnFocus(!gone, returnFocusTo)
         if (gone) return@ProvideMutantClock
         // The window floats over the screen, so the screen's keyframe loss does not take its bodies: a loss held
         // mid-run by the dialog would cut its band out of the window for as long as it shows (B-98's rule, B-168).
