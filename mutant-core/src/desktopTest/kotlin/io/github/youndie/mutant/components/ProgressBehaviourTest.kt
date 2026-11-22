@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
@@ -281,5 +282,37 @@ class ProgressBehaviourTest {
             assertEquals(48, acidColumns("b").size, "the band's solid half")
             val black = Color(0xFF05060C)
             assertTrue(near(onNodeWithTag("b").captureToImage().toPixelMap()[199, 6], black), "the track to its end")
+        }
+
+    @Test
+    fun `given a box of another size, the reel keeps its 36 dp in the box's middle`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            show {
+                Row {
+                    MutantCircularProgress(Modifier.size(60.dp).testTag("big"))
+                    MutantCircularProgress(Modifier.size(120.dp, 36.dp).testTag("wide"))
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val black = Color(0xFF05060C)
+            for ((tag, w, h) in listOf(Triple("big", 60, 60), Triple("wide", 120, 36))) {
+                val px = onNodeWithTag(tag).captureToImage().toPixelMap()
+                // The ring's outermost black along the middle row and column: 36 + 2 · 2.5 dp across, centred.
+                val row = (0 until px.width).filter { near(px[it, h / 2], black) }
+                val col = (0 until px.height).filter { near(px[w / 2, it], black) }
+                assertTrue(
+                    abs(row.first() + row.last() - (w - 1)) <= 1,
+                    "$tag across: ${row.first()}..${row.last()} in $w",
+                )
+                // In a box of its own height the ring stands past the capture: read down only in the taller box.
+                if (h > 36) {
+                    assertTrue(
+                        abs(col.first() + col.last() - (h - 1)) <= 1,
+                        "$tag down: ${col.first()}..${col.last()} in $h",
+                    )
+                }
+                assertTrue(row.last() - row.first() in 38..41, "$tag: its own size, ${row.last() - row.first()}")
+            }
         }
 }

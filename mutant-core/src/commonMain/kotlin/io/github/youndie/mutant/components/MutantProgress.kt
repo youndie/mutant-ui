@@ -122,7 +122,7 @@ public fun MutantLinearProgress(modifier: Modifier = Modifier) {
 
 /**
  * A circular progress, the reel: a 36 dp spool ringed 2.5 dp in black with three holes, turning 30° each scene tick
- * (`reel`), indeterminate. It stands under reduce motion.
+ * (`reel`), indeterminate. It stands under reduce motion. Given a box of another size, it keeps its 36 dp, centred.
  */
 @Composable
 public fun MutantCircularProgress(modifier: Modifier = Modifier) {
@@ -131,12 +131,19 @@ public fun MutantCircularProgress(modifier: Modifier = Modifier) {
         val tick = clock.sceneTick
         scale(density, Offset.Zero) {
             val r = REEL.value / 2
-            val c = Offset(r, r)
+            // Given a box of another size, the spool keeps its 36 dp and stands in the box's middle.
+            val c = Offset(size.width / density / 2, size.height / density / 2)
             // The ring is the page's `box-shadow`: a black disc under the spool, so their edges share no seam.
             drawCircle(BLACK, r + REEL_RING, c)
             drawCircle(SPOOL, r, c)
             rotate(((tick * REEL_STEP) % 360).toFloat(), c) {
-                for (hole in HOLES) drawCircle(BLACK, HOLE / 2, Offset(hole.x + HOLE / 2, hole.y + HOLE / 2))
+                for (hole in HOLES) {
+                    drawCircle(
+                        BLACK,
+                        HOLE / 2,
+                        c + Offset(hole.x + HOLE / 2 - r, hole.y + HOLE / 2 - r),
+                    )
+                }
             }
         }
     }
