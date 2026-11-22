@@ -103,7 +103,7 @@ public fun MutantDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box(modifier) {
-        DropdownAnchor(label, "$key-anchor") { expanded = !expanded }
+        DropdownAnchor(label, "$key-anchor", open = expanded) { expanded = !expanded }
         MutantMenu(
             expanded,
             { expanded = false },
@@ -171,11 +171,12 @@ internal fun DropdownAnchor(
     label: String,
     key: String,
     hidden: Boolean = false,
+    open: Boolean = false,
     onClick: () -> Unit,
 ) {
     val colors = MutantTheme.colors
     val ink = if (hidden) Color.Transparent else colors.onPrimary
-    ChipLike(key, onClick) {
+    ChipLike(key, open, onClick) {
         Row(
             Modifier.padding(horizontal = ANCHOR_PADDING.dp),
             horizontalArrangement = Arrangement.spacedBy(ANCHOR_GAP.dp),
@@ -204,6 +205,7 @@ internal fun DropdownAnchor(
 @Composable
 private fun ChipLike(
     key: String,
+    open: Boolean,
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -223,7 +225,8 @@ private fun ChipLike(
             key,
             Modifier.heightIn(min = ANCHOR_HEIGHT.dp),
             fill = colors.primary,
-            focused = focused && keyboard,
+            // While its menu is open the keys are the menu's, and only the row that takes them shows it (B-168).
+            focused = focused && keyboard && !open,
             interactionSource = source,
         ) {
             Box(Modifier.heightIn(min = ANCHOR_HEIGHT.dp), contentAlignment = Alignment.CenterStart) { content() }

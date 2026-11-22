@@ -18,6 +18,7 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTouchInput
@@ -119,6 +120,43 @@ class MenuBehaviourTest {
             onNode(hasText("ЦВЕТНОСТЬ")).performKeyInput { pressKey(Key.Escape) }
             mainClock.advanceTimeByFrame()
             assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size)
+        }
+
+    /** Pixels of the focus brackets' colour in the window's own root, round the anchor (the menu is another root). */
+    private fun androidx.compose.ui.test.ComposeUiTest.bracketsRoundAnchor(): Int {
+        val m = onAllNodes(isRoot())[0].captureToImage().toPixelMap()
+        val focus = io.github.youndie.mutant.tokens.MutantPalettes.Efir.focus
+        var n = 0
+        for (y in 0 until 60) {
+            for (x in 0 until 140) {
+                val c = m[x, y]
+                if (kotlin.math.abs(c.red - focus.red) < .05f && kotlin.math.abs(c.green - focus.green) < .05f &&
+                    kotlin.math.abs(c.blue - focus.blue) < .05f
+                ) {
+                    n++
+                }
+            }
+        }
+        return n
+    }
+
+    @Test
+    fun `while its menu is open the anchor draws no focus brackets`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still { Box(Modifier.size(400.dp, 400.dp)) { MutantDropdown("Настройка", items, 1, {}) } }
+            }
+            mainClock.advanceTimeByFrame()
+            val none = bracketsRoundAnchor()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeBy(48)
+            val focused = bracketsRoundAnchor()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeBy(48)
+            val open = bracketsRoundAnchor()
+            assertTrue(focused > none + 20, "the anchor's brackets when focused: $focused against $none")
+            assertTrue(open <= none + 2, "the anchor's brackets with its menu open: $open against $none")
         }
 
     /** Acid pixels in row [row]'s band of the menu body. */
