@@ -1,8 +1,13 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -425,6 +430,31 @@ class CarouselBehaviourTest {
             assertEquals(0, under().count(::osd), "seven cards: no counter")
             assertTrue(under().count(::lime) > 50, "seven cards: the pointer")
             assertEquals(7, runs(), "seven cards: six dots and the pointer")
+        }
+
+    @Test
+    fun `B-188 a card focused below the fold of a scrolling page is still brought into view`() =
+        runComposeUiTest {
+            // The node that takes the card's request from the pager passes its place on to the page round the carousel.
+            mainClock.autoAdvance = false
+            val scroll = ScrollState(0)
+            lateinit var state: PagerState
+            setContent {
+                Still {
+                    Column(Modifier.height(300.dp).verticalScroll(scroll)) {
+                        Spacer(Modifier.height(600.dp))
+                        state = rememberPagerState(initialPage = 1) { items.size }
+                        MutantCarousel(items, Modifier.width(400.dp), state)
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            assertEquals(0, scroll.value)
+            onNode(hasText("Настроечная таблица")).performSemanticsAction(SemanticsActions.RequestFocus)
+            repeat(30) { mainClock.advanceTimeByFrame() }
+            assertEquals(2, state.currentPage, "the shelf went to the focused card")
+            // The card's foot, 600 + 8 + 120 dp down, inside the 300 dp page.
+            assertTrue(scroll.value >= 428, "the page scrolled ${scroll.value} dp, the card's foot needs 428")
         }
 
     private companion object {
