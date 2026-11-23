@@ -1,14 +1,18 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,41 +23,61 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.isShiftPressed
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.LocalMutantStage
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.sign
 
 /** One card of a [MutantCarousel]: its [title], a [subtitle] under it and a [status] line at its foot, in the OSD amber. */
 public class MutantCarouselItem(
@@ -69,8 +93,9 @@ public class MutantCarouselItem(
  *
  * The current card boils as any card; the others stand calm, half its wear (`data-calm=".5"`). A swipe moves the
  * shelf; a press on a card beside the current one brings it to the middle, and a press on the current one goes to
- * [onClick] (designed here, D15: the page is a still). Under reduce motion the shelf moves at once. The cards are a
- * stage of their own, as the page's view is, so their bodies are seeded apart from the screen's.
+ * [onClick] (designed here, D15: the page is a still); the pointer slides to its new dot as the navigation bar's pill
+ * does. Under reduce motion the shelf and the pointer move at once. The cards are a stage of their own, as the page's
+ * view is, so their bodies are seeded apart from the screen's.
  */
 @Composable
 public fun MutantCarousel(
@@ -95,31 +120,61 @@ internal fun CarouselBody(
     indicatorKey: String,
     hidden: Boolean = false,
 ) {
-    // The cards are seeded by the view's own stage, `<stage>-view`, as the page's `l-carousel-view`.
-    val viewStage = "${LocalMutantStage.current}-view"
-    val scope = rememberCoroutineScope()
-    val instant = LocalMutantReduceMotion.current
     val current = state.currentPage
-    Column(
+    BoxWithConstraints(
         modifier
             // With no width given (a scrolling row), the page's view: a pager cannot measure in an endless one.
             .layout { m, c ->
                 val p = m.measure(if (c.hasBoundedWidth) c else c.copy(maxWidth = DESIGN_WIDTH.roundToPx()))
                 layout(p.width, p.height) { p.place(0, 0) }
             }.semantics { stateDescription = "${current + 1} / ${items.size}" },
-        verticalArrangement = Arrangement.spacedBy(INDICATOR_GAP),
     ) {
+        CarouselShelf(items, state, onClick, key, indicatorKey, hidden, (maxWidth - START - CARD_W).coerceAtLeast(0.dp))
+    }
+}
+
+/** The view and the dots under it; [end] is the room after the last card. */
+@Composable
+private fun CarouselShelf(
+    items: List<MutantCarouselItem>,
+    state: PagerState,
+    onClick: ((Int) -> Unit)?,
+    key: String,
+    indicatorKey: String,
+    hidden: Boolean,
+    end: Dp,
+) {
+    // The cards are seeded by the view's own stage, `<stage>-view`, as the page's `l-carousel-view`.
+    val viewStage = "${LocalMutantStage.current}-view"
+    val scope = rememberCoroutineScope()
+    val instant = LocalMutantReduceMotion.current
+    val current = state.currentPage
+    // Read by the pointer handlers, which outlive a composition.
+    val instantNow by rememberUpdatedState(instant)
+    val rtlNow by rememberUpdatedState(LocalLayoutDirection.current == LayoutDirection.Rtl)
+    // The pager's own fling, which a mouse drag's release hands its speed to.
+    val fling = PagerDefaults.flingBehavior(state)
+    Column(verticalArrangement = Arrangement.spacedBy(INDICATOR_GAP)) {
         CompositionLocalProvider(LocalMutantStage provides viewStage) {
             HorizontalPager(
                 state,
                 // The view is 172 dp, the card's 120 and the drips' room under it; a larger font scale grows the card
                 // and the view with it.
-                Modifier.fillMaxWidth().heightIn(min = VIEW).clipToBounds(),
-                contentPadding = PaddingValues(start = START, top = TOP, bottom = VIEW - TOP - CARD_H),
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = VIEW)
+                    .clipToBounds()
+                    .carouselWheel(state, scope, { instantNow }, { rtlNow })
+                    .carouselMouseDrag(state, scope, fling) { rtlNow },
+                // Room after the last card, so that it too stands 84 dp in when it is the current one (B-168): without it
+                // the shelf stopped where the cards end, and in a wide view (three cards over 421 dp) the last card could
+                // never become the current one.
+                contentPadding = PaddingValues(start = START, top = TOP, end = end, bottom = VIEW - TOP - CARD_H),
                 pageSize = PageSize.Fixed(CARD_W),
                 pageSpacing = CARD_GAP,
                 verticalAlignment = Alignment.Top,
                 key = { it },
+                flingBehavior = fling,
             ) { page ->
                 CarouselCard(items[page], page == current, "$key$page", hidden) {
                     when {
@@ -130,22 +185,159 @@ internal fun CarouselBody(
                 }
             }
         }
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(DOT_GAP, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            items.indices.forEach { i ->
-                val at = i == current
+        CarouselDots(items.size, current, indicatorKey)
+    }
+}
+
+/**
+ * The dots under the view and the pill pointer at the [current] one. The pointer is one body that slides from the dot
+ * it left, as the navigation bar's pill does (B-168; designed here, D15: the page is a still), and a dot stands at once
+ * where it was; each keeps the page's key of the dot it stands at.
+ */
+@Composable
+private fun CarouselDots(
+    count: Int,
+    current: Int,
+    indicatorKey: String,
+) {
+    val clock = readMutantClock()
+    val from = remember { PillFrom(current) }
+    from.follow(current, count, clock.nowMs, LocalMutantReduceMotion.current, LocalMutantSteppedMotion.current)
+    // The screen's direction of reading: the dots run the other way in a right-to-left layout, as the pager does.
+    val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
+    val chosen = current in 0 until count
+    Layout(
+        content = {
+            if (chosen) {
                 MutantSurface(
-                    if (at) MutantBody.Pill else MutantBody.Dot,
-                    "$indicatorKey$i",
-                    Modifier.size(if (at) POINTER_W else DOT, DOT),
-                ) { Box(Modifier.size(if (at) POINTER_W else DOT, DOT)) }
+                    MutantBody.Pill,
+                    "$indicatorKey$current",
+                    Modifier.size(POINTER_W, DOT),
+                    slide = SlideRequest(current, (CAROUSEL_DOT_STEP * (side * from.cells).toFloat()).value.toDouble()),
+                ) { Box(Modifier.size(POINTER_W, DOT)) }
             }
+            for (i in 0 until count) {
+                if (i != current) {
+                    key(i) {
+                        MutantSurface(MutantBody.Dot, "$indicatorKey$i", Modifier.size(DOT)) { Box(Modifier.size(DOT)) }
+                    }
+                }
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(Constraints()) }
+        val dot = DOT.roundToPx()
+        val step = dot + DOT_GAP.roundToPx()
+        val wide = POINTER_W.roundToPx() - dot
+        // As the page's centred row: a dot per card, 8 dp apart, the pointer 16 dp wider than a dot.
+        val row = if (count == 0) 0 else (count - 1) * step + dot + (if (chosen) wide else 0)
+        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else row
+        layout(width, if (count == 0) 0 else dot) {
+            val start = (width - row) / 2
+
+            fun x(i: Int) = start + i * step + if (chosen && i > current) wide else 0
+            var next = 0
+            if (chosen) placeables[next++].placeRelative(x(current), 0)
+            for (i in 0 until count) if (i != current) placeables[next++].placeRelative(x(i), 0)
         }
     }
 }
+
+/**
+ * One notch of the wheel steps the shelf one card (B-168): the pager's own wheel scrolled 11 dp a notch and snapped back,
+ * so a notch never reached the next card. A trackpad's small deltas are summed to whole notches, the sum dropped when
+ * it turns. A sideways turn steps, or shift with the wheel where the platform leaves it vertical; a plain vertical turn
+ * is left to the page.
+ */
+private fun Modifier.carouselWheel(
+    state: PagerState,
+    scope: CoroutineScope,
+    instant: () -> Boolean,
+    rtl: () -> Boolean,
+): Modifier =
+    pointerInput(state) {
+        var notches = 0f
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (event.type != PointerEventType.Scroll) continue
+                val delta = event.changes.firstOrNull()?.scrollDelta ?: continue
+                val along =
+                    when {
+                        delta.x != 0f -> delta.x
+                        event.keyboardModifiers.isShiftPressed -> delta.y
+                        else -> 0f
+                    }
+                if (along == 0f) continue
+                event.changes.forEach { it.consume() }
+                if (notches != 0f && sign(notches) != sign(along)) notches = 0f
+                notches += along
+                val steps = notches.toInt()
+                if (steps == 0) continue
+                notches -= steps
+                // Right to left, the next card lies the other way, as the pager's own scroll has it.
+                val to =
+                    (state.targetPage + if (rtl()) -steps else steps).coerceIn(
+                        0,
+                        (state.pageCount - 1).coerceAtLeast(0),
+                    )
+                scope.launch { if (instant()) state.scrollToPage(to) else state.animateScrollToPage(to) }
+            }
+        }
+    }
+
+/**
+ * A mouse drags the shelf as a finger does (B-168): Compose's scroll takes no mouse drag on the desktop or in the
+ * browser. Past the slop the shelf follows the pointer, without a jump by the slop, and the press on the card under it
+ * is cancelled; at the release the pager's own fling settles it by the pointer's speed. A finger is left to the pager.
+ */
+private fun Modifier.carouselMouseDrag(
+    state: PagerState,
+    scope: CoroutineScope,
+    fling: FlingBehavior,
+    rtl: () -> Boolean,
+): Modifier =
+    pointerInput(state, fling) {
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            if (down.type != PointerType.Mouse) return@awaitEachGesture
+            val tracker = VelocityTracker()
+            tracker.addPosition(down.uptimeMillis, down.position)
+            var pulled = 0f
+            var dragging = false
+            while (true) {
+                val change =
+                    awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
+                if (!change.pressed) {
+                    if (dragging) change.consume()
+                    break
+                }
+                tracker.addPosition(change.uptimeMillis, change.position)
+                val dx = change.position.x - change.previousPosition.x
+                val move =
+                    if (dragging) {
+                        dx
+                    } else {
+                        pulled += dx
+                        if (abs(pulled) <= viewConfiguration.touchSlop) continue
+                        dragging = true
+                        pulled - sign(pulled) * viewConfiguration.touchSlop
+                    }
+                change.consume()
+                // The pointer going left scrolls on; right to left, the other way, as the pager's own scroll has it.
+                state.dispatchRawDelta(if (rtl()) move else -move)
+            }
+            if (dragging) {
+                val speed = tracker.calculateVelocity().x
+                scope.launch {
+                    state.scroll(
+                        MutatePriority.UserInput,
+                    ) { with(fling) { performFling(if (rtl()) speed else -speed) } }
+                }
+            }
+        }
+    }
 
 @Composable
 private fun CarouselCard(
@@ -258,6 +450,9 @@ private val INDICATOR_GAP = 16.dp
 private val DOT = 10.dp
 private val POINTER_W = 26.dp
 private val DOT_GAP = 8.dp
+
+/** From one dot to the next: where the pointer slides from, per dot it left. */
+private val CAROUSEL_DOT_STEP = DOT + DOT_GAP
 
 /** The title (`16px`, 500), the subtitle (`13px`) and the status (Handjet `20px`), sp. */
 private const val TITLE_SIZE = 16

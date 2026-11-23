@@ -14,9 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -55,7 +58,13 @@ public class MutantTableColumn<T>(
  * divider under the header and under every row. Given [onSelectedChange], a 40 dp column of checkboxes leads each row
  * (body `box`, 22 dp, the acid fill and the tick when selected) and the whole row is the toggle, so its target is the
  * row (designed here, D15: the page presses only the box). The rows named in [selected] stand selected. A cell's text
- * runs on one line and ends in an ellipsis; a larger font scale grows the row.
+ * runs on one line and ends in an ellipsis; a larger font scale grows the row. Given no width at all (a horizontal
+ * scroll), each free column takes its widest word, as the content's own width (B-168).
+ *
+ * A row is matched by its place unless [rowKey] names what it shows. Given a key, a row the app moves (a sort, a row
+ * inserted above) takes its box, its pour and its press with it, and the box keeps its slime; without one, a moved
+ * selection pours out of the place it left and into the place it reached, the wrong record standing chosen meanwhile.
+ * Keys must be unique among the rows, as a lazy list's are.
  */
 @Composable
 public fun <T> MutantDataTable(
@@ -66,8 +75,9 @@ public fun <T> MutantDataTable(
     onSelectedChange: ((index: Int, selected: Boolean) -> Unit)? = null,
     enabled: Boolean = true,
     key: String = "trow",
+    rowKey: ((row: T) -> Any)? = null,
 ) {
-    DataTableBody(rows, columns, modifier, selected, onSelectedChange, enabled, key)
+    DataTableBody(rows, columns, modifier, selected, onSelectedChange, enabled, key, rowKey = rowKey)
 }
 
 /** [MutantDataTable]; [hidden] draws its words and ticks transparent for a fixture's bare twin. */
@@ -81,6 +91,7 @@ internal fun <T> DataTableBody(
     enabled: Boolean,
     key: String,
     hidden: Boolean = false,
+    rowKey: ((T) -> Any)? = null,
 ) {
     val colors = MutantTheme.colors
     val styles = MutantTheme.textStyles
@@ -104,6 +115,7 @@ internal fun <T> DataTableBody(
         ).cssLine(MutantFaceMetrics.Rubik)
     val osd = styles.display(OSD_SIZE.sp).copy(color = ink(colors.text), platformStyle = raster)
     val osdSecondary = osd.copy(color = ink(colors.textSecondary))
+    val measurer = rememberTextMeasurer()
 
     fun styleOf(s: MutantTableCellStyle) =
         when (s) {
@@ -111,37 +123,66 @@ internal fun <T> DataTableBody(
             MutantTableCellStyle.Osd -> osd
             MutantTableCellStyle.OsdSecondary -> osdSecondary
         }
-    Column(modifier) {
+    Column(
+        modifier.layout { m, c ->
+            val own =
+                if (c.hasBoundedWidth) {
+                    c
+                } else {
+                    // No width at all: the free columns would get nothing and every name vanish (B-168). The table is
+                    // its content's width instead: the fixed columns and each free one as wide as its widest word.
+                    val free = columns.filter { it.width == null }
+                    val fixed =
+                        (if (onSelectedChange != null) CHECK_COLUMN.roundToPx() else 0) +
+                            columns.sumOf { it.width?.roundToPx() ?: 0 }
+                    val widest =
+                        free.maxOfOrNull { col ->
+                            maxOf(
+                                tableWordWidth(measurer, col.header, header),
+                                rows.maxOfOrNull { tableWordWidth(measurer, col.cell(it), styleOf(col.style)) } ?: 0,
+                            )
+                        } ?: 0
+                    c.copy(maxWidth = maxOf(c.minWidth, fixed + widest * free.size))
+                }
+            val p = m.measure(own)
+            layout(p.width, p.height) { p.place(0, 0) }
+        },
+    ) {
         Row(Modifier.fillMaxWidth().heightIn(min = HEADER_ROW), verticalAlignment = Alignment.CenterVertically) {
             if (onSelectedChange != null) Box(Modifier.width(CHECK_COLUMN))
             for (c in columns) Cell(c.width, c.header, header)
         }
         MutantDivider(key = "0")
         rows.forEachIndexed { i, row ->
-            val on = i in selected
-            val source = remember { MutableInteractionSource() }
-            val toggle =
-                if (onSelectedChange == null) {
-                    Modifier
-                } else {
-                    Modifier.mutantHand(enabled).toggleable(
-                        on,
-                        source,
-                        indication = null,
-                        enabled = enabled,
-                        role = Role.Checkbox,
-                    ) { onSelectedChange(i, it) }
-                }
-            Row(
-                Modifier.fillMaxWidth().heightIn(min = ROW).then(toggle),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (onSelectedChange != null) {
-                    Box(Modifier.width(CHECK_COLUMN)) {
-                        CheckBoxControl(on, enabled, "$key$i", source, hidden, blocks = false)
+            // A keyed row's composition, its press and its box's pour follow what it shows; its slime follows too.
+            val id = rowKey?.invoke(row)
+            val slime = if (id == null) "$key$i" else "$key:$id"
+            androidx.compose.runtime.key(id ?: i) {
+                val on = i in selected
+                val source = remember { MutableInteractionSource() }
+                val toggle =
+                    if (onSelectedChange == null) {
+                        Modifier
+                    } else {
+                        Modifier.mutantHand(enabled).toggleable(
+                            on,
+                            source,
+                            indication = null,
+                            enabled = enabled,
+                            role = Role.Checkbox,
+                        ) { onSelectedChange(i, it) }
                     }
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = ROW).then(toggle),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (onSelectedChange != null) {
+                        Box(Modifier.width(CHECK_COLUMN)) {
+                            CheckBoxControl(on, enabled, slime, source, hidden, blocks = false)
+                        }
+                    }
+                    for (c in columns) Cell(c.width, c.cell(row), styleOf(c.style))
                 }
-                for (c in columns) Cell(c.width, c.cell(row), styleOf(c.style))
             }
             MutantDivider(key = "${i + 1}")
         }
@@ -163,6 +204,13 @@ private fun RowScope.Cell(
         overflow = TextOverflow.Ellipsis,
     )
 }
+
+/** How wide [text] is set on one line in [style], in pixels, as the cell's text measures itself under no width. */
+private fun tableWordWidth(
+    measurer: TextMeasurer,
+    text: String,
+    style: TextStyle,
+): Int = measurer.measure(text, style, softWrap = false, maxLines = 1).size.width
 
 /** The header row (`height: 36px`) and a body row (`height: 48px`), the touch target. */
 private val HEADER_ROW = 36.dp

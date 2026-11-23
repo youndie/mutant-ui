@@ -100,11 +100,11 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 16 | segmented | SegmentedButton | done: [report](../../logs/b-168/segmented.md), 4 fixed, 2 reported |
 | 17 | tooltip | TooltipBox | done: [report](../../logs/b-168/tooltip.md), 1 fixed, 4 reported |
 | 18 | menu | Menu, Dropdown | done: [report](../../logs/b-168/menu.md), 4 fixed and a KDoc, 5 reported |
-| 19 | drawer | NavigationDrawer | open |
-| 20 | bottom-sheet | BottomSheet | open |
-| 21 | pull-to-refresh | PullToRefresh | open |
+| 19 | drawer | NavigationDrawer | done: [report](../../logs/b-168/drawer.md), 7 fixed, 5 reported |
+| 20 | bottom-sheet | BottomSheet | done: [report](../../logs/b-168/bottom-sheet.md), 6 fixed, 3 reported |
+| 21 | pull-to-refresh | PullToRefresh | done: [report](../../logs/b-168/pull-to-refresh.md), 2 fixed, 2 reported |
 | 22 | pickers | DatePicker, TimePicker | done: [report](../../logs/b-168/pickers.md), 4 fixed, 7 reported |
-| 23 | data-table | DataTable | open |
-| 24 | carousel | Carousel | open |
-| 25 | foundations | the Foundations section: surface states, the Tape, keyframe loss (report-only: shared code) | open |
+| 23 | data-table | DataTable | done: [report](../../logs/b-168/data-table.md), 2 fixed (one adds `rowKey`), 4 reported |
+| 24 | carousel | Carousel | done: [report](../../logs/b-168/carousel.md), 4 fixed, 3 reported |
+| 25 | foundations | the Foundations section: surface states, the Tape, keyframe loss (report-only: shared code) | done: [report](../../logs/b-168/foundations.md), report only: 8 findings, 13 shared-code classes |
 | 26 | screens | the demo's three screens, as composed | open |

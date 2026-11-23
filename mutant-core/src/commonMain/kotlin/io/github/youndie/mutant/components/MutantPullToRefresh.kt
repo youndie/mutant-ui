@@ -20,10 +20,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -123,16 +126,8 @@ internal fun PullToRefreshBody(
         }
     }
     val doneShown = waited.let { glide.pill(clock.nowMs, still) }
+    // Refreshing boils the tongue: pressed by the tongue itself, once its body listens (B-168).
     val boil = remember { MutableInteractionSource() }
-    LaunchedEffect(refreshing) {
-        if (refreshing) {
-            boil.emit(
-                PressInteraction.Press(Offset.Zero),
-            )
-        } else {
-            boil.emit(PressInteraction.Release(PressInteraction.Press(Offset.Zero)))
-        }
-    }
 
     /** Where the content stands now, dp: a new pull takes it up from there, never from 0. */
     fun standing(): Float = if (holding) dragged else glide.at(clock.nowMs, stillNow)
@@ -335,20 +330,20 @@ private fun Tongue(
     // Between ticks, and under 40 dp, the body built is scaled to the gap's exact size.
     val sx = size.width / w
     val sy = size.height / h
-    // Becoming the pill, it fades draw by draw, so its drips, outside its box, fade with it.
+    // Becoming the pill, it fades out, its drips outside its box with it.
     val fade = if (morph != null) 1f - morph else 1f
     Box(
-        if (sx == 1f && sy == 1f && fade == 1f) {
-            Modifier
-        } else {
-            Modifier.graphicsLayer {
-                scaleX = sx
-                scaleY = sy
-                alpha = fade
-                compositingStrategy = CompositingStrategy.ModulateAlpha
-                transformOrigin = TransformOrigin(.5f, 0f)
+        (
+            if (sx == 1f && sy == 1f) {
+                Modifier
+            } else {
+                Modifier.graphicsLayer {
+                    scaleX = sx
+                    scaleY = sy
+                    transformOrigin = TransformOrigin(.5f, 0f)
+                }
             }
-        },
+        ).then(if (fade < 1f) Modifier.pullTongueFade(fade) else Modifier),
     ) {
         MutantSurface(
             MutantBody.Btn,
@@ -382,7 +377,37 @@ private fun Tongue(
             }
         }
     }
+    // After the body, whose effect then already collects [boil]: a press emitted before it is dropped (B-168). The
+    // component's own effect pressed it, so refreshing started with no tongue hanging yet (by code, by a reader's
+    // action) or a screen composed refreshing never boiled; only a tongue already pulled out did.
+    LaunchedEffect(boil, boiling) {
+        boil.emit(
+            if (boiling) {
+                PressInteraction.Press(Offset.Zero)
+            } else {
+                PressInteraction.Release(PressInteraction.Press(Offset.Zero))
+            },
+        )
+    }
 }
+
+/**
+ * Draws what it holds at [alpha], its child layers included, as far as a body inks past its box (B-168). A layer's
+ * `ModulateAlpha` reaches only its own draws, and the body draws in a layer of its own since B-135: the tongue stood
+ * opaque through its whole move into the pill, which then cut in on one frame.
+ */
+private fun Modifier.pullTongueFade(alpha: Float): Modifier =
+    drawWithContent {
+        val reach = PULL_TONGUE_FADE_REACH.dp.toPx()
+        drawIntoCanvas { canvas ->
+            canvas.saveLayer(
+                Rect(-reach, -reach, size.width + reach, size.height + reach),
+                Paint().apply { this.alpha = alpha },
+            )
+            drawContent()
+            canvas.restore()
+        }
+    }
 
 /**
  * The tongue's size at a gap: its body's [bodyWidth] × [bodyHeight], dp, drawn at [grow] of it, and [f], its share
@@ -758,6 +783,9 @@ internal const val MORPH_MS = GLIDE_MS
 
 /** The pill's corner: half its height (the `pill` body's radius, 99, comes to that). */
 private const val PILL_R = PILL_H / 2f
+
+/** How far past its box a body can ink, dp: the surface's own reach (drips, shadow, slip, outline). */
+private const val PULL_TONGUE_FADE_REACH = 64
 
 /** The smallest a body is built at, dp; under it, it is scaled. */
 private const val MIN_BUILT = 4

@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -28,27 +31,38 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigationevent.NavigationEventInfo
@@ -57,6 +71,8 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.gen.VenomShapes
+import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.drawVenomFill
@@ -64,6 +80,7 @@ import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
+import io.github.youndie.mutant.surface.toPath
 import io.github.youndie.mutant.surface.venomSpring
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
@@ -92,12 +109,14 @@ public class MutantDrawerItem(
  * In it, 26 dp down, the [title] in the on-screen-display amber (Handjet 20, tracked 1) and the [items], 42 dp rows 4
  * dp apart: the channel's code (Handjet 20, tracked 1) and its label (Rubik 15) 12 dp after it. The [selectedIndex]
  * stands in a clean window (body `pill`, radius 8), its words in black; a new one is reached by venom, as the menu's
- * (B-33). A row is its whole target, 42 dp tall: an owner-named exception to the 48 dp rule (research D19).
+ * (B-33). Through a run a word is black where the lime lies under it and in the text's colour elsewhere, so it turns as
+ * the slime reaches it (the page turns the words 340 ms in). A row is its whole target, 42 dp tall: an owner-named exception to the 48 dp rule (research D19).
  *
- * The design draws it open; its motion is designed here (D15): it slides in from the start over 330 ms (ease-out², in the
- * kit's transition steps) with the scrim coming in, and out in 200 ms; under reduce motion it is there at once. A click
- * on the scrim, Escape or the system back gesture calls [onDismissRequest]; focus moves into the drawer as it opens and
- * goes to [returnFocusTo] as it closes. Up and Down move the focus from row to row.
+ * The design draws it open; its motion is designed here (D15): it slides in from the start over 330 ms (ease-out², on
+ * every frame, in the kit's transition steps under `steppedMotion`) with the scrim coming in, and out in 200 ms; turned
+ * round mid-way it goes on from where it stands, and under reduce motion it is there at once. A click on the scrim, Escape or the system back gesture calls
+ * [onDismissRequest]; from then on no row answers. Focus moves into the drawer as it opens, Up or Down there takes it to
+ * the chosen row and then from row to row; once the drawer has gone it goes to [returnFocusTo].
  */
 @Composable
 public fun MutantNavigationDrawer(
@@ -129,13 +148,14 @@ internal fun DrawerFrame(
     playIn: Boolean = true,
     hidden: Boolean = false,
 ) {
-    ReturnFocus(visible, returnFocusTo)
     val reduce = LocalMutantReduceMotion.current
     val screen = readMutantClock()
     // The drawer's own clock: the screen's stands while it shows, and the drawer still moves.
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
-    val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY) }
+    // Given its two durations, a close during the slide in (or an open during the slide out) goes on from where the
+    // window stands instead of starting over from the other end (B-168).
+    val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, IN_MS, OUT_MS) }
     val pick = remember { PickHold(selectedIndex) }
     val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
@@ -156,15 +176,21 @@ internal fun DrawerFrame(
             if (!gone) screen.holds++
             onDispose { if (!gone) screen.holds-- }
         }
+        // Focus goes back once the drawer is gone, not as it starts to close: through the exit the scrim still covers the
+        // screen, and an Enter pressed then would reach the opener under it and open the drawer again (B-168).
+        ReturnFocus(!gone, returnFocusTo)
         if (gone) return@ProvideMutantClock
         val dismiss by rememberUpdatedState(onDismissRequest)
         val focus = remember { FocusRequester() }
+        val rows = remember(items.size) { List(items.size) { FocusRequester() } }
         LaunchedEffect(visible) { if (visible) focus.requestFocus() }
         NavigationBackHandler(
             rememberNavigationEventState(NavigationEventInfo.None),
             isBackEnabled = visible,
         ) { dismiss() }
         val slide = 1 - (1 - shown) * (1 - shown)
+        // It comes in from the screen's start: the left edge, or the right one right to left.
+        val from = if (LocalLayoutDirection.current == LayoutDirection.Rtl) 1 else -1
         Box(
             modifier
                 .fillMaxSize()
@@ -179,6 +205,14 @@ internal fun DrawerFrame(
                     } else {
                         false
                     }
+                }
+                // The drawer itself holds the keys as it opens; Up or Down there goes to the chosen row (or the first),
+                // where on a row they move from row to row (B-168).
+                .onKeyEvent {
+                    val arrow = it.key == Key.DirectionDown || it.key == Key.DirectionUp
+                    if (!visible || it.type != KeyEventType.KeyDown || !arrow) return@onKeyEvent false
+                    rows.getOrNull(if (selectedIndex in items.indices) selectedIndex else 0)?.requestFocus()
+                    true
                 }.focusable(),
         ) {
             Box(
@@ -193,23 +227,29 @@ internal fun DrawerFrame(
                         enabled = visible,
                     ) { dismiss() },
             )
-            DrawerWindow(
-                items,
-                selectedIndex,
-                onSelect,
-                title,
-                key,
-                hidden,
-                Modifier
-                    .fillMaxHeight()
-                    .graphicsLayer { translationX = -(1 - slide) * size.width }
-                    .semantics {
-                        dismiss {
-                            dismiss()
-                            true
-                        }
-                    },
-            )
+            // The window floats over the screen, so the screen's keyframe loss does not take its bodies: a loss held
+            // mid-run by the drawer would cut its band out of the window for as long as it is open (B-98's rule, B-168).
+            CompositionLocalProvider(LocalMutantMoshScene provides null) {
+                DrawerWindow(
+                    items,
+                    selectedIndex,
+                    onSelect,
+                    title,
+                    key,
+                    hidden,
+                    visible,
+                    rows,
+                    Modifier
+                        .fillMaxHeight()
+                        .graphicsLayer { translationX = from * (1 - slide) * size.width }
+                        .semantics {
+                            dismiss {
+                                dismiss()
+                                true
+                            }
+                        },
+                )
+            }
         }
     }
 }
@@ -223,6 +263,8 @@ internal fun DrawerWindow(
     title: String?,
     key: String,
     hidden: Boolean,
+    open: Boolean,
+    focus: List<FocusRequester>,
     modifier: Modifier,
 ) {
     val colors = MutantTheme.colors
@@ -233,11 +275,13 @@ internal fun DrawerWindow(
     val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
     run.steps = LocalMutantSteppedMotion.current
     val top = TOP + (if (title != null) TITLE + GAP else 0f)
+    // The rows stand 22 dp from the body's start: its left edge, or its right one right to left.
+    val rowX = if (LocalLayoutDirection.current == LayoutDirection.Rtl) BODY_WIDTH - START - ROW_WIDTH else START
     run.key = "$key-pill"
     run.cassette = cassette
     run.slot =
         { i ->
-            doubleArrayOf(START.toDouble(), (top + i * (ROW + GAP)).toDouble(), ROW_WIDTH.toDouble(), ROW.toDouble())
+            doubleArrayOf(rowX.toDouble(), (top + i * (ROW + GAP)).toDouble(), ROW_WIDTH.toDouble(), ROW.toDouble())
         }
     run.follow(selectedIndex, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
     val select by rememberUpdatedState(onSelect)
@@ -258,14 +302,35 @@ internal fun DrawerWindow(
         ).cssLine(MutantFaceMetrics.Rubik)
     val inkGoo = rememberGraphicsLayer()
     val fillGoo = rememberGraphicsLayer()
-    val focus = remember(items.size) { List(items.size) { FocusRequester() } }
+    val words = remember { DrawerWordInk() }
+    // Where the lime lies at run progress p, as a mask in the body's pixels: the venom's fat shapes through the goo, as
+    // the fill recorded them this frame, its thin ones, and the window once it shows, springing about its middle.
+    val slime: DrawScope.(Double, VenomShapes) -> Unit = { p, v ->
+        drawLayer(fillGoo)
+        scale(density, density, Offset.Zero) {
+            for (t in v.thin) drawPath(t.toPath(evenOdd = false), Color.Black)
+        }
+        if (v.full && selectedIndex in words.tops.indices) {
+            val l = words.start.toFloat()
+            val t = words.tops[selectedIndex].toFloat()
+            val w = words.rowW.toFloat()
+            val h = words.heights[selectedIndex].toFloat()
+            val spring = venomSpring(p, v.vertical)
+            scale(spring?.first ?: 1f, spring?.second ?: 1f, Offset(l + w / 2, t + h / 2)) {
+                drawRoundRect(Color.Black, Offset(l, t), Size(w, h), CornerRadius(PILL_RADIUS.toFloat() * density))
+            }
+        }
+    }
     Layout(
         content = {
             MutantSurface(
                 MutantBody.Bar,
                 key,
-                // Its own clicks: none reaches the scrim under it.
-                Modifier.clickable(remember { MutableInteractionSource() }, indication = null) {},
+                // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a clickable is
+                // a Tab stop and takes focus on a press, and its body shows neither (B-168, the dialog's window).
+                Modifier
+                    .focusGroup()
+                    .pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false) } },
                 fill = colors.surface,
                 slip = SLIP,
                 shadow = colors.misregister,
@@ -333,7 +398,9 @@ internal fun DrawerWindow(
                                     focus[to].requestFocus()
                                     true
                                 }
-                            DrawerRow(item, i, run, selectedIndex, code, label, hidden, moves) { select(i) }
+                            DrawerRow(item, i, run, selectedIndex, code, label, hidden, open, moves, words, slime) {
+                                select(i)
+                            }
                         }
                     },
                 ) { measurables, c ->
@@ -355,6 +422,10 @@ internal fun DrawerWindow(
                         }
                     var y = (TOP * d).roundToInt() + (titleP?.let { it.height + gap } ?: 0)
                     val tops = rows.map { r -> y.also { y += r.height + gap } }
+                    words.start = if (layoutDirection == LayoutDirection.Rtl) w - start - rowW else start
+                    words.rowW = rowW
+                    words.tops = tops.toIntArray()
+                    words.heights = rows.map { it.height }.toIntArray()
                     val pill =
                         if (chosen) {
                             measurables[1].measure(Constraints.fixed(rowW, rows[selectedIndex].height))
@@ -363,21 +434,21 @@ internal fun DrawerWindow(
                         }
                     layout(w, h) {
                         ink.place(0, 0)
-                        if (chosen) pill.place(start, tops[selectedIndex])
+                        if (chosen) pill.placeRelative(start, tops[selectedIndex])
                         fill.place(0, 0)
-                        titleP?.place(start, (TOP * d).roundToInt())
-                        rows.forEachIndexed { i, r -> r.place(start, tops[i]) }
+                        titleP?.placeRelative(start, (TOP * d).roundToInt())
+                        rows.forEachIndexed { i, r -> r.placeRelative(start, tops[i]) }
                     }
                 }
             }
         },
         modifier,
     ) { measurables, c ->
-        // The body runs off the window's start and top by 10 dp and past its foot by as much.
+        // The body runs off the window's start (the screen's, either way) and top by 10 dp and past its foot by as much.
         val off = (RUN_OFF * density).roundToInt()
         val h = if (c.hasBoundedHeight) c.maxHeight else (BODY_MIN * density).roundToInt()
         val body = measurables[0].measure(Constraints.fixed((BODY_WIDTH * density).roundToInt(), h + 2 * off))
-        layout(body.width - off, h) { body.place(-off, -off) }
+        layout(body.width - off, h) { body.placeRelative(-off, -off) }
     }
 }
 
@@ -390,7 +461,10 @@ private fun DrawerRow(
     code: TextStyle,
     label: TextStyle,
     hidden: Boolean,
+    open: Boolean,
     moves: Modifier,
+    words: DrawerWordInk,
+    slime: DrawScope.(Double, VenomShapes) -> Unit,
     onPick: () -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -401,10 +475,13 @@ private fun DrawerRow(
 
     // A lambda, not a reference to a local function: two references to `ink` compare equal whatever selection they
     // captured, so the words' node kept the first one and coloured the rows by the selection it was composed with (B-103).
+    // Through a run the words take the colour of the side of the slime the pass draws; at rest the chosen row's are black.
     val ink = {
         when {
             hidden -> Color.Transparent
-            run.labelOn(index, clock, selectedIndex) -> colors.onPrimary
+            words.pass == DrawerWordPass.OnSlime -> colors.onPrimary
+            words.pass == DrawerWordPass.OffSlime -> colors.text
+            index == selectedIndex -> colors.onPrimary
             else -> colors.text
         }
     }
@@ -424,8 +501,32 @@ private fun DrawerRow(
                     }
                 }
             }.mutantHand(true)
-            .selectable(index == selectedIndex, source, indication = null, role = Role.Tab) {
+            // A closing drawer answers no row: through B-102's hold and through the exit a press picks nothing.
+            .selectable(index == selectedIndex, source, enabled = open, indication = null, role = Role.Tab) {
                 if (index != selectedIndex) onPick()
+            }.drawWithContent {
+                // Through a run the row is drawn twice: its words black where the slime lies under them, in the text's
+                // colour elsewhere, so they turn as the lime reaches them (B-168; the page turns the words on a 340 ms
+                // timer, which left pale words on the passing lime and a black one on the dark body, 1.06:1).
+                val now = if (hidden) null else run.now(clock, selectedIndex)
+                if (now == null || index !in words.tops.indices) return@drawWithContent drawContent()
+                val bounds = Rect(Offset.Zero, size)
+                val canvas = drawContext.canvas
+                for (pass in listOf(DrawerWordPass.OffSlime, DrawerWordPass.OnSlime)) {
+                    words.pass = pass
+                    canvas.saveLayer(bounds, Paint())
+                    drawContent()
+                    canvas.saveLayer(
+                        bounds,
+                        Paint().apply {
+                            blendMode = if (pass == DrawerWordPass.OnSlime) BlendMode.DstIn else BlendMode.DstOut
+                        },
+                    )
+                    translate(-words.start.toFloat(), -words.tops[index].toFloat()) { slime(now.first, now.second) }
+                    canvas.restore()
+                    canvas.restore()
+                }
+                words.pass = DrawerWordPass.Rest
             }.drawWithContent {
                 drawContent()
                 if (focused && keyboard) {
@@ -498,6 +599,18 @@ private class PickHold(
         at = index
         if (showing) pickedAt = nowMs
     }
+}
+
+/** Which colour the words take in the draw under way: their own at rest, or one side of the slime through a run. */
+private enum class DrawerWordPass { Rest, OffSlime, OnSlime }
+
+/** The pass the words' colour reads, set by each row's draw around its passes, and where the rows stand, in pixels. */
+private class DrawerWordInk {
+    var pass = DrawerWordPass.Rest
+    var start = 0
+    var rowW = 0
+    var tops = IntArray(0)
+    var heights = IntArray(0)
 }
 
 /** After the venom run lands, how long the drawer stands with the pill on its new row before it goes (D15, B-102). */
