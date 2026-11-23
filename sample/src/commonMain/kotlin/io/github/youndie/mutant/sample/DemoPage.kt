@@ -26,8 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.components.MutantBadge
@@ -162,9 +167,29 @@ private fun ScreenBox(
             .then(if (roundedClip) Modifier.clip(RoundedCornerShape(28.dp)) else Modifier)
             .background(colors.background)
             .mutantTape()
+            .nestedScroll(PhoneKeepsItsFling)
             .testTag(tag),
     ) {
         // The engine loses one screen's keyframe at a time; the sample gives the loss to its first screen.
         if (keyframeLoss) MutantKeyframeLoss(Modifier.fillMaxSize(), colors.background) { content() } else content()
     }
+}
+
+/**
+ * A phone keeps the fling it leaves (B-174): a fling that reaches a tab's top or end, or the release of a pull to
+ * refresh, stops there instead of handing its speed on to the page, which slid the phone out of the window. A drag
+ * still passes on what the phone leaves, so a finger on the phone can scroll the page on a narrow screen, where the
+ * phone fills most of it.
+ */
+private object PhoneKeepsItsFling : NestedScrollConnection {
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset = if (source == NestedScrollSource.SideEffect) available else Offset.Zero
+
+    override suspend fun onPostFling(
+        consumed: Velocity,
+        available: Velocity,
+    ): Velocity = available
 }

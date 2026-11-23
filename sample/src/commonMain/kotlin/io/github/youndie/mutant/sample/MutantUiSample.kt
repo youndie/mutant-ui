@@ -13,10 +13,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -84,11 +86,13 @@ fun MutantUiSample(
                 .then(if (settings.page == SamplePage.Demo) Modifier else Modifier.mutantTape())
                 .testTag("sample-root"),
         ) {
-            Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(24.dp)) {
-                Header(settings, strings)
-                when (settings.page) {
-                    SamplePage.Components -> ComponentsPage(strings, settings.group) { settings.group = it }
-                    SamplePage.Demo -> DemoPage(strings, settings.demoScreen) { settings.demoScreen = it }
+            CompositionLocalProvider(LocalSampleSettings provides settings) {
+                Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(24.dp)) {
+                    Header(settings, strings)
+                    when (settings.page) {
+                        SamplePage.Components -> ComponentsPage(strings, settings.group) { settings.group = it }
+                        SamplePage.Demo -> DemoPage(strings, settings.demoScreen) { settings.demoScreen = it }
+                    }
                 }
             }
         }
@@ -159,3 +163,6 @@ private fun Header(
         }
     }
 }
+
+/** The header's settings, for the specimens that set up a theme of their own and keep the header's switches (B-174). */
+internal val LocalSampleSettings = staticCompositionLocalOf { SampleSettings() }

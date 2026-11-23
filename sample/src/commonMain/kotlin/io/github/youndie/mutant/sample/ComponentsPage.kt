@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.sample
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.FocusInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -21,9 +22,12 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -194,7 +198,10 @@ internal fun TryIt(
     content: @Composable FlowRowScope.() -> Unit,
 ) = SpecRow(s.rowTry, "row-try", content)
 
-/** A specimen with its caption: the caption stands clear of the drips the body hangs below its slot. */
+/**
+ * A specimen with its caption: the caption stands clear of the drips the body hangs below its slot and of the drops
+ * that tear off them and fall.
+ */
 @Composable
 internal fun Cell(
     caption: String,
@@ -216,7 +223,8 @@ internal fun Cell(
 
 /**
  * An interaction source held in a state for a specimen: a press (the body boils) or a focus, emitted a frame after the
- * control has subscribed to it.
+ * control has subscribed to it. The focus follows [focus] as it changes: a specimen of the focused state stands down
+ * while a field beside it has the real focus (B-174), or two fields would show the focus and only one take the keys.
  */
 @Composable
 internal fun held(
@@ -224,23 +232,58 @@ internal fun held(
     focus: Boolean = false,
 ): MutableInteractionSource {
     val source = remember { MutableInteractionSource() }
+    val shown = remember { arrayOfNulls<FocusInteraction.Focus>(1) }
     LaunchedEffect(source) {
         withFrameNanos { }
         if (press) source.emit(PressInteraction.Press(Offset(24f, 24f)))
-        if (focus) source.emit(FocusInteraction.Focus())
+    }
+    LaunchedEffect(source, focus) {
+        if (focus) {
+            withFrameNanos { }
+            FocusInteraction.Focus().also {
+                shown[0] = it
+                source.emit(it)
+            }
+        } else {
+            shown[0]?.let { source.emit(FocusInteraction.Unfocus(it)) }
+            shown[0] = null
+        }
     }
     return source
 }
 
+/** Which of the controls given [watchFocus] hold the real focus: a focused specimen stands down while one does. */
+internal class SampleFocusWatch {
+    private val holders = mutableStateSetOf<String>()
+
+    val any: Boolean get() = holders.isNotEmpty()
+
+    fun set(
+        id: String,
+        focused: Boolean,
+    ) {
+        if (focused) holders += id else holders -= id
+    }
+}
+
+/** Tells [watch] whether this control, named [id], holds the real focus. */
+internal fun Modifier.watchFocus(
+    watch: SampleFocusWatch,
+    id: String,
+): Modifier = onFocusChanged { watch.set(id, it.hasFocus) }
+
 /**
  * An overlay's specimen: a screen of its own, so the overlay holds this box's clock, not the page's (B-90). An overlay
  * shown from the first frame takes focus, and the focus asks the page to scroll to it; the stage keeps that request to
- * itself, so the page opens at its top.
+ * itself, so the page opens at its top. A [still] stage is a picture of a state: focus never enters it, so the overlay
+ * in it neither takes the focus as it appears nor holds it, as an open overlay does, away from the rest of the page
+ * (B-174: «Try it»'s dialog and drawer, opened beside one, never got the focus, and Escape went to the picture).
  */
 @Composable
 internal fun Stage(
     width: Dp,
     height: Dp,
+    still: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     MutantScreenClock {
@@ -248,10 +291,14 @@ internal fun Stage(
             Modifier
                 .size(width, height)
                 .then(StayPut)
+                .then(if (still) StillStage else Modifier)
                 .background(MutantTheme.colors.page),
         ) { content() }
     }
 }
+
+/** A group the focus never enters, by the keys or by a request from inside it. */
+private val StillStage = Modifier.focusProperties { onEnter = { cancelFocusChange() } }.focusGroup()
 
 /** Swallows a request to bring something inside into view: the page around does not scroll for it. */
 internal data object StayPut : ModifierNodeElement<StayPutNode>() {
@@ -323,7 +370,13 @@ private val ROW_GAP = 28.dp
 
 /** Between specimens, and from a specimen to its caption: clear of the drips a body hangs below its slot. */
 private val CELL_GAP = 32.dp
-private val CAPTION_GAP = 26.dp
+
+/**
+ * From a specimen to its caption (B-174): a body's drips hang 24 dp at most (`OVERHANG_MAX`, a button's and a FAB's),
+ * and the drops they let go fall up to 11 dp past that before they fade (research §1.15, B-25). At 26 dp a filled
+ * button's drop reached its caption, 28 dp under the slot.
+ */
+private val CAPTION_GAP = 36.dp
 private val CELL_MIN = 96.dp
 
 /** A section's head beside its rows from this width. */

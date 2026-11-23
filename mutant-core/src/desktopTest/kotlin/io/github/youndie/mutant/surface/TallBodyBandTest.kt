@@ -39,6 +39,9 @@ import kotlin.test.assertTrue
 /**
  * B-86: a body taller than the window rasterises ahead only the band around what the window shows, cut on the whole
  * image's pixel grid; scrolled past that band, it draws its vectors until a tick's image covers it again.
+ *
+ * B-173: the card waits at each resting tick for what was built ahead for it ([LocalMutantTickWaits]); slept for 6 ms a
+ * frame instead, it counted the images a loaded runner's thread had finished, one where two were asked.
  */
 @OptIn(ExperimentalTestApi::class)
 class TallBodyBandTest {
@@ -79,12 +82,15 @@ class TallBodyBandTest {
     @Test
     fun `a tall body rasterises the band around the window, not its whole height`() =
         runComposeUiTest {
-            val bytes = ArrayList<Long>()
-            val scroll = tallCard(asImage = true, bytes = bytes)
-            repeat(40) {
-                mainClock.advanceTimeByFrame()
-                Thread.sleep(6)
-            }
+            // Appended from the thread that rasterises.
+            val bytes = java.util.Collections.synchronizedList(ArrayList<Long>())
+            var drawnAt = -1L
+            val scroll = tallCard(asImage = true, bytes = bytes, frames = { drawnAt = mainClock.currentTime })
+            repeat(40) { mainClock.advanceTimeByFrame() }
+            // B-173: on to the next tick drawn, which waits for the image the last one asked for: the count is of images
+            // whose build a tick waited for, not of those a background thread happened to finish in time.
+            val last = drawnAt
+            repeat(TICK_FRAMES) { if (drawnAt == last) mainClock.advanceTimeByFrame() }
             assertTrue(bytes.size >= 2, "images rasterised: ${bytes.size}")
             // The whole card is about 366 × 3 060 px at density 1; the window is 768 tall, the band twice that.
             val whole = 366L * 3_060 * 4
@@ -106,24 +112,15 @@ class TallBodyBandTest {
                         drawnAt = mainClock.currentTime
                         if (image) images++ else vectors++
                     })
-                repeat(40) {
-                    mainClock.advanceTimeByFrame()
-                    Thread.sleep(6)
-                }
+                repeat(40) { mainClock.advanceTimeByFrame() }
                 // To the frame that drew a tick: the next one draws no tick of its own.
-                while (drawnAt != mainClock.currentTime) {
-                    mainClock.advanceTimeByFrame()
-                    Thread.sleep(6)
-                }
+                while (drawnAt != mainClock.currentTime) mainClock.advanceTimeByFrame()
                 val before = pixels()
                 // One and a half windows down, between two ticks: past the band the image was cut to.
                 runBlocking { scroll.scrollTo(1_150) }
                 mainClock.advanceTimeByFrame()
                 val next = pixels()
-                repeat(24) {
-                    mainClock.advanceTimeByFrame()
-                    Thread.sleep(6)
-                }
+                repeat(24) { mainClock.advanceTimeByFrame() }
                 shots = listOf(before, next, pixels())
                 counts = images to vectors
             }
@@ -152,6 +149,8 @@ class TallBodyBandTest {
             scroll = rememberScrollState()
             CompositionLocalProvider(
                 LocalMutantBodyAsImage provides asImage,
+                // B-173: each resting tick waits for the frame and image built ahead for it, as a thread with time would.
+                LocalMutantTickWaits provides true,
                 LocalMutantFrameProbe provides { _, image, _ -> frames(image) },
                 LocalMutantRasterProbe provides { _, b -> bytes += b },
             ) {
@@ -228,5 +227,8 @@ class TallBodyBandTest {
     private companion object {
         const val EDGE_LEVELS = 16
         const val EDGE_SHARE = .0005
+
+        /** The frames of a tick and one more: 125 ms at 16 ms a frame. */
+        const val TICK_FRAMES = 9
     }
 }

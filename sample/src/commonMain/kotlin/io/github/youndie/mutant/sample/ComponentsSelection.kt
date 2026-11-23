@@ -107,12 +107,13 @@ internal fun Chips(s: SampleStrings) {
 internal fun Fields(s: SampleStrings) {
     var value by remember { mutableStateOf("") }
     var focused by remember { mutableStateOf(s.nightTue) }
+    val watch = remember { SampleFocusWatch() }
     States(s) {
         Cell(s.stRest, FIELD) {
             MutantTextField(
                 value,
                 { value = it },
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().watchFocus(watch, "rest"),
                 prefix = s.search,
                 placeholder = s.findRecording,
                 key = "tf-rest",
@@ -125,11 +126,18 @@ internal fun Fields(s: SampleStrings) {
                 Modifier.fillMaxWidth(),
                 prefix = s.name,
                 key = "tf-focus",
-                interactionSource = held(focus = true),
+                interactionSource = held(focus = !watch.any),
             )
         }
         Cell(s.stError, FIELD) {
-            MutantTextField("99", {}, Modifier.fillMaxWidth(), prefix = s.channel, isError = true, key = "tf-error")
+            MutantTextField(
+                "99",
+                {},
+                Modifier.fillMaxWidth().watchFocus(watch, "error"),
+                prefix = s.channel,
+                isError = true,
+                key = "tf-error",
+            )
         }
         Cell(s.stDisabled, FIELD) {
             MutantTextField(s.untitled, {}, Modifier.fillMaxWidth(), prefix = s.name, enabled = false, key = "tf-off")
@@ -141,9 +149,16 @@ internal fun Fields(s: SampleStrings) {
 internal fun Searches(s: SampleStrings) {
     var query by remember(s) { mutableStateOf(s.night) }
     var empty by remember { mutableStateOf("") }
+    val watch = remember { SampleFocusWatch() }
     Variants(s) {
         Cell(s.vSuggestions, FIELD) {
-            MutantSearchBar(empty, { empty = it }, Modifier.fillMaxWidth(), prefix = s.search, clearLabel = s.clear) {
+            MutantSearchBar(
+                empty,
+                { empty = it },
+                Modifier.fillMaxWidth().watchFocus(watch, "suggestions"),
+                prefix = s.search,
+                clearLabel = s.clear,
+            ) {
                 MutantSearchSuggestions(listOf(s.nightToTuesday, s.nightAir), { empty = it })
             }
         }
@@ -151,7 +166,7 @@ internal fun Searches(s: SampleStrings) {
             MutantSearchBar(
                 query,
                 { query = it },
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().watchFocus(watch, "results"),
                 prefix = s.search,
                 clearLabel = s.clear,
                 key = "search-b",
@@ -179,7 +194,7 @@ internal fun Searches(s: SampleStrings) {
                 prefix = s.search,
                 clearLabel = s.clear,
                 key = "search-f",
-                interactionSource = held(focus = true),
+                interactionSource = held(focus = !watch.any),
             )
         }
     }
@@ -187,7 +202,9 @@ internal fun Searches(s: SampleStrings) {
 
 @Composable
 internal fun DatePickers(s: SampleStrings) {
-    var day by remember { mutableIntStateOf(13) }
+    // B-174: the chosen day is a date, kept with its month; the month shown is another state, so the 13th chosen in
+    // November is not chosen in every month the arrows show.
+    var chosen by remember { mutableStateOf(SampleDate(2026, 11, 13)) }
     var month by remember { mutableIntStateOf(11) }
     var year by remember { mutableIntStateOf(2026) }
     States(s) {
@@ -195,8 +212,8 @@ internal fun DatePickers(s: SampleStrings) {
             MutantDatePicker(
                 year,
                 month,
-                day.coerceAtMost(31),
-                { day = it },
+                chosen.dayIn(year, month),
+                { chosen = SampleDate(year, month, it) },
                 { y, m ->
                     year = y
                     month = m
@@ -222,4 +239,17 @@ internal fun TimePickers(s: SampleStrings) {
             }, hourLabel = s.hours, minuteLabel = s.minutes)
         }
     }
+}
+
+/** A chosen day with its month and year, as a date picker's caller keeps it. */
+internal data class SampleDate(
+    val year: Int,
+    val month: Int,
+    val day: Int,
+) {
+    /** The day to show chosen in [year] and [month]: this one's, in its own month only. */
+    fun dayIn(
+        year: Int,
+        month: Int,
+    ): Int? = day.takeIf { year == this.year && month == this.month }
 }

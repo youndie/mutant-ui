@@ -30,13 +30,20 @@ import io.github.youndie.mutant.tokens.MutantPalettes
 
 // The sections of Foundations, in the catalogue's order (`SpecCatalogue.kt`); `ComponentsPage` lays them out.
 
-/** Each palette under its own theme, on its own ground. */
+/** Each palette under its own theme, on its own ground, keeping the header's switches (B-174). */
 @Composable
 internal fun Themes(s: SampleStrings) {
+    val header = LocalSampleSettings.current
     Variants(s) {
         for ((name, colors) in listOf(s.themeEfir to MutantPalettes.Efir, s.themeKopiya to MutantPalettes.Kopiya)) {
             Cell(name, CARD) {
-                MutantTheme(colors = colors) {
+                MutantTheme(
+                    colors = colors,
+                    reduceMotion = MutantTheme.reduceMotion,
+                    cleanSignal = MutantTheme.cleanSignal,
+                    steppedMotion = header.steppedMotion,
+                    mosaicPastContour = header.mosaicPastContour,
+                ) {
                     MutantScreenClock {
                         Column(
                             Modifier.fillMaxWidth().background(MutantTheme.colors.page).padding(16.dp),

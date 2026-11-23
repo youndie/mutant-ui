@@ -20,6 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantBadge
 import io.github.youndie.mutant.components.MutantButton
@@ -94,7 +97,15 @@ internal fun Snackbars(s: SampleStrings) {
     TryIt(s) {
         Column(Modifier.width(BAR), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             MutantTextButton(s.showSnackbar, { shown = true }, key = "show-snack")
-            Box(Modifier.fillMaxWidth().height(56.dp)) {
+            // The kit leaves hiding the ride to its holder: the bar rides its height and 8 dp below its place (B-26), the
+            // holder's 56 dp, so the holder's foot is where the screen's would be (B-174).
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .snackHolderFoot()
+                    .testTag("snack-holder"),
+            ) {
                 MutantSnackbar(s.queued, visible = shown, actionLabel = s.undo, onAction = { shown = false })
             }
         }
@@ -178,3 +189,17 @@ internal fun Pulls(s: SampleStrings) {
         }
     }
 }
+
+/**
+ * Cuts what is drawn below this element's foot, as a screen's bottom edge cuts a snackbar riding off it; above and to
+ * the sides nothing is cut, so the bar's shadow and drips at rest stay whole.
+ */
+private fun Modifier.snackHolderFoot(): Modifier =
+    drawWithContent {
+        clipRect(-SNACK_HOLDER_REACH, -SNACK_HOLDER_REACH, size.width + SNACK_HOLDER_REACH, size.height) {
+            this@drawWithContent.drawContent()
+        }
+    }
+
+/** How far past the holder's sides and top its clip reaches: past anything the bar draws there. */
+private const val SNACK_HOLDER_REACH = 10_000f

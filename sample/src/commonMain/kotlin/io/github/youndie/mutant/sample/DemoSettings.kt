@@ -55,7 +55,10 @@ internal fun Settings(
     var picture by rememberSaveable { mutableIntStateOf(0) }
     var sleep by rememberSaveable { mutableIntStateOf(0) }
     var timer by remember { mutableStateOf(false) }
+    // B-174: the timer's day is kept with its month and year; the calendar's month is only where it stands.
     var day by rememberSaveable { mutableIntStateOf(24) }
+    var dayMonth by rememberSaveable { mutableIntStateOf(11) }
+    var dayYear by rememberSaveable { mutableIntStateOf(2026) }
     var month by rememberSaveable { mutableIntStateOf(11) }
     var year by rememberSaveable { mutableIntStateOf(2026) }
     var hour by rememberSaveable { mutableIntStateOf(2) }
@@ -111,7 +114,7 @@ internal fun Settings(
                 Spacer(Modifier.height(16.dp))
                 MutantListItem(
                     s.timerRecording,
-                    supporting = s.timerLine(day, month, hour, minute),
+                    supporting = s.timerLine(day, dayMonth, hour, minute),
                     leadingIcon = MutantIcons.Schedule,
                     onClick = { timer = true },
                     key = "demo-timer",
@@ -132,14 +135,20 @@ internal fun Settings(
             MutantDatePicker(
                 year,
                 month,
-                day,
-                { day = it },
+                SampleDate(dayYear, dayMonth, day).dayIn(year, month),
+                {
+                    day = it
+                    dayMonth = month
+                    dayYear = year
+                },
                 { y, m ->
                     year = y
                     month = m
                 },
                 monthNames = s.monthNames,
                 weekdayNames = s.weekdayNames,
+                previousLabel = s.previousMonth,
+                nextLabel = s.nextMonth,
                 key = "demo-cal",
             )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -151,7 +160,14 @@ internal fun Settings(
                 MutantButton(s.done, { timer = false }, key = "timer-done")
             }
         }
-        MutantDialog(nav.erasing, s.eraseQuestion, { nav.erasing = false }, text = s.eraseNamed) {
+        // B-174: the dialog stands open as the screen opens, so no control opened it; the focus goes to the screen's first.
+        MutantDialog(
+            nav.erasing,
+            s.eraseQuestion,
+            { nav.erasing = false },
+            text = s.eraseNamed,
+            returnFocusTo = nav.menu,
+        ) {
             MutantDialogAction(s.cancel, { nav.erasing = false })
             MutantDialogAction(s.erase, { nav.erasing = false }, primary = true)
         }

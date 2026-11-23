@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantButton
 import io.github.youndie.mutant.components.MutantDrawerItem
@@ -76,7 +78,7 @@ internal fun Drawers(s: SampleStrings) {
     var open by remember { mutableStateOf(false) }
     States(s) {
         Cell(s.stOpen, STAGE_W) {
-            Stage(STAGE_W, 320.dp) {
+            Stage(STAGE_W, 320.dp, still = true) {
                 MutantNavigationDrawer(
                     true,
                     {},
@@ -89,9 +91,13 @@ internal fun Drawers(s: SampleStrings) {
             }
         }
     }
+    // B-174: once the drawer has gone, the focus goes back to the button that opened it.
+    val opener = remember { FocusRequester() }
     TryIt(s) {
         Stage(STAGE_W, 320.dp) {
-            Box(Modifier.padding(16.dp)) { MutantButton(s.openDrawer, { open = true }, key = "open-drawer") }
+            Box(Modifier.padding(16.dp)) {
+                MutantButton(s.openDrawer, { open = true }, Modifier.focusRequester(opener), key = "open-drawer")
+            }
             MutantNavigationDrawer(
                 open,
                 { open = false },
@@ -102,6 +108,7 @@ internal fun Drawers(s: SampleStrings) {
                     open = false
                 },
                 title = s.channels,
+                returnFocusTo = opener,
                 key = "sample-drawer",
             )
         }

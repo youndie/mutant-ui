@@ -19,6 +19,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantDataTable
 import io.github.youndie.mutant.components.MutantDialog
@@ -45,6 +50,10 @@ internal fun Search(
     val selected = remember { mutableStateListOf<Int>() }
     var erasing by remember { mutableStateOf(false) }
     var sorting by remember { mutableStateOf(false) }
+    // B-174: the dialog gives the focus back to the button that opened it, or, once the erase has left nothing to erase
+    // and the button is disabled, to the sort button beside the table.
+    val eraseButton = remember { FocusRequester() }
+    val sortButton = remember { FocusRequester() }
     var order by rememberSaveable { mutableIntStateOf(0) }
     val rows =
         when (order) {
@@ -105,12 +114,29 @@ internal fun Search(
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Osd(s.archiveWord, MutantTheme.colors.textSecondary, size = 18)
                     Spacer(Modifier.weight(1f))
-                    Box {
-                        MutantTextButton(s.sortBy(order), { sorting = true }, key = "demo-sort")
-                        MutantMenu(sorting, { sorting = false }, s.sortOrders, order, {
-                            order = it
-                            sorting = false
-                        }, key = "demo-sort-menu")
+                    // B-174: the menu stands from the button's end, inside the screen; from its start, at the screen's
+                    // right, its 216 dp ran past the phone.
+                    var sortWidth by remember { mutableStateOf(0.dp) }
+                    val density = LocalDensity.current
+                    Box(Modifier.onSizeChanged { sortWidth = with(density) { it.width.toDp() } }) {
+                        MutantTextButton(
+                            s.sortBy(order),
+                            { sorting = true },
+                            Modifier.focusRequester(sortButton),
+                            key = "demo-sort",
+                        )
+                        MutantMenu(
+                            sorting,
+                            { sorting = false },
+                            s.sortOrders,
+                            order,
+                            {
+                                order = it
+                                sorting = false
+                            },
+                            offset = DpOffset(sortWidth - SORT_MENU_WIDTH, SORT_MENU_TOP),
+                            key = "demo-sort-menu",
+                        )
                     }
                 }
                 Spacer(Modifier.height(12.dp))
@@ -128,18 +154,27 @@ internal fun Search(
                         if (on) selected += at else selected -= at
                     },
                     key = "demo-row",
+                    // B-174: a sort moves each row's box, its pour and its slime with the record, not the place.
+                    rowKey = { it.title },
                 )
                 Spacer(Modifier.height(20.dp))
                 MutantOutlinedButton(
                     s.eraseSelected(selected.size),
                     { erasing = true },
+                    Modifier.focusRequester(eraseButton),
                     enabled = selected.isNotEmpty(),
                     key = "demo-erase",
                 )
             }
         }
         bar()
-        MutantDialog(erasing, s.eraseQuestion, { erasing = false }, text = s.eraseText) {
+        MutantDialog(
+            erasing,
+            s.eraseQuestion,
+            { erasing = false },
+            text = s.eraseText,
+            returnFocusTo = if (selected.isEmpty()) sortButton else eraseButton,
+        ) {
             MutantDialogAction(s.cancel, { erasing = false })
             MutantDialogAction(s.erase, {
                 selected.clear()
@@ -148,3 +183,7 @@ internal fun Search(
         }
     }
 }
+
+/** The kit's menu, as its KDoc gives it: 216 dp wide, standing 50 dp under its parent's top. */
+private val SORT_MENU_WIDTH = 216.dp
+private val SORT_MENU_TOP = 50.dp

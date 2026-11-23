@@ -15,6 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantBottomSheet
 import io.github.youndie.mutant.components.MutantButton
@@ -32,7 +34,7 @@ internal fun Dialogs(s: SampleStrings) {
     var open by remember { mutableStateOf(false) }
     States(s) {
         Cell(s.stOpen, STAGE_W) {
-            Stage(STAGE_W, 300.dp) {
+            Stage(STAGE_W, 300.dp, still = true) {
                 MutantDialog(true, s.eraseQuestion, {}, text = s.eraseText) {
                     MutantDialogAction(s.cancel, {})
                     MutantDialogAction(s.erase, {}, primary = true)
@@ -40,6 +42,8 @@ internal fun Dialogs(s: SampleStrings) {
             }
         }
     }
+    // B-174: once the dialog has gone, the focus goes back to the button that opened it.
+    val opener = remember { FocusRequester() }
     TryIt(s) {
         Stage(STAGE_W, 300.dp) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -47,9 +51,9 @@ internal fun Dialogs(s: SampleStrings) {
                     MutantCardTitle(s.untitled)
                     MutantCardSubtitle(s.sideA)
                 }
-                MutantButton(s.openDialog, { open = true }, key = "open-dialog")
+                MutantButton(s.openDialog, { open = true }, Modifier.focusRequester(opener), key = "open-dialog")
             }
-            MutantDialog(open, s.eraseQuestion, { open = false }, text = s.eraseText) {
+            MutantDialog(open, s.eraseQuestion, { open = false }, text = s.eraseText, returnFocusTo = opener) {
                 MutantDialogAction(s.cancel, { open = false })
                 MutantDialogAction(s.erase, { open = false }, primary = true)
             }
@@ -73,7 +77,7 @@ internal fun Sheets(s: SampleStrings) {
         }
     States(s) {
         Cell(s.stOpen, STAGE_W) {
-            Stage(STAGE_W, 320.dp) {
+            Stage(STAGE_W, 320.dp, still = true) {
                 MutantBottomSheet(true, {}, windowInsets = WindowInsets(0), key = "spec-sheet") {
                     Osd(s.speed, size = 16)
                     MutantSegmentedButton(speeds, speed, { speed = it }, Modifier.fillMaxWidth(), key = "sheet-speed")

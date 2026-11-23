@@ -23,24 +23,12 @@ class SampleStrings(
     val cleanSignal = t("Clean signal", "Чистый сигнал")
     val steppedMotion = t("Stepped motion", "Движение рывками")
     val steppedMotionTitle = t("Motion as the design steps it", "Движение, как в дизайне")
-    val steppedMotionHint =
-        t(
-            "On, transitions move 12 times a second, the venom 24, the Tape's band and noise 8, as the " +
-                "design's engine draws them. Off, they move on every frame. The boil, the drips and the Tape's " +
-                "grain keep their own tick either way.",
-            "Включено — переходы сменяются 12 раз в секунду, venom 24, полоса и рябь ленты 8, как их рисует движок " +
-                "дизайна. Выключено — движутся каждый кадр. Кипение, капли и зерно ленты в любом случае идут своим " +
-                "тиком.",
-        )
+
+    // B-174: a hint is one line, no wider than its title (the tooltip never wraps, B-32); the long sentence ran 1 405 dp.
+    val steppedMotionHint = t("On: 12 steps a second, as drawn", "Вкл.: 12 шагов в секунду")
     val mosaicPastContour = t("Mosaic past the edge", "Мозаика за контуром")
-    val mosaicPastContourTitle = t("An experiment, B-137", "Эксперимент, B-137")
-    val mosaicPastContourHint =
-        t(
-            "On, the edge mosaic's blocks cross the outline and stand outside the body. Off, they stay inside it, as " +
-                "the design draws them.",
-            "Включено — блоки мозаики края перекрывают обводку и выходят за тело. Выключено — остаются внутри, как в " +
-                "дизайне.",
-        )
+    val mosaicPastContourTitle = t("Mosaic past the outline, B-137", "Мозаика за обводкой, B-137")
+    val mosaicPastContourHint = t("On: blocks cross the outline", "Вкл.: блоки поверх обводки")
     val pageComponents = t("Components", "Компоненты")
     val pageDemo = t("Demo", "Демо")
 
