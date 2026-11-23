@@ -70,3 +70,6 @@ density-2 frame against the density-1 frame, and each in a 120 dp slot (`/privat
 - Tests, in `IllustrationBehaviourTest`: the reels (in «Эфир») and the rods (in «Копия») scale with the density, each
   edge within 2 px of density 1's times it (measured: 0.9 px and 1.5 px at most); an illustration in a 120 dp slot
   draws the same picture, to the pixel, as in one of its width centred at the same place.
+- Mutants, each failing its aimed test: the reels drawn without the scale (the left reel at density 2 drawn 104–130 px
+  across, density 1's times 2 is 104–156); the rods without it (the left rod's box 120–140 × 8–38 px against 158–178 ×
+  14–44); the art sized by `size` again (28 874 pixels differ between the 120 dp slot and the art's width).
