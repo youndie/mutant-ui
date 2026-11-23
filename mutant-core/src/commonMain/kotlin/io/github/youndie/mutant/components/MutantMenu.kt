@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -11,8 +12,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -49,6 +53,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -57,14 +63,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.VenomShapes
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
+import io.github.youndie.mutant.surface.HeatMachine
+import io.github.youndie.mutant.surface.LocalCleanZone
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.drawVenomFill
@@ -126,9 +138,15 @@ public fun MutantDropdown(
  * no venom; a window shown again arrives at once.
  * A row is its whole target, 36 dp tall: an owner-named exception to the 48 dp rule (research D19).
  * The chosen row (or the first) takes the keys as the menu opens. Up and Down move the keyboard's focus from row to
- * row, wrapping, Enter or Space picks, Escape and a press outside go to [onDismissRequest]. A press, Enter or Space on
- * the chosen row hands nothing to [onSelect], as the page's menu ignores it: a caller that closes its menu on a pick is
- * not closed by picking the row already chosen.
+ * row, wrapping, and the column scrolls to the row they reach; Enter or Space picks, Escape and a press outside go to
+ * [onDismissRequest]. A press, Enter or Space on the chosen row hands it to [onSelect] too, so a caller that closes its
+ * menu on a pick is closed by it; nothing pours, and the window gets a heat impulse of 0.8 (the designer's answer 39,
+ * B-201; the page's menu ignored the press).
+ *
+ * Where the menu has no room under its anchor it opens above it, 18 dp clear of it for its drips, never over it; one
+ * taller than the window stands 16 dp from its top and 34 dp from its foot (16 and the drips' 18), and its rows scroll
+ * (the designer's answer 28, B-201). Where it fits neither under nor above, it keeps to those margins on the side with
+ * more room. Across, it stands [offset] from its parent's start, moved in to fit the window.
  */
 @Composable
 public fun MutantMenu(
@@ -147,8 +165,15 @@ public fun MutantMenu(
         with(
             androidx.compose.ui.platform.LocalDensity.current,
         ) { IntOffset(offset.x.roundToPx(), offset.y.roundToPx()) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val placement =
+        remember(dy, density) {
+            with(density) {
+                MenuPlacement(dy, OVERHANG.dp.roundToPx(), MENU_EDGE_TOP.dp.roundToPx(), MENU_EDGE_FOOT.dp.roundToPx())
+            }
+        }
     Popup(
-        offset = dy,
+        popupPositionProvider = placement,
         onDismissRequest = onDismissRequest,
         properties = PopupProperties(focusable = true),
     ) {
@@ -156,7 +181,7 @@ public fun MutantMenu(
             items,
             selectedIndex,
             onSelect,
-            modifier.onPreviewKeyEvent {
+            modifier.menuWithinWindow().onPreviewKeyEvent {
                 if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 if (it.key != Key.Escape) return@onPreviewKeyEvent false
                 dismiss()
@@ -165,6 +190,7 @@ public fun MutantMenu(
             key,
             "$key-pill",
             focusOnOpen = true,
+            scrolls = true,
         )
     }
 }
@@ -238,7 +264,11 @@ private fun ChipLike(
     }
 }
 
-/** The menu's body and rows, drawn in place; [hidden] draws its words and mark transparent for a bare twin. */
+/**
+ * The menu's body and rows, drawn in place; [hidden] draws its words and mark transparent for a bare twin. [scrolls]
+ * puts the rows in a scrolling column, for a body that [modifier] may hold shorter than its rows (the popup's, B-201).
+ * [plate] is the window's heat, which a press on the chosen row kicks.
+ */
 @Composable
 internal fun MenuBody(
     items: List<String>,
@@ -249,6 +279,8 @@ internal fun MenuBody(
     pillKey: String,
     hidden: Boolean = false,
     focusOnOpen: Boolean = false,
+    scrolls: Boolean = false,
+    plate: HeatMachine = remember { HeatMachine() },
 ) {
     val colors = MutantTheme.colors
     val clock = readMutantClock()
@@ -306,19 +338,8 @@ internal fun MenuBody(
             focus.getOrNull(if (chosen) selectedIndex else 0)?.requestFocus()
         }
     }
-    MutantSurface(
-        MutantBody.Btn,
-        key,
-        modifier.width(WIDTH.dp).selectableGroup(),
-        fill = colors.surface,
-        profile =
-            MutantBody.Btn.profile.with(
-                radius = RADIUS,
-                overhang = OVERHANG,
-                dripShare = DRIP_SHARE,
-                marks = false,
-            ),
-    ) {
+    val scroll = if (scrolls) rememberScrollState() else null
+    val column: @Composable () -> Unit = {
         Layout(
             content = {
                 Canvas(Modifier.fillMaxSize()) {
@@ -359,6 +380,7 @@ internal fun MenuBody(
                             Modifier.fillMaxSize().mutantCleanZone(),
                             calm = PILL_CALM,
                             profile = MutantBody.Pill.profile.with(radius = PILL_RADIUS),
+                            heatMachine = plate,
                         ) {
                             Box(
                                 Modifier.fillMaxSize().padding(start = MARK_START.dp),
@@ -395,7 +417,11 @@ internal fun MenuBody(
                             focus[to].requestFocus()
                             true
                         }
-                    MenuRow(text, i, run, shown, word, hidden, moves, ink, slime) { select(i) }
+                    MenuRow(text, i, run, shown, word, hidden, moves, ink, slime, scroll) {
+                        // The chosen row answers too, with no pour: its window takes a heat impulse (B-201).
+                        if (i == shown) plate.impulse(clock.nowMs, MENU_PLATE_IMPULSE)
+                        select(i)
+                    }
                 }
             },
         ) { measurables, c ->
@@ -440,6 +466,21 @@ internal fun MenuBody(
             }
         }
     }
+    MutantSurface(
+        MutantBody.Btn,
+        key,
+        modifier.width(WIDTH.dp).selectableGroup(),
+        fill = colors.surface,
+        profile =
+            MutantBody.Btn.profile.with(
+                radius = RADIUS,
+                overhang = OVERHANG,
+                dripShare = DRIP_SHARE,
+                marks = false,
+            ),
+    ) {
+        if (scroll != null) Box(Modifier.verticalScroll(scroll)) { column() } else column()
+    }
 }
 
 @Composable
@@ -453,6 +494,7 @@ private fun MenuRow(
     moves: Modifier,
     ink: MenuWordInk,
     slime: DrawScope.(Double, VenomShapes) -> Unit,
+    scroll: ScrollState?,
     onPick: () -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -477,9 +519,8 @@ private fun MenuRow(
                     }
                 }
             }.mutantHand(true)
-            .selectable(index == selectedIndex, source, indication = null, role = Role.DropdownList) {
-                if (index != selectedIndex) onPick()
-            }.drawWithContent {
+            .selectable(index == selectedIndex, source, indication = null, role = Role.DropdownList, onClick = onPick)
+            .drawWithContent {
                 // Through a run the row is drawn twice: its word black where the slime lies under it, in the text's
                 // colour elsewhere, so it turns as the lime reaches it (B-168; the page turns the words on a 340 ms
                 // timer, which leaves pale words on the passing lime and a black one on the dark body).
@@ -514,7 +555,7 @@ private fun MenuRow(
     ) {
         MutantText(
             text,
-            Modifier.mutantCleanZone(),
+            Modifier.menuCleanZone(scroll),
             style = style,
             maxLines = 1,
             softWrap = false,
@@ -529,6 +570,91 @@ private fun MenuRow(
                 }
             },
         )
+    }
+}
+
+/**
+ * A word's clean zone. In a scrolling column it is where the word stands with the column unscrolled, cut to the body:
+ * the body is built for its first screenful of words and is not rebuilt as the rows scroll under it (B-201). Unscrolled
+ * and inside the body, which is every menu that fits, that is the word's own bounds, as [mutantCleanZone] marks them.
+ */
+private fun Modifier.menuCleanZone(scroll: ScrollState?): Modifier =
+    if (scroll == null) {
+        mutantCleanZone()
+    } else {
+        composed {
+            val registry = LocalCleanZone.current ?: return@composed this
+            val id = remember { Any() }
+            androidx.compose.runtime.DisposableEffect(registry) { onDispose { registry.bounds.remove(id) } }
+            onGloballyPositioned { c ->
+                val s = registry.surface ?: return@onGloballyPositioned
+                if (!s.isAttached || !c.isAttached) return@onGloballyPositioned
+                val at = s.localBoundingBoxOf(c, clipBounds = false).translate(0f, scroll.value.toFloat())
+                val cut = at.intersect(Rect(0f, 0f, s.size.width.toFloat(), s.size.height.toFloat()))
+                if (cut.isEmpty) {
+                    registry.bounds.remove(id)
+                } else if (registry.bounds[id] != cut) {
+                    registry.bounds[id] = cut
+                }
+            }
+        }
+    }
+
+/**
+ * Holds the popup's body to the window less its margins, 16 dp at the top and 34 dp at the foot (the designer's answer
+ * 28, B-201): a taller menu scrolls its rows.
+ */
+private fun Modifier.menuWithinWindow(): Modifier =
+    layout { m, c ->
+        val room =
+            if (c.hasBoundedHeight) {
+                (c.maxHeight - (MENU_EDGE_TOP + MENU_EDGE_FOOT).dp.roundToPx()).coerceAtLeast(c.minHeight)
+            } else {
+                Constraints.Infinity
+            }
+        val p = m.measure(c.copy(maxHeight = room))
+        layout(p.width, p.height) { p.place(0, 0) }
+    }
+
+/**
+ * Where the menu's popup stands (the designer's answer 28, B-201): [offset] under its anchor's top while it fits above
+ * the window's foot margin; else on the side with more room, above its anchor [gap] clear of it (the drips hang there),
+ * held inside both margins: a menu that fits above stands there whole. Across, [offset] from the anchor's start,
+ * mirrored right to left, moved in to fit the window.
+ */
+private class MenuPlacement(
+    private val offset: IntOffset,
+    private val gap: Int,
+    private val top: Int,
+    private val foot: Int,
+) : PopupPositionProvider {
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize,
+    ): IntOffset {
+        val w = popupContentSize.width
+        val h = popupContentSize.height
+        val start =
+            if (layoutDirection == LayoutDirection.Ltr) {
+                anchorBounds.left + offset.x
+            } else {
+                anchorBounds.right - w - offset.x
+            }
+        val x = start.coerceIn(0, maxOf(0, windowSize.width - w))
+        val below = anchorBounds.top + offset.y
+        val above = anchorBounds.top - gap - h
+        val floor = windowSize.height - foot
+        val y =
+            if (below + h <= floor) {
+                below
+            } else {
+                // Above where it has more room there than under, as it has whenever it fits there; inside the margins.
+                val up = anchorBounds.top - gap - top > floor - below
+                (if (up) above else below).coerceIn(top, maxOf(top, floor - h))
+            }
+        return IntOffset(x, y)
     }
 }
 
@@ -562,6 +688,13 @@ private const val INSET = 6
 private const val ROW = 36
 private const val ROW_WIDTH = 204
 private const val MENU_TOP = 50
+
+/** B-201, the designer's answer 28: the window's margins round a popup menu, the foot's holding its 18 dp drips. */
+private const val MENU_EDGE_TOP = 16
+private val MENU_EDGE_FOOT = MENU_EDGE_TOP + OVERHANG.toInt()
+
+/** B-201, the designer's answer 39: the heat a press on the chosen row gives its window. */
+private const val MENU_PLATE_IMPULSE = .8
 
 /** The ladder: the first word 30 dp in, each next 8 dp further (`padding-left: 30px … 54px`), repeating every four. */
 private const val STEP_START = 30

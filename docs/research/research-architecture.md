@@ -638,6 +638,8 @@ The owner brought the designer's answers to [B-168](../backlog/B-168-look-and-mo
 
 A hover's look (answer 16, [B-193](../backlog/B-193-hover-keeps-the-fill.md)) replaces B-63's simmer: the fill stays as it is, and only the outline trembles harder, as heat 0.25 draws it, with no amber, no bubbles, no held drops and no running mosaic. A body's heat is two: a press's, which the fill, the bubbles, the held drops and the running mosaic follow, and the tremble's, the higher of the press's and the hover's.
 
+A heat impulse (answers 4 and 39) is `HeatMachine.impulse`: the press's heat stands at the impulse's value in the event's frame, where it stood lower, and cools from there at the release's rate; under the pause it does nothing, the body as it was being the finished frame. A surface takes a machine its owner drives through `MutantSurface(heatMachine = …)`; the menu's window was the first ([B-201](../backlog/B-201-the-menu-at-the-edges-and-its-chosen-row.md)).
+
 Where an answer counts the steps of a movement (the slider's settle «330 мс … 4 шага», answer 4), those are the steps `steppedMotion = true` draws; by default the movement runs on every frame, as D22 says for every other transition. That is this repository's reading of the answer, not the designer's word, and its items say so.
 
 The keyframe loss and a screen change (answer 24, [B-198](../backlog/B-198-the-keyframe-loss-ends-on-a-screen-change.md)): the kit learns of a screen change from a key the consumer passes, `MutantKeyframeLoss(screen = …)`, until a screen host (B-180) passes its own; on a change the loss ends at once and none starts for 1 s. A scroll is not a screen change. The tracking dividers are bodies of the loss's scene.
