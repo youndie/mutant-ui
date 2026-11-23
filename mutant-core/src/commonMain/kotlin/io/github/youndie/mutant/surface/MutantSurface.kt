@@ -94,7 +94,8 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * once under reduce motion. [pourAt] and [slideAt] fix a progress instead (fixtures, the engine's `data-pour`,
  * `data-slide`); no fixture passes either today, and they stay because dropping them renames the content lambdas of
  * four components in the ABI dump (B-147). [probe] is told the instance each time the body's drawing is built: for
- * tests only, never for a consumer.
+ * tests only, never for a consumer. [heatMachine] is the boil's heat when the caller drives it too, as the menu gives its
+ * window a heat impulse (B-201); by default the surface keeps its own.
  */
 @Composable
 internal fun MutantSurface(
@@ -115,6 +116,7 @@ internal fun MutantSurface(
     profile: MutantProfile = body.profile,
     stroke: Color? = null,
     probe: ((io.github.youndie.mutant.gen.Instance) -> Unit)? = null,
+    heatMachine: HeatMachine? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val colors = LocalMutantColors.current
@@ -143,7 +145,8 @@ internal fun MutantSurface(
     val offFrame = LocalMutantBuildOffFrame.current && !clock.frozen && !LocalInspectionMode.current
     // B-84: a running body's webs follow its drips, not the boil; a still keeps the engine's field.
     val steadyWebs = !clock.frozen
-    val boil = remember { HeatMachine() }
+    val ownBoil = remember { HeatMachine() }
+    val boil = heatMachine ?: ownBoil
     if (interactionSource != null) {
         androidx.compose.runtime.LaunchedEffect(interactionSource, clock) {
             interactionSource.interactions.collect {

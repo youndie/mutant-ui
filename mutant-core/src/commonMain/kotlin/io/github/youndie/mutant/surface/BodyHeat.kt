@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.surface
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.youndie.mutant.tokens.MutantMotion
@@ -63,8 +64,14 @@ internal class HeatMachine {
     private val pressTarget: Double get() = if (on) 1.0 else 0.0
     private val hoverTarget: Double get() = if (hovered) HOVER_HEAT else 0.0
 
+    /** Counts the impulses ([impulse]), so that what reads the heat is told when one lands between ticks. */
+    private var impulses by mutableIntStateOf(0)
+
     /** A press's heat at [now]: the boil's fill, its bubbles, its held drops and its running mosaic. */
-    fun at(now: Double): Double = press.at(now, pressTarget)
+    fun at(now: Double): Double {
+        impulses
+        return press.at(now, pressTarget)
+    }
 
     /** The hover's heat at [now], for the outline's tremble alone (B-193). */
     fun hoverAt(now: Double): Double = hover.at(now, hoverTarget)
@@ -108,6 +115,20 @@ internal class HeatMachine {
         press.restart(now, pressTarget)
         on = false
         if (held) settle(now)
+    }
+
+    /**
+     * A heat impulse (the designer's answers 4 and 39, B-201): the press's heat stands at [k] at [now], where it stood
+     * lower, and from there goes where the press is going at its rates, cooling at the release's when nothing presses.
+     * Under the pause, nothing: the impulse's finished frame is the body as it was (D24).
+     */
+    fun impulse(
+        now: Double,
+        k: Double,
+    ) {
+        if (held || at(now) >= k) return
+        press.land(now, k)
+        impulses++
     }
 
     fun hover(now: Double) {
