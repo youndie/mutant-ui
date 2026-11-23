@@ -223,6 +223,8 @@ internal fun SegmentedBody(
                         val spring = if (now != null && v!!.full) venomSpring(now.first, v.vertical) else null
                         scaleX = spring?.first ?: 1f
                         scaleY = spring?.second ?: 1f
+                        // A run settling on the way to a later pick shows the window where it lands (B-172).
+                        translationX = if (now == null) 0f else geo.shift(shown, run.window, density).toFloat()
                     },
                 ) {
                     if (chosen) {
@@ -307,7 +309,7 @@ internal fun SegmentedBody(
                                         blendMode = if (pass == WordPass.OnSlime) BlendMode.DstIn else BlendMode.DstOut
                                     },
                                 )
-                                drawSlime(p, v, fillGoo, geo)
+                                drawSlime(p, v, fillGoo, geo, geo.shift(shown, run.window, density))
                                 canvas.restore()
                                 canvas.restore()
                             }
@@ -417,6 +419,13 @@ private class SegmentGeometry {
         return l to (cell * density).roundToInt()
     }
 
+    /** How far, in pixels, the window's box for segment [to] stands right of the one for segment [from]. */
+    fun shift(
+        from: Int,
+        to: Int,
+        density: Float,
+    ): Int = if (from == to || from < 0 || to < 0) 0 else box(to, density).first - box(from, density).first
+
     /** Segment [i]'s slot as the venom reads it: the engine's whole-dp box. */
     fun slot(i: Int): DoubleArray {
         val top = inset.roundToInt().toDouble()
@@ -439,20 +448,22 @@ private class WordInk {
 
 /**
  * Where the lime lies at run progress [p], as a mask: the venom's fat shapes through the goo, as the fill recorded
- * them this frame ([fillGoo]), its thin ones, and the window once it shows, springing about its middle.
+ * them this frame ([fillGoo]), its thin ones, and the window once it shows, springing about its middle, [shift] pixels
+ * right of the chosen segment's box where a run settles on the way to it.
  */
 private fun DrawScope.drawSlime(
     p: Double,
     v: VenomShapes,
     fillGoo: GraphicsLayer,
     geo: SegmentGeometry,
+    shift: Int,
 ) {
     drawLayer(fillGoo)
     scale(density, density, Offset.Zero) {
         for (t in v.thin) drawPath(t.toPath(evenOdd = false), Color.Black)
     }
     if (!v.full) return
-    val box = geo.pill
+    val box = geo.pill.translate(shift, 0)
     val spring = venomSpring(p, v.vertical)
     scale(spring?.first ?: 1f, spring?.second ?: 1f, box.center.toOffset()) {
         drawRoundRect(
