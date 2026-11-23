@@ -40,7 +40,7 @@ two seconds (125 ms) and on no frame between; the reels turn on the ticks.
   letter a line) and 240, never between the words and the art's width. The skill's rule for a form squeezed under its
   size: it keeps its size, centred, overflowing its slot.
 
-### F-empty-state-02 — the cassette's reels and the set's rods are drawn in pixels, not dp — reported (`illustration/`)
+### F-empty-state-02 — the cassette's reels and the set's rods are drawn in pixels, not dp — reported (`illustration/`), [B-170](../../docs/backlog/B-170-illustrations-drawn-in-dp.md)
 
 - **What.** `Art.reel` draws its disc and holes and `Art.television` its two rods with pixel numbers in a `Canvas`
   (`drawCircle(c.text, 13f, Offset(13f, 13f))`, `drawRect(INK, Offset(96f, 2f), Size(3f, 36f))`). At density 2 each
@@ -52,7 +52,7 @@ two seconds (125 ms) and on no frame between; the reels turn on the ticks.
 - **Why no test saw it.** `IllustrationBehaviourTest` holds a pattern at density 2, not the reel or the rods; the
   parity runs at density 1.
 
-### F-empty-state-03 — `MutantIllustration` squeezed under its width runs off to the right — reported (`illustration/`)
+### F-empty-state-03 — `MutantIllustration` squeezed under its width runs off to the right — reported (`illustration/`), [B-170](../../docs/backlog/B-170-illustrations-drawn-in-dp.md)
 
 - **What.** F-empty-state-01's cause is `IllustrationArt`'s `Modifier.size(kind.width.dp, kind.height.dp)`, which a
   smaller constraint wins over. The empty state now gives the art its size itself; `MutantIllustration` used alone in a

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,9 +57,8 @@ internal fun EmptyStateBody(
     val hidden = !parts.text
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         // Given less than the art's width, the art keeps its size and stands centred over the words, overflowing both
-        // sides alike: sized by a plain `size`, it was squeezed to the column and its bodies, placed from its left,
-        // ran off to the right alone.
-        IllustrationArt(kind, Modifier.requiredSize(kind.width.dp, kind.height.dp), parts, stage)
+        // sides alike, as `IllustrationArt` sizes itself (B-170).
+        IllustrationArt(kind, Modifier, parts, stage)
         Spacer(Modifier.height(ART_GAP))
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

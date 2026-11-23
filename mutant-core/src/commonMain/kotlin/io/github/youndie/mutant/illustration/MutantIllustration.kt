@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
@@ -13,7 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -63,7 +66,8 @@ public enum class MutantIllustrationKind(
 /**
  * One of the six illustrations at the design's size ([MutantIllustrationKind]): bodies from the generator with
  * fixed keys, so the same cassette draws the same picture everywhere, on the screen's clock. Its drips hang
- * below its bounds and take no space. The title and the line under it are the caller's (an empty state).
+ * below its bounds and take no space. The title and the line under it are the caller's (an empty state). Given less
+ * than its size, it keeps its size, centred in what it is given, and overflows both sides alike.
  */
 @Composable
 public fun MutantIllustration(
@@ -89,7 +93,11 @@ internal class IllustrationParts(
     }
 }
 
-/** The art of [kind]; [stage] seeds its bodies, its own in the kit, another page's in a fixture of that page. */
+/**
+ * The art of [kind]; [stage] seeds its bodies, its own in the kit, another page's in a fixture of that page. Given less
+ * than the art's size, the art keeps it, centred: squeezed by a plain `size`, its bodies, placed from its left, ran off
+ * to the right alone (B-170).
+ */
 @Composable
 internal fun IllustrationArt(
     kind: MutantIllustrationKind,
@@ -98,7 +106,7 @@ internal fun IllustrationArt(
     stage: String = kind.stage,
 ) {
     CompositionLocalProvider(LocalMutantStage provides stage) {
-        Box(modifier.size(kind.width.dp, kind.height.dp)) {
+        Box(modifier.requiredSize(kind.width.dp, kind.height.dp)) {
             val art = Art(LocalMutantColors.current, parts)
             when (kind) {
                 MutantIllustrationKind.Cassette -> art.cassette()
@@ -229,7 +237,7 @@ private class Art(
         }
     }
 
-    /** A take-up reel: 26 dp in the text's colour with three holes, turning 30° a scene tick. */
+    /** A take-up reel: 26 dp in the text's colour with three holes, turning 30° a scene tick, drawn in dp. */
     @Composable
     fun reel(
         x: Int,
@@ -247,9 +255,11 @@ private class Art(
         ) {
             if (!parts.kept) return@Canvas
             val turn = (clock.sceneTick * REEL_STEP % 360).toFloat()
-            rotate(turn, Offset(13f, 13f)) {
-                drawCircle(c.text, 13f, Offset(13f, 13f))
-                for ((hx, hy) in REEL_HOLES) drawCircle(c.background, 3f, Offset(hx + 3f, hy + 3f))
+            illustrationInDp {
+                rotate(turn, Offset(13f, 13f)) {
+                    drawCircle(c.text, 13f, Offset(13f, 13f))
+                    for ((hx, hy) in REEL_HOLES) drawCircle(c.background, 3f, Offset(hx + 3f, hy + 3f))
+                }
             }
         }
     }
@@ -268,8 +278,10 @@ private class Art(
         }
         // The rods stand over the set's body, as the page's DOM draws over the stage's layer of bodies.
         Canvas(Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).size(220.dp, 176.dp)) {
-            rotate(-30f, Offset(97.5f, 38f)) { drawRect(INK, Offset(96f, 2f), Size(3f, 36f)) }
-            rotate(34f, Offset(119.5f, 38f)) { drawRect(INK, Offset(118f, 2f), Size(3f, 36f)) }
+            illustrationInDp {
+                rotate(-30f, Offset(97.5f, 38f)) { drawRect(INK, Offset(96f, 2f), Size(3f, 36f)) }
+                rotate(34f, Offset(119.5f, 38f)) { drawRect(INK, Offset(118f, 2f), Size(3f, 36f)) }
+            }
         }
     }
 
@@ -372,6 +384,15 @@ private class Art(
             )
         }
     }
+}
+
+/**
+ * Draws [block] in dp, the page's numbers as they stand, by one scale about the canvas's origin (B-170): drawn in
+ * pixels, a reel was half its size at density 2 and the set's rods half their length, at half their place. The parts
+ * drawn so are fills, with no stroke for the scale to thicken; at density 1 the scale is the identity.
+ */
+private inline fun DrawScope.illustrationInDp(block: DrawScope.() -> Unit) {
+    scale(density, density, Offset.Zero) { block() }
 }
 
 /** A body with neither flow lines nor edge mosaic (`data-marks="0" data-edge="0"`) and the numbers given. */
