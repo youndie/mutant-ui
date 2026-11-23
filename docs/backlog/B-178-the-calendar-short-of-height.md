@@ -60,3 +60,30 @@ left of Monday's name. Densities 1 and 2 alike (within half a dp).
     width test unchanged.
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantDatePicker.kt`,
   `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/CalendarShortOfRoomTest.kt`
+
+## Findings
+
+### 2026-11-23
+
+- **After** (`52ea1dd`), the same slots: the first week 8 dp under the weekday names at every height down to 160 dp
+  and in the 300 dp screen's sheet (the calendar 8 dp under the sheet's title, 284 × 307, running off the
+  screen's foot); at 260, 220, 180 and 142 dp wide every weekday name 36 dp and over its days, the calendar centred,
+  its sides 12, 32, 52 and 71 dp past the slot's. Densities 1 and 2 alike. The body is drawn whole at its own size.
+- `CalendarShortOfRoomTest`: 11 slots (heights 340 down to 154 at 300 wide, widths 260 down to 142, and 180 × 154) at
+  densities 1 and 2, and the sheet at both; positions to within half a dp, the drawn check exact (pixels within 3 %
+  per channel of «Эфир»'s text colour). Before the change it failed at the first squeezed slot
+  (`slot 300 × 300: the first week under the weekday names: expected 73.0, was 70.0`) and in the sheet
+  (`expected 136.0, was 95.0`).
+- With the bounds' checks switched off, the drawn check alone fails the code before as well: 14 light pixels of the
+  1st in the weekday row at 300 × 240, 7 in the sheet; and, with only the width left squeezed, 46 of the second week's
+  light pixels outside the names' span at 220 dp. It does not see the 5 dp overlap at 280 (the 1st's ink stays under
+  the names' band); the bounds do.
+- **Mutants**, each run on the committed code, the `<failure>` read from the JUnit XML, the file restored:
+  - the keeping element removed (`modifier.widthIn(…)` as before): killed, `slot 300 × 300: the first week under the
+    weekday names: expected 73.0, was 70.0`;
+  - the width left bounded (`maxWidth` as given): killed, `slot 260 × 340: day 2 under ПН: expected 96.0, was 84.0`;
+  - centred down as well as across (`requiredSize`'s placement): killed, `slot 300 × 300: the month from the slot's
+    top, as given all it wants: expected 15.0, was 12.0`, and in the sheet `the month at 37.0, the title's foot at 55.0`.
+- **Gate** on `52ea1dd`, read from fresh JUnit XML: `:mutant-core:desktopTest` 510 tests, `:sample:desktopTest` 38,
+  no failure or error; `DatePickerParityTest`, the date picker's goldens and B-150's width test among them, unchanged;
+  `ktlintCheck` of both and `checkKotlinAbi` green (no public API changed); `compileKotlinIosSimulatorArm64` compiles.
