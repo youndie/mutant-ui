@@ -89,12 +89,14 @@ class PressUnderThePauseTest {
         reduceMotion: Boolean,
         label: String? = null,
         onGpu: Boolean = false,
+        warmUp: Int = WARM_UP,
     ): Film {
         var film: Film? = null
         runComposeUiTest {
             mainClock.autoAdvance = false
             var refreshing by mutableStateOf(false)
-            var paused by mutableStateOf(false)
+            // With no warm-up the pause holds from the first frame (B-208).
+            var paused by mutableStateOf(reduceMotion && warmUp == 0)
             val source = MutableInteractionSource()
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(D), LocalMutantBodyOnGpu provides onGpu) {
@@ -107,7 +109,7 @@ class PressUnderThePauseTest {
             }
             // The clock runs a while before the pause, so it stands where the resting tick and the hot one differ and a
             // drop has let go: a press drawn at the hot tick, or holding its drops, changes the shape.
-            repeat(WARM_UP) {
+            repeat(warmUp) {
                 mainClock.advanceTimeByFrame()
                 Thread.sleep(3)
             }
@@ -277,14 +279,16 @@ class PressUnderThePauseTest {
     @Test
     fun `under the pause a press on the browser's shader path is drawn by paths as a hot body is`() {
         // D23: the shader draws resting bodies only; a pressed one keeps its paths. The same press under the pause, drawn
-        // the browser's way and the desktop's, is the same picture.
+        // the browser's way and the desktop's, is the same picture. Paused from the first frame (B-208): the test draws in
+        // software, where the shader runs pixel by pixel, and 100 running frames of it took 12-15 s a film, two minutes
+        // for the test; which tick the clock stands at does not decide which way a press is drawn.
         val report = StringBuilder()
         var bad = false
         for ((theme, colors) in themes) {
             // Not the switch, whose thumb, not pressed, rests on the shader; nor the tongue, which is not at rest before.
             for (case in cases.filter { !it.refresh && it.name != "switch" }) {
-                val gpu = film(case, colors, reduceMotion = true, onGpu = true)
-                val paths = film(case, colors, reduceMotion = true, onGpu = false)
+                val gpu = film(case, colors, reduceMotion = true, onGpu = true, warmUp = 0)
+                val paths = film(case, colors, reduceMotion = true, onGpu = false, warmUp = 0)
                 val off = differing(gpu.pressed, paths.pressed)
                 report.append("${case.name}, $theme: pressed, the shader's way $off px off the paths'\n")
                 if (off != 0) bad = true
