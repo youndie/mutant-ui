@@ -31,6 +31,7 @@ import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.components.MutantDivider
 import io.github.youndie.mutant.components.MutantListItem
+import io.github.youndie.mutant.gen.moshPlan
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
@@ -233,8 +234,22 @@ class KeyframeLossScreenChangeTest {
             val on = list(d, true, .6)
             val off = list(d, false, .6)
             val dragged = on.indices.count { !rest[it] && !near(on[it], off[it]) }
-            println("DIVIDERS density $d: $dragged px of dragged strokes")
+            // Where the band lies, the dividers give way to it as a body does: their strokes at rest stand there only
+            // where the band's picture happens to hold a stroke, not whole across it.
+            val plan = moshPlan("5", 1, 250, 212)
+            val w = (250 * d).toInt()
+            val band = (plan.y0 * d).toInt() until ((plan.y0 + plan.rows * 16) * d).toInt()
+            val inBand = on.indices.filter { rest[it] && it / w in band }
+            val standing = inBand.count { !near(on[it], off[it]) }
+            println(
+                "DIVIDERS density $d: $dragged px of dragged strokes; $standing of ${inBand.size} px standing in the band",
+            )
             assertTrue(dragged > 150 * d * d, "$dragged px of the dividers' strokes off their rows at density $d")
+            assertTrue(inBand.size > 100 * d, "the band holds ${inBand.size} px of the dividers at rest")
+            assertTrue(
+                standing * 2 < inBand.size,
+                "$standing of ${inBand.size} px of the dividers stand whole over the band",
+            )
         }
     }
 }
