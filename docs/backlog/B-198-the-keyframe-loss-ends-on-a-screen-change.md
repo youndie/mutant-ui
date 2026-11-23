@@ -1,7 +1,7 @@
 ---
 id: B-198
 title: "The keyframe loss ends on a screen change and takes the dividers"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-6-later
