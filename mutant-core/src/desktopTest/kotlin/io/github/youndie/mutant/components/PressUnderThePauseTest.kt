@@ -32,6 +32,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.icons.MutantIcons
+import io.github.youndie.mutant.surface.LocalMutantBodyOnGpu
 import io.github.youndie.mutant.surface.contrast
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantColors
@@ -87,6 +88,7 @@ class PressUnderThePauseTest {
         colors: MutantColors,
         reduceMotion: Boolean,
         label: String? = null,
+        onGpu: Boolean = false,
     ): Film {
         var film: Film? = null
         runComposeUiTest {
@@ -95,7 +97,7 @@ class PressUnderThePauseTest {
             var paused by mutableStateOf(false)
             val source = MutableInteractionSource()
             setContent {
-                CompositionLocalProvider(LocalDensity provides Density(D)) {
+                CompositionLocalProvider(LocalDensity provides Density(D), LocalMutantBodyOnGpu provides onGpu) {
                     MutantTheme(colors = colors, reduceMotion = paused) {
                         Box(Modifier.size(400.dp, 200.dp).background(colors.background).testTag("stage")) {
                             Box(Modifier.padding(24.dp)) { case.content(refreshing, source) }
@@ -173,6 +175,27 @@ class PressUnderThePauseTest {
         return n
     }
 
+    /**
+     * Pixels of the outline's ink in one frame that stand clearly off it in the other: the outline moved, as a tremble or
+     * a held drop moves it. A pixel the ink only partly covers, blended with whichever fill lies under it, counts in
+     * neither frame.
+     */
+    private fun Film.outlineMoved(
+        a: PixelMap,
+        b: PixelMap,
+    ): Int {
+        var n = 0
+        val ink = colors.ink
+        for (y in 0 until a.height) {
+            for (x in 0 until a.width) {
+                val ia = near(a[x, y], ink, INK_WITHIN)
+                val ib = near(b[x, y], ink, INK_WITHIN)
+                if ((ia && !near(b[x, y], ink, FAR_FROM_INK)) || (ib && !near(a[x, y], ink, FAR_FROM_INK))) n++
+            }
+        }
+        return n
+    }
+
     /** Pixels the body covers at [a] (not the stage's ground). */
     private fun Film.body(a: PixelMap) = count(a) { !near(it, colors.background, GROUND_WITHIN) }
 
@@ -210,18 +233,21 @@ class PressUnderThePauseTest {
                 val pressed = f.amber(f.pressed)
                 val still = differing(f.pressed, f.later)
                 val moved = f.shapeMoved(f.rest, f.pressed)
+                val outline = f.outlineMoved(f.rest, f.pressed)
                 val share = moved.toDouble() / f.body(f.rest)
                 val left = f.amber(f.released) - rest
                 // The tongue's release ends refreshing: the done pill, not the rest picture, so only its amber is read.
                 val back = if (case.refresh) 0 else differing(f.rest, f.released)
                 report.append(
                     "${case.name}, $theme: amber at rest $rest, pressed $pressed; 500 ms on $still px differ; " +
-                        "shape moved $moved px (${"%.2f".format(share * 100)} % of the body); released, " +
+                        "shape moved $moved px (${"%.2f".format(
+                            share * 100,
+                        )} % of the body), outline $outline px; released, " +
                         "$back px off the rest picture and $left amber px over it\n",
                 )
                 if (pressed - rest < MIN_AMBER || still != 0 || left > 0 || back != 0) bad = true
                 // The refresh tongue is not at rest before refreshing: it has no shape to keep.
-                if (!case.refresh && share > MAX_SHAPE_MOVED) bad = true
+                if (!case.refresh && (share > MAX_SHAPE_MOVED || outline > MAX_OUTLINE_MOVED)) bad = true
             }
         }
         println(report)
@@ -243,6 +269,26 @@ class PressUnderThePauseTest {
             val c = readContrast(f.pressed, box, GROUND_LEFT * D)
             report.append("outlined button, $theme: $ground of 8 ground px amber; the label at ${"%.2f".format(c)}:1\n")
             if (ground < 8 || c < MIN_CONTRAST) bad = true
+        }
+        println(report)
+        assertTrue(!bad, report.toString())
+    }
+
+    @Test
+    fun `under the pause a press on the browser's shader path is drawn by paths as a hot body is`() {
+        // D23: the shader draws resting bodies only; a pressed one keeps its paths. The same press under the pause, drawn
+        // the browser's way and the desktop's, is the same picture.
+        val report = StringBuilder()
+        var bad = false
+        for ((theme, colors) in themes) {
+            // Not the switch, whose thumb, not pressed, rests on the shader; nor the tongue, which is not at rest before.
+            for (case in cases.filter { !it.refresh && it.name != "switch" }) {
+                val gpu = film(case, colors, reduceMotion = true, onGpu = true)
+                val paths = film(case, colors, reduceMotion = true, onGpu = false)
+                val off = differing(gpu.pressed, paths.pressed)
+                report.append("${case.name}, $theme: pressed, the shader's way $off px off the paths'\n")
+                if (off != 0) bad = true
+            }
         }
         println(report)
         assertTrue(!bad, report.toString())
@@ -297,6 +343,9 @@ class PressUnderThePauseTest {
         const val MIN_AMBER = 600
         const val MAX_SHAPE_MOVED = .01
         const val FAR_FROM_GROUND = .5f
+        const val INK_WITHIN = .3f
+        const val MAX_OUTLINE_MOVED = 20
+        const val FAR_FROM_INK = 1f
         const val MIN_CONTRAST = 3f
     }
 }
