@@ -42,7 +42,7 @@ class CalendarRunTest {
     )
 
     private fun ComposeUiTest.centreOf(day: String): Offset =
-        onNodeWithText(day, useUnmergedTree = true).getBoundsInRoot().let {
+        onNodeWithText(day).getBoundsInRoot().let {
             Offset(((it.left + it.right) / 2).value * D, ((it.top + it.bottom) / 2).value * D)
         }
 
@@ -139,6 +139,40 @@ class CalendarRunTest {
         assertTrue((first - r.new).getDistance() < 6 * D, "the first frame: $first against ${r.new}")
         assertEquals(0, r.centres.count { (it - r.new).getDistance() >= 6 * D }, "never anywhere else")
     }
+
+    @Test
+    fun `B-168 a pick while the drop runs starts the new run from where the drop stands`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var day by mutableStateOf(5)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(D)) {
+                    MutantTheme {
+                        Box(Modifier.size(330.dp, 380.dp).testTag("s")) {
+                            MutantDatePicker(2026, 11, day, { day = it }, { _, _ -> })
+                        }
+                    }
+                }
+            }
+            repeat(40) {
+                mainClock.advanceTimeByFrame()
+                Thread.sleep(3)
+            }
+            val three = centreOf("3")
+            day = 25
+            var last = limeCentre(onNodeWithTag("s").captureToImage().toPixelMap())
+            repeat(36) { f ->
+                // The second pick lands 128 ms into the first run, a little over half the way there.
+                if (f == 8) day = 3
+                mainClock.advanceTimeByFrame()
+                val at = limeCentre(onNodeWithTag("s").captureToImage().toPixelMap())
+                val step = (at - last).getDistance()
+                // An eased run moves the drop at most ~23 px a frame here; the jump back to the 25th's cell was ~85 px.
+                assertTrue(step < 30f, "frame $f: the drop leapt ${"%.0f".format(step)} px")
+                last = at
+            }
+            assertTrue((last - three).getDistance() < 6 * D, "it lands on the 3rd: $last against $three")
+        }
 
     private companion object {
         const val D = 2f

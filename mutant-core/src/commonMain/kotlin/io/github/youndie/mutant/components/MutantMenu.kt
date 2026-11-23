@@ -21,15 +21,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
@@ -53,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.gen.VenomShapes
 import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.MutantSurface
@@ -61,6 +71,7 @@ import io.github.youndie.mutant.surface.drawVenomFill
 import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.toPath
 import io.github.youndie.mutant.surface.venomSpring
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
@@ -93,7 +104,7 @@ public fun MutantDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box(modifier) {
-        DropdownAnchor(label, "$key-anchor") { expanded = !expanded }
+        DropdownAnchor(label, "$key-anchor", open = expanded) { expanded = !expanded }
         MutantMenu(
             expanded,
             { expanded = false },
@@ -110,8 +121,14 @@ public fun MutantDropdown(
  * standing [offset] from its parent's start, its [items] 36 dp tall in Handjet 20, tracked 1, each a step further in
  * than the one above (30, 38, 46, 54 dp, the ladder repeating every four). The [selectedIndex] stands in a clean
  * window (body `pill`, radius 6) with a play mark, its word in black; a new one is reached by venom, as the segmented
- * button's (B-31). A row is its whole target, 36 dp tall: an owner-named exception to the 48 dp rule (research D19).
- * Up and Down move the keyboard's focus from row to row, wrapping, Enter or Space picks, Escape and a press outside go to [onDismissRequest].
+ * button's (B-31). Through a run a word is black where the lime lies under it and in the text's colour elsewhere, so it
+ * turns as the slime reaches it (the page turns the words 340 ms in). An index outside [items] shows no window and runs
+ * no venom; a window shown again arrives at once.
+ * A row is its whole target, 36 dp tall: an owner-named exception to the 48 dp rule (research D19).
+ * The chosen row (or the first) takes the keys as the menu opens. Up and Down move the keyboard's focus from row to
+ * row, wrapping, Enter or Space picks, Escape and a press outside go to [onDismissRequest]. A press, Enter or Space on
+ * the chosen row hands nothing to [onSelect], as the page's menu ignores it: a caller that closes its menu on a pick is
+ * not closed by picking the row already chosen.
  */
 @Composable
 public fun MutantMenu(
@@ -147,6 +164,7 @@ public fun MutantMenu(
             },
             key,
             "$key-pill",
+            focusOnOpen = true,
         )
     }
 }
@@ -157,11 +175,12 @@ internal fun DropdownAnchor(
     label: String,
     key: String,
     hidden: Boolean = false,
+    open: Boolean = false,
     onClick: () -> Unit,
 ) {
     val colors = MutantTheme.colors
     val ink = if (hidden) Color.Transparent else colors.onPrimary
-    ChipLike(key, onClick) {
+    ChipLike(key, open, onClick) {
         Row(
             Modifier.padding(horizontal = ANCHOR_PADDING.dp),
             horizontalArrangement = Arrangement.spacedBy(ANCHOR_GAP.dp),
@@ -190,6 +209,7 @@ internal fun DropdownAnchor(
 @Composable
 private fun ChipLike(
     key: String,
+    open: Boolean,
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -209,7 +229,8 @@ private fun ChipLike(
             key,
             Modifier.heightIn(min = ANCHOR_HEIGHT.dp),
             fill = colors.primary,
-            focused = focused && keyboard,
+            // While its menu is open the keys are the menu's, and only the row that takes them shows it (B-168).
+            focused = focused && keyboard && !open,
             interactionSource = source,
         ) {
             Box(Modifier.heightIn(min = ANCHOR_HEIGHT.dp), contentAlignment = Alignment.CenterStart) { content() }
@@ -227,19 +248,23 @@ internal fun MenuBody(
     key: String,
     pillKey: String,
     hidden: Boolean = false,
+    focusOnOpen: Boolean = false,
 ) {
     val colors = MutantTheme.colors
     val clock = readMutantClock()
     val reduce = LocalMutantReduceMotion.current
     val cassette = LocalMutantCassette.current
     val chosen = selectedIndex in items.indices
-    val run = remember { VenomRun(selectedIndex, PILL_RADIUS) }
+    // The row the window stands on, or none: an index outside the rows shows no window and runs no venom, and a window
+    // shown again arrives at once (B-168, as the segmented button's).
+    val shown = if (chosen) selectedIndex else -1
+    val run = remember { VenomRun(shown, PILL_RADIUS) }
     run.steps = LocalMutantSteppedMotion.current
     run.key = pillKey
     run.cassette = cassette
     run.slot =
         { i -> doubleArrayOf(INSET.toDouble(), (INSET + i * ROW).toDouble(), ROW_WIDTH.toDouble(), ROW.toDouble()) }
-    run.follow(selectedIndex, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
+    run.follow(shown, clock.nowMs, still = reduce || clock.frozen || clock.paused || clock.holds > 0)
     val select by rememberUpdatedState(onSelect)
     val word =
         TextStyle(
@@ -251,7 +276,34 @@ internal fun MenuBody(
         ).cssLine(MutantFaceMetrics.Handjet, ROW.toFloat() / WORD_SIZE)
     val inkGoo = rememberGraphicsLayer()
     val fillGoo = rememberGraphicsLayer()
+    val ink = remember { MenuWordInk() }
+    // Where the lime lies at run progress p, as a mask in the body's pixels: the venom's fat shapes through the goo, as
+    // the fill recorded them this frame, its thin ones, and the window once it shows, springing about its middle.
+    val slime: DrawScope.(Double, VenomShapes) -> Unit = { p, v ->
+        drawLayer(fillGoo)
+        scale(density, density, Offset.Zero) {
+            for (t in v.thin) drawPath(t.toPath(evenOdd = false), Color.Black)
+        }
+        if (v.full && shown in ink.tops.indices) {
+            val l = ink.inset.toFloat()
+            val t = ink.tops[shown].toFloat()
+            val w = ink.rowW.toFloat()
+            val h = ink.heights[shown].toFloat()
+            val spring = venomSpring(p, v.vertical)
+            scale(spring?.first ?: 1f, spring?.second ?: 1f, Offset(l + w / 2, t + h / 2)) {
+                drawRoundRect(Color.Black, Offset(l, t), Size(w, h), CornerRadius(PILL_RADIUS.toFloat() * density))
+            }
+        }
+    }
     val focus = remember(items.size) { List(items.size) { FocusRequester() } }
+    if (focusOnOpen) {
+        // The popup takes the keys as it opens; its chosen row (or its first) takes them from it, so the arrows,
+        // Enter and Escape answer from the start rather than after a Tab (B-168).
+        LaunchedEffect(Unit) {
+            withFrameNanos { }
+            focus.getOrNull(if (chosen) selectedIndex else 0)?.requestFocus()
+        }
+    }
     MutantSurface(
         MutantBody.Btn,
         key,
@@ -268,7 +320,8 @@ internal fun MenuBody(
         Layout(
             content = {
                 Canvas(Modifier.fillMaxSize()) {
-                    val v = run.now(clock, selectedIndex)?.second ?: return@Canvas
+                    if (shown < 0) return@Canvas
+                    val v = run.now(clock, shown)?.second ?: return@Canvas
                     gooLayer(inkGoo, density)
                     drawVenomInk(
                         v,
@@ -281,7 +334,7 @@ internal fun MenuBody(
                 }
                 Box(
                     Modifier.graphicsLayer {
-                        val now = run.now(clock, selectedIndex)
+                        val now = if (shown < 0) null else run.now(clock, shown)
                         val v = now?.second
                         alpha = if (v != null && !v.full) 0f else 1f
                         val spring = if (now != null && v!!.full) venomSpring(now.first, v.vertical) else null
@@ -313,7 +366,8 @@ internal fun MenuBody(
                     }
                 }
                 Canvas(Modifier.fillMaxSize()) {
-                    val v = run.now(clock, selectedIndex)?.second ?: return@Canvas
+                    if (shown < 0) return@Canvas
+                    val v = run.now(clock, shown)?.second ?: return@Canvas
                     gooLayer(fillGoo, density)
                     drawVenomFill(v, colors.primary, fillGoo, density)
                 }
@@ -331,7 +385,7 @@ internal fun MenuBody(
                             focus[to].requestFocus()
                             true
                         }
-                    MenuRow(text, i, run, selectedIndex, word, hidden, moves) { select(i) }
+                    MenuRow(text, i, run, shown, word, hidden, moves, ink, slime) { select(i) }
                 }
             },
         ) { measurables, c ->
@@ -354,10 +408,14 @@ internal fun MenuBody(
                     )
                 }
             val h = inset * 2 + rows.sumOf { it.height }
-            val ink = measurables[0].measure(Constraints.fixed(w, h))
+            val inkLayer = measurables[0].measure(Constraints.fixed(w, h))
             val fill = measurables[2].measure(Constraints.fixed(w, h))
             var top = inset
             val tops = rows.map { r -> top.also { top += r.height } }
+            ink.inset = inset
+            ink.rowW = rowW
+            ink.tops = tops.toIntArray()
+            ink.heights = rows.map { it.height }.toIntArray()
             val pill =
                 if (chosen) {
                     measurables[1].measure(Constraints.fixed(rowW, rows[selectedIndex].height))
@@ -365,7 +423,7 @@ internal fun MenuBody(
                     measurables[1].measure(Constraints.fixed(0, 0))
                 }
             layout(w, h) {
-                ink.place(0, 0)
+                inkLayer.place(0, 0)
                 if (chosen) pill.place(inset, tops[selectedIndex])
                 fill.place(0, 0)
                 rows.forEachIndexed { i, r -> r.place(inset, tops[i]) }
@@ -383,6 +441,8 @@ private fun MenuRow(
     style: TextStyle,
     hidden: Boolean,
     moves: Modifier,
+    ink: MenuWordInk,
+    slime: DrawScope.(Double, VenomShapes) -> Unit,
     onPick: () -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -410,6 +470,29 @@ private fun MenuRow(
             .selectable(index == selectedIndex, source, indication = null, role = Role.DropdownList) {
                 if (index != selectedIndex) onPick()
             }.drawWithContent {
+                // Through a run the row is drawn twice: its word black where the slime lies under it, in the text's
+                // colour elsewhere, so it turns as the lime reaches it (B-168; the page turns the words on a 340 ms
+                // timer, which leaves pale words on the passing lime and a black one on the dark body).
+                val now = if (selectedIndex < 0 || hidden) null else run.now(clock, selectedIndex)
+                if (now == null || index !in ink.tops.indices) return@drawWithContent drawContent()
+                val bounds = Rect(Offset.Zero, size)
+                val canvas = drawContext.canvas
+                for (pass in listOf(MenuWordPass.OffSlime, MenuWordPass.OnSlime)) {
+                    ink.pass = pass
+                    canvas.saveLayer(bounds, Paint())
+                    drawContent()
+                    canvas.saveLayer(
+                        bounds,
+                        Paint().apply {
+                            blendMode = if (pass == MenuWordPass.OnSlime) BlendMode.DstIn else BlendMode.DstOut
+                        },
+                    )
+                    translate(-ink.inset.toFloat(), -ink.tops[index].toFloat()) { slime(now.first, now.second) }
+                    canvas.restore()
+                    canvas.restore()
+                }
+                ink.pass = MenuWordPass.Rest
+            }.drawWithContent {
                 drawContent()
                 if (focused && keyboard) {
                     scale(density, Offset.Zero) {
@@ -429,12 +512,26 @@ private fun MenuRow(
             color = {
                 when {
                     hidden -> Color.Transparent
-                    run.labelOn(index, clock, selectedIndex) -> colors.onPrimary
+                    ink.pass == MenuWordPass.OnSlime -> colors.onPrimary
+                    ink.pass == MenuWordPass.OffSlime -> colors.text
+                    index == selectedIndex -> colors.onPrimary
                     else -> colors.text
                 }
             },
         )
     }
+}
+
+/** Which colour the words take in the draw under way: their own at rest, or one side of the slime through a run. */
+private enum class MenuWordPass { Rest, OffSlime, OnSlime }
+
+/** The pass the words' colour reads, set by each row's draw around its passes, and where the rows stand, in pixels. */
+private class MenuWordInk {
+    var pass = MenuWordPass.Rest
+    var inset = 0
+    var rowW = 0
+    var tops = IntArray(0)
+    var heights = IntArray(0)
 }
 
 /** The window's play mark: a filled triangle (`fill="currentColor"`), not one of the kit's stroked icons. */

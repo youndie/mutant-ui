@@ -13,6 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -52,7 +54,8 @@ import kotlinx.coroutines.launch
  *
  * The design draws it shown, not appearing; this is designed here (D15). It shows at once, with no entrance, while a
  * mouse hovers the anchor, while the anchor holds keyboard focus, and after a finger's long press, until 1.5 s after it
- * lifts. Focus taken by a press shows nothing. The plate takes no input: a press through it reaches what lies under it.
+ * lifts; a finger that moves past the touch slop first (a scroll starting on the anchor) is no long press. Focus taken by
+ * a press shows nothing. The plate takes no input: a press through it reaches what lies under it.
  */
 @Composable
 public fun MutantTooltipBox(
@@ -80,6 +83,8 @@ public fun MutantTooltipBox(
             }.pointerInput(Unit) {
                 coroutineScope {
                     var lift: kotlinx.coroutines.Job? = null
+                    // Where a finger came down: past the touch slop it scrolls or drags, and is no long press.
+                    var down = Offset.Unspecified
                     awaitPointerEventScope {
                         while (true) {
                             val e = awaitPointerEvent(PointerEventPass.Initial)
@@ -97,6 +102,7 @@ public fun MutantTooltipBox(
                                     pressing = true
                                     pressed = true
                                     if (p.type == PointerType.Touch) {
+                                        down = p.position
                                         lift?.cancel()
                                         lift =
                                             launch {
@@ -106,8 +112,18 @@ public fun MutantTooltipBox(
                                     }
                                 }
 
+                                PointerEventType.Move -> {
+                                    if (pressing && !held && down.isSpecified &&
+                                        (p.position - down).getDistance() > viewConfiguration.touchSlop
+                                    ) {
+                                        lift?.cancel()
+                                        down = Offset.Unspecified
+                                    }
+                                }
+
                                 PointerEventType.Release -> {
                                     pressing = false
+                                    down = Offset.Unspecified
                                     lift?.cancel()
                                     if (held) {
                                         lift =

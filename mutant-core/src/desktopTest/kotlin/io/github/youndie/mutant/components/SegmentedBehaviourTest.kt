@@ -3,10 +3,12 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -15,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ComposeUiTest
@@ -30,6 +33,7 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantPalettes
@@ -112,12 +116,12 @@ class SegmentedBehaviourTest {
         }
 
     @Test
-    fun `the labels change colour 340 ms in`() =
+    fun `the chosen word turns black once the slime has reached it`() =
         runComposeUiTest {
             segmented()
             val text = MutantPalettes.Efir.text
 
-            // The third label's glyphs in the text's own colour: lit before the switch, none after it.
+            // The third label's glyphs in the text's own colour: lit before the lime comes, none once it lies under them.
             fun lit(): Int =
                 onNodeWithTag("s").captureToImage().toPixelMap().let { px ->
                     (232 until 296).sumOf { x -> (18 until 30).count { y -> px[x, y].near(text) } }
@@ -244,4 +248,103 @@ class SegmentedBehaviourTest {
             assertEquals(emptyList(), cut)
             onNodeWithTag("none").captureToImage()
         }
+
+    /** The lime pixels anywhere on a stage 40 dp round the button: the window's, and the venom's. */
+    private fun ComposeUiTest.limeOnStage(): Int =
+        onNodeWithTag("stage").captureToImage().toPixelMap().let { px ->
+            var n = 0
+            for (y in 0 until px.height) for (x in 0 until px.width) if (px[x, y].near(lime)) n++
+            n
+        }
+
+    @Test
+    fun `no venom runs where no window shows, disabled or at an index outside the options`() =
+        runComposeUiTest {
+            var chosen by mutableIntStateOf(0)
+            var enabled by mutableStateOf(true)
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme {
+                        Box(Modifier.testTag("stage").padding(40.dp)) {
+                            MutantSegmentedButton(options, chosen, { chosen = it }, enabled = enabled)
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(200)
+            assertTrue(limeOnStage() > 1_000, "the window at rest: ${limeOnStage()}")
+            // Disabled 240 ms into a run: the run draws nothing more.
+            chosen = 2
+            mainClock.advanceTimeBy(240)
+            enabled = false
+            mainClock.advanceTimeByFrame()
+            val disabled = (0 until 6).map { mainClock.advanceTimeBy(48).let { limeOnStage() } }
+            // Back at rest, then to one past the end and to -1: no window, and no run to a slot that is not there.
+            enabled = true
+            mainClock.advanceTimeBy(1_000)
+            chosen = 3
+            val past = (0 until 8).map { mainClock.advanceTimeBy(48).let { limeOnStage() } }
+            chosen = 0
+            mainClock.advanceTimeBy(1_000)
+            chosen = -1
+            val none = (0 until 8).map { mainClock.advanceTimeBy(48).let { limeOnStage() } }
+            assertEquals(List(6) { 0 }, disabled, "lime while disabled")
+            assertEquals(List(8) { 0 }, past, "lime after an index past the end")
+            assertEquals(List(8) { 0 }, none, "lime after an index of -1")
+        }
+
+    /** The columns of the label row (y 18…30) where a pale word's ink lies, at rest under reduce motion. */
+    private fun inkColumns(
+        direction: LayoutDirection,
+        labels: List<String> = options,
+    ): Set<Int> {
+        var columns = emptySet<Int>()
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalLayoutDirection provides direction) {
+                    MutantTheme(reduceMotion = true) {
+                        Box { MutantSegmentedButton(labels, 0, {}, Modifier.testTag("s")) }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val text = MutantPalettes.Efir.text
+            columns =
+                onNodeWithTag("s").captureToImage().toPixelMap().let { px ->
+                    (0 until px.width).filter { x -> (18 until 30).any { y -> px[x, y].near(text) } }.toSet()
+                }
+        }
+        return columns
+    }
+
+    @Test
+    fun `right to left, every word stands where it does left to right`() {
+        val ltr = inkColumns(LayoutDirection.Ltr)
+        val rtl = inkColumns(LayoutDirection.Rtl)
+        assertTrue(ltr.size > 40, "the pale words' ink: ${ltr.size} columns")
+        // Within a pixel: the line's place right to left differs by a fraction, and an edge lands on the next pixel.
+        val off = (
+            ltr.filter { x -> (x - 1..x + 1).none { it in rtl } } +
+                rtl.filter { x -> (x - 1..x + 1).none { it in ltr } }
+        )
+        assertEquals(
+            emptyList(),
+            off,
+            "columns of the pale words' ink more than a pixel from where they are left to right",
+        )
+    }
+
+    @Test
+    fun `a word wider than its segment ends inside it`() {
+        // The middle segment, 104 dp from x 108, holds a word some 160 dp long; the others are short.
+        val inks = inkColumns(LayoutDirection.Ltr, listOf("SP", "Extended play · six hours", "EP"))
+        val middle = inks.filter { it in 100 until 220 }
+        assertTrue(middle.size > 60, "the long word's ink: ${middle.size} columns")
+        assertTrue(
+            middle.min() >= 108 && middle.max() < 212,
+            "the long word's ink from ${middle.min()} to ${middle.max()}",
+        )
+    }
 }

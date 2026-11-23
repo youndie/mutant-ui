@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -17,8 +18,10 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -120,6 +123,82 @@ class MenuBehaviourTest {
             assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size)
         }
 
+    @Test
+    fun `opened from the keyboard the chosen row takes the keys - Down, Escape, and focus back on the anchor`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still { Box(Modifier.size(400.dp, 400.dp)) { MutantDropdown("Настройка", items, 1, {}) } }
+            }
+            mainClock.advanceTimeByFrame()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Настройка")).assertIsFocused()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeBy(48)
+            onNode(hasText("ЦВЕТНОСТЬ")).assertIsFocused()
+            onAllNodes(isRoot())[1].performKeyInput { pressKey(Key.DirectionDown) }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("ЧЁТКОСТЬ")).assertIsFocused()
+            onAllNodes(isRoot())[1].performKeyInput { pressKey(Key.Escape) }
+            mainClock.advanceTimeBy(48)
+            assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "Escape closes it")
+            onNode(hasText("Настройка")).assertIsFocused()
+        }
+
+    @Test
+    fun `opened by the mouse, Escape closes the menu`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still { Box(Modifier.size(400.dp, 400.dp)) { MutantDropdown("Настройка", items, 0, {}) } }
+            }
+            mainClock.advanceTimeByFrame()
+            onNode(hasText("Настройка")).performMouseInput { click() }
+            mainClock.advanceTimeBy(48)
+            assertEquals(1, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "open")
+            onAllNodes(isRoot())[1].performKeyInput { pressKey(Key.Escape) }
+            mainClock.advanceTimeBy(48)
+            assertEquals(0, onAllNodes(hasText("СБРОС")).fetchSemanticsNodes().size, "Escape closes it")
+        }
+
+    /** Pixels of the focus brackets' colour in the window's own root, round the anchor (the menu is another root). */
+    private fun androidx.compose.ui.test.ComposeUiTest.bracketsRoundAnchor(): Int {
+        val m = onAllNodes(isRoot())[0].captureToImage().toPixelMap()
+        val focus = io.github.youndie.mutant.tokens.MutantPalettes.Efir.focus
+        var n = 0
+        for (y in 0 until 60) {
+            for (x in 0 until 140) {
+                val c = m[x, y]
+                if (kotlin.math.abs(c.red - focus.red) < .05f && kotlin.math.abs(c.green - focus.green) < .05f &&
+                    kotlin.math.abs(c.blue - focus.blue) < .05f
+                ) {
+                    n++
+                }
+            }
+        }
+        return n
+    }
+
+    @Test
+    fun `while its menu is open the anchor draws no focus brackets`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                Still { Box(Modifier.size(400.dp, 400.dp)) { MutantDropdown("Настройка", items, 1, {}) } }
+            }
+            mainClock.advanceTimeByFrame()
+            val none = bracketsRoundAnchor()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Tab) }
+            mainClock.advanceTimeBy(48)
+            val focused = bracketsRoundAnchor()
+            onAllNodes(isRoot())[0].performKeyInput { pressKey(Key.Enter) }
+            mainClock.advanceTimeBy(48)
+            val open = bracketsRoundAnchor()
+            assertTrue(focused > none + 20, "the anchor's brackets when focused: $focused against $none")
+            assertTrue(open <= none + 2, "the anchor's brackets with its menu open: $open against $none")
+        }
+
     /** Acid pixels in row [row]'s band of the menu body. */
     private fun androidx.compose.ui.test.ComposeUiTest.acidInRow(row: Int): Int {
         val m = onNode(SemanticsMatcher.expectValue(SemanticsProperties.TestTag, "menu")).captureToImage().toPixelMap()
@@ -163,6 +242,65 @@ class MenuBehaviourTest {
             mainClock.advanceTimeBy(1_000)
             val settled = acidInRow(2)
             assertTrue(settled > 2_000 && early * 2 < settled, "acid in the third row: 160 ms $early, settled $settled")
+        }
+
+    /** Lime pixels anywhere in [tag]'s capture, the menu and the 40 dp round it. */
+    private fun androidx.compose.ui.test.ComposeUiTest.limeIn(tag: String): Int {
+        val m = onNode(SemanticsMatcher.expectValue(SemanticsProperties.TestTag, tag)).captureToImage().toPixelMap()
+        val acid = io.github.youndie.mutant.tokens.MutantPalettes.Efir.primary
+        var n = 0
+        for (y in 0 until m.height) {
+            for (x in 0 until m.width) {
+                val c = m[x, y]
+                if (kotlin.math.abs(c.red - acid.red) < .03f && kotlin.math.abs(c.green - acid.green) < .03f &&
+                    kotlin.math.abs(c.blue - acid.blue) < .03f
+                ) {
+                    n++
+                }
+            }
+        }
+        return n
+    }
+
+    @Test
+    fun `no venom runs where no window shows, to an index outside the rows or from one`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var selected by mutableIntStateOf(2)
+            setContent {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalDensity provides
+                        androidx.compose.ui.unit
+                            .Density(1f),
+                ) {
+                    io.github.youndie.mutant.theme.MutantTheme {
+                        Box(Modifier.testTag("stage").padding(40.dp)) {
+                            MenuBody(items, selected, { selected = it }, Modifier, "menu", "menu-pill")
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(1_000)
+            val settled = limeIn("stage")
+            val seen = mutableListOf<Int>()
+            // Past the end, then back to a row from there, then to none: no lime while no window shows, and the window
+            // whole in the first frame it shows again.
+            for (to in listOf(7, 1, -1)) {
+                selected = to
+                repeat(15) {
+                    mainClock.advanceTimeBy(48)
+                    seen += limeIn("stage")
+                }
+            }
+            val pastEnd = seen.subList(0, 15)
+            val back = seen.subList(15, 30)
+            val none = seen.subList(30, 45)
+            assertTrue(settled > 2_000, "a settled window: $settled")
+            assertTrue(pastEnd.all { it == 0 } && none.all { it == 0 }, "lime with no window shown: $pastEnd $none")
+            assertTrue(
+                back.all { kotlin.math.abs(it - settled) * 10 < settled },
+                "the window back at once: $back of $settled",
+            )
         }
 
     @Test

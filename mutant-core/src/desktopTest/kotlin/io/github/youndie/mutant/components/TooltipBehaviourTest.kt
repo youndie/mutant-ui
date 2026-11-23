@@ -2,9 +2,13 @@ package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -117,6 +121,39 @@ class TooltipBehaviourTest {
             assertTrue(shown(), "1.2 s after")
             mainClock.advanceTimeBy(500)
             assertTrue(!shown(), "1.7 s after")
+        }
+
+    @Test
+    fun `a finger scrolling the page from the anchor is no long press`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(reduceMotion = false) {
+                        Column(Modifier.size(400.dp, 300.dp).verticalScroll(rememberScrollState())) {
+                            Spacer(Modifier.height(160.dp))
+                            MutantTooltipBox("ПОДЕЛИТЬСЯ", Modifier.offset(56.dp, 0.dp).testTag("anchor")) {
+                                MutantIconButton(MutantIcons.Share, "Поделиться", {})
+                            }
+                            Spacer(Modifier.height(1000.dp))
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            val before = onNodeWithTag("anchor").fetchSemanticsNode().positionInRoot.y
+            // B-168 F-tooltip-01: 160 px over 640 ms, past the long press's timeout, the page scrolling under the finger.
+            onNodeWithTag("anchor").performTouchInput {
+                down(center)
+                repeat(40) { moveBy(Offset(0f, -4f), delayMillis = 16) }
+            }
+            mainClock.advanceTimeBy(100)
+            val scrolled = before - onNodeWithTag("anchor").fetchSemanticsNode().positionInRoot.y
+            assertTrue(scrolled > 100f, "the page scrolled under the finger: $scrolled px")
+            assertTrue(!shown(), "held, after a scroll")
+            onNodeWithTag("anchor").performTouchInput { up() }
+            mainClock.advanceTimeBy(100)
+            assertTrue(!shown(), "after the lift")
         }
 
     @Test

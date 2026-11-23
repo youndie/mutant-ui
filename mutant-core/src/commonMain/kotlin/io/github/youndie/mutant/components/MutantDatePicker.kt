@@ -30,8 +30,11 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
@@ -42,8 +45,10 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
@@ -52,12 +57,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.gen.jsToFixed
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
@@ -70,7 +79,11 @@ import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /**
  * A date picker, the recording timer's calendar: a dark `bar` (the surface's fill, radius 12, no marks) 284 dp wide,
@@ -81,7 +94,8 @@ import kotlin.math.roundToInt
  * A press on a day hands it to [onSelect]; the arrows go to [onMonthChange] with the month before or after, their
  * targets 48 dp at least. A day's cell is its whole target, 36 dp: an owner-named exception to the 48 dp rule
  * (research D19); the cells tile the grid. The arrow keys move the keyboard's focus a day or a week; Enter or Space
- * picks. The design is a still: all of this is designed here (D15), the drop standing at once on its new day.
+ * picks. The design is a still: all of this is designed here (D15). The drop runs to a new day in 330 ms (B-93), each
+ * number black where the drop covers it; a new month moves it at once. Right to left the grid mirrors with its weekdays.
  */
 @Composable
 public fun MutantDatePicker(
@@ -218,79 +232,67 @@ private fun DayGrid(
     val focus = remember(days) { List(days) { FocusRequester() } }
     val scale = androidx.compose.ui.platform.LocalDensity.current.fontScale
     // B-93: the drop runs from the day it stood on to the new one, as the navigation bar's pill does, through both axes.
-    // A new month starts it where it lands. A number is dark while the drop's middle stands within half a cell of it: the
-    // old day as the drop leaves, each day it runs over, and the new one as it arrives.
+    // A new month starts it where it lands. Each number is black where the drop is drawn under it and light where the
+    // bar is (B-168), read from the drop's place on every frame of its run.
     val clock = readMutantClock()
     val instant = LocalMutantReduceMotion.current
-    val run = remember(days, lead) { DayRun(selectedDay ?: 0) }
-    run.follow(selectedDay ?: 0, clock.nowMs)
-    val cellDp = remember { floatArrayOf(CELL.toFloat()) }
     val steps = LocalMutantSteppedMotion.current
-    val p = if (instant || run.from <= 0) 1.0 else stepped(clock.nowMs - run.since, MutantMotion.SLIDE_MS, steps)
-    if (p < 1) clock.frame
-    val left = (1 - p) * (1 - p)
-    val newAt = selectedDay?.let { lead + it - 1 } ?: -1
-    val fromAt = if (run.from in 1..days && p < 1) lead + run.from - 1 else newAt
-    // Where the drop's middle stands, in cells: the eased run's remaining share of the way from the new cell to the old.
-    val atCol = newAt % 7 + (fromAt % 7 - newAt % 7) * left
-    val atRow = newAt / 7 + (fromAt / 7 - newAt / 7) * left
+    val from = remember { DropFrom(selectedDay ?: 0, lead, days) }
+    from.follow(selectedDay ?: 0, lead, days, clock.nowMs, instant, steps)
+    val cellDp = remember { floatArrayOf(CELL.toFloat()) }
+    // Right to left the grid is mirrored with its weekday row, the drop's run and the arrow keys with it (B-168).
+    val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
+    val place = if (chosen) DropPlace(from, clock, lead + selectedDay - 1, cellDp, side, instant, steps) else null
+    val dayStyle = { weight: FontWeight, color: Color ->
+        TextStyle(
+            fontFamily = fonts?.text,
+            fontSize = DAY_SIZE.sp,
+            fontWeight = weight,
+            color = if (hidden) Color.Transparent else color,
+            textAlign = TextAlign.Center,
+            platformStyle = raster,
+        ).let {
+            // On the cell's 36 dp line at the user's own size; a larger font scale sets the number on the face's own
+            // line and the cell grows to it (as the text field's, B-61).
+            if (scale >
+                1f
+            ) {
+                it.cssLine(MutantFaceMetrics.Rubik)
+            } else {
+                it.cssLine(
+                    MutantFaceMetrics.Rubik,
+                    CELL.toFloat() / DAY_SIZE,
+                )
+            }
+        }
+    }
+    val light = dayStyle(FontWeight.Normal, colors.text)
+    val dark = dayStyle(FontWeight.Bold, colors.onPrimary)
     Layout(
         content = {
             if (chosen) {
-                val (dx, dy) =
-                    if (run.from in 1..days) {
-                        val a = lead + run.from - 1
-                        val b = lead + selectedDay - 1
-                        ((a % 7 - b % 7) * cellDp[0]).toDouble() to ((a / 7 - b / 7) * cellDp[0]).toDouble()
-                    } else {
-                        0.0 to 0.0
-                    }
                 MutantSurface(
                     MutantBody.Pill,
                     "$key-day",
                     Modifier.size(CELL.dp),
                     profile = MutantBody.Pill.profile.with(radius = DROP_RADIUS),
-                    slide = SlideRequest(selectedDay, dx, dy),
+                    slide = SlideRequest(from.run, side * from.cols * cellDp[0], from.rows * cellDp[0]),
                 ) {}
             }
             for (d in 1..days) {
                 val i = lead + d - 1
-                val on = chosen && kotlin.math.abs(i % 7 - atCol) < .5 && kotlin.math.abs(i / 7 - atRow) < .5
                 DayCell(
                     d,
-                    on,
-                    TextStyle(
-                        fontFamily = fonts?.text,
-                        fontSize = DAY_SIZE.sp,
-                        fontWeight = if (on) FontWeight.Bold else FontWeight.Normal,
-                        color =
-                            when {
-                                hidden -> Color.Transparent
-                                on -> colors.onPrimary
-                                else -> colors.text
-                            },
-                        textAlign = TextAlign.Center,
-                        platformStyle = raster,
-                    ).let {
-                        // On the cell's 36 dp line at the user's own size; a larger font scale sets the number on the
-                        // face's own line and the cell grows to it (as the text field's, B-61).
-                        if (scale >
-                            1f
-                        ) {
-                            it.cssLine(MutantFaceMetrics.Rubik)
-                        } else {
-                            it.cssLine(
-                                MutantFaceMetrics.Rubik,
-                                CELL.toFloat() / DAY_SIZE,
-                            )
-                        }
-                    },
+                    chosen && d == selectedDay,
+                    light,
+                    dark,
+                    { place?.over(i) },
                     Modifier.focusRequester(focus[d - 1]).onPreviewKeyEvent {
                         if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                         val to =
                             when (it.key) {
-                                Key.DirectionRight -> d + 1
-                                Key.DirectionLeft -> d - 1
+                                Key.DirectionRight -> d + side
+                                Key.DirectionLeft -> d - side
                                 Key.DirectionDown -> d + 7
                                 Key.DirectionUp -> d - 7
                                 else -> return@onPreviewKeyEvent false
@@ -317,11 +319,11 @@ private fun DayGrid(
         layout(cell * 7, cell * rows) {
             if (drop != null) {
                 val i = lead + selectedDay!! - 1
-                drop.place(i % 7 * cell, i / 7 * cell)
+                drop.placeRelative(i % 7 * cell, i / 7 * cell)
             }
             cells.forEachIndexed { k, p ->
                 val i = lead + k
-                p.place(i % 7 * cell, i / 7 * cell)
+                p.placeRelative(i % 7 * cell, i / 7 * cell)
             }
         }
     }
@@ -331,7 +333,9 @@ private fun DayGrid(
 private fun DayCell(
     day: Int,
     selected: Boolean,
-    style: TextStyle,
+    light: TextStyle,
+    dark: TextStyle,
+    drop: () -> Rect?,
     moves: Modifier,
     onPick: () -> Unit,
 ) {
@@ -353,7 +357,112 @@ private fun DayCell(
             },
         contentAlignment = Alignment.Center,
     ) {
-        MutantText("$day", Modifier.mutantCleanZone(), style = style, maxLines = 1, softWrap = false)
+        // The number twice over the same place: light where the bar is under it, black and bold where the drop is.
+        MutantText(
+            "$day",
+            Modifier.underDrop(drop, onDrop = false).mutantCleanZone(),
+            style = light,
+            maxLines = 1,
+            softWrap = false,
+        )
+        // As large as the cell and never measured into it, so the bold number does not size the grid.
+        Box(Modifier.matchParentSize().clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
+            MutantText("$day", Modifier.underDrop(drop, onDrop = true), style = dark, maxLines = 1, softWrap = false)
+        }
+    }
+}
+
+/**
+ * The part of a number on the drop ([onDrop]) or off it, as the drop stands now: [drop] is its oval from the number's
+ * middle, dp, or null where there is none. A number wholly on one side is drawn as it is, unclipped, so the resting
+ * calendar draws as before; one the drop's edge crosses is cut along the oval.
+ */
+private fun Modifier.underDrop(
+    drop: () -> Rect?,
+    onDrop: Boolean,
+): Modifier =
+    drawWithContent {
+        val oval =
+            drop()?.let {
+                Rect(
+                    size.width / 2 + it.left * density,
+                    size.height / 2 + it.top * density,
+                    size.width / 2 + it.right * density,
+                    size.height / 2 + it.bottom * density,
+                )
+            }
+        // The digits' ink: the number's width, and its figures' height about the line's middle.
+        val hw = size.width / 2
+        val hh = DIGIT_HALF.dp.toPx()
+        val cx = size.width / 2
+        val cy = size.height / 2
+        val inside =
+            oval != null &&
+                inOval(oval, cx - hw, cy - hh) &&
+                inOval(oval, cx + hw, cy - hh) &&
+                inOval(oval, cx - hw, cy + hh) &&
+                inOval(oval, cx + hw, cy + hh)
+        val outside =
+            oval == null ||
+                !inOval(oval, oval.center.x.coerceIn(cx - hw, cx + hw), oval.center.y.coerceIn(cy - hh, cy + hh))
+        when {
+            inside -> {
+                if (onDrop) drawContent()
+            }
+
+            outside -> {
+                if (!onDrop) drawContent()
+            }
+
+            else -> {
+                val path = Path().apply { addOval(oval) }
+                clipPath(
+                    path,
+                    if (onDrop) ClipOp.Intersect else ClipOp.Difference,
+                ) { this@drawWithContent.drawContent() }
+            }
+        }
+    }
+
+private fun inOval(
+    o: Rect,
+    x: Float,
+    y: Float,
+): Boolean {
+    val dx = (x - o.center.x) / (o.width / 2)
+    val dy = (y - o.center.y) / (o.height / 2)
+    return o.width > 0 && o.height > 0 && dx * dx + dy * dy <= 1
+}
+
+/**
+ * Where the drop is drawn now, from the middle of cell [over], dp: its oval as the body slides it (`slid`: run home by
+ * `1 − (1 − p)²`, stretched `1 + .4 sin πp` along its run and squeezed `1 − .18 sin πp` across), half its outline inside.
+ * [side] is -1 right to left, where the grid is mirrored. While it runs, the reader reads every frame of the [clock].
+ */
+private class DropPlace(
+    private val from: DropFrom,
+    private val clock: MutantClock,
+    private val chosen: Int,
+    private val cell: FloatArray,
+    private val side: Int,
+    private val instant: Boolean,
+    private val steps: Boolean,
+) {
+    fun over(i: Int): Rect {
+        val p = if (instant) 1.0 else stepped(clock.nowMs - from.since, MutantMotion.SLIDE_MS, steps)
+        if (p < 1) clock.frame
+        val q = sin(PI * p)
+        val left = (1 - p).pow(2)
+        val c = cell[0].toDouble()
+        val x = side * c * (chosen % 7 - i % 7 + from.cols * left)
+        val y = c * (chosen / 7 - i / 7 + from.rows * left)
+        val along = jsToFixed(1 + .4 * q, 2)
+        val across = jsToFixed(1 - .18 * q, 2)
+        val down = abs(from.rows) > abs(from.cols)
+        val inset = MutantBody.Pill.profile.outline / 2
+        val hw = c / 2 * (if (down) across else along) - inset
+        val hh = c / 2 * (if (down) along else across) - inset
+        return Rect((x - hw).toFloat(), (y - hh).toFloat(), (x + hw).toFloat(), (y + hh).toFloat())
     }
 }
 
@@ -425,7 +534,8 @@ private fun Arrow(
 /**
  * A time picker, the recording timer's: the hours and the minutes, each in a field (body `field`, 76 × 72 dp, drips to
  * 14 dp) in Handjet 52 semibold, two digits, a colon between them in the on-screen-display amber, 10 dp apart. The field
- * being set is acid with black digits (the page's «часы выбраны, минуты ждут»); a press on the other makes it the one.
+ * being set is acid with black digits (the page's «часы выбраны, минуты ждут»); a press on the other makes it the one,
+ * its acid pouring in, and the digits turn as the pour passes them.
  * Up and Down step the one focused, wrapping (23 → 0, 59 → 0), and each reads to a screen reader as a value in its
  * range that can be set; [hourLabel] and [minuteLabel] name them. Designed here (D15): the design is a still.
  */
@@ -442,7 +552,10 @@ public fun MutantTimePicker(
     TimePickerBody(hour, minute, onTimeChange, modifier, hourLabel, minuteLabel, key)
 }
 
-/** [MutantTimePicker]; [active] starts on the hours (0) or the minutes (1), [hidden] draws the digits transparent. */
+/**
+ * [MutantTimePicker]; [hidden] draws the digits transparent for a bare twin. [field], where given, is the field being
+ * set (0 the hours, 1 the minutes) in place of the one pressed, so a test turns a picker and its twin in one frame.
+ */
 @Composable
 internal fun TimePickerBody(
     hour: Int,
@@ -453,11 +566,13 @@ internal fun TimePickerBody(
     minuteLabel: String,
     key: String,
     hidden: Boolean = false,
+    field: Int? = null,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
     val raster = LocalMutantTextRaster.current
-    var active by remember { mutableIntStateOf(0) }
+    var pressed by remember { mutableIntStateOf(0) }
+    val active = field ?: pressed
     var colonWidth by remember { mutableFloatStateOf(0f) }
     val change by rememberUpdatedState(onTimeChange)
     val h = hour.mod(24)
@@ -467,7 +582,7 @@ internal fun TimePickerBody(
         horizontalArrangement = Arrangement.spacedBy(TIME_GAP.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TimeField(h, 24, active == 0, hourLabel, "$key-h", hidden, { active = 0 }) { change(it, m) }
+        TimeField(h, 24, active == 0, hourLabel, "$key-h", hidden, { pressed = 0 }) { change(it, m) }
         MutantText(
             ":",
             // Chrome lays the colon at its fractional width and the next field on the pixel nearest; Compose would
@@ -487,7 +602,7 @@ internal fun TimePickerBody(
                     platformStyle = raster,
                 ).cssLine(MutantFaceMetrics.Handjet),
         )
-        TimeField(m, 60, active == 1, minuteLabel, "$key-m", hidden, { active = 1 }) { change(h, it) }
+        TimeField(m, 60, active == 1, minuteLabel, "$key-m", hidden, { pressed = 1 }) { change(h, it) }
     }
 }
 
@@ -547,11 +662,13 @@ private fun TimeField(
                         fontFamily = fonts?.display,
                         fontSize = DIGITS_SIZE.sp,
                         fontWeight = FontWeight.SemiBold,
+                        // The digits turn when the pour's front passes under them (B-94, as the chip's label), not at
+                        // the press: the acid takes the pour's time to come or go (B-168).
                         color =
                             when {
                                 hidden -> Color.Transparent
-                                active -> colors.onPrimary
-                                else -> colors.text
+                                active -> inkOnBody(colors.onPrimary, colors.text)
+                                else -> inkOnBody(colors.text, colors.onPrimary)
                             },
                         platformStyle = raster,
                     ).cssLine(MutantFaceMetrics.Handjet),
@@ -611,23 +728,63 @@ private const val RADIUS = 12.0
 private const val CELL = 36
 private const val DROP_RADIUS = 18.0
 
-/** Follows the chosen day from composition without writing state: where the drop runs from and since when (B-93). */
-private class DayRun(
+/** Half the height of the days' figures about their line's middle, dp: Rubik 14's figures, 10 dp, and a pixel. */
+private const val DIGIT_HALF = 5.5f
+
+/**
+ * Follows the chosen day from composition without writing state (B-93): where the drop's run starts, in cells from the
+ * chosen cell, and since when. A pick while the drop is under way starts the new run from the place it has reached, not
+ * from the day picked before (B-168). A new month moves the drop without a run.
+ */
+private class DropFrom(
     private var now: Int,
+    private var lead: Int,
+    private var days: Int,
 ) {
-    var from: Int = 0
+    /** The run's start, columns and rows from the chosen cell; 0 when it does not run. */
+    var cols: Double = 0.0
         private set
+    var rows: Double = 0.0
+        private set
+
+    /** When the run started, the screen's clock ms. */
     var since: Double = Double.NEGATIVE_INFINITY
+        private set
+
+    /** Which run this is: the body's slide restarts on a new one only. */
+    var run: Int = 0
         private set
 
     fun follow(
         to: Int,
-        time: Double,
+        lead: Int,
+        days: Int,
+        nowMs: Double,
+        instant: Boolean,
+        steps: Boolean,
     ) {
+        if (lead != this.lead || days != this.days) {
+            // Another month: the drop stands on its day there, and a run under way goes on as the body draws it.
+            this.lead = lead
+            this.days = days
+            now = to
+            return
+        }
         if (to == now) return
-        from = now
+        if (now in 1..days && to in 1..days) {
+            // What is left of the run under way, as the body draws it: `(1 − p)²` of its start.
+            val left = if (instant) 0.0 else (1 - stepped(nowMs - since, MutantMotion.SLIDE_MS, steps)).pow(2)
+            val a = lead + now - 1
+            val b = lead + to - 1
+            cols = a % 7 - b % 7 + cols * left
+            rows = a / 7 - b / 7 + rows * left
+            since = nowMs
+            run++
+        } else {
+            cols = 0.0
+            rows = 0.0
+        }
         now = to
-        since = time
     }
 }
 
