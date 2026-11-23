@@ -168,7 +168,7 @@ internal fun Modifier.mutantMelt(on: Boolean): Modifier =
 /**
  * Follows a melt's target from composition without writing state: a change starts the melt at that moment. A change
  * while a melt runs reverses it: the same motion runs back from where it stands, at the same pace, so the indicator
- * never jumps to the other motion's start (B-171).
+ * never jumps to the other motion's start (B-171). Under the pause the motion stands at its end (B-176).
  */
 internal class MeltFollower(
     private var shown: Boolean,
@@ -206,18 +206,22 @@ internal class MeltFollower(
         instant: Boolean = false,
         steps: Boolean = false,
     ) {
-        if (on == shown) return
-        shown = on
-        val m = at(now, instant, steps)
-        if (running(m)) {
-            forward = !forward
-            start = m
-        } else {
-            inward = on
-            forward = true
-            start = 0.0
+        if (on != shown) {
+            shown = on
+            val m = at(now, instant, steps)
+            if (running(m)) {
+                forward = !forward
+                start = m
+            } else {
+                inward = on
+                forward = true
+                start = 0.0
+            }
+            since = now
         }
-        since = now
+        // B-176: the pause ends the motion where it is going (its end, or back at its start), so it has nothing to replay
+        // when it lifts, and a change after it starts from rest.
+        if (instant) since = Double.NEGATIVE_INFINITY
     }
 }
 

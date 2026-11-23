@@ -60,6 +60,16 @@ internal class MutantSlideRun {
         carryY = 0.0
     }
 
+    /**
+     * The run ended where it is going: home, nothing carried, [dx] and [dy] kept. The pause ends a running slide this way,
+     * so it has nothing to replay when it lifts (B-176).
+     */
+    fun finish() {
+        since = Double.NEGATIVE_INFINITY
+        carryX = 0.0
+        carryY = 0.0
+    }
+
     /** A new run from [dx], [dy] dp away (from the old home), started at [now] from where the body is drawn then. */
     fun aim(
         dx: Double,
@@ -268,5 +278,15 @@ internal class BodyMoves {
             slideRun = run
             slideId = slide.id
         }
+    }
+
+    /**
+     * Ends the running moves: the pour has poured and the slide stands home. Under the pause (D7) a body does this in every
+     * composition, after following a change, so a move the pause landed stays landed when it lifts, and a change after it
+     * starts from rest: no band, no carried stretch (B-176).
+     */
+    fun stand() {
+        pourSince = Double.NEGATIVE_INFINITY
+        slideRun.finish()
     }
 }

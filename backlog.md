@@ -58,13 +58,14 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (5)
+## Open (6)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-168](docs/backlog/B-168-look-and-motion-pass.md) `[~]` | A look-and-motion pass, one agent per component group, on the desktop JVM | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
+| [B-176](docs/backlog/B-176-the-pause-lifted-replays-nothing.md) `[~]` | A transition the pause landed stays landed when the pause lifts | P2 | S | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 

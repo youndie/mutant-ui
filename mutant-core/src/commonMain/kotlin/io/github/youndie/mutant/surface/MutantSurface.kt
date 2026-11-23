@@ -189,6 +189,9 @@ internal fun MutantSurface(
             slip = (slip ?: if (colors.print && !p.round) PRINT_SLIP else 0.0).toFloat(),
             shadow = shadow,
         )
+    // B-176: the pause ends the running moves and lands a cooling heat, so lifting it replays nothing.
+    if (instant) moves.stand()
+    boil.hold(instant, clock.nowMs)
     // B-91: the fill a boiling body shows now, for its words to read against; null at rest. Derived per frame, its
     // readers recompose only when their pick of colour changes.
     val fillNow by androidx.compose.runtime.rememberUpdatedState(bodyFill)
