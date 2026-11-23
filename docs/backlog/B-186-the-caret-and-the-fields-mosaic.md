@@ -1,7 +1,7 @@
 ---
 id: B-186
 title: "The caret restarts, sits beside the letters, and the mosaic ignores the text"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-6-later
