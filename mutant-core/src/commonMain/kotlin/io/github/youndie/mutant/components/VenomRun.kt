@@ -187,17 +187,6 @@ internal class VenomRun(
      * on the way to it.
      */
     val window: Int get() = if (a >= 0) b else stands
-
-    /** Whether slot [i]'s word is on the window: through a run, the start's until 340 ms of it, the end's after. */
-    fun labelOn(
-        i: Int,
-        clock: MutantClock,
-        to: Int,
-    ): Boolean {
-        if (to != at || !running(clock)) return i == to
-        val ms = p0 * MutantMotion.VENOM_MS + dir * (clock.nowMs - t0)
-        return if (ms < LABEL_SWITCH_MS) i == a else i == b
-    }
 }
 
 /** The venom steps at 24 frames a second (the engine's 41.67 ms). */
@@ -205,6 +194,3 @@ private const val VENOM_STEP_MS = 41.67
 
 /** A run's length in steps is a whole number up to rounding: what lies under this is not one more step. */
 private const val STEP_EPSILON = 1e-6
-
-/** The words change colour 340 ms into a run (`setTimeout(…, 340)`). */
-private const val LABEL_SWITCH_MS = 340.0
