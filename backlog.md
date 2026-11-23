@@ -68,7 +68,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (166)
+## Closed (167)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -239,6 +239,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-167](docs/backlog/B-167-outlines-lost-on-the-phone.md) `[x]` - On the phone, the bodies the shader draws have no outline
 - [B-169](docs/backlog/B-169-text-redraws-on-a-colour-change.md) `[x]` - A word whose colour alone changes is redrawn in the next frame
 - [B-170](docs/backlog/B-170-illustrations-drawn-in-dp.md) `[x]` - The illustrations draw in dp at any density and keep their size in a narrow slot
+- [B-171](docs/backlog/B-171-transitions-reversed-from-where-they-stand.md) `[x]` - A transition changed mid-way goes on from where the body stands
 - [B-172](docs/backlog/B-172-the-venom-picked-mid-run.md) `[x]` - A pick during a venom run goes on from where the slime stands
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker

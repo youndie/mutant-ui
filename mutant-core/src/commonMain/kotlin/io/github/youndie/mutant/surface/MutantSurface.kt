@@ -41,7 +41,6 @@ import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantFill
 import io.github.youndie.mutant.tokens.MutantGrid
-import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.tokens.MutantProfile
 
 /**
@@ -180,7 +179,7 @@ internal fun MutantSurface(
     val bodyFill = fill ?: colors.fillOf(p.fill)
     val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
     val pastContour = io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
-    moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps)
+    moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps, instant)
     val look =
         BodyLook(
             fill = bodyFill,
@@ -208,7 +207,7 @@ internal fun MutantSurface(
                 clock.hotTick
                 val now = clock.nowMs
                 val k = heatNow ?: boil.at(now)
-                val from = moves.pourFrom
+                val from = moves.pourUnder
                 val g = drawn.value
                 val p = g?.let { stepped(now - moves.pourSince, pourDuration(it.slot.h), steps) } ?: 1.0
                 // A pour asked for before the body first draws starts when it does: the old fill stands until then.
@@ -217,11 +216,12 @@ internal fun MutantSurface(
                 if (pouring) clock.frame
                 val under =
                     if (pouring && g == null) {
-                        from
+                        from.base
                     } else if (pouring && g != null) {
                         val el = g.slot
                         val depth = MutantGenerator(cassetteNow).pourFront(g, p).depthUnderLabel(el.ox, el.oy, el.w)
-                        if (depth < el.h / 2) from else fillNow
+                        // B-171: under the front, the picture the pour runs over, bands of an interrupted pour included.
+                        if (depth < el.h / 2) from.underLabel(g) else fillNow
                     } else {
                         fillNow
                     }
@@ -779,15 +779,27 @@ internal fun MutantSurface(
                 val now = clock.nowMs
                 val pourP =
                     pourAt?.first ?: if (instant) 1.0 else stepped(now - moves.pourSince, pourDuration(slot.h), steps)
-                val pourFrom = pourAt?.second ?: moves.pourFrom
-                val slideP =
-                    slideAt?.first
-                        ?: if (instant) 1.0 else stepped(now - moves.slideSince, MutantMotion.SLIDE_MS, steps)
-                val slideDx = slideAt?.second ?: moves.slideDx
-                val slideDy = if (slideAt != null) 0.0 else moves.slideDy
+                val pourUnder = pourAt?.second?.let { MutantPourUnder(it) } ?: moves.pourUnder
+                val run = moves.slideRun
+                val slideP = slideAt?.first ?: run.progress(now, instant, steps)
+                val slideDx = slideAt?.second ?: run.dx
+                val slideDy = if (slideAt != null) 0.0 else run.dy
+                // B-171: a re-aimed run's stretch, eased from what it showed; the engine's own where nothing was carried.
+                val slideSx = if (slideAt != null || slideP >= 1) null else run.stretchX(slideP)
+                val slideSy = if (slideAt != null || slideP >= 1) null else run.stretchY(slideP)
                 // A running transition is evaluated on every frame, as the engine does, so its steps keep to the event.
                 if (pourP < 1 || slideP < 1) clock.frame
-                val pour = if (pourP < 1 && pourFrom != null) gen.pourFront(g, pourP).toPath() to pourFrom else null
+                val pour =
+                    if (pourP < 1 && pourUnder != null) {
+                        BodyPour(
+                            gen.pourFront(g, pourP).toPath(),
+                            pourUnder.base,
+                            // A band the front has passed is covered; drawn, its edge would leave a hairline seam.
+                            pourUnder.bands.filter { it.p > pourP }.map { it.path(g) to it.color },
+                        )
+                    } else {
+                        null
+                    }
                 // B-110: a pouring or sliding body is drawn by paths, as before.
                 if (onGpu && (pour != null || slideP < 1)) {
                     frame =
@@ -871,6 +883,8 @@ internal fun MutantSurface(
                                 slideP,
                                 slideDx,
                                 slideDy,
+                                slideSx,
+                                slideSy,
                             ) {
                                 drawBody(
                                     g,
