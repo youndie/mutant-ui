@@ -108,7 +108,9 @@ class DrawerBehaviourTest {
             val seen =
                 List(6) {
                     tab()
-                    items.indexOfFirst { item -> onAllNodes(hasText(item.label) and isFocused()).fetchSemanticsNodes().isNotEmpty() }
+                    items.indexOfFirst { item ->
+                        onAllNodes(hasText(item.label) and isFocused()).fetchSemanticsNodes().isNotEmpty()
+                    }
                 }
             assertEquals(listOf(0, 1, 2, 3, 0, 1), seen, "the focused row after each Tab")
         }

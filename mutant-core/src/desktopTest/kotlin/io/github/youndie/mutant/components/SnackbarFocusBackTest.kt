@@ -48,7 +48,11 @@ class SnackbarFocusBackTest {
                     MutantScreenClock {
                         Column(Modifier.size(360.dp, 300.dp)) {
                             if (withButton) {
-                                MutantButton("Добавить", { visible = true }, Modifier.focusRequester(button).testTag("button"))
+                                MutantButton(
+                                    "Добавить",
+                                    { visible = true },
+                                    Modifier.focusRequester(button).testTag("button"),
+                                )
                             }
                             MutantButton("Другое", {}, Modifier.focusRequester(other).testTag("other"))
                             MutantSnackbar(

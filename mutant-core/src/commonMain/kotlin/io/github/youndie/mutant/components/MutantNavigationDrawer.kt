@@ -419,10 +419,13 @@ internal fun DrawerWindow(
                                     val to =
                                         when {
                                             it.key == Key.DirectionDown -> (i + 1) % items.size
+
                                             it.key == Key.DirectionUp -> (i - 1 + items.size) % items.size
+
                                             // Shift+Tab on the first row would stop on the drawer itself, which shows
                                             // nothing: round to the last row instead, as the dialog does (B-207).
                                             it.key == Key.Tab && it.isShiftPressed && i == 0 -> items.lastIndex
+
                                             else -> return@onPreviewKeyEvent false
                                         }
                                     focus[to].requestFocus()
