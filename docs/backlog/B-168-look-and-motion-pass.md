@@ -102,7 +102,7 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 18 | menu | Menu, Dropdown | done: [report](../../logs/b-168/menu.md), 4 fixed and a KDoc, 5 reported |
 | 19 | drawer | NavigationDrawer | done: [report](../../logs/b-168/drawer.md), 7 fixed, 5 reported |
 | 20 | bottom-sheet | BottomSheet | done: [report](../../logs/b-168/bottom-sheet.md), 6 fixed, 3 reported |
-| 21 | pull-to-refresh | PullToRefresh | open |
+| 21 | pull-to-refresh | PullToRefresh | done: [report](../../logs/b-168/pull-to-refresh.md), 2 fixed, 2 reported |
 | 22 | pickers | DatePicker, TimePicker | done: [report](../../logs/b-168/pickers.md), 4 fixed, 7 reported |
 | 23 | data-table | DataTable | open |
 | 24 | carousel | Carousel | open |
