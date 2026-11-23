@@ -46,8 +46,8 @@ internal class HeatMachine {
     /**
      * Follows the pause from composition. While it holds, a release or a leave cools the body in the same frame, and a
      * heat still cooling when it starts lands: the body shows released for as long as the pause lasts, and has nothing to
-     * cool when it lifts. A press under it still does not boil (the clock stands), and a press held across it keeps its
-     * heat (B-176).
+     * cool when it lifts. A press under it does not boil, as the clock stands: the surface shows it as a still frame at heat
+     * 1 ([mutantPausedPressFill], B-190); a press held across it keeps its heat (B-176).
      */
     fun hold(
         paused: Boolean,
@@ -96,6 +96,15 @@ internal class HeatMachine {
         if (held) settle(now)
     }
 }
+
+/**
+ * B-190: the fill a pressed body shows under the pause (D24, the designer's answer 12): heat 1's amber mix, at once and
+ * still, on the rest frame's shape with no bubbles and no tremble. Taken at time 0, where the boil's flicker is off.
+ */
+internal fun mutantPausedPressFill(
+    fill: androidx.compose.ui.graphics.Color,
+    colors: io.github.youndie.mutant.tokens.MutantColors,
+): androidx.compose.ui.graphics.Color = boilFill(fill, colors, 1.0, 0.0)
 
 /** A hovered body's heat (designed here, B-63): a simmer the eye catches, a third of a press's boil. */
 internal const val HOVER_HEAT: Double = .3

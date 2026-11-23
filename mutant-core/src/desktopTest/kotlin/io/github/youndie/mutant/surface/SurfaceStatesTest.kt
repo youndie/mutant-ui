@@ -100,9 +100,12 @@ class SurfaceStatesTest {
     }
 
     @Test
-    fun `under reduce motion a press does not boil`() {
-        val shares = pressRun(reduceMotion = true)
-        assertTrue(shares.all { it < .01 }, "amber under reduce motion: $shares")
+    fun `under reduce motion a press stands at heat 1's amber and the release takes it back`() {
+        // B-190 (D24): no longer nothing, as B-11 had it from the engine's pause, but a still frame at heat 1.
+        val (rest, pressed, released) = pressRun(reduceMotion = true)
+        assertTrue(rest < .01, "amber at rest: $rest")
+        assertTrue(pressed > .5, "amber while pressed under reduce motion: $pressed")
+        assertTrue(released < .01, "amber after the release under reduce motion: $released")
     }
 
     @Test

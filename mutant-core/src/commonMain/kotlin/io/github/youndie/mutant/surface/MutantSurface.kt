@@ -209,7 +209,9 @@ internal fun MutantSurface(
                 // fill on screen between two ticks, and a dim word turned black on a ground still dark (B-104).
                 clock.hotTick
                 val now = clock.nowMs
-                val k = heatNow ?: boil.at(now)
+                // B-190: a press under the pause stands at heat 1's fill, as the body draws it.
+                val pausedPress = instantNow && heatNow == null && boil.on
+                val k = heatNow ?: if (pausedPress) 1.0 else boil.at(now)
                 val from = moves.pourUnder
                 val g = drawn.value
                 val p = g?.let { stepped(now - moves.pourSince, pourDuration(it.slot.h), steps) } ?: 1.0
@@ -228,7 +230,11 @@ internal fun MutantSurface(
                     } else {
                         fillNow
                     }
-                if (k <= 0 && !pouring) null else boilFill(under, colorsNow, k, clock.hotTimeMs())
+                when {
+                    k <= 0 && !pouring -> null
+                    pausedPress -> mutantPausedPressFill(under, colorsNow)
+                    else -> boilFill(under, colorsNow, k, clock.hotTimeMs())
+                }
             }
         }
     // B-149: whether this body's first frame waits for its build, and the slot and signature a size gives, at layout
@@ -352,6 +358,9 @@ internal fun MutantSurface(
                 val (slot, signature, tz) = slotOf(d, size.width, size.height) ?: return@drawWithCache onDrawBehind {}
                 moshBody.zone = tz
                 val still = state == BodyState.Disabled || state == BodyState.Success
+                // B-190: under the pause a press is a still frame at heat 1 (D24): the rest frame's shape, with no bubbles,
+                // no tremble and no running mosaic, in heat 1's fill; it goes with the release, in its frame.
+                val pausedPress = instant && heat == null && boil.on
                 val build = {
                     gen
                         .instance(
@@ -371,7 +380,14 @@ internal fun MutantSurface(
                     val outline = outlineOverride?.invoke(key) ?: outlineWidth(g, p.outline, f.boilPhase, f.boil)
                     val frameLook =
                         BodyLook(
-                            boilFill(look.fill, colors, kk, tt),
+                            if (pausedPress) {
+                                mutantPausedPressFill(
+                                    look.fill,
+                                    colors,
+                                )
+                            } else {
+                                boilFill(look.fill, colors, kk, tt)
+                            },
                             look.highlight,
                             look.ink,
                             outline,
@@ -752,14 +768,17 @@ internal fun MutantSurface(
                         }
                     }
                 }
-                val hot = heat?.let { it > 0 } ?: (boil.on || boil.hovered || boil.at(clock.nowMs) > 0)
+                val hot =
+                    !pausedPress && (heat?.let { it > 0 } ?: (boil.on || boil.hovered || boil.at(clock.nowMs) > 0))
                 val t =
                     when {
                         clock.frozen -> clock.nowMs
                         hot -> clock.hotTimeMs()
                         else -> clock.restTimeMs()
                     }
-                val k = heat ?: boil.at(clock.nowMs)
+                val k = if (pausedPress) 0.0 else heat ?: boil.at(clock.nowMs)
+                // The held drops of a press, not under the pause (B-190).
+                val pressedShape = boil.on && !pausedPress
                 // A resting tick's frame depends on its time alone, and the next tick's time is known: it is built
                 // ahead on a background thread and taken here (B-75). A pressed or heated body, a frozen clock and a
                 // frame not ready in time build in the frame, as before.
@@ -769,8 +788,8 @@ internal fun MutantSurface(
 
                 var frame =
                     early?.frame
-                        ?: inFrame.of(g, t, k, boil.on, !onGpu) {
-                            gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs, paths = !onGpu)
+                        ?: inFrame.of(g, t, k, pressedShape, !onGpu) {
+                            gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs, paths = !onGpu)
                         }
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
@@ -817,11 +836,11 @@ internal fun MutantSurface(
                     } else {
                         null
                     }
-                // B-110: a pouring or sliding body is drawn by paths, as before.
-                if (onGpu && (pour != null || slideP < 1)) {
+                // B-110: a pouring or sliding body is drawn by paths, as before; so is a press under the pause, as a hot body is (D23).
+                if (onGpu && (pour != null || slideP < 1 || pausedPress)) {
                     frame =
-                        inFrame.of(g, t, k, boil.on, true) {
-                            gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                        inFrame.of(g, t, k, pressedShape, true) {
+                            gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs)
                         }
                 } else if (onGpu) {
                     val shaded =
@@ -836,7 +855,12 @@ internal fun MutantSurface(
                         // there the body draws by paths, built only when a loss takes its snapshot.
                         // B-154: the snapshot draws each of its strips with this, so the frame is built once for all of them.
                         val byPathsPicture by lazy {
-                            pictureOf(g, gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs), t, k)
+                            pictureOf(
+                                g,
+                                gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs),
+                                t,
+                                k,
+                            )
                         }
                         val byPaths: DrawScope.() -> Unit = {
                             val (pp, pl, pd) = byPathsPicture
@@ -864,8 +888,8 @@ internal fun MutantSurface(
                     // B-163: a frame built ahead with its paths is drawn as it is.
                     frame =
                         early?.frame?.takeIf { early.frame === frame && !it.contour.isEmpty }
-                            ?: inFrame.of(g, t, k, boil.on, true) {
-                                gen.frame(g, cache, t, k, pressed = boil.on, steadyWebs = steadyWebs)
+                            ?: inFrame.of(g, t, k, pressedShape, true) {
+                                gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs)
                             }
                 }
                 val imageInputs = imageInputsOf(dead)
