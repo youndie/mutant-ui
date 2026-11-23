@@ -56,6 +56,8 @@ class SearchBarParityTest {
                 CompositionLocalProvider(
                     LocalMutantTextRaster provides ChromeText,
                     LocalMutantStage provides "l-search",
+                    // The caret's block where the page stands it (B-186's departure, research D20).
+                    LocalMutantTextFieldAsDesigned provides true,
                 ) {
                     ProvideMutantClock(MutantClock(startMs = STILL_MS, frozen = true)) {
                         ComponentParity.ProvideSlots(slots) {

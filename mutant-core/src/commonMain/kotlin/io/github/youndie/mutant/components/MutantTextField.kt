@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -15,10 +16,12 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -59,15 +62,17 @@ import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 /**
  * A text field: a line of the on-screen menu (body `field`, 52 dp tall). [prefix] is the OSD label before the
  * value (Handjet, the OSD colour), [placeholder] stands in while the value is empty. Focused, the damage drops to 30 %,
- * the corner brackets lock on and a block caret blinks after the text, or a thin one stands before the insertion point
- * inside it or before the placeholder; [isError] corrupts the body (the red offset outline and blocks) and tells a
- * screen reader what is wrong, [errorDescription] (the generic `Ошибка` when the caller says nothing); disabled, it
- * loses its signal and both texts grey. A press anywhere on the body focuses it and puts the cursor at the nearest place in the text. The text
+ * the corner brackets lock on and a block caret blinks 2 dp after the text, or a thin one stands in the gap between the
+ * letters inside it or before the placeholder, the blink starting over lit at focus and at every input; [isError]
+ * corrupts the body (the red offset outline and blocks) and tells a screen reader what is wrong, [errorDescription]
+ * (the generic `Ошибка` when the caller says nothing); disabled, it loses its signal and both texts grey. A press anywhere on the body focuses it and puts the cursor at the nearest place in the text. The text
  * and the caret are never moved by the body. One line; its direction is the text's.
  */
 @Composable
@@ -187,6 +192,9 @@ internal fun TextFieldBody(
             },
         focused = focused,
     ) {
+        // The clean zone is the input area, the slot less 14 dp on each side, never the text: the mosaic and the flow
+        // lines stand still as the first letter is typed and the last deleted (B-186, the designer's answer 18).
+        Spacer(Modifier.matchParentSize().padding(PADDING).mutantCleanZone())
         Row(
             Modifier.fillMaxWidth().padding(horizontal = PADDING),
             horizontalArrangement = Arrangement.spacedBy(GAP),
@@ -195,7 +203,6 @@ internal fun TextFieldBody(
             if (prefix != null) {
                 MutantText(
                     prefix,
-                    Modifier.mutantCleanZone(),
                     style =
                         TextStyle(
                             fontFamily = fonts?.display,
@@ -211,7 +218,6 @@ internal fun TextFieldBody(
                 if (value.isEmpty() && placeholder != null) {
                     MutantText(
                         placeholder,
-                        Modifier.mutantCleanZone(),
                         style =
                             valueStyle.copy(
                                 color = tint(if (enabled) colors.textSecondary else colors.textDisabled),
@@ -240,15 +246,17 @@ internal fun TextFieldBody(
                             cursorBrush = SolidColor(Color.Transparent),
                             onTextLayout = { line.layout = it },
                         )
-                        if (focused && enabled) Caret(tint(colors.text))
+                        // The caret starts its blink over at every change of the value or the cursor; it enters the
+                        // composition, lit, with focus.
+                        if (focused && enabled) TextFieldCaret(tint(colors.text), field)
                     },
-                    // Only the value marks the clean zone: an empty field's box is the placeholder's.
-                    modifier = (if (value.isEmpty()) Modifier else Modifier.mutantCleanZone()).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     measurePolicy =
                         valueLinePolicy(
                             line,
                             field.selection.start,
                             overPlaceholder = value.isEmpty() && placeholder != null,
+                            asDesigned = LocalMutantTextFieldAsDesigned.current,
                         ),
                 )
             }
@@ -270,18 +278,21 @@ private class ValueLine {
  * the block covered its last letters, and inside it the bar stood at the field's edge. A caret placed from a layout
  * read a frame later stood at the last text's end for the frame a letter was typed.
  *
- * At the end of the text the caret is the page's block (9 × 20), 8 dp past the end on the side the text runs. Inside the
- * text, where a block would cover the next letter, it is a bar 2 dp wide standing just before the insertion point,
- * against the letter already typed (designed here, B-58). Over a placeholder it is the bar too, before the placeholder's
- * first letter, which a block would cover (B-168). The line scrolls as little as keeps the whole block, or the bar's
- * insertion point, in view; the bar may stand in the padding or the gap before the text. The text is clipped to
- * the line only while it overflows it. A value ending at the line's edge leaves the block's room past it, focused or
- * not, so focus does not move the text.
+ * At the end of the text the caret is the page's block (9 × 20), 2 dp past the last character's box on the side the
+ * text runs. Inside the text it is a bar 2 dp wide centred in the gap between the boxes of the letters either side,
+ * which meet at the insertion point, drawn over their edges: Rubik 15 leaves 0–2 px between most letters' ink, so the
+ * bar covers up to 1 dp of each, never a whole stem (B-186, the designer's answer 17, the owner's word). The text's
+ * API gives a letter's box, not its ink (`getPathForRange` is the selection's boxes on Skiko). At the line's start, and
+ * over a placeholder, it is the bar standing just before the first letter, which a block would cover (B-58, B-168).
+ * The line scrolls as little as keeps the whole block, or the bar's insertion point, in view; the bar may stand in the
+ * padding or the gap before the text. The text is clipped to the line only while it overflows it. A value ending at
+ * the line's edge leaves the block's room past it, focused or not, so focus does not move the text.
  */
 private fun valueLinePolicy(
     line: ValueLine,
     cursor: Int,
     overPlaceholder: Boolean,
+    asDesigned: Boolean,
 ) = MeasurePolicy { measurables, constraints ->
     val bounded = constraints.hasBoundedWidth
     val text =
@@ -301,21 +312,27 @@ private fun valueLinePolicy(
     val x = l?.let { if (n == 0) 0f else it.getHorizontalPosition(at, true) } ?: 0f
     val rtl =
         l?.let { n > 0 && it.getParagraphDirection(if (at == n) n - 1 else at) == ResolvedTextDirection.Rtl } ?: false
-    val gap = if (n == 0) 0f else GAP.toPx()
     val w = (if (block) CARET_W else CARET_BAR).roundToPx()
     val h = CARET_H.roundToPx()
+    val clear = CARET_CLEAR.roundToPx()
     val left =
         when {
-            // The block past the end, on the side the text runs.
-            block && !rtl -> x + gap
+            l == null || n == 0 -> if (block || rtl) x.roundToInt() else (x - w).roundToInt()
 
-            block -> x - gap - w
+            // The page's block, its flex gap past the end (the departures registry, research D20).
+            block && asDesigned -> (if (rtl) x - GAP.toPx() - w else x + GAP.toPx()).roundToInt()
 
-            // The bar against the letter before the insertion point.
-            !rtl -> x - w
+            // The block past the end, 2 dp clear of the last character's box, on the side the text runs.
+            block && !rtl -> ceil(x).toInt() + clear
 
-            else -> x
-        }.roundToInt()
+            block -> floor(x).toInt() - clear - w
+
+            // At the line's start the bar stands just before the first letter.
+            at == 0 -> if (rtl) x.roundToInt() else (x - w).roundToInt()
+
+            // Inside, the bar centred in the gap between the letters' boxes, which meet at the insertion point.
+            else -> (x - w / 2f).roundToInt()
+        }
     // What stays in view: the whole block, or the bar's insertion point.
     val lo = if (block) left else x.roundToInt()
     val hi = if (block) left + w else x.roundToInt()
@@ -359,15 +376,44 @@ private class RectangleWindow(
     ): Outline = Outline.Rectangle(Rect(from, 0f, from + width, size.height))
 }
 
-/** The caret, shown five scene ticks in eight — 625 ms in each second — and standing under reduce motion. */
+/**
+ * The caret, lit five scene ticks in eight and dark three, the engine's `fi % 8 < 5` (B-20), counted from the tick
+ * of the last restart: it enters the composition lit with focus, and every change of [restartOn] (the value, the
+ * cursor) starts the cycle over lit on the frame it is drawn (B-186, the designer's answer 8). The restart's own tick
+ * is the first lit one, so the blink keeps the scene's tick and draws nothing between ticks. Under reduce motion it
+ * stands lit.
+ */
 @Composable
-private fun Caret(color: Color) {
+private fun TextFieldCaret(
+    color: Color,
+    restartOn: Any,
+) {
     val clock = readMutantClock()
     val still = LocalMutantReduceMotion.current
-    Canvas(Modifier.mutantCleanZone()) {
-        if (still || clock.sceneTick % BLINK_PERIOD < BLINK_ON) drawRect(color)
+    val blink = remember { TextFieldBlink() }
+    Canvas(Modifier) {
+        // The tick is read first, so the draw follows every tick whichever branch it takes.
+        val tick = clock.sceneTick
+        if (blink.on != restartOn) {
+            blink.on = restartOn
+            blink.from = tick
+        }
+        if (still || (tick - blink.from).mod(BLINK_PERIOD) < BLINK_ON) drawRect(color)
     }
 }
+
+/** Where the caret's blink last started: the scene tick, and what it started on. Plain fields, written by the draw. */
+@Stable
+private class TextFieldBlink {
+    var on: Any? = null
+    var from = 0L
+}
+
+/**
+ * B-186's departure from the page, for the parity cells (research D20's registry): true stands the block caret 8 dp past
+ * the text, as the page's flex gap does; the kit's is 2 dp past the last character's box (the designer's answer 17).
+ */
+internal val LocalMutantTextFieldAsDesigned = staticCompositionLocalOf { false }
 
 /** What a screen reader says of an error the caller did not describe (B-67). */
 private const val ERROR_WORD = "Ошибка"
@@ -387,8 +433,13 @@ private const val VALUE_SIZE = 15
 /** The block caret, and its blink: on for 5 of every 8 scene ticks (the engine's `fi % 8 < 5`). */
 private val CARET_W = 9.dp
 
-/** The caret inside the text: a bar, so it covers no letter (designed here, B-58). */
+/** The block's gap from the last character's box (B-186, the designer's answer 17). */
+private val CARET_CLEAR = 2.dp
+
+/** The caret inside the text: a bar centred in the gap between two letters (B-58, B-186). */
 private val CARET_BAR = 2.dp
 private val CARET_H = 20.dp
+
+/** The blink's cycle and its lit part, in scene ticks of 125 ms (`MutantMotion.TICK_MS`). */
 private const val BLINK_PERIOD = 8L
 private const val BLINK_ON = 5L
