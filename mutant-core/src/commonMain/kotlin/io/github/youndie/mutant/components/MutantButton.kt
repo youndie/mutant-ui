@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
@@ -40,6 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.icons.MutantIcon
@@ -82,6 +84,10 @@ public enum class MutantButtonState {
  * The primary action: an acid plate whose lower edge runs (body `btn`). Pressed, it boils; the action fires
  * on release. [state] shows work and its end; disabled, the body loses its signal. The label is one line, cut
  * with an ellipsis where the width runs out; the button is 48 dp tall, the touch target, whatever its width.
+ *
+ * Given no width, it is as wide as the widest of its states, Success's check before the label included, in every
+ * state: no change of [state], of [enabled] or a press moves its width or regenerates its body (B-203). A new [text] or
+ * [icon] is a new measurement; a width from the caller wins.
  */
 @Composable
 public fun MutantButton(
@@ -106,6 +112,8 @@ public fun MutantButton(
         interactionSource = interactionSource,
         label = colors.onPrimary,
         outlined = false,
+        // B-203: without an icon of the caller's, Success adds the check; every other state keeps its room.
+        checkRoom = icon == null,
     )
 }
 
@@ -199,7 +207,11 @@ internal fun TextButtonBody(
     }
 }
 
-/** The filled and outlined buttons; [heat] holds a fixture's boil (the page's `data-heat`), null in the kit. */
+/**
+ * The filled and outlined buttons; [heat] holds a fixture's boil (the page's `data-heat`), null in the kit. [checkRoom]:
+ * a state of this button shows the check where [icon] is null now, so the content keeps the check's room in every
+ * state (B-203). [probe] is the surface's, for tests only.
+ */
 @Composable
 internal fun ButtonBody(
     text: String,
@@ -213,6 +225,8 @@ internal fun ButtonBody(
     label: Color,
     outlined: Boolean,
     heat: Double? = null,
+    checkRoom: Boolean = false,
+    probe: ((io.github.youndie.mutant.gen.Instance) -> Unit)? = null,
 ) {
     val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
@@ -254,17 +268,37 @@ internal fun ButtonBody(
         heat = heat,
         profile = if (outlined) MutantBody.Btn.profile.with(overhang = OUTLINED_OVERHANG) else MutantBody.Btn.profile,
         stroke = if (outlined && enabled) colors.textAccent else null,
+        probe = probe,
     ) {
+        // B-203: the check Success adds keeps its room in every other state.
+        val room = if (checkRoom && icon == null) BUTTON_ICON_SIZE + ICON_GAP else 0.dp
         Row(
-            Modifier.padding(horizontal = PADDING),
+            Modifier.buttonRoom(room).padding(horizontal = PADDING),
             horizontalArrangement = Arrangement.spacedBy(ICON_GAP, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (icon != null) MutantIcon(icon, null, Modifier.mutantCleanZone(), tint = label)
+            if (icon != null) MutantIcon(icon, null, Modifier.mutantCleanZone(), tint = label, size = BUTTON_ICON_SIZE)
             ButtonLabel(text, label, Modifier.weight(1f, fill = false))
         }
     }
 }
+
+/**
+ * B-203: the content as wide as it is with [room] more, so a state that adds an icon finds its width already there and
+ * the body keeps its size; a width from the caller (the surface's constraints) still wins. The widest state is
+ * measured from the content itself, so a new label is a new measurement.
+ */
+private fun Modifier.buttonRoom(room: Dp): Modifier =
+    if (room <= 0.dp) {
+        this
+    } else {
+        layout { measurable, constraints ->
+            val widest = measurable.maxIntrinsicWidth(constraints.maxHeight) + room.roundToPx()
+            val width = widest.coerceIn(constraints.minWidth, constraints.maxWidth)
+            val placeable = measurable.measure(constraints.copy(minWidth = width))
+            layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+        }
+    }
 
 /**
  * What a button's body hears of its interactions (B-168). While it is busy (Loading) it takes no click, so it shows no
@@ -336,6 +370,9 @@ private val TOUCH = 48.dp
 
 /** The label's distance from the body's sides (the design draws fixed widths; research D15). */
 private val PADDING = 24.dp
+
+/** An icon before the label (the success cell's check). */
+private val BUTTON_ICON_SIZE = 24.dp
 
 /** Between an icon and the label (the success cell's `gap: 8px`). */
 private val ICON_GAP = 8.dp

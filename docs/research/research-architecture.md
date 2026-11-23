@@ -525,7 +525,7 @@ owner's review round over the finished sample, and its item lists every number i
 design does not state. Everything the design does draw stays held to the design. The loop does not
 wait for review of what is designed here.
 
-Numbers chosen for the button under this decision (B-15): the label 24 dp from the body's sides (the page draws fixed widths); a text button's divider as wide as its label (the page draws 76 dp under a 69 dp label in a fixed cell); a disabled text button greys its label; keyboard focus draws the field's brackets and calm (`focused`).
+Numbers chosen for the button under this decision (B-15): the label 24 dp from the body's sides (the page draws fixed widths); a text button's divider as wide as its label (the page draws 76 dp under a 69 dp label in a fixed cell); a disabled text button greys its label; keyboard focus draws the field's brackets and calm (`focused`). Given no width, the filled button is as wide as its widest state in every state: the check Success adds (24 dp and its 8 dp gap) keeps its room at rest, pressed, loading and disabled, so no state change moves the width or regenerates the body under D17; a new label is a new measurement, and a caller's width wins ([B-203](../backlog/B-203-a-button-as-wide-as-its-widest-state.md), the designer's answer 35).
 
 ### D16. A body's origin is its own
 
