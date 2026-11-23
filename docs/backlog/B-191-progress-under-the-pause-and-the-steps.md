@@ -1,7 +1,7 @@
 ---
 id: B-191
 title: "The progress band under the pause and under the steps"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-6-later
