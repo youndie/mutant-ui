@@ -105,6 +105,6 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 21 | pull-to-refresh | PullToRefresh | done: [report](../../logs/b-168/pull-to-refresh.md), 2 fixed, 2 reported |
 | 22 | pickers | DatePicker, TimePicker | done: [report](../../logs/b-168/pickers.md), 4 fixed, 7 reported |
 | 23 | data-table | DataTable | done: [report](../../logs/b-168/data-table.md), 2 fixed (one adds `rowKey`), 4 reported |
-| 24 | carousel | Carousel | open |
+| 24 | carousel | Carousel | done: [report](../../logs/b-168/carousel.md), 4 fixed, 3 reported |
 | 25 | foundations | the Foundations section: surface states, the Tape, keyframe loss (report-only: shared code) | open |
 | 26 | screens | the demo's three screens, as composed | open |
