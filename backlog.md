@@ -87,7 +87,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (184)
+## Closed (185)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -277,6 +277,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-199](docs/backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) `[x]` - No mosaic block in the clean zone, pressed or at rest
 - [B-201](docs/backlog/B-201-the-menu-at-the-edges-and-its-chosen-row.md) `[x]` - The menu opens upward near the foot, scrolls when tall, and answers its chosen row
 - [B-208](docs/backlog/B-208-the-paused-press-shader-test-in-seconds.md) `[x]` - The paused press's shader test runs in seconds
+- [B-209](docs/backlog/B-209-the-accessibility-test-in-seconds.md) `[x]` - The sample's accessibility test runs in seconds
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection

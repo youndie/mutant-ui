@@ -33,36 +33,50 @@ class AccessibilityTest {
         return if (v <= 0.04045) v / 12.92 else ((v + 0.055) / 1.055).pow(2.4)
     }
 
+    /**
+     * [channel] of every 8-bit value. A tick reads the luminance of each of the screen's 259 200 pixels, and three `pow`s
+     * a pixel, twice for the tick-to-tick change, were most of the test's time (B-209); the table gives the same doubles.
+     */
+    private val channels = DoubleArray(256) { channel(it) }
+
     /** WCAG relative luminance of a `0xRRGGBB`. */
     private fun luminance(rgb: Int): Double =
-        0.2126 * channel(rgb shr 16 and 0xFF) + 0.7152 * channel(rgb shr 8 and 0xFF) + 0.0722 * channel(rgb and 0xFF)
+        0.2126 * channels[rgb shr 16 and 0xFF] + 0.7152 * channels[rgb shr 8 and 0xFF] + 0.0722 * channels[rgb and 0xFF]
 
+    /** The contrast ratio of two luminances. */
     private fun ratio(
-        a: Int,
-        b: Int,
-    ): Double {
-        val la = luminance(a)
-        val lb = luminance(b)
-        return (max(la, lb) + .05) / (min(la, lb) + .05)
+        la: Double,
+        lb: Double,
+    ): Double = (max(la, lb) + .05) / (min(la, lb) + .05)
+
+    /** One captured tick: its `0xRRGGBB` pixels row by row, read in one call rather than one `getRGB` a pixel, and their luminance. */
+    private class Frame(
+        val width: Int,
+        val height: Int,
+        val rgb: IntArray,
+        val luminance: DoubleArray,
+    )
+
+    private fun frame(img: BufferedImage): Frame {
+        val rgb = img.getRGB(0, 0, img.width, img.height, null, 0, img.width)
+        for (i in rgb.indices) rgb[i] = rgb[i] and 0xFFFFFF
+        return Frame(img.width, img.height, rgb, DoubleArray(rgb.size) { luminance(rgb[it]) })
     }
 
-    /** A text's contrast in [img] within [box]: its strongest pixel against the box's commonest, its ground. */
+    /** A text's contrast in [frame] within [box]: its strongest pixel against the box's commonest, its ground. */
     private fun contrast(
-        img: BufferedImage,
+        frame: Frame,
         box: IntArray,
     ): Double {
         val counts = HashMap<Int, Int>()
-        val px = ArrayList<Int>()
-        for (y in max(0, box[1]) until min(img.height, box[3])) {
-            for (x in max(0, box[0]) until min(img.width, box[2])) {
-                val c = img.getRGB(x, y) and 0xFFFFFF
-                px += c
-                counts[c] = (counts[c] ?: 0) + 1
-            }
-        }
-        if (px.isEmpty()) return 99.0
-        val ground = counts.maxBy { it.value }.key
-        return px.maxOf { ratio(it, ground) }
+        val ys = max(0, box[1]) until min(frame.height, box[3])
+        val xs = max(0, box[0]) until min(frame.width, box[2])
+        for (y in ys) for (x in xs) frame.rgb[y * frame.width + x].let { counts[it] = (counts[it] ?: 0) + 1 }
+        if (counts.isEmpty()) return 99.0
+        val ground = luminance(counts.maxBy { it.value }.key)
+        var strongest = 0.0
+        for (y in ys) for (x in xs) strongest = max(strongest, ratio(frame.luminance[y * frame.width + x], ground))
+        return strongest
     }
 
     private fun ComposeUiTest.texts(): List<Pair<Rect, String>> =
@@ -119,37 +133,32 @@ class AccessibilityTest {
                                 t to box
                             }
                     val worst = HashMap<String, Double>()
-                    var previous: BufferedImage? = null
+                    var previous: Frame? = null
                     var largest = 0
                     var red = 0
                     val reds = ArrayList<String>()
                     val redArea = ArrayList<Int>()
                     // A Tape cycle is 7 s: 56 scene ticks.
                     repeat(56) {
-                        val img = onNodeWithTag(tag, useUnmergedTree = true).captureToImage().toAwtImage()
+                        val img = frame(onNodeWithTag(tag, useUnmergedTree = true).captureToImage().toAwtImage())
                         for ((t, box) in boxes) worst[t] = min(worst[t] ?: 99.0, contrast(img, box))
-                        var area = 0
-                        for (y in 0 until img.height) {
-                            for (x in 0 until img.width) {
-                                if (saturatedRed(img.getRGB(x, y) and 0xFFFFFF)) {
-                                    area++
-                                }
-                            }
-                        }
-                        redArea += area
+                        redArea += img.rgb.count { saturatedRed(it) }
                         previous?.let { p ->
                             var changed = 0
                             var r = 0
-                            for (y in 0 until img.height) {
-                                for (x in 0 until img.width) {
-                                    val a = p.getRGB(x, y) and 0xFFFFFF
-                                    val b = img.getRGB(x, y) and 0xFFFFFF
-                                    val la = luminance(a)
-                                    val lb = luminance(b)
-                                    if (abs(la - lb) >= .1 && min(la, lb) < .8) changed++
-                                    if (saturatedRed(a) != saturatedRed(b)) {
-                                        r++
-                                        if (reds.size < 3) reds += "#${a.toString(16)}→#${b.toString(16)} at $x,$y"
+                            for (i in img.rgb.indices) {
+                                val a = p.rgb[i]
+                                val b = img.rgb[i]
+                                val la = p.luminance[i]
+                                val lb = img.luminance[i]
+                                if (abs(la - lb) >= .1 && min(la, lb) < .8) changed++
+                                if (saturatedRed(a) != saturatedRed(b)) {
+                                    r++
+                                    if (reds.size <
+                                        3
+                                    ) {
+                                        reds +=
+                                            "#${a.toString(16)}→#${b.toString(16)} at ${i % img.width},${i / img.width}"
                                     }
                                 }
                             }
