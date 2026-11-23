@@ -57,7 +57,8 @@ internal fun Themes(s: SampleStrings) {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                MutantButton(s.play, {}, key = "theme-b-$name")
+                                // B-203: the button keeps the room of Success's check; in Russian the row is short of it.
+                                MutantButton(s.play, {}, Modifier.weight(1f, fill = false), key = "theme-b-$name")
                                 MutantChip(s.noise, true, {}, key = "theme-c-$name")
                             }
                         }
