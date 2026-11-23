@@ -59,11 +59,17 @@ D24 reads answer 4).
 | Tab to the next card scrolls the shelf over 330 ms on the slide curve | «B-188 Tab to the next card glides the shelf over 330 ms on the slide curve»: each frame on the way names when the glide began, within 10 ms of each other (0.8 ms measured), every frame within 3 px of `84 + 234 (1 − p)²`, landing 300–350 ms in (320 measured) | only 9 frames on the way, 188 → 85 px by 210 ms |
 | … under `steppedMotion` and reduce motion (D22, D24) | «B-188 Tab glides in the hot tick's steps under steppedMotion and lands at once under reduce motion»: three to five places under the steps; under the pause 318 → 84 within two frames of the key, nothing between | 11 places under the steps |
 | at widths from 400 down to 200 dp the current card is whole and min(220, w − 84) wide | «B-188 at widths from 400 down to 200 dp …»: every 8 dp and 304, 303, 260, 201; the card's own size and place (its bounds in the root are cut by the view, which read a cut card as whole), the next card 14 dp after it where it is in view | 296 dp: 220 wide |
-| eight cards show «01/08» and no dots; seven show seven dots | «B-188 eight cards show a counter and no dots, seven show seven dots»: «01/08», no lime under the view, the OSD amber there; «03/08» after a turn; seven cards: no counter, the lime pointer, seven runs of ink on the dots' middle line | no «01/08» |
+| eight cards show «01/08» and no dots; seven show seven dots | «B-188 eight cards show a counter and no dots, seven show seven dots»: «01/08», no lime run of 8 px or more under the view, the OSD amber there; «03/08» after a turn; seven cards: no counter, the pointer's lime run (21 px), seven runs of ink on the dots' middle line | no «01/08» |
 
 A fifth test guards what the change could break, not an AC, so it passes on the code before as well: «B-188 a card
 focused below the fold of a scrolling page is still brought into view» (the pager used to pass the request on; the new
 node does it now).
+
+The counter test first counted every lime pixel under the view. On the CI runner (`macos-latest`) two pixels of the
+counter's anti-aliased edge read as lime, where this Mac reads none, and it failed; it now asks for the longest run of
+lime on a row, which is the pointer's body (21 px here) and not an edge's pixel or two (`1aff6ff`). With the text
+assertions taken out, the run alone still kills both counter mutants below («a lime run of 21 px»; «seven cards: no
+counter, 90»).
 
 **Mutants**, each after the commits (`6e05daf`, `88d287a`), one line changed, the aimed test named among the failures in the JUnit
 XML, the file restored with `git checkout`, `git status` clean:
