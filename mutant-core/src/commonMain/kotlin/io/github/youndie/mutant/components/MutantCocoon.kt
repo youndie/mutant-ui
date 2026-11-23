@@ -34,6 +34,9 @@ import kotlin.math.min
  * change paint on each tick of the scene, eight times a second; under reduce motion and under «Чистый сигнал» it
  * stands. It takes the size its [modifier] gives and none of its own. Several on one screen each take their own
  * [key], or they flicker alike. Read as indeterminate progress.
+ *
+ * It hands over to what it stood for through [io.github.youndie.mutant.surface.MutantAppear]: `if (loading)
+ * MutantCocoon(…) else MutantAppear { MutantCard(…) }` — the cocoon goes in one frame and the card tunes in (B-179).
  */
 @Composable
 public fun MutantCocoon(

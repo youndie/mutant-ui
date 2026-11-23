@@ -1,20 +1,20 @@
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantCarouselKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantCarouselKt;
 	public fun <init> ()V
-	public final fun getLambda$1572565751$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1966127296$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1456330760$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1214578143$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantDatePickerKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantDatePickerKt;
 	public fun <init> ()V
-	public final fun getLambda$-1268647082$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1695916811$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantNavigationDrawerKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantNavigationDrawerKt;
 	public fun <init> ()V
-	public final fun getLambda$-762274554$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1500138010$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSearchBarKt {
@@ -26,13 +26,13 @@ public final class io/github/youndie/mutant/components/ComposableSingletons$Muta
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSegmentedButtonKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantSegmentedButtonKt;
 	public fun <init> ()V
-	public final fun getLambda$1591446019$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$500434211$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSwitchKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantSwitchKt;
 	public fun <init> ()V
-	public final fun getLambda$1953343056$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1621055120$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantTopAppBarKt {
@@ -314,6 +314,10 @@ public final class io/github/youndie/mutant/pattern/MutantPattern : java/lang/En
 public final class io/github/youndie/mutant/pattern/MutantPatternKt {
 	public static final fun mutantPattern (Landroidx/compose/ui/Modifier;Lio/github/youndie/mutant/pattern/MutantPattern;Z)Landroidx/compose/ui/Modifier;
 	public static synthetic fun mutantPattern$default (Landroidx/compose/ui/Modifier;Lio/github/youndie/mutant/pattern/MutantPattern;ZILjava/lang/Object;)Landroidx/compose/ui/Modifier;
+}
+
+public final class io/github/youndie/mutant/surface/MutantAppearKt {
+	public static final fun MutantAppear (ZLandroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/surface/MutantKeyframeLossKt {

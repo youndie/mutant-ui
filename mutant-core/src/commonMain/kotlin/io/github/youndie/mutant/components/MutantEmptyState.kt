@@ -28,6 +28,9 @@ import io.github.youndie.mutant.type.cssLine
  * [text] (Rubik 14, secondary), 6 dp apart, all centred in what it is given; and, given [action], that under the text
  * 20 dp apart (a [MutantButton], say — the page draws none). The words wrap and stay centred. Given less than the
  * art's width, the art keeps its size, centred, and overflows both sides alike.
+ *
+ * In a [io.github.youndie.mutant.surface.MutantAppear] it tunes in as it takes the content's place, its art as mosaics
+ * and its words on the third step, and steps out as it leaves (B-179); composed alone it shows whole in its first frame.
  */
 @Composable
 public fun MutantEmptyState(

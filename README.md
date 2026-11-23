@@ -26,6 +26,7 @@ reduce motion, the clean signal and the demo screens.
 | Navigation | `MutantTopAppBar`, `MutantTabs`, `MutantNavigationBar`, `MutantNavigationDrawer`, `MutantMenu`, `MutantDropdown` |
 | Communication | `MutantBadge`, `MutantLinearProgress`, `MutantCircularProgress`, `MutantCocoon` (loading), `MutantSnackbar`, `MutantTooltipBox`, `MutantEmptyState`, `MutantPullToRefresh` |
 | Overlays | `MutantDialog`, `MutantBottomSheet` |
+| Appearing | `MutantAppear` (its content tunes in through a 16 dp and an 8 dp mosaic, and steps out through the 8 dp one) |
 | Screen effects | `Modifier.mutantTape()` (the tape noise), `MutantKeyframeLoss` (a band of the picture that breaks and drags every nine seconds), `Modifier.mutantPattern()`, `MutantIllustration`, `MutantIcon` |
 
 ## Using it

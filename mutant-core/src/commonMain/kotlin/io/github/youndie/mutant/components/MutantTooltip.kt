@@ -34,7 +34,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.MutantTune
+import io.github.youndie.mutant.surface.MutantTuned
+import io.github.youndie.mutant.surface.composed
+import io.github.youndie.mutant.surface.tuneStands
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.MutantTheme
@@ -52,9 +57,11 @@ import kotlinx.coroutines.launch
  * [supportingText], two lines on the amber plate, 44 dp tall. It is centred over the anchor, its bottom 28 dp above it
  * (22 for the two-line plate), as the page stands them.
  *
- * The design draws it shown, not appearing; this is designed here (D15). It shows at once, with no entrance, while a
- * mouse hovers the anchor, while the anchor holds keyboard focus, and after a finger's long press, until 1.5 s after it
- * lifts; a finger that moves past the touch slop first (a scroll starting on the anchor) is no long press. Focus taken by
+ * The design draws it shown, not appearing; this is designed here (D15). It shows while a mouse hovers the anchor, while
+ * the anchor holds keyboard focus, and after a finger's long press, until 1.5 s after it lifts. Its plate tunes in as
+ * it shows (a 16 dp mosaic, an 8 dp mosaic, then the plate and its words, 320 ms in three steps) and steps out as it
+ * hides (the 8 dp mosaic, then nothing, 160 ms), as [io.github.youndie.mutant.surface.MutantAppear] does; under reduce
+ * motion it shows and goes at once; a finger that moves past the touch slop first (a scroll starting on the anchor) is no long press. Focus taken by
  * a press shows nothing. The plate takes no input: a press through it reaches what lies under it.
  */
 @Composable
@@ -140,9 +147,13 @@ public fun MutantTooltipBox(
             },
     ) {
         anchor()
-        if (hovered || held || (focused && keyboard && !byPress)) {
-            TooltipPopup(text, supportingText, key)
-        }
+        // B-179: the plate tunes in and steps out (the designer's answer 1), kept in its popup while it leaves.
+        val shown = hovered || held || (focused && keyboard && !byPress)
+        val clock = readMutantClock()
+        val still = tuneStands(clock)
+        val tune = remember { MutantTune(shown, clock.nowMs, play = true) }
+        tune.follow(shown, clock.nowMs, still)
+        if (tune.composed(clock, still)) TooltipPopup(text, supportingText, key, tune, leaving = !shown)
     }
 }
 
@@ -152,13 +163,17 @@ private fun TooltipPopup(
     text: String,
     supportingText: String?,
     key: String,
+    tune: MutantTune,
+    leaving: Boolean,
 ) {
     val gap = if (supportingText == null) GAP_PLAIN else GAP_RICH
     Popup(
         popupPositionProvider = AboveTheMiddle,
         properties = PopupProperties(focusable = false, clippingEnabled = false),
     ) {
-        Layout(content = { TooltipPlate(text, supportingText, key, Modifier) }) { measurables, _ ->
+        Layout(content = {
+            MutantTuned(tune, leaving = leaving) { TooltipPlate(text, supportingText, key, Modifier) }
+        }) { measurables, _ ->
             val p = measurables.first().measure(Constraints())
             layout(0, 0) { p.place(-p.width / 2, -gap.dp.roundToPx() - p.height) }
         }

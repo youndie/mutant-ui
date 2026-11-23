@@ -42,6 +42,9 @@ import io.github.youndie.mutant.type.cssLine
  * 16 from the sides, kept clean — no flow line and no dead pixel enters it. [MutantCardTitle] and
  * [MutantCardSubtitle] are the design's two lines. Given [onClick], the whole card is the button; disabled, it loses
  * its signal and its texts grey.
+ *
+ * In a [io.github.youndie.mutant.surface.MutantAppear] it tunes in as it appears and steps out as it leaves (B-179);
+ * composed alone it shows whole in its first frame, and taken out of the composition it is gone in one.
  */
 @Composable
 public fun MutantCard(

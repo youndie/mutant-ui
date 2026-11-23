@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,7 @@ import io.github.youndie.mutant.components.MutantTableCellStyle
 import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.icons.MutantIcons
+import io.github.youndie.mutant.surface.MutantAppear
 import io.github.youndie.mutant.theme.MutantTheme
 
 @Composable
@@ -98,14 +100,19 @@ internal fun Search(
                     } else {
                         Column {
                             for ((i, t) in found) {
-                                MutantSearchResult(
-                                    t.title,
-                                    query.trim(),
-                                    supporting = t.side,
-                                    leadingIcon = MutantIcons.Schedule,
-                                    onClick = { nav.open = i },
-                                    key = "sr$i",
-                                )
+                                // B-179: a result tunes in as it arrives; one that stays does not tune in again.
+                                key(i) {
+                                    MutantAppear {
+                                        MutantSearchResult(
+                                            t.title,
+                                            query.trim(),
+                                            supporting = t.side,
+                                            leadingIcon = MutantIcons.Schedule,
+                                            onClick = { nav.open = i },
+                                            key = "sr$i",
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
