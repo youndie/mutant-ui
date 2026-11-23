@@ -2,9 +2,11 @@ package io.github.youndie.mutant.sample
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
@@ -13,7 +15,10 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import io.github.youndie.mutant.theme.MutantTheme
 import java.awt.image.BufferedImage
@@ -114,4 +119,42 @@ class SampleLayoutTest {
             assertTrue(end <= phone.right, "the menu ends at $end, the phone at ${phone.right}")
             assertEquals(button.right, end, 1f, "the menu's end at the button's end")
         }
+
+    /** The laid-out width of the one text that reads [text], in px (1 dp here): what a plate is measured by. */
+    private fun ComposeUiTest.lineWidth(text: String): Int {
+        val layouts = ArrayList<TextLayoutResult>()
+        onNode(hasText(text), useUnmergedTree = true).performSemanticsAction(SemanticsActions.GetTextLayoutResult) {
+            it(layouts)
+        }
+        return layouts.single().size.width
+    }
+
+    @Test
+    fun `the header's hints are lines no wider than their titles, in both languages`() {
+        val failures = ArrayList<String>()
+        for (language in SampleLanguage.entries) {
+            val t = SampleStrings(language)
+            page(SampleSettings(language = language)) {
+                for ((label, title, hint) in listOf(
+                    Triple(t.steppedMotion, t.steppedMotionTitle, t.steppedMotionHint),
+                    Triple(t.mosaicPastContour, t.mosaicPastContourTitle, t.mosaicPastContourHint),
+                )) {
+                    onNodeWithText(label, useUnmergedTree = true).performMouseInput { moveTo(center) }
+                    mainClock.advanceTimeBy(1_500)
+                    val titleWidth = lineWidth(title)
+                    val hintWidth = lineWidth(hint)
+                    // The plate is one line per text, as wide as its widest (B-32): the stepped-motion hint was 1 381 dp,
+                    // its plate 1 405 in the 1 024 dp window. No wider than its title, a hint no longer sets the plate.
+                    if (hintWidth >
+                        titleWidth
+                    ) {
+                        failures += "$language, $label: hint $hintWidth dp, title $titleWidth dp"
+                    }
+                    onNodeWithText(label, useUnmergedTree = true).performMouseInput { moveTo(Offset(-400f, -400f)) }
+                    mainClock.advanceTimeBy(1_500)
+                }
+            }
+        }
+        assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+    }
 }
