@@ -107,12 +107,13 @@ internal fun Chips(s: SampleStrings) {
 internal fun Fields(s: SampleStrings) {
     var value by remember { mutableStateOf("") }
     var focused by remember { mutableStateOf(s.nightTue) }
+    val watch = remember { SampleFocusWatch() }
     States(s) {
         Cell(s.stRest, FIELD) {
             MutantTextField(
                 value,
                 { value = it },
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().watchFocus(watch, "rest"),
                 prefix = s.search,
                 placeholder = s.findRecording,
                 key = "tf-rest",
@@ -125,11 +126,18 @@ internal fun Fields(s: SampleStrings) {
                 Modifier.fillMaxWidth(),
                 prefix = s.name,
                 key = "tf-focus",
-                interactionSource = held(focus = true),
+                interactionSource = held(focus = !watch.any),
             )
         }
         Cell(s.stError, FIELD) {
-            MutantTextField("99", {}, Modifier.fillMaxWidth(), prefix = s.channel, isError = true, key = "tf-error")
+            MutantTextField(
+                "99",
+                {},
+                Modifier.fillMaxWidth().watchFocus(watch, "error"),
+                prefix = s.channel,
+                isError = true,
+                key = "tf-error",
+            )
         }
         Cell(s.stDisabled, FIELD) {
             MutantTextField(s.untitled, {}, Modifier.fillMaxWidth(), prefix = s.name, enabled = false, key = "tf-off")
@@ -141,9 +149,16 @@ internal fun Fields(s: SampleStrings) {
 internal fun Searches(s: SampleStrings) {
     var query by remember(s) { mutableStateOf(s.night) }
     var empty by remember { mutableStateOf("") }
+    val watch = remember { SampleFocusWatch() }
     Variants(s) {
         Cell(s.vSuggestions, FIELD) {
-            MutantSearchBar(empty, { empty = it }, Modifier.fillMaxWidth(), prefix = s.search, clearLabel = s.clear) {
+            MutantSearchBar(
+                empty,
+                { empty = it },
+                Modifier.fillMaxWidth().watchFocus(watch, "suggestions"),
+                prefix = s.search,
+                clearLabel = s.clear,
+            ) {
                 MutantSearchSuggestions(listOf(s.nightToTuesday, s.nightAir), { empty = it })
             }
         }
@@ -151,7 +166,7 @@ internal fun Searches(s: SampleStrings) {
             MutantSearchBar(
                 query,
                 { query = it },
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().watchFocus(watch, "results"),
                 prefix = s.search,
                 clearLabel = s.clear,
                 key = "search-b",
@@ -179,7 +194,7 @@ internal fun Searches(s: SampleStrings) {
                 prefix = s.search,
                 clearLabel = s.clear,
                 key = "search-f",
-                interactionSource = held(focus = true),
+                interactionSource = held(focus = !watch.any),
             )
         }
     }

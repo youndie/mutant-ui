@@ -22,10 +22,12 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -221,7 +223,8 @@ internal fun Cell(
 
 /**
  * An interaction source held in a state for a specimen: a press (the body boils) or a focus, emitted a frame after the
- * control has subscribed to it.
+ * control has subscribed to it. The focus follows [focus] as it changes: a specimen of the focused state stands down
+ * while a field beside it has the real focus (B-174), or two fields would show the focus and only one take the keys.
  */
 @Composable
 internal fun held(
@@ -229,13 +232,45 @@ internal fun held(
     focus: Boolean = false,
 ): MutableInteractionSource {
     val source = remember { MutableInteractionSource() }
+    val shown = remember { arrayOfNulls<FocusInteraction.Focus>(1) }
     LaunchedEffect(source) {
         withFrameNanos { }
         if (press) source.emit(PressInteraction.Press(Offset(24f, 24f)))
-        if (focus) source.emit(FocusInteraction.Focus())
+    }
+    LaunchedEffect(source, focus) {
+        if (focus) {
+            withFrameNanos { }
+            FocusInteraction.Focus().also {
+                shown[0] = it
+                source.emit(it)
+            }
+        } else {
+            shown[0]?.let { source.emit(FocusInteraction.Unfocus(it)) }
+            shown[0] = null
+        }
     }
     return source
 }
+
+/** Which of the controls given [watchFocus] hold the real focus: a focused specimen stands down while one does. */
+internal class SampleFocusWatch {
+    private val holders = mutableStateSetOf<String>()
+
+    val any: Boolean get() = holders.isNotEmpty()
+
+    fun set(
+        id: String,
+        focused: Boolean,
+    ) {
+        if (focused) holders += id else holders -= id
+    }
+}
+
+/** Tells [watch] whether this control, named [id], holds the real focus. */
+internal fun Modifier.watchFocus(
+    watch: SampleFocusWatch,
+    id: String,
+): Modifier = onFocusChanged { watch.set(id, it.hasFocus) }
 
 /**
  * An overlay's specimen: a screen of its own, so the overlay holds this box's clock, not the page's (B-90). An overlay
