@@ -18,6 +18,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.isToggleable
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -208,6 +209,33 @@ class DemoRecordsTest {
             onNodeWithText(s.timerLine(24, 11, 2, 40), useUnmergedTree = true).assertExists()
         }
     }
+
+    /** How many texts of the phone read [text]. */
+    private fun ComposeUiTest.shows(text: String) =
+        onAllNodes(hasText(text), useUnmergedTree = true).fetchSemanticsNodes().size
+
+    @Test
+    fun `a recording reads its own side, length and channel, and its elapsed time where the kit's percent stood`() =
+        phone {
+            onNodeWithText(s.untitled).performClick()
+            mainClock.advanceTimeBy(800)
+            // The design's tape, in the design's words: «Side A», its line, and 12:04 played.
+            assertEquals(1, shows(s.sideAShort), "the design's side")
+            assertEquals(1, shows(s.sideALine), "the design's line")
+            // The first track reads 12:04 too, as in the design.
+            assertEquals(2, shows("12:04"), "the design's elapsed time beside the track's")
+            assertEquals(0, shows("026%"), "no percent")
+            onNodeWithContentDescription(s.back).performClick()
+            mainClock.advanceTimeBy(800)
+            // Another tape, opened by its card on the shelf below the fold (the carousel above shows it too).
+            onAllNodes(hasText(s.rain) and hasClickAction())[1].performSemanticsAction(SemanticsActions.OnClick)
+            mainClock.advanceTimeBy(800)
+            assertEquals(1, shows("Side B"), "the tape's own side")
+            assertEquals(1, shows("31:12 · CH 05"), "the tape's own length and channel")
+            assertEquals(0, shows(s.sideALine), "not the design's line")
+            // 12:04 of 46:00 is 26.2 %: as far into this tape's 31:12, 8:11.
+            assertEquals(1, shows("8:11"), "as far into its own length")
+        }
 
     private companion object {
         /** Where the phone stands in the test's window: under its 28 dp title and the 16 dp gap. */

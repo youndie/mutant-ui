@@ -46,6 +46,7 @@ import io.github.youndie.mutant.illustration.MutantIllustration
 import io.github.youndie.mutant.illustration.MutantIllustrationKind
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 @Composable
 internal fun Recording(
@@ -56,7 +57,8 @@ internal fun Recording(
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var queued by remember { mutableStateOf(true) }
     var listening by remember { mutableStateOf(false) }
-    var played by remember { mutableFloatStateOf(.26f) }
+    // The design's screen reads 12:04 of 46:00 played; every tape opens as far into its own length.
+    var played by remember { mutableFloatStateOf(DESIGN_ELAPSED_S.toFloat() / DESIGN_LENGTH_S) }
     var volume by rememberSaveable { mutableIntStateOf(6) }
     var share by remember { mutableStateOf(false) }
     var rename by remember { mutableStateOf(false) }
@@ -86,10 +88,27 @@ internal fun Recording(
                     Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp),
                 )
                 Spacer(Modifier.height(42.dp))
-                BasicText(s.sideAShort, style = MutantTheme.textStyles.display(24.sp))
-                Osd(s.sideALine)
+                // B-174: the side and its line are the tape's own; the design's tape reads the design's words.
+                val design = t.title == s.untitled
+                BasicText(
+                    if (design) s.sideAShort else t.side.substringBefore(" · "),
+                    style = MutantTheme.textStyles.display(24.sp),
+                )
+                Osd(if (design) s.sideALine else "${t.length} · ${t.channel}")
                 Spacer(Modifier.height(14.dp))
-                MutantLinearProgress(played)
+                // The design's bar with the elapsed time beside it in the on-screen-display amber, not the kit's percent.
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    MutantLinearProgress(played, Modifier.weight(1f), showValue = false)
+                    Osd(
+                        recordingClock(
+                            (played * recordingSeconds(t.length)).roundToInt(),
+                            t.length.count { it == ':' } > 1,
+                        ),
+                    )
+                }
                 Spacer(Modifier.height(22.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -176,4 +195,25 @@ internal fun Recording(
             }
         }
     }
+}
+
+/** The design's Recording screen: 12:04 played of a 46:00 tape. */
+private const val DESIGN_ELAPSED_S = 12 * 60 + 4
+private const val DESIGN_LENGTH_S = 46 * 60
+
+/** A tape's length, «46:00» or «1:58:10», in seconds. */
+internal fun recordingSeconds(length: String): Int =
+    length.split(':').fold(0) { total, part ->
+        total * 60 +
+            part.toInt()
+    }
+
+/** [seconds] as a tape's counter reads them: «12:04», or «0:31:12» on a tape of hours ([hours]). */
+internal fun recordingClock(
+    seconds: Int,
+    hours: Boolean,
+): String {
+    val m = seconds / 60 % 60
+    val sec = (seconds % 60).toString().padStart(2, '0')
+    return if (hours) "${seconds / 3600}:${m.toString().padStart(2, '0')}:$sec" else "${seconds / 60}:$sec"
 }
