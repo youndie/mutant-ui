@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -99,7 +101,14 @@ import kotlin.math.roundToInt
  * picks. The design is a still: all of this is designed here (D15). The drop runs to a new day in 330 ms (B-93), each
  * number black where the drop covers it; a new month moves it at once. Right to left the grid mirrors with its weekdays.
  * Given less room than it wants, it keeps its size (B-178): centred across a narrower slot, overflowing both sides,
- * and hanging from the top of a shorter one, running off its foot; its rows never overlap.
+ * and hanging from the top of a shorter one, running off its foot; its rows never overlap. It always lays out six
+ * weeks, so its height and its body stay the same from month to month (B-196); the weeks a month does not reach are
+ * blank.
+ *
+ * [today], where given and in the month shown, wears four corner brackets in the on-screen-display amber around its
+ * number, the focused field's brackets. A day [selectableDates] refuses is drawn in the disabled grey, never wears
+ * the drop, and is not a target: a press or a key does nothing there, the arrow keys step over it, and it reads as
+ * disabled. The component reads no clock (research D6): today is the caller's.
  */
 @Composable
 public fun MutantDatePicker(
@@ -109,6 +118,8 @@ public fun MutantDatePicker(
     onSelect: (Int) -> Unit,
     onMonthChange: (year: Int, month: Int) -> Unit,
     modifier: Modifier = Modifier,
+    today: MutantDate? = null,
+    selectableDates: MutantSelectableDates = MutantSelectableDates.All,
     monthNames: List<String> = MONTHS,
     weekdayNames: List<String> = WEEKDAYS,
     previousLabel: String = "Предыдущий месяц",
@@ -127,7 +138,36 @@ public fun MutantDatePicker(
         previousLabel,
         nextLabel,
         key,
+        today = today,
+        selectableDates = selectableDates,
     )
+}
+
+/** A day of the Gregorian calendar: [month] 1–12, [day] 1–31. A plain value; the picker reads no clock (D6). */
+@Immutable
+public data class MutantDate(
+    public val year: Int,
+    public val month: Int,
+    public val day: Int,
+)
+
+/**
+ * Which days [MutantDatePicker] lets the user pick, as Material's `SelectableDates`: [isSelectableDate] answers for a
+ * day of the Gregorian calendar, [month] 1–12. It is asked for every day of the month shown, on every composition, so
+ * it should be cheap and pure. [All], the default, refuses none.
+ */
+@Stable
+public fun interface MutantSelectableDates {
+    public fun isSelectableDate(
+        year: Int,
+        month: Int,
+        day: Int,
+    ): Boolean
+
+    public companion object {
+        /** Every day can be picked. */
+        public val All: MutantSelectableDates = MutantSelectableDates { _, _, _ -> true }
+    }
 }
 
 /** [MutantDatePicker]; [hidden] draws its words and arrows transparent for a bare twin. */
@@ -145,6 +185,8 @@ internal fun DatePickerBody(
     nextLabel: String,
     key: String,
     hidden: Boolean = false,
+    today: MutantDate? = null,
+    selectableDates: MutantSelectableDates = MutantSelectableDates.All,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
@@ -154,6 +196,8 @@ internal fun DatePickerBody(
     val m = month.coerceIn(1, 12)
     val days = daysIn(year, m)
     val lead = firstWeekday(year, m)
+    val todayHere = today?.takeIf { it.year == year && it.month == m }?.day
+    val open = BooleanArray(days) { selectableDates.isSelectableDate(year, m, it + 1) }
     val pick by rememberUpdatedState(onSelect)
     val change by rememberUpdatedState(onMonthChange)
     MutantSurface(
@@ -214,7 +258,7 @@ internal fun DatePickerBody(
                     )
                 }
             }
-            DayGrid(days, lead, selectedDay, key, hidden) { pick(it) }
+            DayGrid(days, lead, selectedDay, todayHere, open, key, hidden) { pick(it) }
         }
     }
 }
@@ -246,12 +290,17 @@ private class CalendarKeepsItsSizeNode :
     }
 }
 
-/** The days: blank cells before the first, then each day a 36 dp cell; the chosen one's drop under its number. */
+/**
+ * The days: blank cells before the first, then each day a 36 dp cell, six weeks whatever the month (B-196); the chosen
+ * one's drop under its number. [today] is the day in this month to bracket, [open] which days can be picked.
+ */
 @Composable
 private fun DayGrid(
     days: Int,
     lead: Int,
     selectedDay: Int?,
+    today: Int?,
+    open: BooleanArray,
     key: String,
     hidden: Boolean,
     onPick: (Int) -> Unit,
@@ -259,7 +308,8 @@ private fun DayGrid(
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
     val raster = LocalMutantTextRaster.current
-    val chosen = selectedDay != null && selectedDay in 1..days
+    // A day that cannot be picked never wears the drop (B-196), even when the caller names it.
+    val chosen = selectedDay != null && selectedDay in 1..days && open[selectedDay - 1]
     val focus = remember(days) { List(days) { FocusRequester() } }
     val scale = androidx.compose.ui.platform.LocalDensity.current.fontScale
     // B-93: the drop runs from the day it stood on to the new one, as the navigation bar's pill does, through both axes.
@@ -269,7 +319,7 @@ private fun DayGrid(
     val instant = LocalMutantReduceMotion.current
     val steps = LocalMutantSteppedMotion.current
     val from = remember { DropFrom(selectedDay ?: 0, lead, days) }
-    from.follow(selectedDay ?: 0, lead, days)
+    from.follow(if (chosen) selectedDay else 0, lead, days)
     val cellDp = remember { floatArrayOf(CELL.toFloat()) }
     // Right to left the grid is mirrored with its weekday row, the drop's run and the arrow keys with it (B-168).
     val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
@@ -299,6 +349,8 @@ private fun DayGrid(
     }
     val light = dayStyle(FontWeight.Normal, colors.text)
     val dark = dayStyle(FontWeight.Bold, colors.onPrimary)
+    val shut = dayStyle(FontWeight.Normal, colors.textDisabled)
+    val bracket = if (hidden) Color.Transparent else colors.textOsd
     Layout(
         content = {
             if (chosen) {
@@ -315,19 +367,24 @@ private fun DayGrid(
                 DayCell(
                     d,
                     chosen && d == selectedDay,
-                    light,
+                    open[d - 1],
+                    if (d == today) bracket else null,
+                    if (open[d - 1]) light else shut,
                     dark,
                     { place?.over(i) },
                     Modifier.focusRequester(focus[d - 1]).onPreviewKeyEvent {
                         if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                        val to =
+                        val step =
                             when (it.key) {
-                                Key.DirectionRight -> d + side
-                                Key.DirectionLeft -> d - side
-                                Key.DirectionDown -> d + 7
-                                Key.DirectionUp -> d - 7
+                                Key.DirectionRight -> side
+                                Key.DirectionLeft -> -side
+                                Key.DirectionDown -> 7
+                                Key.DirectionUp -> -7
                                 else -> return@onPreviewKeyEvent false
                             }
+                        // Over the days that cannot be picked, which take no focus (B-196), to the next that can.
+                        var to = d + step
+                        while (to in 1..days && !open[to - 1]) to += step
                         if (to in 1..days) focus[to - 1].requestFocus()
                         true
                     },
@@ -344,7 +401,7 @@ private fun DayGrid(
                 items.maxOfOrNull { maxOf(it.maxIntrinsicWidth(least), it.maxIntrinsicHeight(least)) } ?: least,
             )
         cellDp[0] = cell / density
-        val rows = (lead + days + 6) / 7
+        val rows = DAY_ROWS
         val drop = if (chosen) measurables.first().measure(Constraints.fixed(cell, cell)) else null
         val cells = items.map { it.measure(Constraints.fixed(cell, cell)) }
         layout(cell * 7, cell * rows) {
@@ -360,10 +417,16 @@ private fun DayGrid(
     }
 }
 
+/**
+ * One day's cell: its number, light, or black where the drop is; [today], where given, the colour of the brackets
+ * around the number. A day not [enabled] takes no press, no key and no focus, and reads as disabled (B-196).
+ */
 @Composable
 private fun DayCell(
     day: Int,
     selected: Boolean,
+    enabled: Boolean,
+    today: Color?,
     light: TextStyle,
     dark: TextStyle,
     drop: () -> Rect?,
@@ -376,10 +439,17 @@ private fun DayCell(
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     Box(
         moves
-            .mutantHand(true)
-            .selectable(selected, source, indication = null, role = Role.Button, onClick = onPick)
+            .mutantHand(enabled)
+            .selectable(selected, source, indication = null, enabled = enabled, role = Role.Button, onClick = onPick)
             .drawWithContent {
                 drawContent()
+                if (today != null) {
+                    // B-196: the focused field's four corner strokes, in the amber, around the number.
+                    scale(density, Offset.Zero) {
+                        val i = TODAY_INSET
+                        drawCornerBrackets(i, i, size.width / density - i, size.height / density - i, today)
+                    }
+                }
                 if (focused && keyboard) {
                     scale(density, Offset.Zero) {
                         drawCornerBrackets(1f, 1f, size.width / density - 1, size.height / density - 1, colors.focus)
@@ -564,8 +634,9 @@ private fun Arrow(
  * 14 dp) in Handjet 52 semibold, two digits, a colon between them in the on-screen-display amber, 10 dp apart. The field
  * being set is acid with black digits (the page's «часы выбраны, минуты ждут»); a press on the other makes it the one,
  * its acid pouring in, and the digits turn as the pour passes them.
- * Up and Down step the one focused, wrapping (23 → 0, 59 → 0), and each reads to a screen reader as a value in its
- * range that can be set; [hourLabel] and [minuteLabel] name them. Designed here (D15): the design is a still.
+ * Up and Down step the one focused, wrapping (23 → 0, 59 → 0), and make it the one being set, the acid pouring to it
+ * as a press would (B-196). Each reads to a screen reader as a value in its range that can be set; [hourLabel] and
+ * [minuteLabel] name them. Designed here (D15): the design is a still.
  */
 @Composable
 public fun MutantTimePicker(
@@ -662,11 +733,15 @@ private fun TimeField(
             .selectable(active, source, indication = null, role = Role.Button, onClick = onActivate)
             .onPreviewKeyEvent {
                 if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                when (it.key) {
-                    Key.DirectionUp -> onValue((value + 1).mod(count))
-                    Key.DirectionDown -> onValue((value - 1).mod(count))
-                    else -> return@onPreviewKeyEvent false
-                }
+                val next =
+                    when (it.key) {
+                        Key.DirectionUp -> (value + 1).mod(count)
+                        Key.DirectionDown -> (value - 1).mod(count)
+                        else -> return@onPreviewKeyEvent false
+                    }
+                // B-196: the field the keys set is the one being set; the acid pours to it as a press would.
+                onActivate()
+                onValue(next)
                 true
             }.semantics {
                 contentDescription = label
@@ -758,6 +833,15 @@ private const val DROP_RADIUS = 18.0
 
 /** Half the height of the days' figures about their line's middle, dp: Rubik 14's figures, 10 dp, and a pixel. */
 private const val DIGIT_HALF = 5.5f
+
+/** The weeks the grid always lays out (B-196): the most a month can reach, a 31-day month from a Saturday on. */
+private const val DAY_ROWS = 6
+
+/**
+ * Today's brackets stand this far inside the 36 dp cell, dp: a 28 dp square around the number, inside the keyboard's
+ * focus brackets (1 dp in), so both read at once. Designed here (B-196, D15): the design draws no today.
+ */
+private const val TODAY_INSET = 4f
 
 /**
  * Follows the chosen day from composition without writing state (B-93): where the drop's run starts, in cells from the
