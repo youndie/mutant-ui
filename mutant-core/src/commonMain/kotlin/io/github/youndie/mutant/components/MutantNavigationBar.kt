@@ -466,7 +466,9 @@ internal val LocalMutantNavigationBarAsDesigned = staticCompositionLocalOf { fal
 internal fun navigationBadgeText(text: String): String {
     val digits = text.trimStart('0')
     val count = text.isNotEmpty() && text.all { it in '0'..'9' }
-    val over = digits.length > NAVIGATION_BADGE_MAX.toString().length || (digits.isNotEmpty() && digits.toInt() > NAVIGATION_BADGE_MAX)
+    val over =
+        digits.length > NAVIGATION_BADGE_MAX.toString().length ||
+            (digits.isNotEmpty() && digits.toInt() > NAVIGATION_BADGE_MAX)
     return if (count && over) "$NAVIGATION_BADGE_MAX+" else text
 }
 

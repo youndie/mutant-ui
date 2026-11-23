@@ -57,11 +57,20 @@ class NavigationBarBadgeTest {
         runComposeUiTest {
             mainClock.autoAdvance = false
             setContent {
-                CompositionLocalProvider(LocalDensity provides Density(density), LocalLayoutDirection provides direction) {
+                CompositionLocalProvider(
+                    LocalDensity provides Density(density),
+                    LocalLayoutDirection provides direction,
+                ) {
                     MutantTheme(reduceMotion = true) {
                         Column(Modifier.testTag("c")) {
                             for (b in badges) {
-                                MutantNavigationBar(items(b), 0, {}, Modifier.width(328.dp), windowInsets = WindowInsets(0))
+                                MutantNavigationBar(
+                                    items(b),
+                                    0,
+                                    {},
+                                    Modifier.width(328.dp),
+                                    windowInsets = WindowInsets(0),
+                                )
                             }
                         }
                     }
@@ -85,7 +94,10 @@ class NavigationBarBadgeTest {
         val h = (68 * density).roundToInt()
         val ys = row * h until (row + 1) * h
         // The cell and the next half cell: a plate that grows right may leave its own.
-        val xs = (i * cell until minOf(px.width, (i + 1) * cell + cell / 2)).filter { x -> ys.any { y -> near(px[x, y], amber, .03f) } }
+        val xs =
+            (i * cell until minOf(px.width, (i + 1) * cell + cell / 2)).filter { x ->
+                ys.any { y -> near(px[x, y], amber, .03f) }
+            }
         return if (xs.isEmpty()) null else xs.first()..xs.last()
     }
 
@@ -102,10 +114,17 @@ class NavigationBarBadgeTest {
                 val plates = texts.indices.map { row -> plate(px, d, row, i) }
                 plates.forEachIndexed { row, p ->
                     assertTrue(p != null, "density $d item $i «${texts[row]}»: an amber plate")
-                    assertEquals(iconRight, p.first, "density $d item $i «${texts[row]}»: the plate $p starts at the icon's right edge")
+                    assertEquals(
+                        iconRight,
+                        p.first,
+                        "density $d item $i «${texts[row]}»: the plate $p starts at the icon's right edge",
+                    )
                 }
                 val rights = plates.map { it!!.last }
-                assertTrue(rights[0] < rights[1] && rights[1] < rights[2], "density $d item $i: wider counts grow right, $rights")
+                assertTrue(
+                    rights[0] < rights[1] && rights[1] < rights[2],
+                    "density $d item $i: wider counts grow right, $rights",
+                )
             }
         }
     }
@@ -124,7 +143,8 @@ class NavigationBarBadgeTest {
                 val x0 = i * cell + (cell - icon) / 2
                 // The icon's ink, bare: the pixels in its square at the icon's colour.
                 val inked =
-                    (top until top + icon).flatMap { y -> (x0 until x0 + icon).map { x -> x to y } }
+                    (top until top + icon)
+                        .flatMap { y -> (x0 until x0 + icon).map { x -> x to y } }
                         .filter { (x, y) -> near(px[x, y], ink, .12f) }
                 assertTrue(inked.size > 20 * d * d, "density $d item $i: the bare icon's ink, ${inked.size} px")
                 for (row in 1..3) {
@@ -141,7 +161,10 @@ class NavigationBarBadgeTest {
         val amber = MutantPalettes.Efir.amber
         // Mirrored, item 3 stands in the first cell, 0 to 82, its icon 30 to 52; its plate left of the icon, in the cell.
         for (row in 0..1) {
-            val xs = (0 until 82).filter { x -> (row * 68 until (row + 1) * 68).any { y -> near(px[x, y], amber, .03f) } }
+            val xs =
+                (0 until 82).filter { x ->
+                    (row * 68 until (row + 1) * 68).any { y -> near(px[x, y], amber, .03f) }
+                }
             assertTrue(xs.isNotEmpty(), "row $row: a plate")
             assertEquals(29, xs.last(), "row $row: the plate ${xs.first()}..${xs.last()} ends on the icon's left edge")
         }
