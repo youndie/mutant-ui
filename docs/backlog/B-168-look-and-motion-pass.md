@@ -107,4 +107,4 @@ One component group, a worktree and a branch `fix/b-168-<slug>` from `main`. Nev
 | 23 | data-table | DataTable | done: [report](../../logs/b-168/data-table.md), 2 fixed (one adds `rowKey`), 4 reported |
 | 24 | carousel | Carousel | done: [report](../../logs/b-168/carousel.md), 4 fixed, 3 reported |
 | 25 | foundations | the Foundations section: surface states, the Tape, keyframe loss (report-only: shared code) | done: [report](../../logs/b-168/foundations.md), report only: 8 findings, 13 shared-code classes |
-| 26 | screens | the demo's three screens, as composed | open |
+| 26 | screens | the demo's three screens, as composed | done: [report](../../logs/b-168/screens.md), report only: 11 findings |
