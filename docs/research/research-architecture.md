@@ -578,6 +578,13 @@ The owner, on 2026-11-16: changes to the design system are to be made here, not 
 - **`reference/design-system/` stays as it is, unedited**, as the record of where each token, shape and component came from.
 - **The checks against it stay**, as a regression net for everything that has not left it: the generator's goldens (`gen-goldens.mjs`), the vendored golden (`design-golden.mjs`), the tokens (`tokens.mjs`), the icons (`icons.mjs`), parity against the Chrome references and the library's goldens.
 - **A departure is recorded, not loosened.** A change the owner asks for is made in the code, in an item. Where it moves what a check holds against the design, the check's own list of known entries names it, with the item, as `design-golden.mjs`'s `KNOWN` already does. A cell it moves past the parity line goes into a departures registry with an `asDesigned` switch (cmp-ui-parity §7); one under it is a dated note with its numbers. The moved goldens are re-recorded and looked at.
+- **The departures registry**: the cells a departure moves past the parity line, each held as designed by its switch in the parity test, and by its own tests as the kit draws it.
+
+  | Item | Cells | The kit draws | Switch |
+  |---|---|---|---|
+  | [B-186](../backlog/B-186-the-caret-and-the-fields-mosaic.md) | `MutantField_Focused_*`, `MutantSearchBar_Focused_*` | the block caret 2 dp past the text, not the page's 8 dp gap (the designer's answer 17) | `LocalMutantTextFieldAsDesigned` |
+
+  B-186 also moves what no cell sees, as the cells take the engine's clean zone: a field's own zone is its input area, not its texts (answer 18), so an empty field's body loses the marks right of its placeholder.
 - **Rejected**: keeping the vendored files as an editable source of our own, edited here and regenerated from. The generator would then live twice, as JavaScript and as its Kotlin port, and every change would be made in both and proved equal. The Kotlin is what ships.
 
 ---

@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.components
 
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.CompositionLocalProvider
 import io.github.youndie.mutant.TEXT_INK
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -24,21 +25,24 @@ class TextFieldParityTest {
         val disabled = name == "Disabled"
         val threshold = if (disabled) ComponentParity.WEAK_INK else TEXT_INK
         return ComponentParity.split("MutantField_$name", theme, threshold) { m, hidden ->
-            // All four cells share the page's key `field`; the focused one is held focused, as the page draws it.
-            TextFieldBody(
-                value,
-                {},
-                m,
-                prefix,
-                placeholder.takeIf { it.isNotEmpty() },
-                !disabled,
-                name == "Error",
-                KeyboardOptions.Default,
-                "field",
-                null,
-                focusedAs = name == "Focused",
-                hidden = hidden,
-            )
+            // All four cells share the page's key `field`; the focused one is held focused, as the page draws it, its
+            // block where the page stands it (B-186's departure, research D20).
+            CompositionLocalProvider(LocalMutantTextFieldAsDesigned provides true) {
+                TextFieldBody(
+                    value,
+                    {},
+                    m,
+                    prefix,
+                    placeholder.takeIf { it.isNotEmpty() },
+                    !disabled,
+                    name == "Error",
+                    KeyboardOptions.Default,
+                    "field",
+                    null,
+                    focusedAs = name == "Focused",
+                    hidden = hidden,
+                )
+            }
         }
     }
 
