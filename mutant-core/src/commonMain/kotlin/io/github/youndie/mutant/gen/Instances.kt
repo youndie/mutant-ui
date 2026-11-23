@@ -112,14 +112,11 @@ internal class MutantGenerator(
         val slot = g.slot
         val w = slot.w
         val h = slot.h
-        val cz = slot.cleanZone
         val r = min(slot.r, h / 2)
         val rnd = Mulberry32(g.seed, "edge")
         val blocks = ArrayList<Block>()
         val tiles = ArrayList<MosaicTile>()
-        val hit = { x: Double, y: Double, a: Double ->
-            cz[2] > 0 && x < cz[0] + cz[2] && x + a > cz[0] && y < cz[1] + cz[3] && y + a > cz[1]
-        }
+        val hit = { x: Double, y: Double, a: Double -> slot.blockMeetsCleanZone(x, y, a) }
         val sv = rnd.next()
         val side =
             if (h - 2 * r >= 20 &&

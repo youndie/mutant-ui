@@ -20,6 +20,7 @@ import io.github.youndie.mutant.gen.MosaicTile
 import io.github.youndie.mutant.gen.Mulberry32
 import io.github.youndie.mutant.gen.MutantGenerator
 import io.github.youndie.mutant.gen.Slot
+import io.github.youndie.mutant.gen.blockMeetsCleanZone
 import io.github.youndie.mutant.gen.errorBlocks
 import io.github.youndie.mutant.gen.jsRound
 import io.github.youndie.mutant.gen.jsToFixed
@@ -79,22 +80,33 @@ internal fun boilFill(
 
 /**
  * The edge mosaic of a pressed body at [t]: every tile recoloured, faded or shifted along its side per hot tick
- * (`drawItem`, the `data-px` tiles), from the stream `px<round(t / 83.33)>`. Shifted tiles keep their order.
+ * (`drawItem`, the `data-px` tiles), from the stream `px<round(t / 83.33)>`. Shifted tiles keep their order and their
+ * row.
+ *
+ * B-199, a departure from the engine (D20, the designer's answer 25): a tile whose shift makes it meet the clean zone is
+ * not drawn, as a resting block that would meet it is never placed (`edgeMos`). The engine shifts it into the zone,
+ * over the label; [asDesigned] draws it so. Every tile still takes its four draws, so the others stand as the engine's.
  */
 internal fun runningMosaic(
     g: Instance,
     t: Double,
     heat: Double,
+    asDesigned: Boolean = false,
 ): List<Pair<MosaicTile, Color>> {
     val q = Mulberry32(g.seed, "px" + jsRound(t / 83.33).toLong())
     val top = g.mosaicSide == MosaicSide.Top
-    return g.mosaicTiles.map { p ->
+    val el = g.slot
+    val out = ArrayList<Pair<MosaicTile, Color>>(g.mosaicTiles.size)
+    for (p in g.mosaicTiles) {
         val c = q.next()
         val v = q.next()
         val d = q.next()
         val n = q.next()
         val bs = p.size
         val sh = if (d < .5 * heat) (if (n < .5) -1.0 else 1.0) * bs * (if (n < .25 || n > .75) 2.0 else 1.0) else 0.0
+        val x = p.x + (if (top) sh else 0.0)
+        val y = p.y + (if (top) 0.0 else sh)
+        if (!asDesigned && el.blockMeetsCleanZone(x - el.ox, y - el.oy, bs)) continue
         val color =
             when {
                 c < .38 -> Color.Black
@@ -107,15 +119,9 @@ internal fun runningMosaic(
                 else -> Color.Transparent // cyan, resolved by the caller's palette
             }
         val opacity = if (v < .22 * heat) 0.0 else jsToFixed(.3 + .5 * v, 2)
-        MosaicTile(
-            p.x + (if (top) sh else 0.0),
-            p.y + (if (top) 0.0 else sh),
-            p.size,
-            black = false,
-            opacity = opacity,
-        ) to
-            color
+        out += MosaicTile(x, y, p.size, black = false, opacity = opacity, row = p.row) to color
     }
+    return out
 }
 
 /** The two seek bands of a loading body at [t] (900 ms cycle): their top edges, 6 and 3 dp tall, white at 0.5 and 0.35. */

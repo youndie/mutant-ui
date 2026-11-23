@@ -33,6 +33,19 @@ internal class Slot(
     val cleanZone: DoubleArray,
 )
 
+/**
+ * Whether a square block at ([x], [y]) of side [size], relative to the slot, meets its [Slot.cleanZone] (`edgeMos`'s
+ * `hit`): the edge mosaic places none that would, and a pressed body's running mosaic draws none that does (B-199).
+ */
+internal fun Slot.blockMeetsCleanZone(
+    x: Double,
+    y: Double,
+    size: Double,
+): Boolean {
+    val cz = cleanZone
+    return cz[2] > 0 && x < cz[0] + cz[2] && x + size > cz[0] && y < cz[1] + cz[3] && y + size > cz[1]
+}
+
 /** One drip (`D[]`): its centre, half-width, lengths, period, phase and whether it lets a drop go. */
 internal class Drip(
     val x: Double,

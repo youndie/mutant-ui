@@ -361,11 +361,11 @@ private fun DrawScope.drawMosaicPastContour(
     ground: Color,
     decor: BodyDecor,
 ) {
-    val running = decor.runningMosaic
+    // A running tile keeps its row; one B-199 leaves out of the clean zone is not in the list.
     val edge =
-        running?.let { g.mosaicTiles.zip(it) { d, r -> if (d.row == 0) r else null } }
-            ?: g.mosaicTiles.map { if (it.row == 0) it to tint(it) else null }
-    val tiles = edge.filterNotNull() + g.spillTiles.map { it to tint(it) }
+        decor.runningMosaic?.filter { it.first.row == 0 }
+            ?: g.mosaicTiles.filter { it.row == 0 }.map { it to tint(it) }
+    val tiles = edge + g.spillTiles.map { it to tint(it) }
 
     fun squares(color: Color?) =
         translate(look.slip, look.slip) {
