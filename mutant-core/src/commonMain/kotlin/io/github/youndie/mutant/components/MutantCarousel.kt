@@ -1,6 +1,10 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -35,8 +40,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
@@ -69,6 +76,7 @@ import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.sign
 
 /** One card of a [MutantCarousel]: its [title], a [subtitle] under it and a [status] line at its foot, in the OSD amber. */
@@ -144,6 +152,8 @@ private fun CarouselShelf(
     // Read by the pointer handlers, which outlive a composition.
     val instantNow by rememberUpdatedState(instant)
     val rtlNow by rememberUpdatedState(LocalLayoutDirection.current == LayoutDirection.Rtl)
+    // The pager's own fling, which a mouse drag's release hands its speed to.
+    val fling = PagerDefaults.flingBehavior(state)
     Column(verticalArrangement = Arrangement.spacedBy(INDICATOR_GAP)) {
         CompositionLocalProvider(LocalMutantStage provides viewStage) {
             HorizontalPager(
@@ -154,7 +164,8 @@ private fun CarouselShelf(
                     .fillMaxWidth()
                     .heightIn(min = VIEW)
                     .clipToBounds()
-                    .carouselWheel(state, scope, { instantNow }, { rtlNow }),
+                    .carouselWheel(state, scope, { instantNow }, { rtlNow })
+                    .carouselMouseDrag(state, scope, fling) { rtlNow },
                 // Room after the last card, so that it too stands 84 dp in when it is the current one (B-168): without it
                 // the shelf stopped where the cards end, and in a wide view (three cards over 421 dp) the last card could
                 // never become the current one.
@@ -163,6 +174,7 @@ private fun CarouselShelf(
                 pageSpacing = CARD_GAP,
                 verticalAlignment = Alignment.Top,
                 key = { it },
+                flingBehavior = fling,
             ) { page ->
                 CarouselCard(items[page], page == current, "$key$page", hidden) {
                     when {
@@ -271,6 +283,58 @@ private fun Modifier.carouselWheel(
                         (state.pageCount - 1).coerceAtLeast(0),
                     )
                 scope.launch { if (instant()) state.scrollToPage(to) else state.animateScrollToPage(to) }
+            }
+        }
+    }
+
+/**
+ * A mouse drags the shelf as a finger does (B-168): Compose's scroll takes no mouse drag on the desktop or in the
+ * browser. Past the slop the shelf follows the pointer, without a jump by the slop, and the press on the card under it
+ * is cancelled; at the release the pager's own fling settles it by the pointer's speed. A finger is left to the pager.
+ */
+private fun Modifier.carouselMouseDrag(
+    state: PagerState,
+    scope: CoroutineScope,
+    fling: FlingBehavior,
+    rtl: () -> Boolean,
+): Modifier =
+    pointerInput(state, fling) {
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            if (down.type != PointerType.Mouse) return@awaitEachGesture
+            val tracker = VelocityTracker()
+            tracker.addPosition(down.uptimeMillis, down.position)
+            var pulled = 0f
+            var dragging = false
+            while (true) {
+                val change =
+                    awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
+                if (!change.pressed) {
+                    if (dragging) change.consume()
+                    break
+                }
+                tracker.addPosition(change.uptimeMillis, change.position)
+                val dx = change.position.x - change.previousPosition.x
+                val move =
+                    if (dragging) {
+                        dx
+                    } else {
+                        pulled += dx
+                        if (abs(pulled) <= viewConfiguration.touchSlop) continue
+                        dragging = true
+                        pulled - sign(pulled) * viewConfiguration.touchSlop
+                    }
+                change.consume()
+                // The pointer going left scrolls on; right to left, the other way, as the pager's own scroll has it.
+                state.dispatchRawDelta(if (rtl()) move else -move)
+            }
+            if (dragging) {
+                val speed = tracker.calculateVelocity().x
+                scope.launch {
+                    state.scroll(
+                        MutatePriority.UserInput,
+                    ) { with(fling) { performFling(if (rtl()) speed else -speed) } }
+                }
             }
         }
     }

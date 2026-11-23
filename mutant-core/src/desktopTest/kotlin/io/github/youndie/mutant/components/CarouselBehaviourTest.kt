@@ -209,4 +209,47 @@ class CarouselBehaviourTest {
             // The pager's own wheel moved 0.047 of a card a notch.
             assertEquals(0f, state.currentPageOffsetFraction, .001f, "a vertical turn moves nothing")
         }
+
+    @Test
+    fun `B-168 a mouse drags the shelf with the pointer, with no jump by the slop, and clicks nothing`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            lateinit var state: PagerState
+            val clicks = ArrayList<Int>()
+            setContent {
+                MutantTheme(reduceMotion = false) {
+                    state = rememberPagerState(initialPage = 1) { items.size }
+                    MutantCarousel(items, Modifier.width(400.dp).testTag("car"), state, onClick = { clicks += it })
+                }
+            }
+            mainClock.advanceTimeByFrame()
+
+            fun next() = onNode(hasText("Настроечная таблица")).fetchSemanticsNode().positionInRoot.x
+            val start = next()
+            // On the current card, then 12 px left a frame for 15 frames.
+            onNodeWithTag("car").performMouseInput {
+                moveTo(Offset(200f, 60f))
+                press()
+            }
+            mainClock.advanceTimeByFrame()
+            var last = start
+            var widest = 0f
+            repeat(15) {
+                onNodeWithTag("car").performMouseInput { moveBy(Offset(-12f, 0f)) }
+                mainClock.advanceTimeByFrame()
+                val at = next()
+                widest = maxOf(widest, last - at)
+                // Following the pointer is 12 px a frame; the slop's whole 18 px added to one frame made it 24 or more.
+                assertTrue(last - at in 0f..18f, "frame $it: the next card moved from $last to $at")
+                last = at
+            }
+            // The pointer went 180 px; the shelf follows all but the slop.
+            assertTrue(start - last > 140f, "the shelf moved ${start - last} px under a 180 px drag")
+            onNodeWithTag("car").performMouseInput { release() }
+            repeat(40) { mainClock.advanceTimeByFrame() }
+            assertEquals(2, state.currentPage, "the drag settles on the next card")
+            assertEquals(0f, state.currentPageOffsetFraction, .001f, "and stops on it")
+            assertEquals(emptyList(), clicks, "a drag is no click")
+            println("B-168 mouse drag: moved ${start - last} px, widest step $widest px")
+        }
 }
