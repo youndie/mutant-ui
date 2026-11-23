@@ -1,3 +1,10 @@
+public final class io/github/youndie/mutant/components/ComposableSingletons$MutantCarouselKt {
+	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantCarouselKt;
+	public fun <init> ()V
+	public final fun getLambda$-1577290847$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$306494966$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantDatePickerKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantDatePickerKt;
 	public fun <init> ()V
@@ -7,7 +14,7 @@ public final class io/github/youndie/mutant/components/ComposableSingletons$Muta
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantNavigationDrawerKt {
 	public static final field INSTANCE Lio/github/youndie/mutant/components/ComposableSingletons$MutantNavigationDrawerKt;
 	public fun <init> ()V
-	public final fun getLambda$-1293169296$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-24411098$io_github_youndie_mutant_core ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/youndie/mutant/components/ComposableSingletons$MutantSearchBarKt {
