@@ -1,7 +1,7 @@
 ---
 id: B-186
 title: "The caret restarts, sits beside the letters, and the mosaic ignores the text"
-status: question
+status: wip
 priority: P1
 size: M
 stage: stage-6-later
@@ -17,7 +17,7 @@ The caret blinks on the screen's tick and does not restart on focus or typing (d
 
 - AC:
   - the caret is visible on the frame after focus and after each keystroke, then 5 ticks on and 3 off
-  - at the end of the line: a 9 × 20 dp block 2 dp after the last glyph's ink; inside: a 2 dp line whose centre is the gap's centre, no glyph pixel covered
+  - at the end of the line: a 9 × 20 dp block 2 dp after the last character's box; inside: a 2 dp line whose centre is the centre of the gap between the neighbouring letters' boxes (the insertion point), drawn over their edges and covering no more of each than half the line (rewritten 2026-11-23 on the owner's answer below; the text's API on Skiko gives a letter's box, not its ink)
   - the mosaic's pixels are identical for an empty field, one letter and a full line
   - each new test fails on the code before and kills a mutant after the commit; goldens and parity cells at rest unchanged, or the moved ones listed with this item and looked at
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTextField.kt`, `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSearchBar.kt`, `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/CleanZone.kt`
@@ -84,3 +84,16 @@ settles them too:
 
 Who decides: the owner, with the designer if option 1's covering is not acceptable. Nothing is committed but this note;
 the tried change is not on the branch.
+
+## The owner's answer, 2026-11-23
+
+«Да, по слову дизайнера»: option 1. Inside the text the caret is a 2 dp line centred in the gap between the letters,
+drawn over their edges. «No glyph pixel covered» was the item's own wording, not the designer's, and the AC above is
+rewritten to what is decided: the line's centre is the centre of the gap between the neighbouring letters as measured,
+2 dp wide, over the letters, covering no more of either than the measurement leaves. Measured, here, by the letters'
+boxes, which meet at the insertion point, as `getPathForRange` gives boxes on Skiko; the block at the end of the line
+is placed from the last character's box for the same reason, as the designer's «после последнего символа» says.
+
+The two readings above stand as readings the owner did not object to: the clean zone is the slot less 14 dp on all
+four sides (24 dp tall in a 52 dp field), and the blink's 5 and 3 are counted on the scene's tick, the restart's own
+tick the first lit one.

@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
-| [B-186](docs/backlog/B-186-the-caret-and-the-fields-mosaic.md) `[?]` | The caret restarts, sits beside the letters, and the mosaic ignores the text | P1 | M | - |
+| [B-186](docs/backlog/B-186-the-caret-and-the-fields-mosaic.md) `[~]` | The caret restarts, sits beside the letters, and the mosaic ignores the text | P1 | M | - |
 | [B-188](docs/backlog/B-188-the-carousel-glides-on-tab-and-fits-a-narrow-shelf.md) `[ ]` | The carousel glides on Tab and fits a narrow shelf | P1 | M | - |
 | [B-190](docs/backlog/B-190-a-press-under-the-pause.md) `[ ]` | A press under the pause shows a still frame at heat 1 | P1 | S | - |
 | [B-191](docs/backlog/B-191-progress-under-the-pause-and-the-steps.md) `[ ]` | The progress band under the pause and under the steps | P1 | S | - |
