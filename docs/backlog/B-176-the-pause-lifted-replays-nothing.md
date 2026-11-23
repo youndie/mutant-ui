@@ -1,7 +1,7 @@
 ---
 id: B-176
 title: "A transition the pause landed stays landed when the pause lifts"
-status: wip
+status: done
 priority: P2
 size: S
 stage: stage-6-later
@@ -27,7 +27,7 @@ pause lifted six frames later; `/private/tmp/b176/before/`):
 | card pour | 96 494 lime px | 27 448 | pours again for 350 ms |
 | pill slide | centre at 416 px (home) | 315 px, 101 px back | slides home again for 210 ms |
 | mark melt | 2 304 px (whole) | 1 536 | melts in again |
-| button, released under the pause | warmth 801 of 1 000 (amber) | 801 | cools from the lift, lime 450 ms later |
+| button, released under the pause | warmth 801 of 1 000 (amber) | 801 | cools only once the clock runs again |
 
 Causes: `surface/MutantSurface.kt` reads the pour's and the slide's progress from `moves.pourSince` and the slide run's
 `since` with `instant` as the only end; `surface/BodyTransitions.kt`'s `MeltFollower.at` likewise; `surface/BodyHeat.kt`'s
@@ -65,6 +65,51 @@ No golden or parity cell draws a pause toggled mid-move; the item moves none.
   draw, frame by frame, what they draw changed back from a rest that was never paused (margins in the test).
 - Every golden and parity cell unchanged; `SurfaceTransitionsTest`'s and `SurfaceStatesTest`'s reduce-motion cases and
   B-171's `BodyReversalTest` unchanged.
+
+## Findings, 2026-11-23
+
+**After** (the same scene as above; `/private/tmp/b176/after/`): the pause lands the card at 96 494 lime px, the pill
+home at 416 px and the mark whole at 2 304 px, and from the lift on nothing runs again: the card keeps 96 280–96 798 px
+(the boil at rest), the pill stays at 415–416, the mark at 2 304. The button released under the pause is back to rest
+(warmth 3 of 1 000) in the frame after the release and stays there.
+
+`PauseLiftedTest` (density 2, the test's clock advanced by hand, every reading of drawn pixels):
+
+| | the bound | measured |
+|---|---|---|
+| landed, paused at 16, 144 and 272 ms, steps on and off | from the lift on, the card keeps all but 2 % of its lime, the pill within 2 px, the mark every pixel | card ≥ 96 304 of 96 365–96 787, pill within 1 px, mark 2 304 |
+| released under the pause | warmth within 50 of rest from the release's frame on | 4 against 3 (801 held across the pause) |
+| cooling when the pause starts (80 ms into 480) | the same | 4 against 3 (801 before the pause) |
+| changed back after the lift, against the same change from a rest never paused | card within 2 % of its full lime frame by frame, pill 2 px, mark exact | card ≤ 592 px, pill ≤ 2, mark 0 |
+
+The 2 % for the card is the boil: at rest it moves 0.6 % of the lime from tick to tick, and two bodies boiled at other
+times differ by about as much. The scene places the pill and the button by padding, not by `offset`: a body moved by
+`Modifier.offset` further than its own box and 64 dp counts as outside that box (B-87's `standing`) and replays its
+last picture, so it neither slides nor boils on screen. Seen in the scratch scene, not followed further here.
+
+**Mutants**, each one line on the commit, each killed by its aimed test (the `<failure>` read from the JUnit XML):
+
+- the pour not ended (`pourSince` kept in `BodyMoves.stand`): paused at 144 ms, the card drops to 27 488 px after the
+  lift (16 ms: 293 px);
+- the slide not ended (no `slideRun.finish()`): the pill leaves home by up to 290 px;
+- the melt not ended (`MeltFollower.follow`'s pause line removed): the mark drops to 1 536 px (16 ms: 192 px);
+- the release not settled under the pause (`HeatMachine.release`): warmth 801 under the pause and after the lift;
+- the cooling heat not landed at the pause's start (`HeatMachine.hold`): warmth 739 under the pause;
+- the moves ended with no pause (`if (instant)` dropped before `moves.stand()`): the card never pours back (160 px
+  throughout).
+
+A first heat mutant survived: `hold` settled in every composition under the pause, which read the press state there,
+so a release recomposed the body and settled it anyway. `hold` now lands the heat only as the pause starts, and the
+release settles itself.
+
+**Gate** on `d6bfaed`, read from fresh JUnit XML: `:mutant-core:desktopTest` 512 tests, `:sample:desktopTest` 22, no
+failure; ktlint and the ABI check clean; `compileKotlinIosSimulatorArm64` and `compileKotlinWasmJs` build. No golden or
+parity cell moved.
+
+What is not covered: the components that keep transitions of their own on the clock (a dialog's, a sheet's and a
+drawer's rise, the snackbar, the tabs' bar, the menus, the segmented button, the progress, the pull to refresh) were
+not looked at under a pause lifted mid-way. The navigation bar's pill and the calendar's drop share the body's slide
+run (`SlideRequest.run`) and end with it.
 
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyMoves.kt`,
   `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyTransitions.kt`,
