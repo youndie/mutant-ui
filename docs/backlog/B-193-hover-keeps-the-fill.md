@@ -1,7 +1,7 @@
 ---
 id: B-193
 title: "Hover keeps the fill and only stirs the outline"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-6-later
