@@ -355,10 +355,15 @@ internal fun MutantSurface(
                         }
                     }
                 }
-            }
-            .then(if (tune == null) Modifier else Modifier.mutantTuneDraw(tune, clock, tuneStands(clock)) { side ->
-                    drawTuneMosaic(tuned, size.width / density, size.height / density, side, colors)
-                })
+            }.then(
+                if (tune == null) {
+                    Modifier
+                } else {
+                    Modifier.mutantTuneDraw(tune, clock, tuneStands(clock)) { side ->
+                        drawTuneMosaic(tuned, size.width / density, size.height / density, side, colors)
+                    }
+                },
+            )
             // B-135: a layer of its own, so a tick records the body and its content and nothing beside it.
             .graphicsLayer()
             .drawWithCache {

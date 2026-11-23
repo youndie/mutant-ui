@@ -325,7 +325,11 @@ class BodiesTuneInTest {
                     for (x in x0 + c * side + 2 until x0 + (c + 1) * side - 2) {
                         val p = px[x, y]
                         if (ground(p, bg) || px.edge(x, y)) continue
-                        if (ref == null) ref = p else if (!near(p, ref, .02f)) same = false
+                        if (ref == null) {
+                            ref = p
+                        } else if (!near(p, ref, .02f)) {
+                            same = false
+                        }
                     }
                 }
                 if (same) uniform++
@@ -472,7 +476,11 @@ class BodiesTuneInTest {
 
             fun words(ms: Int): Int {
                 val px = onNodeWithTag("stage").captureToImage().toPixelMap()
-                val r = onAllNodesWithText("Удалено", useUnmergedTree = true).fetchSemanticsNodes().map { it.boundsInRoot }
+                val r =
+                    onAllNodesWithText(
+                        "Удалено",
+                        useUnmergedTree = true,
+                    ).fetchSemanticsNodes().map { it.boundsInRoot }
                 return glyphs(px, r, listOf(MutantPalettes.Efir.onNoSignal)).also { println("$ms $it") }
             }
             val strip = List(16) { i -> mainClock.advanceTimeByFrame().let { words(i * 16) } }

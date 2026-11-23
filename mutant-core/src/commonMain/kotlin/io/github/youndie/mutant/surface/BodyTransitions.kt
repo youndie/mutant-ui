@@ -457,6 +457,7 @@ internal class MutantTune(
                 when {
                     // Back in from leaving's 8 dp mosaic: tune-in from its own 8 dp step.
                     visible && was == MutantTuneLook.Fine -> now - TUNE_IN_MS / TUNE_IN_STEPS
+
                     else -> now
                 }
         }
@@ -545,7 +546,9 @@ internal class MutantTunedBody {
         val inputs = listOf(cols, rows, side, seed)
         if (inputs != laidFor) {
             laidFor = inputs
-            val q = io.github.youndie.mutant.gen.Mulberry32(seed, "tune$side")
+            val q =
+                io.github.youndie.mutant.gen
+                    .Mulberry32(seed, "tune$side")
             paints =
                 IntArray(cols * rows) {
                     val r = q.next()
