@@ -27,11 +27,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isShiftPressed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
@@ -62,7 +67,9 @@ import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.sign
 
 /** One card of a [MutantCarousel]: its [title], a [subtitle] under it and a [status] line at its foot, in the OSD amber. */
 public class MutantCarouselItem(
@@ -134,13 +141,20 @@ private fun CarouselShelf(
     val scope = rememberCoroutineScope()
     val instant = LocalMutantReduceMotion.current
     val current = state.currentPage
+    // Read by the pointer handlers, which outlive a composition.
+    val instantNow by rememberUpdatedState(instant)
+    val rtlNow by rememberUpdatedState(LocalLayoutDirection.current == LayoutDirection.Rtl)
     Column(verticalArrangement = Arrangement.spacedBy(INDICATOR_GAP)) {
         CompositionLocalProvider(LocalMutantStage provides viewStage) {
             HorizontalPager(
                 state,
                 // The view is 172 dp, the card's 120 and the drips' room under it; a larger font scale grows the card
                 // and the view with it.
-                Modifier.fillMaxWidth().heightIn(min = VIEW).clipToBounds(),
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = VIEW)
+                    .clipToBounds()
+                    .carouselWheel(state, scope, { instantNow }, { rtlNow }),
                 // Room after the last card, so that it too stands 84 dp in when it is the current one (B-168): without it
                 // the shelf stopped where the cards end, and in a wide view (three cards over 421 dp) the last card could
                 // never become the current one.
@@ -217,6 +231,49 @@ private fun CarouselDots(
         }
     }
 }
+
+/**
+ * One notch of the wheel steps the shelf one card (B-168): the pager's own wheel scrolled 11 dp a notch and snapped back,
+ * so a notch never reached the next card. A trackpad's small deltas are summed to whole notches, the sum dropped when
+ * it turns. A sideways turn steps, or shift with the wheel where the platform leaves it vertical; a plain vertical turn
+ * is left to the page.
+ */
+private fun Modifier.carouselWheel(
+    state: PagerState,
+    scope: CoroutineScope,
+    instant: () -> Boolean,
+    rtl: () -> Boolean,
+): Modifier =
+    pointerInput(state) {
+        var notches = 0f
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (event.type != PointerEventType.Scroll) continue
+                val delta = event.changes.firstOrNull()?.scrollDelta ?: continue
+                val along =
+                    when {
+                        delta.x != 0f -> delta.x
+                        event.keyboardModifiers.isShiftPressed -> delta.y
+                        else -> 0f
+                    }
+                if (along == 0f) continue
+                event.changes.forEach { it.consume() }
+                if (notches != 0f && sign(notches) != sign(along)) notches = 0f
+                notches += along
+                val steps = notches.toInt()
+                if (steps == 0) continue
+                notches -= steps
+                // Right to left, the next card lies the other way, as the pager's own scroll has it.
+                val to =
+                    (state.targetPage + if (rtl()) -steps else steps).coerceIn(
+                        0,
+                        (state.pageCount - 1).coerceAtLeast(0),
+                    )
+                scope.launch { if (instant()) state.scrollToPage(to) else state.animateScrollToPage(to) }
+            }
+        }
+    }
 
 @Composable
 private fun CarouselCard(

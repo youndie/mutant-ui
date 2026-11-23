@@ -7,14 +7,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.ScrollWheel
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.dp
@@ -167,5 +170,43 @@ class CarouselBehaviourTest {
             // It ends a dot's step (18 dp) on.
             assertTrue(kotlin.math.abs(last - from - 18) <= 1.5, "the pointer from $from ends at $last")
             println("B-168 pointer: rest $rest lime px, least $least; widest step ${"%.2f".format(widest)} px")
+        }
+
+    @Test
+    fun `B-168 one notch of the wheel steps one card, a vertical one leaves the shelf`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            lateinit var state: PagerState
+            setContent {
+                MutantTheme(reduceMotion = false) {
+                    state = rememberPagerState(initialPage = 1) { items.size }
+                    MutantCarousel(items, Modifier.width(400.dp).testTag("car"), state)
+                }
+            }
+            mainClock.advanceTimeByFrame()
+            onNodeWithTag("car").performMouseInput { moveTo(Offset(200f, 60f)) }
+
+            fun turn(
+                delta: Float,
+                wheel: ScrollWheel,
+            ) {
+                onNodeWithTag("car").performMouseInput { scroll(delta, wheel) }
+                repeat(40) { mainClock.advanceTimeByFrame() }
+            }
+            turn(1f, ScrollWheel.Horizontal)
+            assertEquals(2, state.currentPage, "a notch on")
+            assertEquals(0f, state.currentPageOffsetFraction, .001f, "a notch on stops on the card")
+            turn(-1f, ScrollWheel.Horizontal)
+            assertEquals(1, state.currentPage, "a notch back")
+            // A trackpad: three small deltas are not a notch, a fourth makes one.
+            repeat(3) { turn(.3f, ScrollWheel.Horizontal) }
+            assertEquals(1, state.currentPage, "0.9 of a notch")
+            turn(.3f, ScrollWheel.Horizontal)
+            assertEquals(2, state.currentPage, "1.2 notches")
+            turn(-1f, ScrollWheel.Horizontal)
+            turn(3f, ScrollWheel.Vertical)
+            assertEquals(1, state.currentPage, "a vertical turn is the page's")
+            // The pager's own wheel moved 0.047 of a card a notch.
+            assertEquals(0f, state.currentPageOffsetFraction, .001f, "a vertical turn moves nothing")
         }
 }
