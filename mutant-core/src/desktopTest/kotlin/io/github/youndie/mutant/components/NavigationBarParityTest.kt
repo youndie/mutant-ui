@@ -34,7 +34,12 @@ class NavigationBarParityTest {
             val stem = "MutantNavigationBar_Rest_$theme"
             val c =
                 ComponentParity.split("MutantNavigationBar_Rest", theme, TEXT_INK) { m, hidden ->
-                    NavigationBarBody(items, 0, {}, m, "navbar", "navpill", hidden)
+                    // The badge where the page stands it, 6 dp in from the icon box's right (B-204's departure, research D20).
+                    androidx.compose.runtime.CompositionLocalProvider(
+                        LocalMutantNavigationBarAsDesigned provides true,
+                    ) {
+                        NavigationBarBody(items, 0, {}, m, "navbar", "navpill", hidden)
+                    }
                 }
             lines += "$stem: $c"
             val items = items(stem, c, lines)
