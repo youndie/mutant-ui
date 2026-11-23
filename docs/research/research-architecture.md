@@ -619,6 +619,18 @@ The owner's decision of 2026-11-18 ([B-126](../backlog/B-126-bodies-on-the-gpu.m
 - **What keeps its paths.** A pressed or hot body, a pour, a slide, an error, focus, the mosaic past the contour, and the keyframe loss's snapshot ([B-133](../backlog/B-133-the-keyframe-loss-freezes-a-shader-page.md)).
 - **Rejected:** the shader on the desktop too; a public switch; leaving it off.
 
+### D24. The designer's answers to the look pass: steps, tokens, a finished frame
+
+The owner brought the designer's answers to [B-168](../backlog/B-168-look-and-motion-pass.md)'s 40 questions on 2026-11-23; they are kept verbatim at the end of that item, and each answer that asks for work is an item, B-179…B-207. Three rules run through them, and an item built under D15 from now on follows them:
+
+- **No smooth opacity in the kit.** A body appears, leaves and changes in steps at ticks, never by an alpha ramp. Appearing is `tune-in`: 320 ms in three steps, a 16 dp mosaic, an 8 dp mosaic, the finished body, its words and icons only on the third step; leaving is two steps over 160 ms, the 8 dp mosaic, then nothing ([B-179](../backlog/B-179-bodies-tune-in-as-they-appear.md)). The brief's event table drew `tune-in` as 16 → 8 → 4 → clean and a screen's `switch` as a 200 ms tear; the answers replace both. One exception the answers name: the dialog's scrim keeps its 200 ms fade (B-28, answer 7). A drag follows the finger unquantised (answer 5).
+- **Durations come from the tokens**: `tune-in` 320 ms in three steps, `slide` 330 ms, heat in 320 ms, cooling 480 ms, the rest tick 125 ms. A new number an answer names (a 100 ms press hold in a scroll, a 280 ms accent hand-over, a 300 ms loss of signal) is a named constant beside them, with its item.
+- **Under reduce motion every state is shown at once as its finished frame**, with no transition. This widens D7: the pause still stops the clock and keeps the damage, and a state that used to show nothing under it now shows its finished picture — a press is a still frame at heat 1 ([B-190](../backlog/B-190-a-press-under-the-pause.md)), the indeterminate band stands centred ([B-191](../backlog/B-191-progress-under-the-pause-and-the-steps.md)).
+
+Where an answer counts the steps of a movement (the slider's settle «330 мс … 4 шага», answer 4), those are the steps `steppedMotion = true` draws; by default the movement runs on every frame, as D22 says for every other transition. That is this repository's reading of the answer, not the designer's word, and its items say so.
+
+Deferred by the designer: the list's scroll shear (answer 6) and typed digits in the pickers (answer 21). Answer 25 says the designer's next package will clip the mosaic to the clean zone as well; under D20 that package is a list of proposals, and [B-199](../backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) makes the change here first.
+
 ## 3. Risks and open questions
 
 | # | Risk or hypothesis | Mitigation, and the item that settles it |

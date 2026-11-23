@@ -58,12 +58,41 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (4)
+## Open (33)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
+| [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
+| [B-186](docs/backlog/B-186-the-caret-and-the-fields-mosaic.md) `[ ]` | The caret restarts, sits beside the letters, and the mosaic ignores the text | P1 | M | - |
+| [B-188](docs/backlog/B-188-the-carousel-glides-on-tab-and-fits-a-narrow-shelf.md) `[ ]` | The carousel glides on Tab and fits a narrow shelf | P1 | M | - |
+| [B-190](docs/backlog/B-190-a-press-under-the-pause.md) `[ ]` | A press under the pause shows a still frame at heat 1 | P1 | S | - |
+| [B-191](docs/backlog/B-191-progress-under-the-pause-and-the-steps.md) `[ ]` | The progress band under the pause and under the steps | P1 | S | - |
+| [B-193](docs/backlog/B-193-hover-keeps-the-fill.md) `[ ]` | Hover keeps the fill and only stirs the outline | P1 | S | - |
+| [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[ ]` | The pickers: today, disabled days, six rows, the clock's accent | P1 | M | - |
+| [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
+| [B-198](docs/backlog/B-198-the-keyframe-loss-ends-on-a-screen-change.md) `[ ]` | The keyframe loss ends on a screen change and takes the dividers | P1 | M | - |
+| [B-199](docs/backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) `[ ]` | No mosaic block in the clean zone, pressed or at rest | P1 | M | - |
+| [B-201](docs/backlog/B-201-the-menu-at-the-edges-and-its-chosen-row.md) `[ ]` | The menu opens upward near the foot, scrolls when tall, and answers its chosen row | P1 | M | - |
+| [B-203](docs/backlog/B-203-a-button-as-wide-as-its-widest-state.md) `[ ]` | A button as wide as its widest state | P1 | S | - |
+| [B-204](docs/backlog/B-204-the-navigation-badge-grows-right.md) `[ ]` | The navigation badge grows right and stops at 99+ | P1 | S | - |
+| [B-207](docs/backlog/B-207-focus-after-the-snackbar-and-in-the-drawer.md) `[ ]` | Focus returns after the snackbar and cycles in the drawer | P1 | S | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
+| [B-179](docs/backlog/B-179-bodies-tune-in-as-they-appear.md) `[ ]` | Bodies tune in as they appear and step out as they leave | P2 | L | - |
+| [B-180](docs/backlog/B-180-a-screen-tunes-in.md) `[ ]` | A new screen tunes in as the switch starts | P2 | M | B-179 |
+| [B-181](docs/backlog/B-181-a-body-loses-its-signal-in-steps.md) `[ ]` | A body loses its signal in three steps and tunes in when enabled | P2 | M | B-179 |
+| [B-182](docs/backlog/B-182-the-slider-moves-by-itself-on-a-slide.md) `[ ]` | The slider moves by itself on the slide curve | P2 | S | - |
+| [B-183](docs/backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md) `[ ]` | The drawer and the sheet follow a finger and a mouse | P2 | L | - |
+| [B-184](docs/backlog/B-184-the-sheet-scrolls-its-content.md) `[ ]` | The bottom sheet scrolls its content and hands a pull at the top to its drag | P2 | M | B-183 |
+| [B-187](docs/backlog/B-187-tab-labels-and-a-narrow-top-bar.md) `[ ]` | Tab labels hand the accent over late; a narrow top bar drops its status first | P2 | S | - |
+| [B-189](docs/backlog/B-189-a-press-held-inside-a-scroll.md) `[ ]` | A press inside a scroll heats after 100 ms | P2 | M | - |
+| [B-192](docs/backlog/B-192-text-buttons-pressed.md) `[ ]` | The text button and the snackbar action show a press | P2 | S | - |
+| [B-194](docs/backlog/B-194-the-cassette-label-translated.md) `[ ]` | The cassette label is a translated string that fits | P2 | S | - |
+| [B-195](docs/backlog/B-195-a-play-icon.md) `[ ]` | A play icon | P2 | XS | - |
+| [B-200](docs/backlog/B-200-the-tooltip-at-the-edges.md) `[ ]` | The tooltip stays in the window and wraps | P2 | M | - |
+| [B-202](docs/backlog/B-202-the-data-table-at-a-large-font.md) `[ ]` | The data table at a large font and in a narrow slot | P2 | M | - |
+| [B-205](docs/backlog/B-205-mirrored-for-right-to-left.md) `[ ]` | Every layout mirrored for right to left | P2 | L | - |
+| [B-206](docs/backlog/B-206-default-keys-by-place.md) `[ ]` | A body's default key is its place in the composition | P2 | M | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
