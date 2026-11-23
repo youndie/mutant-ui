@@ -4,13 +4,16 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -21,7 +24,9 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.tokens.MutantPalettes
 import java.awt.image.BufferedImage
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -157,4 +162,40 @@ class SampleLayoutTest {
         }
         assertTrue(failures.isEmpty(), failures.joinToString("\n"))
     }
+
+    @Test
+    fun `no drop a button lets fall over 30 s reaches the captions under the cells`() =
+        page(SampleSettings(group = SpecGroup.Actions, cleanSignal = true), "section-Button") {
+            val captions =
+                onAllNodes(
+                    hasTestTag("caption") and hasAnyAncestor(hasTestTag("section-Button")),
+                    useUnmergedTree = true,
+                ).fetchSemanticsNodes()
+                    .map { it.boundsInRoot }
+            assertEquals(8, captions.size, "the section's eight captions, all in the window")
+            val fill = MutantPalettes.Efir.primary.toArgb()
+            val failures = ArrayList<String>()
+            // Every 32 ms for 30 s: a drop falls for about 260 ms, so none falls between two looks.
+            for (t in 32..30_000 step 32) {
+                mainClock.advanceTimeBy(32)
+                val shot = window()
+                var n = 0
+                for (c in captions) {
+                    for (y in c.top.toInt() until c.bottom.toInt()) {
+                        for (x in c.left.toInt() until c.right.toInt()) {
+                            val p = shot.getRGB(x, y)
+                            val d =
+                                abs((p shr 16 and 255) - (fill shr 16 and 255)) +
+                                    abs((p shr 8 and 255) - (fill shr 8 and 255)) +
+                                    abs((p and 255) - (fill and 255))
+                            if (d < 40) n++
+                        }
+                    }
+                }
+                // At a 26 dp gap the filled button's drops reached the captions: 11 fill pixels at 9.5 s, 1–3 at 21.7,
+                // 22.0 and 28.6 s, 28 dp under the slot. At 36 dp the deepest drop stands 8 dp clear.
+                if (n > 0) failures += "at $t ms: $n fill pixels in the captions"
+            }
+            assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+        }
 }

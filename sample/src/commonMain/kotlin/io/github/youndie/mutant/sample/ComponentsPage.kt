@@ -194,7 +194,10 @@ internal fun TryIt(
     content: @Composable FlowRowScope.() -> Unit,
 ) = SpecRow(s.rowTry, "row-try", content)
 
-/** A specimen with its caption: the caption stands clear of the drips the body hangs below its slot. */
+/**
+ * A specimen with its caption: the caption stands clear of the drips the body hangs below its slot and of the drops
+ * that tear off them and fall.
+ */
 @Composable
 internal fun Cell(
     caption: String,
@@ -323,7 +326,13 @@ private val ROW_GAP = 28.dp
 
 /** Between specimens, and from a specimen to its caption: clear of the drips a body hangs below its slot. */
 private val CELL_GAP = 32.dp
-private val CAPTION_GAP = 26.dp
+
+/**
+ * From a specimen to its caption (B-174): a body's drips hang 24 dp at most (`OVERHANG_MAX`, a button's and a FAB's),
+ * and the drops they let go fall up to 11 dp past that before they fade (research §1.15, B-25). At 26 dp a filled
+ * button's drop reached its caption, 28 dp under the slot.
+ */
+private val CAPTION_GAP = 36.dp
 private val CELL_MIN = 96.dp
 
 /** A section's head beside its rows from this width. */
