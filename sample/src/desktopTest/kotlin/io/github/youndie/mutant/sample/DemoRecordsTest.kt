@@ -9,6 +9,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.Density
 import io.github.youndie.mutant.theme.MutantTheme
 import java.awt.image.BufferedImage
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -29,7 +31,10 @@ import kotlin.test.assertTrue
 class DemoRecordsTest {
     private val s = SampleStrings(SampleLanguage.English)
 
-    /** The Library phone; with [reduce] its clock stands (reduce motion) and its Tape is off (the clean signal). */
+    /**
+     * The Library phone with its Tape off (the clean signal), so a pixel is what the screen draws; with [reduce] its clock
+     * stands (reduce motion).
+     */
     private fun phone(
         reduce: Boolean = false,
         block: ComposeUiTest.() -> Unit,
@@ -37,7 +42,7 @@ class DemoRecordsTest {
         mainClock.autoAdvance = false
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                MutantTheme(reduceMotion = reduce, cleanSignal = reduce) {
+                MutantTheme(reduceMotion = reduce, cleanSignal = true) {
                     DemoScreenFrame(DemoScreen.Library, s, keyframeLoss = false)
                 }
             }
@@ -101,9 +106,60 @@ class DemoRecordsTest {
             assertTrue(failures.isEmpty(), failures.joinToString("\n"))
         }
 
+
+    /**
+     * The acid pixels in the selection box of the table's row that reads [title]: its 40 dp column, 48 dp tall. The box's
+     * acid reads #cfe411 over the phone's ground, so an acid pixel is a bright yellow-green one: no other ink of the row's
+     * box column is (the ground #10142a, the outline #05060c, the tick white).
+     */
+    private fun ComposeUiTest.acidBox(title: String): Int {
+        val words = onNodeWithText(title, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        val shot = screen()
+        val mid = words.center.y.toInt() - PHONE_TOP
+        var n = 0
+        for (y in mid - 24 until mid + 24) {
+            for (x in TABLE_LEFT until TABLE_LEFT + 40) {
+                val p = shot.getRGB(x, y)
+                if ((p shr 16 and 255) > 150 && (p shr 8 and 255) > 190 && (p and 255) < 90) n++
+            }
+        }
+        return n
+    }
+
+    @Test
+    fun `a sort of the archive's table takes the chosen record's box with it in its first frame`() =
+        phone {
+            onNodeWithText(s.find).performClick()
+            mainClock.advanceTimeBy(800)
+            onNode(hasText(s.testCard) and isToggleable()).performClick()
+            mainClock.advanceTimeBy(1_000)
+            val chosen = acidBox(s.testCard)
+            assertTrue(chosen > 200, "the chosen record's box at rest shows its acid: $chosen")
+            // As filed, «Test card» is the third row; the longest first, «Rain over the transmitter» takes that place and
+            // «Test card» goes last.
+            val third = onNodeWithText(s.testCard, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot.top
+            onNodeWithText(s.sortBy(0), useUnmergedTree = true).performClick()
+            mainClock.advanceTimeBy(400)
+            onNodeWithText(s.sortOrders[1], useUnmergedTree = true).performClick()
+            mainClock.advanceTimeByFrame()
+            assertEquals(
+                third,
+                onNodeWithText(s.rain, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot.top,
+                "the sort has put «Rain over the transmitter» where «Test card» stood",
+            )
+            val left = acidBox(s.rain)
+            val reached = acidBox(s.testCard)
+            // Keyed by place the box stood whole on «Rain…» and empty on «Test card» for this frame, then poured over.
+            assertTrue(left < 28, "the place the chosen record left shows no acid in the first frame: $left of $chosen")
+            assertTrue(reached > chosen * 9 / 10, "the place it reached shows its whole box: $reached of $chosen")
+        }
+
     private companion object {
         /** Where the phone stands in the test's window: under its 28 dp title and the 16 dp gap. */
         const val PHONE_TOP = 48
+
+        /** Where the table's rows start in the phone: its 16 dp padding. */
+        const val TABLE_LEFT = 16
 
         /** B-101's share for a body's edges where its image is cut to its band (B-86). */
         const val MAX_SHARE = .002

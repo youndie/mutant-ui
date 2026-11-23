@@ -128,6 +128,8 @@ internal fun Search(
                         if (on) selected += at else selected -= at
                     },
                     key = "demo-row",
+                    // B-174: a sort moves each row's box, its pour and its slime with the record, not the place.
+                    rowKey = { it.title },
                 )
                 Spacer(Modifier.height(20.dp))
                 MutantOutlinedButton(
