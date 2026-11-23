@@ -618,8 +618,8 @@ private fun Modifier.menuWithinWindow(): Modifier =
 
 /**
  * Where the menu's popup stands (the designer's answer 28, B-201): [offset] under its anchor's top while it fits above
- * the window's foot margin; else above its anchor, [gap] clear of it (the drips hang there), while that fits under the
- * top margin; else on the side with more room, held inside both margins. Across, [offset] from the anchor's start,
+ * the window's foot margin; else on the side with more room, above its anchor [gap] clear of it (the drips hang there),
+ * held inside both margins: a menu that fits above stands there whole. Across, [offset] from the anchor's start,
  * mirrored right to left, moved in to fit the window.
  */
 private class MenuPlacement(
@@ -647,26 +647,12 @@ private class MenuPlacement(
         val above = anchorBounds.top - gap - h
         val floor = windowSize.height - foot
         val y =
-            when {
-                below + h <= floor -> {
-                    below
-                }
-
-                above >= top -> {
-                    above
-                }
-
-                else -> {
-                    (
-                        if (floor - below >=
-                            anchorBounds.top - gap - top
-                        ) {
-                            below
-                        } else {
-                            above
-                        }
-                    ).coerceIn(top, maxOf(top, floor - h))
-                }
+            if (below + h <= floor) {
+                below
+            } else {
+                // Above where it has more room there than under, as it has whenever it fits there; inside the margins.
+                val up = anchorBounds.top - gap - top > floor - below
+                (if (up) above else below).coerceIn(top, maxOf(top, floor - h))
             }
         return IntOffset(x, y)
     }
