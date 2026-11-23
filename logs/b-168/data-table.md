@@ -53,6 +53,17 @@ repository).
 - **The design and the item.** The page sets the column `minmax(0, 1fr)` in a 560 px box: it never meets no width.
   B-46's acceptance: «a constraint sweep (no width, long text, font scale 2) neither throws nor clips the content»; the
   kit's rule for no width (B-40, B-58) is the content's own width, as a `Text` and a `Row` give.
+- **Fixed** (`24579cb`). Under no width limit the table measures itself as its content: the fixed columns and, for each
+  free one, its widest word (header and cells), measured as the cell's text measures itself with no width; under a
+  limit nothing changes, so no golden or parity cell moves. The page's `minmax(0, 1fr)` never meets this, so it is no
+  departure. Held by `DataTableBehaviourTest` «given no width, the table is its content's width and every name shows
+  whole», in a horizontal scroll and under an unbounded wrap: every name and `ЗАПИСЬ` wider than 0 with no visual
+  overflow, and the row exactly 40 + the widest name + 90 dp (an equality of whole pixels at density 1). Mutants, each
+  read in the JUnit XML:
+  - the unbounded branch removed (`if (true)` for `c.hasBoundedWidth`): killed, «ЗАПИСЬ is 0.0 wide»;
+  - the box column left out of the fixed width: killed, «Эфир, ночь на вторник is cut at 118.0».
+- **After.** `core/after/unbounded-*.png`: `RECORD` and every name whole; the widest name meets its length with no gap,
+  as the page's grid sets columns (F-data-table-04).
 
 ### F-data-table-02 — rows are matched by position: a reorder leaves the selection on the slot, not on the record — local (the means) and reported (the sample uses it)
 
@@ -65,6 +76,25 @@ repository).
   both pouring); the same in `demo-sort-kopiya.png`.
 - **The design and the item.** The page never reorders its rows; B-46 is silent. The skill's rule (cmp-ui-component §3,
   field-ui B-89): repeated items are keyed by identity, never by position.
+- **Fixed in the table** (`9c7545c`, `3b8b2d9`): `MutantDataTable(…, rowKey: ((T) -> Any)? = null)`, as a lazy list's
+  `key`. Given a key, each row's composition, its interaction source, its box's pour and its slime (the body keyed
+  `"$key:$id"`) follow the record; without one the table matches by place exactly as before (the body keyed `"$key$i"`,
+  the page's `trow0…3`), so no golden or parity cell moves. Positional stays the default because a consumer building
+  new, unequal row objects on every composition would otherwise lose each row's state (and keyboard focus) on every
+  toggle. **The public API changed** (`updateKotlinAbi`: the three dumps carry the new parameter).
+  - Held by `DataTableBehaviourTest` «a keyed row moved by the app takes its selection with it, the box whole in its
+    first frame» (a running clock, bodies built in the frame): a chosen box at rest shows 289 acid pixels; in the first
+    frame after the reorder the place it left shows 0 (limit under 28) and the place it reached 296 (limit over 260).
+    Mutant: rows keyed by place even with a key (`key(i)`): killed, «the place it left shows no acid in the first
+    frame: 333 of 289».
+  - And «a keyed row moved by the app keeps its box's slime» (the clock standing): the moved record's 40 × 48 box
+    column the same picture before and after, 0 pixels unlike. Mutant: the slime keyed by place (`"$key$i"`): killed,
+    «differs on 225 of 1920 pixels» (it survived the first test, whose bodies are built in the frame — hence the
+    second).
+- **Reported** (the sample, `DemoSearch.kt`): the demo's table passes no `rowKey`, so its sort still shows the
+  defect; `rowKey = { it.title }` (or the tape's index in the archive) would take it.
+- **After.** `core/after/sort-keyed-Efir.png`, `sort-keyed-GpuEfir.png`: the chosen box on the moved record in the
+  first frame after the sort, nothing pouring, in both ways of drawing; `sort-place-Efir.png` the defect without a key.
 
 ### F-data-table-03 — unchecked during its check's first steps, the tick shows whole for a frame-run before it sinks — reported (`surface/BodyTransitions.kt` and B-94's rule in `surface/BodyMoves.kt`; the box is `CheckBoxControl`)
 
@@ -129,3 +159,21 @@ repository).
 - **«Чистый сигнал»** changes nothing in a table (the Tape and the loss are the screen's): frames identical to «Эфир».
 - The dividers are keyed `0`…`n` whatever the table's `key`, as the engine numbers a stage's dividers; two tables on
   one stage draw the same strokes (the reported default-key face; not seen on any of the sample's screens).
+
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+this Mac at `3b8b2d9` with this report's changes, the scratch tests deleted: `mutant-core` 457 tests and `sample` 22, no
+`<failure>` or `<error>` in the JUnit XML; both ktlint checks clean. `:mutant-core:compileKotlinIosSimulatorArm64`
+compiles. **The public API changed** (`rowKey`, F-data-table-02): `:mutant-core:updateKotlinAbi` was run and the
+three dumps carry it.
+
+## Not verified
+
+- The phone and the browser itself: the browser's way was drawn through the test seams on the desktop JVM only, and
+  the body shader (B-167's class) not at all.
+- A real window: hover, the wheel and Tab were driven by the test's injected input.
+- The demo with a `rowKey`: the sample is not this group's, so its sort was filmed only without one; the keyed sort
+  was filmed in the kit's own composition (`core/after/sort-keyed-*.png`).
+- Hundreds of rows: the table is a plain column, every row composed and drawn; sixty were scrolled, the cost of a long
+  table was not measured.
