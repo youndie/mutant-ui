@@ -113,3 +113,19 @@ the frames its build takes. What closing it would cost, not measured here (no ph
   9 075 → 952 (held under 1 400); Success 1 250 → 0 differing; the outlined body's shadow 0 → 495 px (held over 300), its
   stroke 1 358 → 1 387; a hot body's cold fill 8 041 → 0 and its hot fill 0 → 8 042; the error's red 0 → 254; the
   loading bands 0 → 582; the focus brackets 0 → 160.
+- **Mutants**, after `16ba78a`, each run against `StandInStateTest` and read from its JUnit XML, each killed:
+
+  | Mutant | The test's failure |
+  |---|---|
+  | Disabled drawn as the live plate | «the live fill in the disabled body's first frame», 8 041 |
+  | Success drawn as the live plate | «first frame against the clean body», 1 078 |
+  | the fill not boiled | «the cold fill in a hot body's first frame», 8 041 |
+  | no shadow | «the shadow: 0 px» |
+  | no error marks | «the error's red: 0 px» |
+  | no loading bands | «the loading bands: 0 px» |
+  | no brackets on a live plate | «the focus brackets: 0 px» |
+  | the caller passes `Rest` for the state | four tests: disabled, success, error, loading |
+- **Gate**, this Mac: `:mutant-core:desktopTest` 515 tests and `:sample:desktopTest` 38, 0 failed, fresh JUnit XML; ktlint
+  and the ABI check green; iOS (simulator arm64) and wasm compile. No golden, parity cell or numeric golden moved.
+- **Not verified**: the browser itself and a phone (none in this pass); the stand-in is held on the desktop through the
+  seams alone.
