@@ -1,7 +1,7 @@
 ---
 id: B-190
 title: "A press under the pause shows a still frame at heat 1"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-6-later
