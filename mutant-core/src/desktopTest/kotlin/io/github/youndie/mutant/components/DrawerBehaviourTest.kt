@@ -11,11 +11,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
@@ -23,6 +25,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.test.withKeyDown
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.qa.Still
 import kotlin.test.Test
@@ -83,6 +86,52 @@ class DrawerBehaviourTest {
             onNode(hasText("Настройка")).performKeyInput { pressKey(Key.DirectionDown) }
             mainClock.advanceTimeByFrame()
             onNode(hasText("Эфир")).assertIsFocused()
+        }
+
+    private fun ComposeUiTest.tab(shift: Boolean = false) {
+        onRoot().performKeyInput { if (shift) withKeyDown(Key.ShiftLeft) { pressKey(Key.Tab) } else pressKey(Key.Tab) }
+        mainClock.advanceTimeByFrame()
+    }
+
+    private fun ComposeUiTest.open(onDismiss: () -> Unit = {}) {
+        mainClock.autoAdvance = false
+        setContent {
+            Still { Box(Modifier.size(360.dp, 400.dp)) { MutantNavigationDrawer(true, onDismiss, items, 1, {}) } }
+        }
+        mainClock.advanceTimeByFrame()
+    }
+
+    @Test
+    fun `B-207 Tab steps the rows and comes round from the last to the first`() =
+        runComposeUiTest {
+            open()
+            val seen =
+                List(6) {
+                    tab()
+                    items.indexOfFirst { item ->
+                        onAllNodes(hasText(item.label) and isFocused()).fetchSemanticsNodes().isNotEmpty()
+                    }
+                }
+            assertEquals(listOf(0, 1, 2, 3, 0, 1), seen, "the focused row after each Tab")
+        }
+
+    @Test
+    fun `B-207 Shift+Tab from the first row reaches the last, and Escape closes the drawer`() =
+        runComposeUiTest {
+            var dismissed = 0
+            open { dismissed++ }
+            // From the drawer itself, as it opens, Shift+Tab goes to the last row.
+            tab(shift = true)
+            onNode(hasText("Настройка")).assertIsFocused()
+            onNode(hasText("Эфир")).requestFocus()
+            mainClock.advanceTimeByFrame()
+            tab(shift = true)
+            onNode(hasText("Настройка")).assertIsFocused()
+            tab(shift = true)
+            onNode(hasText("Поиск")).assertIsFocused()
+            onRoot().performKeyInput { pressKey(Key.Escape) }
+            mainClock.advanceTimeByFrame()
+            assertEquals(1, dismissed, "Escape calls the drawer's close callback")
         }
 
     @Test

@@ -21,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -91,12 +93,13 @@ internal fun Cocoons(s: SampleStrings) {
 @Composable
 internal fun Snackbars(s: SampleStrings) {
     var shown by remember { mutableStateOf(false) }
+    val opener = remember { FocusRequester() }
     States(s) {
         Cell(s.stShown, BAR) { MutantSnackbar(s.queued, actionLabel = s.undo, key = "snack-rest") }
     }
     TryIt(s) {
         Column(Modifier.width(BAR), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            MutantTextButton(s.showSnackbar, { shown = true }, key = "show-snack")
+            MutantTextButton(s.showSnackbar, { shown = true }, Modifier.focusRequester(opener), key = "show-snack")
             // The kit leaves hiding the ride to its holder: the bar rides its height and 8 dp below its place (B-26), the
             // holder's 56 dp, so the holder's foot is where the screen's would be (B-174).
             Box(
@@ -106,7 +109,14 @@ internal fun Snackbars(s: SampleStrings) {
                     .snackHolderFoot()
                     .testTag("snack-holder"),
             ) {
-                MutantSnackbar(s.queued, visible = shown, actionLabel = s.undo, onAction = { shown = false })
+                // Its action taken from the keyboard, focus goes back to the button that showed it (B-207).
+                MutantSnackbar(
+                    s.queued,
+                    visible = shown,
+                    actionLabel = s.undo,
+                    onAction = { shown = false },
+                    returnFocusTo = opener,
+                )
             }
         }
     }

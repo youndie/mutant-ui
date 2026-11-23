@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (22)
+## Open (21)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
-| [B-207](docs/backlog/B-207-focus-after-the-snackbar-and-in-the-drawer.md) `[ ]` | Focus returns after the snackbar and cycles in the drawer | P1 | S | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-179](docs/backlog/B-179-bodies-tune-in-as-they-appear.md) `[ ]` | Bodies tune in as they appear and step out as they leave | P2 | L | - |
 | [B-180](docs/backlog/B-180-a-screen-tunes-in.md) `[ ]` | A new screen tunes in as the switch starts | P2 | M | B-179 |
@@ -85,7 +84,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (187)
+## Closed (188)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -276,6 +275,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-201](docs/backlog/B-201-the-menu-at-the-edges-and-its-chosen-row.md) `[x]` - The menu opens upward near the foot, scrolls when tall, and answers its chosen row
 - [B-203](docs/backlog/B-203-a-button-as-wide-as-its-widest-state.md) `[x]` - A button as wide as its widest state
 - [B-204](docs/backlog/B-204-the-navigation-badge-grows-right.md) `[x]` - The navigation badge grows right and stops at 99+
+- [B-207](docs/backlog/B-207-focus-after-the-snackbar-and-in-the-drawer.md) `[x]` - Focus returns after the snackbar and cycles in the drawer
 - [B-208](docs/backlog/B-208-the-paused-press-shader-test-in-seconds.md) `[x]` - The paused press's shader test runs in seconds
 - [B-209](docs/backlog/B-209-the-accessibility-test-in-seconds.md) `[x]` - The sample's accessibility test runs in seconds
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
