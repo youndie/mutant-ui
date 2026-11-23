@@ -64,7 +64,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
-| [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[ ]` | The pickers: today, disabled days, six rows, the clock's accent | P1 | M | - |
+| [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[~]` | The pickers: today, disabled days, six rows, the clock's accent | P1 | M | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-198](docs/backlog/B-198-the-keyframe-loss-ends-on-a-screen-change.md) `[ ]` | The keyframe loss ends on a screen change and takes the dividers | P1 | M | - |
 | [B-199](docs/backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) `[ ]` | No mosaic block in the clean zone, pressed or at rest | P1 | M | - |
