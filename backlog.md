@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (25)
+## Open (24)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
-| [B-201](docs/backlog/B-201-the-menu-at-the-edges-and-its-chosen-row.md) `[ ]` | The menu opens upward near the foot, scrolls when tall, and answers its chosen row | P1 | M | - |
 | [B-203](docs/backlog/B-203-a-button-as-wide-as-its-widest-state.md) `[ ]` | A button as wide as its widest state | P1 | S | - |
 | [B-204](docs/backlog/B-204-the-navigation-badge-grows-right.md) `[ ]` | The navigation badge grows right and stops at 99+ | P1 | S | - |
 | [B-207](docs/backlog/B-207-focus-after-the-snackbar-and-in-the-drawer.md) `[ ]` | Focus returns after the snackbar and cycles in the drawer | P1 | S | - |
@@ -88,7 +87,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (183)
+## Closed (184)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -276,6 +275,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[x]` - The pickers: today, disabled days, six rows, the clock's accent
 - [B-198](docs/backlog/B-198-the-keyframe-loss-ends-on-a-screen-change.md) `[x]` - The keyframe loss ends on a screen change and takes the dividers
 - [B-199](docs/backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) `[x]` - No mosaic block in the clean zone, pressed or at rest
+- [B-201](docs/backlog/B-201-the-menu-at-the-edges-and-its-chosen-row.md) `[x]` - The menu opens upward near the foot, scrolls when tall, and answers its chosen row
 - [B-208](docs/backlog/B-208-the-paused-press-shader-test-in-seconds.md) `[x]` - The paused press's shader test runs in seconds
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
