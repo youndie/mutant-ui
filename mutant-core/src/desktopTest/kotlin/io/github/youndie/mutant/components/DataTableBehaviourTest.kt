@@ -7,11 +7,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -19,15 +24,22 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.qa.Still
+import io.github.youndie.mutant.surface.LocalMutantBuildOffFrame
+import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.tokens.MutantPalettes
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -159,4 +171,65 @@ class DataTableBehaviourTest {
             }
         }
     }
+
+    @Test
+    fun `a keyed row moved by the app takes its selection with it, the box whole in its first frame`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            val three = rows + ("Настроечная таблица" to "02:10")
+            var shown by mutableStateOf(three)
+            var selected by mutableStateOf(setOf(1))
+            setContent {
+                CompositionLocalProvider(
+                    LocalDensity provides Density(1f),
+                    LocalMutantBuildOffFrame provides false,
+                ) {
+                    MutantTheme(reduceMotion = false) {
+                        Box(Modifier.testTag("t")) {
+                            MutantDataTable(
+                                shown,
+                                columns,
+                                Modifier.width(480.dp),
+                                selected,
+                                { _, _ -> },
+                                rowKey = { it.first },
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(1_000)
+            val acid = MutantPalettes.Efir.primary.toArgb()
+
+            // The acid pixels of row [r]'s box: the 40 dp column under the 36 dp header and its divider, 50 dp a row.
+            fun acidIn(r: Int): Int {
+                val shot = onNodeWithTag("t").captureToImage().toAwtImage()
+                var n = 0
+                for (y in 38 + 50 * r until 38 + 50 * r + 48) {
+                    for (x in 0 until 40) {
+                        val p = shot.getRGB(x, y)
+                        val d =
+                            abs((p shr 16 and 255) - (acid shr 16 and 255)) +
+                                abs((p shr 8 and 255) - (acid shr 8 and 255)) +
+                                abs((p and 255) - (acid and 255))
+                        if (d < 60) n++
+                    }
+                }
+                return n
+            }
+            val whole = acidIn(1)
+            assertTrue(whole > 200, "a chosen box at rest shows its acid: $whole")
+            assertEquals(0, acidIn(3), "an empty box at rest")
+            // The app sorts: the chosen record moves from the second row to the last, its selection with it.
+            shown = listOf(three[0], three[2], three[3], three[1])
+            selected = setOf(3)
+            mainClock.advanceTimeByFrame()
+            val left = acidIn(1)
+            val reached = acidIn(3)
+            assertTrue(left < whole / 10, "the place it left shows no acid in the first frame: $left of $whole")
+            assertTrue(
+                reached > whole * 9 / 10,
+                "the place it reached shows it whole in the first frame: $reached of $whole",
+            )
+        }
 }

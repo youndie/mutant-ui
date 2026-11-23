@@ -90,7 +90,7 @@ public final class io/github/youndie/mutant/components/MutantCocoonKt {
 }
 
 public final class io/github/youndie/mutant/components/MutantDataTableKt {
-	public static final fun MutantDataTable (Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/util/Set;Lkotlin/jvm/functions/Function2;ZLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun MutantDataTable (Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/util/Set;Lkotlin/jvm/functions/Function2;ZLjava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/components/MutantDatePickerKt {
