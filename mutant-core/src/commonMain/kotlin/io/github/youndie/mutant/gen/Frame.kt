@@ -29,7 +29,9 @@ internal const val TICK_MS: Double = 125.0
  * outline at 0, the highlight at −3.4 dp and the flow lines with boil'. [pressed] keeps the hot tick and
  * the held drops with no heat yet, as the engine does between press and the first heat. [steadyWebs] damps the
  * boil's tremble where the field is flat, so the webs between drips do not flip with the boil phase (B-84): a running
- * body's departure from the engine; a still keeps the engine's field.
+ * body's departure from the engine; a still keeps the engine's field. [pressHeat] is the part of [heat] a press brings:
+ * the bubbles and the held drops follow it, the tremble follows [heat]; a hover's heat trembles the outline with
+ * neither (B-193). Equal to [heat], the frame is the engine's.
  */
 internal fun MutantGenerator.frame(
     g: Instance,
@@ -41,8 +43,9 @@ internal fun MutantGenerator.frame(
     grow: Boolean = true,
     /** B-110: false leaves the outline and highlight empty, for a body a shader draws from the field; not the flow lines (B-131). */
     paths: Boolean = true,
+    pressHeat: Double = heat,
 ): BodyFrame {
-    val steps = frameSteps(g, cache, t, heat, pressed, steadyWebs, grow, paths)
+    val steps = frameSteps(g, cache, t, heat, pressed, steadyWebs, grow, paths, pressHeat)
     var done = false
     while (!done) done = steps.columns(Int.MAX_VALUE)
     return steps.frame()
@@ -58,14 +61,15 @@ internal fun MutantGenerator.frameSteps(
     steadyWebs: Boolean = false,
     grow: Boolean = true,
     paths: Boolean = true,
+    pressHeat: Double = heat,
 ): FrameSteps {
     val el = g.slot
     val hot = heat > 0 || pressed
     val boilPhase = boilPhase(t, hot)
     val boil0 = REST_BOIL * el.calm
     val boil = boil0 * (1 + 2 * heat) + .6 * heat
-    val prims = primitives(g, t, hot)
-    if (heat > 0) prims += bubbles(g, t, heat)
+    val prims = primitives(g, t, pressHeat > 0 || pressed)
+    if (pressHeat > 0) prims += bubbles(g, t, pressHeat)
     val field = FieldSteps(g, cache, prims, t, REST_ROUGH * el.calm, boilPhase, boil, heat, boil0, steadyWebs, grow)
     return FrameSteps(this, g, t, prims, field, boilPhase, boil, steadyWebs, paths)
 }

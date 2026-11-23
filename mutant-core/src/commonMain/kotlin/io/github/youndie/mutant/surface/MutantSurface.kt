@@ -768,28 +768,45 @@ internal fun MutantSurface(
                         }
                     }
                 }
+                // B-193: a hover trembles the outline alone; under the pause it shows that tremble at once, still, at the
+                // resting tick's time, as a hover draws nothing else to keep (F-checks-switch-05). Its state is read first,
+                // so the mouse's arrival and departure redraw the body under the pause too.
+                val mouseOver = boil.hovered
+                val hovering = heat == null && !instant && (mouseOver || boil.hoverAt(clock.nowMs) > 0)
                 val hot =
-                    !pausedPress && (heat?.let { it > 0 } ?: (boil.on || boil.hovered || boil.at(clock.nowMs) > 0))
+                    !pausedPress && (heat?.let { it > 0 } ?: (boil.on || boil.at(clock.nowMs) > 0 || hovering))
                 val t =
                     when {
                         clock.frozen -> clock.nowMs
                         hot -> clock.hotTimeMs()
                         else -> clock.restTimeMs()
                     }
+                // The press's heat, for the fill, the bubbles, the held drops and the running mosaic.
                 val k = if (pausedPress) 0.0 else heat ?: boil.at(clock.nowMs)
+                // The heat the outline trembles at: the press's, or the hover's where it is the higher (B-193).
+                val kt = if (pausedPress) 0.0 else heat ?: boil.trembleAt(clock.nowMs)
                 // The held drops of a press, not under the pause (B-190).
                 val pressedShape = boil.on && !pausedPress
                 // A resting tick's frame depends on its time alone, and the next tick's time is known: it is built
                 // ahead on a background thread and taken here (B-75). A pressed or heated body, a frozen clock and a
                 // frame not ready in time build in the frame, as before.
-                val resting = offFrame && !hot && !boil.on && k == 0.0
+                val resting = offFrame && !hot && !boil.on && kt == 0.0
                 // B-153, B-155: in the browser the latest frame done is drawn, a tick or more behind, rather than one built here.
                 val early = if (resting) keep.ahead.take(g, t, orEarlier = !waits, wait = tickWaits) else null
 
                 var frame =
                     early?.frame
-                        ?: inFrame.of(g, t, k, pressedShape, !onGpu) {
-                            gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs, paths = !onGpu)
+                        ?: inFrame.of(g, t, kt, k, pressedShape, !onGpu) {
+                            gen.frame(
+                                g,
+                                cache,
+                                t,
+                                kt,
+                                pressed = pressedShape,
+                                steadyWebs = steadyWebs,
+                                paths = !onGpu,
+                                pressHeat = k,
+                            )
                         }
                 // B-86: what the window shows of the body now, in the surface's pixels; an image covering less is not drawn.
                 val shown = registry.surface?.takeIf { it.isAttached }?.let { windowIn(it) }
@@ -836,11 +853,12 @@ internal fun MutantSurface(
                     } else {
                         null
                     }
-                // B-110: a pouring or sliding body is drawn by paths, as before; so is a press under the pause, as a hot body is (D23).
-                if (onGpu && (pour != null || slideP < 1 || pausedPress)) {
+                // B-110: a pouring or sliding body is drawn by paths, as before; so is a press under the pause, as a hot body is (D23),
+                // and a hovered one, whose outline trembles hot (B-193).
+                if (onGpu && (pour != null || slideP < 1 || pausedPress || kt > 0)) {
                     frame =
-                        inFrame.of(g, t, k, pressedShape, true) {
-                            gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs)
+                        inFrame.of(g, t, kt, k, pressedShape, true) {
+                            gen.frame(g, cache, t, kt, pressed = pressedShape, steadyWebs = steadyWebs, pressHeat = k)
                         }
                 } else if (onGpu) {
                     val shaded =
@@ -857,7 +875,15 @@ internal fun MutantSurface(
                         val byPathsPicture by lazy {
                             pictureOf(
                                 g,
-                                gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs),
+                                gen.frame(
+                                    g,
+                                    cache,
+                                    t,
+                                    kt,
+                                    pressed = pressedShape,
+                                    steadyWebs = steadyWebs,
+                                    pressHeat = k,
+                                ),
                                 t,
                                 k,
                             )
@@ -888,8 +914,16 @@ internal fun MutantSurface(
                     // B-163: a frame built ahead with its paths is drawn as it is.
                     frame =
                         early?.frame?.takeIf { early.frame === frame && !it.contour.isEmpty }
-                            ?: inFrame.of(g, t, k, pressedShape, true) {
-                                gen.frame(g, cache, t, k, pressed = pressedShape, steadyWebs = steadyWebs)
+                            ?: inFrame.of(g, t, kt, k, pressedShape, true) {
+                                gen.frame(
+                                    g,
+                                    cache,
+                                    t,
+                                    kt,
+                                    pressed = pressedShape,
+                                    steadyWebs = steadyWebs,
+                                    pressHeat = k,
+                                )
                             }
                 }
                 val imageInputs = imageInputsOf(dead)
