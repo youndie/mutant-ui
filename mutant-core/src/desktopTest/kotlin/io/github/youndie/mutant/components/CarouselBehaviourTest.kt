@@ -400,6 +400,22 @@ class CarouselBehaviourTest {
                     abs(c.green - MutantPalettes.Efir.textOsd.green) < .05f &&
                     abs(c.blue - MutantPalettes.Efir.textOsd.blue) < .05f && c.alpha > .95f
 
+            // The pointer is a lime capsule 26 dp wide: its rows hold runs of lime a dozen pixels long. A lone lime pixel is
+            // not a pointer: on the CI runner's macOS two pixels of the counter's anti-aliased edge read as lime (B-188),
+            // where this Mac's read none, so the longest run is what tells a pointer from an edge.
+            fun limeRun(): Int {
+                val map = onNodeWithTag("car").captureToImage().toPixelMap()
+                var longest = 0
+                for (y in 188 until map.height) {
+                    var run = 0
+                    for (x in 0 until map.width) {
+                        run = if (lime(map[x, y])) run + 1 else 0
+                        longest = maxOf(longest, run)
+                    }
+                }
+                return longest
+            }
+
             // The dots' runs on their middle line, 5 dp into the row.
             fun runs(): Int {
                 val map = onNodeWithTag("car").captureToImage().toPixelMap()
@@ -413,7 +429,8 @@ class CarouselBehaviourTest {
                 return n
             }
             onNode(hasText("01/08"), useUnmergedTree = true).assertExists()
-            assertEquals(0, under().count(::lime), "eight cards: no pointer under the view")
+            val lone = under().count(::lime)
+            assertTrue(limeRun() < POINTER_RUN, "eight cards: no pointer under the view, a lime run of ${limeRun()} px")
             assertTrue(under().count(::osd) > 20, "eight cards: the counter in the OSD colour")
             state.requestScrollToPage(2)
             mainClock.advanceTimeByFrame()
@@ -428,7 +445,8 @@ class CarouselBehaviourTest {
                 onAllNodes(hasText("/07", substring = true), useUnmergedTree = true).fetchSemanticsNodes().size,
             )
             assertEquals(0, under().count(::osd), "seven cards: no counter")
-            assertTrue(under().count(::lime) > 50, "seven cards: the pointer")
+            assertTrue(limeRun() >= POINTER_RUN, "seven cards: the pointer, a lime run of ${limeRun()} px")
+            println("B-188 counter: $lone lime px under eight cards; seven cards' longest lime run ${limeRun()} px")
             assertEquals(7, runs(), "seven cards: six dots and the pointer")
         }
 
@@ -460,5 +478,8 @@ class CarouselBehaviourTest {
     private companion object {
         /** The slide's duration (tokens `motion.slide`). */
         const val SLIDE = 330.0
+
+        /** A lime run this long is the pointer's body (26 dp wide), not an edge's pixel or two. */
+        const val POINTER_RUN = 8
     }
 }
