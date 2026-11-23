@@ -1,7 +1,7 @@
 ---
 id: B-203
 title: "A button as wide as its widest state"
-status: wip
+status: done
 priority: P1
 size: S
 stage: stage-6-later
@@ -56,6 +56,13 @@ Every other width-less button in the sample stands alone in its cell, stage or s
   focus calms the wear to 0.3, which reshapes it as at a fixed width). Before: `expected 164.0 but was 196.0` on Success.
 - `a width from the caller still wins, narrower or wider than the widest state` — 120 and 260 dp at densities 1 and 2,
   the label inside and centred; a guard, green before as after.
+
+**Mutants**, after the commit, each restored with `git checkout` and the tree clean:
+
+- `checkRoom = icon == null` → `false` in `MutantButton`: killed by the width test (`success=196` against `164`).
+- the room → `0.dp` in `ButtonBody`: killed by the body test (`expected 164.0 but was 196.0`) and the width test.
+- `buttonRoom` reporting `maxOf(placeable.width, widest)` past the caller's width: killed by the fixed-width test (the
+  label at `-14…58` outside the 120 dp button).
 
 **Goldens and parity.** No golden, parity cell or reference moved: every one draws the button at the design's fixed
 widths (200 and 160 dp). The whole `./gradlew check` ran green on the kit's suites.
