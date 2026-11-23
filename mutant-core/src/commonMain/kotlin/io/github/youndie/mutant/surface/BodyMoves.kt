@@ -181,9 +181,13 @@ internal class MutantPourUnder(
  */
 private const val POUR_BANDS_MAX = 4
 
-/** Follows a body's fill and slide requests from composition without writing state; a change starts a move then. */
+/**
+ * Follows a body's fill and slide requests from composition without writing state; a change starts a move then. A
+ * change of the body's own fill pours; a fill that changes because the palette did lands at once (B-175).
+ */
 internal class BodyMoves {
     private var fill: Color? = null
+    private var palette: Any? = null
     private var slideId: Any? = null
     private val ownRun = MutantSlideRun()
 
@@ -197,6 +201,10 @@ internal class BodyMoves {
     var slideRun: MutantSlideRun = ownRun
         private set
 
+    /**
+     * [palette] is the theme's colours the fill was resolved in, told apart by identity: a composition that brings
+     * another palette repaints the body in it, as the engine redraws its stages on a change of theme, and pours nothing.
+     */
     fun follow(
         newFill: Color,
         slide: SlideRequest?,
@@ -204,9 +212,16 @@ internal class BodyMoves {
         h: Double? = null,
         steps: Boolean = false,
         instant: Boolean = false,
+        palette: Any? = null,
     ) {
         val old = fill
-        if (old != null && old != newFill) {
+        val repainted = this.palette != null && palette !== this.palette
+        this.palette = palette
+        if (repainted) {
+            // B-175: a palette switch is no toggle. The new fill shows from the switch's frame, and a pour still running
+            // lands, since what it poured over is the old palette's: with nothing under it, nothing pours.
+            pourUnder = null
+        } else if (old != null && old != newFill) {
             // B-171: the new fill pours over the picture the body shows, not over one plain colour: a change while a
             // pour runs keeps what that pour had poured, a band of its fill above its front where it stood.
             val under = pourUnder
