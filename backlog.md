@@ -58,17 +58,16 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (5)
+## Open (4)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
-| [B-168](docs/backlog/B-168-look-and-motion-pass.md) `[~]` | A look-and-motion pass, one agent per component group, on the desktop JVM | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (173)
+## Closed (174)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -237,6 +236,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-165](docs/backlog/B-165-glyphs-warmed-ahead.md) `[-]` - In the browser, a screen's first frames warm the kit's glyphs
 - [B-166](docs/backlog/B-166-a-chip-flicks-back-to-its-old-fill.md) `[x]` - A chosen chip flicks back to its old fill
 - [B-167](docs/backlog/B-167-outlines-lost-on-the-phone.md) `[x]` - On the phone, the bodies the shader draws have no outline
+- [B-168](docs/backlog/B-168-look-and-motion-pass.md) `[x]` - A look-and-motion pass, one agent per component group, on the desktop JVM
 - [B-169](docs/backlog/B-169-text-redraws-on-a-colour-change.md) `[x]` - A word whose colour alone changes is redrawn in the next frame
 - [B-170](docs/backlog/B-170-illustrations-drawn-in-dp.md) `[x]` - The illustrations draw in dp at any density and keep their size in a narrow slot
 - [B-171](docs/backlog/B-171-transitions-reversed-from-where-they-stand.md) `[x]` - A transition changed mid-way goes on from where the body stands
