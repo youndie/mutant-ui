@@ -232,4 +232,44 @@ class DataTableBehaviourTest {
                 "the place it reached shows it whole in the first frame: $reached of $whole",
             )
         }
+
+    @Test
+    fun `a keyed row moved by the app keeps its box's slime`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            val three = rows + ("Настроечная таблица" to "02:10")
+            var shown by mutableStateOf(three)
+            var selected by mutableStateOf(setOf(1))
+            setContent {
+                // The clock stands, so a body is the same picture wherever it is drawn.
+                CompositionLocalProvider(LocalMutantBuildOffFrame provides false) {
+                    Still {
+                        Box(Modifier.testTag("t")) {
+                            MutantDataTable(
+                                shown,
+                                columns,
+                                Modifier.width(480.dp),
+                                selected,
+                                { _, _ -> },
+                                rowKey = { it.first },
+                            )
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeByFrame()
+
+            // Row [r]'s box column, 40 × 48 under the header and its divider, 50 dp a row.
+            fun box(r: Int): IntArray {
+                val shot = onNodeWithTag("t").captureToImage().toAwtImage()
+                return shot.getRGB(0, 38 + 50 * r, 40, 48, null, 0, 40)
+            }
+            val before = box(1)
+            shown = listOf(three[0], three[2], three[3], three[1])
+            selected = setOf(3)
+            mainClock.advanceTimeByFrame()
+            val after = box(3)
+            val unlike = before.indices.count { before[it] != after[it] }
+            assertEquals(0, unlike, "the moved record's box differs on $unlike of ${before.size} pixels")
+        }
 }
