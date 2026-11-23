@@ -120,7 +120,18 @@ the mark reversed at 160 ms rises and closes; the navigation bar's pill re-aimed
 **The departure** (D20): pour, slide and melt changed mid-way leave the engine's restart. No generator golden, vendored
 golden, parity cell or library golden moves: none of them draws a reversal.
 
-**Mutants**, each reverting one line, all killed by `BodyReversalTest` — listed in the commit that records them.
+**Mutants**, each one line after the commit, each killed by its aimed test in `BodyReversalTest` (the `<failure>` read
+from the JUnit XML):
+
+- the pour poured from the plain old fill on any change (`BodyMoves`, `p >= 1` → `p > 0`): the chip reversed at 16 ms
+  changes 12 190 px in its frame against a bound of 1 921, the card 95 688 against 6 379;
+- the slide re-aimed from the request's `dx` alone (`MutantSlideRun.aim`): the pill leaps 320 px;
+- the slide re-aimed with no stretch carried (`carryX = 0.0`): the reversal's frame resizes the pill past its bound;
+- the melt restarted in the other motion on a reversal (`MeltFollower.follow`): the mark reversed at 16 ms shows all
+  2 304 px at once, its edges leap 57 px.
+
+A first pour mutant (`true ->` for the first branch) did not compile — it broke the smart cast on `under` — and proved
+nothing; it was replaced by the one above.
 
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyMoves.kt`,
   `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyTransitions.kt`,
