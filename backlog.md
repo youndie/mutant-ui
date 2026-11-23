@@ -58,18 +58,17 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (6)
+## Open (5)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-168](docs/backlog/B-168-look-and-motion-pass.md) `[~]` | A look-and-motion pass, one agent per component group, on the desktop JVM | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-174](docs/backlog/B-174-the-sample-after-the-look-pass.md) `[~]` | The sample's own defects that the look-and-motion pass reported | P2 | M | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (168)
+## Closed (169)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -243,6 +242,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-171](docs/backlog/B-171-transitions-reversed-from-where-they-stand.md) `[x]` - A transition changed mid-way goes on from where the body stands
 - [B-172](docs/backlog/B-172-the-venom-picked-mid-run.md) `[x]` - A pick during a venom run goes on from where the slime stands
 - [B-173](docs/backlog/B-173-tests-off-the-wall-clock.md) `[x]` - Two tests hang on whether a background build finished in wall time
+- [B-174](docs/backlog/B-174-the-sample-after-the-look-pass.md) `[x]` - The sample's own defects that the look-and-motion pass reported
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
