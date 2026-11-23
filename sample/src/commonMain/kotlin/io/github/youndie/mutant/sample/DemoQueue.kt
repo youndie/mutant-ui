@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,18 +71,22 @@ internal fun Queue(
                 key = "demo-ptr",
             ) {
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                    queue.forEachIndexed { i, t ->
-                        val fresh = t.title == s.freshOffTheAir
-                        MutantListItem(
-                            t.title,
-                            supporting = t.side,
-                            leadingIcon = MutantIcons.Schedule,
-                            trailingText = if (fresh) null else t.length,
-                            trailing = if (fresh) ({ MutantBadge(s.brandNew) }) else null,
-                            onClick = { tapes.indexOf(t).takeIf { it >= 0 }?.let { nav.open = it } },
-                            key = "queue-$i",
-                        )
-                        MutantDivider(key = "q$i")
+                    // B-174: a row and its divider are keyed by the record, so a tape put in at the top moves the rows
+                    // below it with their tiles, dividers and remembered state instead of handing each the one above.
+                    for (t in queue) {
+                        key(t.title) {
+                            val fresh = t.title == s.freshOffTheAir
+                            MutantListItem(
+                                t.title,
+                                supporting = t.side,
+                                leadingIcon = MutantIcons.Schedule,
+                                trailingText = if (fresh) null else t.length,
+                                trailing = if (fresh) ({ MutantBadge(s.brandNew) }) else null,
+                                onClick = { tapes.indexOf(t).takeIf { it >= 0 }?.let { nav.open = it } },
+                                key = "queue-${t.title}",
+                            )
+                            MutantDivider(key = "q-${t.title}")
+                        }
                     }
                     Spacer(Modifier.height(16.dp))
                     Osd(s.pullToRefresh, MutantTheme.colors.textSecondary, size = 16)
