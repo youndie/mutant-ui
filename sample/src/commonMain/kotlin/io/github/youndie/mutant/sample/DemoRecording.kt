@@ -53,8 +53,10 @@ internal fun Recording(
     s: SampleStrings,
     t: Cassette,
     nav: DemoNav,
+    tape: Int,
 ) {
-    var tab by rememberSaveable { mutableIntStateOf(0) }
+    // B-198: the tab is the phone's, under the tape's index, so its keyframe loss ends on a switch.
+    val tab = nav.pages[tape] ?: 0
     var queued by remember { mutableStateOf(true) }
     var listening by remember { mutableStateOf(false) }
     // The design's screen reads 12:04 of 46:00 played; every tape opens as far into its own length.
@@ -126,7 +128,10 @@ internal fun Recording(
                     }
                 }
                 Spacer(Modifier.height(26.dp))
-                MutantTabs(listOf(MutantTab(s.tracks), MutantTab(s.notes), MutantTab(s.copies)), tab, { tab = it })
+                MutantTabs(listOf(MutantTab(s.tracks), MutantTab(s.notes), MutantTab(s.copies)), tab, {
+                    nav.pages[tape] =
+                        it
+                })
                 when (tab) {
                     0 -> {
                         MutantListItem(

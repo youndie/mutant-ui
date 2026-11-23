@@ -1,6 +1,5 @@
 package io.github.youndie.mutant.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.Interaction
@@ -47,8 +46,8 @@ import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.TrackingDivider
 import io.github.youndie.mutant.surface.drawCornerBrackets
-import io.github.youndie.mutant.surface.drawTrackingDivider
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.with
@@ -190,27 +189,13 @@ internal fun TextButtonBody(
         verticalArrangement = Arrangement.spacedBy(TEXT_GAP, Alignment.CenterVertically),
     ) {
         ButtonLabel(text, if (enabled) colors.textAccent else colors.textDisabled, Modifier)
-        Canvas(
-            (
-                if (dividerWidth !=
-                    null
-                ) {
-                    Modifier.width(dividerWidth)
-                } else {
-                    Modifier.fillMaxWidth()
-                }
-            ).height(DIVIDER),
-        ) {
-            // The generator's numbers are dp: drawn inside a scale by the density, as the top app bar's divider is.
-            scale(density, Offset.Zero) {
-                drawTrackingDivider(
-                    seed,
-                    size.width / density,
-                    2f,
-                    colors,
-                )
-            }
-        }
+        // A tracking divider as the top app bar's is: the screen's keyframe loss takes it with the bodies (B-198).
+        TrackingDivider(
+            seed,
+            DIVIDER.value,
+            colors,
+            (if (dividerWidth != null) Modifier.width(dividerWidth) else Modifier.fillMaxWidth()).height(DIVIDER),
+        )
     }
 }
 

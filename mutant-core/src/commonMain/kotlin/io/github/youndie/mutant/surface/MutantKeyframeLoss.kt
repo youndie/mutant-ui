@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -47,6 +48,7 @@ import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantCleanSignal
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.tokens.MutantMotion
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -59,17 +61,25 @@ import kotlin.math.roundToInt
  * recovers from the top in 375 ms. The words stay as they are: the band lies under the content, as the engine's canvas
  * lies under the page's text, the bodies inside it giving way to it, and their clean zones are kept clean.
  *
- * The loss is made of the bodies of this screen's [MutantSurface]s, drawn over [ground] (the screen's colour, which this
- * paints in the band). It stops with the clock (reduce motion, a held or frozen screen) and under «Чистый сигнал». One
- * per screen: the engine runs one loss at a time.
+ * The loss is made of the bodies of this screen's [MutantSurface]s and its tracking dividers ([MutantDivider][io.github.youndie.mutant.components.MutantDivider],
+ * a text button's line), drawn over [ground] (the screen's colour, which this paints in the band). It stops with the
+ * clock (reduce motion, a held or frozen screen) and under «Чистый сигнал». One per screen: the engine runs one loss at
+ * a time.
+ *
+ * [screen] names the screen the content shows — a destination, a tab, an item opened over them; any value with an
+ * `equals`. When it changes, a running loss ends at once, its recovery not played, so the next frame shows the new
+ * screen whole; and no loss starts for 1 s after the change (B-198, the designer's answer 24). Left null, as by a
+ * screen that never changes, the loss runs by its own clock alone. A scroll is not a screen change: content scrolled
+ * under a running loss keeps the band's picture until it recovers.
  */
 @Composable
 public fun MutantKeyframeLoss(
     modifier: Modifier = Modifier,
     ground: Color = MutantTheme.colors.background,
+    screen: Any? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    KeyframeLossBody(modifier, ground, null, content)
+    KeyframeLossBody(modifier, ground, null, content, screen = screen)
 }
 
 /**
@@ -84,10 +94,13 @@ internal fun KeyframeLossBody(
     content: @Composable BoxScope.() -> Unit,
     first: Int = 1,
     probe: ((running: Boolean) -> Unit)? = null,
+    screen: Any? = null,
 ) {
     val scene = remember { MoshScene(first) }
     scene.probe = probe
     val clock = readMutantClock()
+    // B-198: after the composition that shows another screen applies, before that frame draws: its bodies draw whole.
+    SideEffect { scene.follow(screen, clock.nowMs) }
     val cassette = LocalMutantCassette.current
     val off = LocalMutantCleanSignal.current
     val reduce = LocalMutantReduceMotion.current
@@ -217,6 +230,34 @@ internal class MoshScene(
     private var cut: Path? = null
     private var cutFor: Triple<Float, Float, List<Rect>>? = null
 
+    // B-198: the screen the content shows, whether one was seen yet, and the clock's time before which no loss starts.
+    private var screen: Any? = null
+    private var screenSeen = false
+    private var quietUntil = Double.NEGATIVE_INFINITY
+
+    /**
+     * B-198: the content shows [now] the screen [key]. On a change from the one before, a running loss ends at once, its
+     * recovery not played, and none starts until [KEYFRAME_LOSS_QUIET_MS] past [now] (the clock's own time, not its tick: the
+     * loss starts on a tick, which never runs ahead of it). The bodies' pictures painted ahead are another screen's.
+     */
+    fun follow(
+        key: Any?,
+        now: Double,
+    ) {
+        if (!screenSeen) {
+            screenSeen = true
+            screen = key
+            return
+        }
+        if (key == screen) return
+        screen = key
+        quietUntil = now + KEYFRAME_LOSS_QUIET_MS
+        if (plan != null) end()
+        pieces.clear()
+        asked.clear()
+        piecesFor = -1L
+    }
+
     /** Where [of] stands in the scene's pixels while a loss runs, or null while none does or the scene does not draw it. */
     fun originOf(of: LayoutCoordinates?): Offset? {
         if (bandTop.isNaN() || of == null) return null
@@ -283,7 +324,7 @@ internal class MoshScene(
             if (live) {
                 if (lossBandInMemory && plan == null) prepareAhead(scope, t)
                 val win = floor(t / EVERY_MS).toLong()
-                if (plan == null && win != window && t - win * EVERY_MS > OFFSET_MS) {
+                if (plan == null && win != window && t - win * EVERY_MS > OFFSET_MS && t >= quietUntil) {
                     window = win
                     start(scope, t)
                 }
@@ -592,10 +633,13 @@ internal class MoshScene(
 }
 
 /** Every 9 s, 3.5 s into the window (`t / 9000`, `> 3500`); a step each 125 ms; the recovery 375 ms. */
-private const val EVERY_MS = 9000.0
+private const val EVERY_MS = MutantMotion.KEYFRAME_LOSS_EVERY_MS
 private const val OFFSET_MS = 3500.0
 private const val STEP_MS = 125.0
-private const val RECOVER_MS = 375.0
+private const val RECOVER_MS = MutantMotion.KEYFRAME_LOSS_RECOVER_MS
+
+/** B-198, the designer's answer 24: no loss starts for 1 s after a screen change. */
+internal const val KEYFRAME_LOSS_QUIET_MS = 1000.0
 
 /** B-159: how long before a loss its bodies' pieces are painted, and how far a scroll may move them meanwhile, dp. */
 private const val LEAD_MS = 1500.0
