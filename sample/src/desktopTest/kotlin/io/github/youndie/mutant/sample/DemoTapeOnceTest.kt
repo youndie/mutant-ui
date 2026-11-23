@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.platform.LocalDensity
@@ -21,6 +22,10 @@ import kotlin.test.assertTrue
 /**
  * B-101: on the Demo page a phone carries its own Tape, and only it. Over a whole Tape cycle the phone on the page draws
  * exactly what the same phone draws on its own; the page's Tape over it was a second noise.
+ *
+ * B-173: both compositions draw every resting tick from the image built ahead for it. A tick whose build was late drew
+ * its vectors instead, about 7 000 pixels apart from its image, so the comparison turned on which background thread had
+ * finished in wall time.
  */
 @OptIn(ExperimentalTestApi::class)
 class DemoTapeOnceTest {
@@ -29,7 +34,9 @@ class DemoTapeOnceTest {
         val out = ArrayList<BufferedImage>()
         runComposeUiTest {
             mainClock.autoAdvance = false
-            setContent { CompositionLocalProvider(LocalDensity provides Density(1f)) { content() } }
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), tickWaits provides true) { content() }
+            }
             mainClock.advanceTimeBy(1_000)
             repeat(28) {
                 mainClock.advanceTimeBy(250)
@@ -73,6 +80,17 @@ class DemoTapeOnceTest {
     }
 
     private companion object {
+        /**
+         * B-173: the kit's `LocalMutantTickWaits`, internal to mutant-core, a test seam this module cannot name: its
+         * getter is reached as the JVM sees it.
+         */
+        @Suppress("UNCHECKED_CAST")
+        val tickWaits =
+            Class
+                .forName("io.github.youndie.mutant.surface.TestSeamsKt")
+                .getMethod("getLocalMutantTickWaits")
+                .invoke(null) as ProvidableCompositionLocal<Boolean>
+
         /** A body's edge pixels where its image is cut (B-86), against the 28 % the page's Tape added. */
         const val MAX_SHARE = .002
     }

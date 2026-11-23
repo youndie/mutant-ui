@@ -231,6 +231,7 @@ internal fun MutantSurface(
     // B-149: whether this body's first frame waits for its build, and the slot and signature a size gives, at layout
     // or at draw.
     val waits = LocalMutantFirstFrameWaits.current ?: firstFrameWaits
+    val tickWaits = waits && LocalMutantTickWaits.current
     val standInProbe = LocalMutantStandInProbe.current
     val densityNow = androidx.compose.ui.platform.LocalDensity.current.density
 
@@ -748,7 +749,7 @@ internal fun MutantSurface(
                 // frame not ready in time build in the frame, as before.
                 val resting = offFrame && !hot && !boil.on && k == 0.0
                 // B-153, B-155: in the browser the latest frame done is drawn, a tick or more behind, rather than one built here.
-                val early = if (resting) keep.ahead.take(g, t, orEarlier = !waits) else null
+                val early = if (resting) keep.ahead.take(g, t, orEarlier = !waits, wait = tickWaits) else null
 
                 var frame =
                     early?.frame

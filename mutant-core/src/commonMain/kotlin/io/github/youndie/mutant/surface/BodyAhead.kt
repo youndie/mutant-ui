@@ -161,13 +161,19 @@ internal class FrameAhead {
     private var lastFor: Instance? = null
     private var lastAt = Double.NaN
 
+    /**
+     * The frame built ahead for [g] at [t], once it is done; with [wait] (a test's [LocalMutantTickWaits], B-173), a frame
+     * prepared for that very instance and time is waited for here instead of being missed while its thread is late.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun take(
         g: Instance,
         t: Double,
         orEarlier: Boolean = false,
+        wait: Boolean = false,
     ): Ahead? {
         val j = job
+        if (wait && j != null && !j.isCompleted && instance === g && at == t) runCatching { j.awaitHere() }
         val done = j != null && j.isCompleted && j.getCompletionExceptionOrNull() == null
         if (done && instance === g && (at == t || (orEarlier && at <= t))) {
             // A frame cut at its grid's edge is built again in the frame, where the grid grows (B-97).

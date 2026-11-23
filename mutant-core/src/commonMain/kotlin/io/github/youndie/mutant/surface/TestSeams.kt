@@ -52,6 +52,13 @@ internal val LocalMutantBuildOffFrame = staticCompositionLocalOf { true }
 internal val LocalMutantFirstFrameWaits = staticCompositionLocalOf<Boolean?> { null }
 
 /**
+ * B-173: whether a resting tick waits for the frame built ahead for it (B-75), as a first frame waits for its build
+ * (B-149), where the kit draws the tick's vectors when that thread is late: a test's pictures then do not depend on how
+ * fast a background thread ran. On only where the frame can wait, for `DemoTapeOnceTest` and `TallBodyBandTest`.
+ */
+internal val LocalMutantTickWaits = staticCompositionLocalOf { false }
+
+/**
  * B-156: whether a surface leaving the composition gives its body to [BodyPool] and a later one takes it back; null
  * follows the platform: the browser, where a body cannot be built on another thread. `true` for its tests on the desktop.
  */
