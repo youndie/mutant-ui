@@ -304,17 +304,19 @@ internal fun DrawerWindow(
     val fillGoo = rememberGraphicsLayer()
     val words = remember { DrawerWordInk() }
     // Where the lime lies at run progress p, as a mask in the body's pixels: the venom's fat shapes through the goo, as
-    // the fill recorded them this frame, its thin ones, and the window once it shows, springing about its middle.
+    // the fill recorded them this frame, its thin ones, and the window once it shows, springing about its middle, on
+    // the row the run lands on (a run settling on the way to a later pick lands short of it, B-172).
     val slime: DrawScope.(Double, VenomShapes) -> Unit = { p, v ->
         drawLayer(fillGoo)
         scale(density, density, Offset.Zero) {
             for (t in v.thin) drawPath(t.toPath(evenOdd = false), Color.Black)
         }
-        if (v.full && selectedIndex in words.tops.indices) {
+        val at = run.window
+        if (v.full && at in words.tops.indices) {
             val l = words.start.toFloat()
-            val t = words.tops[selectedIndex].toFloat()
+            val t = words.tops[at].toFloat()
             val w = words.rowW.toFloat()
-            val h = words.heights[selectedIndex].toFloat()
+            val h = words.heights[at].toFloat()
             val spring = venomSpring(p, v.vertical)
             scale(spring?.first ?: 1f, spring?.second ?: 1f, Offset(l + w / 2, t + h / 2)) {
                 drawRoundRect(Color.Black, Offset(l, t), Size(w, h), CornerRadius(PILL_RADIUS.toFloat() * density))
@@ -358,6 +360,16 @@ internal fun DrawerWindow(
                                 val spring = if (now != null && v!!.full) venomSpring(now.first, v.vertical) else null
                                 scaleX = spring?.first ?: 1f
                                 scaleY = spring?.second ?: 1f
+                                // A run settling on the way to a later pick shows the window where it lands (B-172).
+                                val at = run.window
+                                translationY =
+                                    if (now == null || at == selectedIndex || at !in words.tops.indices ||
+                                        selectedIndex !in words.tops.indices
+                                    ) {
+                                        0f
+                                    } else {
+                                        (words.tops[at] - words.tops[selectedIndex]).toFloat()
+                                    }
                             },
                         ) {
                             if (chosen) {
