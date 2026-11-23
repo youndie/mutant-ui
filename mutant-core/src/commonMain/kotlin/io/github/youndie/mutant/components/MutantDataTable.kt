@@ -14,9 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -55,7 +58,8 @@ public class MutantTableColumn<T>(
  * divider under the header and under every row. Given [onSelectedChange], a 40 dp column of checkboxes leads each row
  * (body `box`, 22 dp, the acid fill and the tick when selected) and the whole row is the toggle, so its target is the
  * row (designed here, D15: the page presses only the box). The rows named in [selected] stand selected. A cell's text
- * runs on one line and ends in an ellipsis; a larger font scale grows the row.
+ * runs on one line and ends in an ellipsis; a larger font scale grows the row. Given no width at all (a horizontal
+ * scroll), each free column takes its widest word, as the content's own width (B-168).
  */
 @Composable
 public fun <T> MutantDataTable(
@@ -104,6 +108,7 @@ internal fun <T> DataTableBody(
         ).cssLine(MutantFaceMetrics.Rubik)
     val osd = styles.display(OSD_SIZE.sp).copy(color = ink(colors.text), platformStyle = raster)
     val osdSecondary = osd.copy(color = ink(colors.textSecondary))
+    val measurer = rememberTextMeasurer()
 
     fun styleOf(s: MutantTableCellStyle) =
         when (s) {
@@ -111,7 +116,31 @@ internal fun <T> DataTableBody(
             MutantTableCellStyle.Osd -> osd
             MutantTableCellStyle.OsdSecondary -> osdSecondary
         }
-    Column(modifier) {
+    Column(
+        modifier.layout { m, c ->
+            val own =
+                if (c.hasBoundedWidth) {
+                    c
+                } else {
+                    // No width at all: the free columns would get nothing and every name vanish (B-168). The table is
+                    // its content's width instead: the fixed columns and each free one as wide as its widest word.
+                    val free = columns.filter { it.width == null }
+                    val fixed =
+                        (if (onSelectedChange != null) CHECK_COLUMN.roundToPx() else 0) +
+                            columns.sumOf { it.width?.roundToPx() ?: 0 }
+                    val widest =
+                        free.maxOfOrNull { col ->
+                            maxOf(
+                                tableWordWidth(measurer, col.header, header),
+                                rows.maxOfOrNull { tableWordWidth(measurer, col.cell(it), styleOf(col.style)) } ?: 0,
+                            )
+                        } ?: 0
+                    c.copy(maxWidth = maxOf(c.minWidth, fixed + widest * free.size))
+                }
+            val p = m.measure(own)
+            layout(p.width, p.height) { p.place(0, 0) }
+        },
+    ) {
         Row(Modifier.fillMaxWidth().heightIn(min = HEADER_ROW), verticalAlignment = Alignment.CenterVertically) {
             if (onSelectedChange != null) Box(Modifier.width(CHECK_COLUMN))
             for (c in columns) Cell(c.width, c.header, header)
@@ -163,6 +192,13 @@ private fun RowScope.Cell(
         overflow = TextOverflow.Ellipsis,
     )
 }
+
+/** How wide [text] is set on one line in [style], in pixels, as the cell's text measures itself under no width. */
+private fun tableWordWidth(
+    measurer: TextMeasurer,
+    text: String,
+    style: TextStyle,
+): Int = measurer.measure(text, style, softWrap = false, maxLines = 1).size.width
 
 /** The header row (`height: 36px`) and a body row (`height: 48px`), the touch target. */
 private val HEADER_ROW = 36.dp

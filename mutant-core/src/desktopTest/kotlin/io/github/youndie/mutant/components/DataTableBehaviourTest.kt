@@ -1,22 +1,31 @@
 package io.github.youndie.mutant.components
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.qa.Still
 import kotlin.test.Test
@@ -117,4 +126,37 @@ class DataTableBehaviourTest {
             assertEquals(listOf(38f, 88f, 138f), rowsAt.map { it.top })
             assertTrue(rowsAt.all { it.height == 48f })
         }
+
+    @Test
+    fun `given no width, the table is its content's width and every name shows whole`() {
+        for (scroll in listOf(true, false)) {
+            runComposeUiTest {
+                mainClock.autoAdvance = false
+                setContent {
+                    Still {
+                        val table = @Composable { MutantDataTable(rows, columns, Modifier, setOf(1), { _, _ -> }) }
+                        // A horizontal scroll, and a box letting its content be as wide as it likes.
+                        if (scroll) {
+                            Row(Modifier.horizontalScroll(rememberScrollState())) { table() }
+                        } else {
+                            Box(Modifier.wrapContentWidth(unbounded = true)) { table() }
+                        }
+                    }
+                }
+                mainClock.advanceTimeByFrame()
+                for (name in listOf("ЗАПИСЬ") + rows.map { it.first }) {
+                    val node = onNode(hasText(name), useUnmergedTree = true).fetchSemanticsNode()
+                    val laid = mutableListOf<TextLayoutResult>()
+                    node.config[SemanticsActions.GetTextLayoutResult].action!!.invoke(laid)
+                    assertTrue(node.boundsInRoot.width > 0f, "$name is ${node.boundsInRoot.width} wide")
+                    assertTrue(!laid.single().hasVisualOverflow, "$name is cut at ${node.boundsInRoot.width}")
+                }
+                // The box column, the widest name and the length column, no more.
+                val names = rows.map { onNode(hasText(it.first), useUnmergedTree = true).fetchSemanticsNode() }
+                val widest = names.maxOf { it.boundsInRoot.width }
+                val row = onAllNodes(checkbox).fetchSemanticsNodes().first().boundsInRoot
+                assertEquals(40f + widest + 90f, row.width)
+            }
+        }
+    }
 }
