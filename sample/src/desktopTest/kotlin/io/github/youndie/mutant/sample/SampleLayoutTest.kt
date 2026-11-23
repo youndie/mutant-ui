@@ -1,18 +1,24 @@
 package io.github.youndie.mutant.sample
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.toAwtImage
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.unit.Density
+import io.github.youndie.mutant.theme.MutantTheme
 import java.awt.image.BufferedImage
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /** B-174: where the sample stands what the kit draws — clipped where a screen would clip it, inside what holds it. */
@@ -80,5 +86,32 @@ class SampleLayoutTest {
                 if (n > 0) failures += "at $t ms: $n px of the strip under the holder changed"
             }
             assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+        }
+
+    @Test
+    fun `the demo's sort menu stands inside the phone, its end at its button's end`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme { DemoScreenFrame(DemoScreen.Library, s, keyframeLoss = false) }
+                }
+            }
+            mainClock.advanceTimeBy(600)
+            onNodeWithText(s.find).performClick()
+            mainClock.advanceTimeBy(800)
+            val button = onNode(hasText(s.sortBy(0)) and hasClickAction()).fetchSemanticsNode().boundsInWindow
+            onNodeWithText(s.sortBy(0), useUnmergedTree = true).performClick()
+            mainClock.advanceTimeBy(400)
+            val phone = onNodeWithTag("demo-library", useUnmergedTree = true).fetchSemanticsNode().boundsInWindow
+            // Each row is the menu's 216 dp less its 6 dp padding either side, so the menu ends 6 dp past its rows.
+            val rows =
+                s.sortOrders.map {
+                    onNode(hasText(it) and hasClickAction()).fetchSemanticsNode().boundsInWindow.right + 6
+                }
+            val end = rows.max()
+            // From the button's start the menu ran to 483 dp in the 360 dp phone (B-168's F-menu-09).
+            assertTrue(end <= phone.right, "the menu ends at $end, the phone at ${phone.right}")
+            assertEquals(button.right, end, 1f, "the menu's end at the button's end")
         }
 }
