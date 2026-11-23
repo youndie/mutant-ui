@@ -1,7 +1,7 @@
 ---
 id: B-179
 title: "Bodies tune in as they appear and step out as they leave"
-status: open
+status: wip
 priority: P2
 size: L
 stage: stage-6-later

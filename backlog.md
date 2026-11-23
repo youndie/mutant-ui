@@ -66,7 +66,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-179](docs/backlog/B-179-bodies-tune-in-as-they-appear.md) `[ ]` | Bodies tune in as they appear and step out as they leave | P2 | L | - |
+| [B-179](docs/backlog/B-179-bodies-tune-in-as-they-appear.md) `[~]` | Bodies tune in as they appear and step out as they leave | P2 | L | - |
 | [B-180](docs/backlog/B-180-a-screen-tunes-in.md) `[ ]` | A new screen tunes in as the switch starts | P2 | M | B-179 |
 | [B-181](docs/backlog/B-181-a-body-loses-its-signal-in-steps.md) `[ ]` | A body loses its signal in three steps and tunes in when enabled | P2 | M | B-179 |
 | [B-182](docs/backlog/B-182-the-slider-moves-by-itself-on-a-slide.md) `[ ]` | The slider moves by itself on the slide curve | P2 | S | - |
