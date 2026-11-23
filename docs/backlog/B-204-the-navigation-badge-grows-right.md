@@ -1,7 +1,7 @@
 ---
 id: B-204
 title: "The navigation badge grows right and stops at 99+"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-6-later
