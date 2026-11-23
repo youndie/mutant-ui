@@ -68,7 +68,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (171)
+## Closed (172)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -245,6 +245,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-174](docs/backlog/B-174-the-sample-after-the-look-pass.md) `[x]` - The sample's own defects that the look-and-motion pass reported
 - [B-175](docs/backlog/B-175-a-palette-switch-pours-nothing.md) `[x]` - A palette switch pours nothing: every body takes the new palette at once
 - [B-176](docs/backlog/B-176-the-pause-lifted-replays-nothing.md) `[x]` - A transition the pause landed stays landed when the pause lifts
+- [B-177](docs/backlog/B-177-the-stand-in-keeps-the-state.md) `[x]` - The browser's stand-in draws the body's state and stroke
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
