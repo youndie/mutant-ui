@@ -279,6 +279,31 @@ class PauseLiftedTest {
     }
 
     @Test
+    fun `a press still cooling when the pause starts lands at once`() {
+        // Pressed for 320 ms and released; 80 ms into its 480 ms of cooling the pause starts, and lifts six frames later.
+        val run =
+            Run(
+                PRESS + COOL + HOLD + AFTER,
+                mapOf(
+                    1 to listOf(Press),
+                    PRESS + 1 to listOf(Release),
+                    PRESS + 1 + COOL to listOf(Pause(true)),
+                    PRESS + 1 + COOL + HOLD to listOf(Pause(false)),
+                ),
+            )
+        val m = film(false, listOf(run))[0]
+        val rest = m[0].warmth
+        val cooling = m[PRESS + COOL].warmth
+        val paused = m.subList(PRESS + 1 + COOL, PRESS + 1 + COOL + HOLD).maxOf { it.warmth }
+        val lifted = m.drop(PRESS + 1 + COOL + HOLD).maxOf { it.warmth }
+        val report =
+            "warmth at rest $rest, cooling before the pause $cooling, under it ≤ $paused, after the lift ≤ $lifted"
+        println(report)
+        assertTrue(cooling > HOT, report)
+        assertTrue(paused <= rest + WARMTH_MARGIN && lifted <= rest + WARMTH_MARGIN, report)
+    }
+
+    @Test
     fun `a transition started after the lift plays as before`() {
         val report = StringBuilder()
         var bad = false
@@ -327,6 +352,9 @@ class PauseLiftedTest {
 
         /** Frames a press is held before the pause (320 ms: the heat at 1). */
         const val PRESS = 20
+
+        /** Frames a released press cools before the pause starts (80 ms of its 480). */
+        const val COOL = 5
 
         /** Frames to read the change back over (the card's pour is 620 ms), and frames to let the first change settle. */
         const val BACK = 42

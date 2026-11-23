@@ -53,8 +53,9 @@ internal class HeatMachine {
         paused: Boolean,
         now: Double,
     ) {
+        // Only as the pause starts: a release under it settles itself, and this reads no state in later compositions.
+        if (paused && !held) settle(now)
         held = paused
-        if (paused) settle(now)
     }
 
     private fun settle(now: Double) {
