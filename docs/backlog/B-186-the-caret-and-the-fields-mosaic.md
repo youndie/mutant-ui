@@ -1,7 +1,7 @@
 ---
 id: B-186
 title: "The caret restarts, sits beside the letters, and the mosaic ignores the text"
-status: wip
+status: done
 priority: P1
 size: M
 stage: stage-6-later
@@ -97,3 +97,58 @@ is placed from the last character's box for the same reason, as the designer's �
 The two readings above stand as readings the owner did not object to: the clean zone is the slot less 14 dp on all
 four sides (24 dp tall in a 52 dp field), and the blink's 5 and 3 are counted on the scene's tick, the restart's own
 tick the first lit one.
+
+## Result, 2026-11-23
+
+`MutantTextField.kt` only; the search bar takes all of it through the shared `TextFieldBody`.
+
+- **The blink** (answer 8). `TextFieldCaret` counts five scene ticks lit and three dark from the tick of its last
+  restart. It enters the composition with focus, and a change of the `TextFieldValue` (a letter, a cursor move) restarts
+  it, read in its draw: lit on the frame after the event, and drawn only on ticks, as before.
+- **The caret's place** (answer 17, the owner's word above). The block stands 2 dp past the last character's box
+  (`ceil` of its edge, so never closer); inside the text the 2 dp line is centred on the insertion point, where the
+  neighbouring boxes meet, over their edges. At the line's start and over a placeholder it stays the bar before the first
+  letter (B-58, B-168).
+- **The clean zone** (answer 18). A `Spacer` matching the slot, inset 14 dp on every side, is the field's only mark;
+  the prefix, the placeholder, the value's line and the caret no longer mark it.
+- **The departure** (research D20). The page's caret block stands 8 dp past the text, so the focused parity cells of
+  the field and the search bar moved (content 5 px left of the page's). `LocalMutantTextFieldAsDesigned` draws the page's
+  8 dp, and both parity tests provide it; D20 now has its departures registry, this the first entry. The parity cells
+  take the engine's clean zone, so the zone's change moves none of them; it is listed in the registry as what no cell
+  sees.
+
+**Tests** (`mutant-core/src/desktopTest`, each failing on the code before, run with the implementation reverted):
+
+| AC | Test |
+|---|---|
+| visible on the frame after focus, then 5 lit and 3 dark | `TextFieldCaretBlinkTest` «focus brings the caret lit on the next frame, then five ticks lit and three dark» |
+| … and after each keystroke | `TextFieldCaretBlinkTest` «every keystroke starts the blink over lit» (three letters and a Left arrow, each in a dark tick) |
+| the block 2 dp past the last character | `TextFieldCaretPlacementTest` «at the end of the line the block stands 2 dp past the last letter», density 1, 2, 3: gaps 2, 4, 7 px from the ink |
+| the line centred, over no more than half its width of either letter | `TextFieldCaretPlacementTest` «inside the text the line stands centred …», «Nigh\|t» at density 2 and 3: centres 91.5 / 137.5 against the ink gap's 91.0 / 136.5, over «h» 1 px, over «t» 2 and 3 px (half the line) |
+| the mosaic identical for «», one letter, a full line | `TextFieldCleanZoneTest`, the field and the search bar, rest and focused, «Эфир» and «Копия», density 1 and 2: 0 px (before: 38–401 px in the sheets) |
+
+The older placement tests now ask for 2 dp before the block, not 6 px, and the bar inside a long value for a letter
+within 8 px before it (the comma before the space before «to»), as the line now stands on the insertion point.
+
+**Mutants**, each after the commit, the aimed test named among the failures in the JUnit XML, the file restored with
+`git checkout`:
+
+| Mutant | Killed by |
+|---|---|
+| the blink on the screen's tick (`tick.mod(8)`) | «focus brings …»: dark on the frame after focus at the screen's tick 5 |
+| the blink restarted by focus only (`blink.on == null`) | «every keystroke …» |
+| the block on the box's edge (no 2 dp) | «at the end of the line …»: gaps 0 |
+| the line before the insertion point (`x - w`) | «inside the text …»: over «h» 3 px at density 2 |
+| the input area marked only with a value | «the text field's body …»: 1401 px at density 1 |
+| the clear icon's mark 48 dp tall | «the search bar's body …»: 469 px at density 1 |
+
+**Goldens.** None moved: the repository's PNGs are the Chrome references, untouched; the parity cells hold with the
+switch above, the bodies 0 px against the page as before.
+
+**Frames looked at** (throwaway sheets, deleted): the blink after focus and three letters, both palettes; the caret at
+the end and walked back through «Night to», «Эфир» and «Копия» at density 1 and 2; the bare body under «», «N» and a full
+line. At density 1 the line covers a pixel of each neighbour, as decided; «Nigh|t» reads with the stem of «h» whole.
+
+**Not verified.** No phone and no browser: Android, iOS and wasm were compiled and run only as `./gradlew check` runs
+them. A real IME and right-to-left text inside a word were not looked at (the right-to-left block and bar follow the
+same rules by code, held only by `OverlayAndMouseTest`'s short cases).
