@@ -43,7 +43,12 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.node.LayoutModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -58,6 +63,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.MutantClock
@@ -91,6 +98,8 @@ import kotlin.math.roundToInt
  * (research D19); the cells tile the grid. The arrow keys move the keyboard's focus a day or a week; Enter or Space
  * picks. The design is a still: all of this is designed here (D15). The drop runs to a new day in 330 ms (B-93), each
  * number black where the drop covers it; a new month moves it at once. Right to left the grid mirrors with its weekdays.
+ * Given less room than it wants, it keeps its size (B-178): centred across a narrower slot, overflowing both sides,
+ * and hanging from the top of a shorter one, running off its foot; its rows never overlap.
  */
 @Composable
 public fun MutantDatePicker(
@@ -150,8 +159,8 @@ internal fun DatePickerBody(
     MutantSurface(
         MutantBody.Bar,
         key,
-        // The page's 284 dp; a larger font scale widens it with its cells.
-        modifier.widthIn(min = WIDTH.dp),
+        // The page's 284 dp; a larger font scale widens it with its cells. A slot that gives less keeps it (B-178).
+        modifier.then(CalendarKeepsItsSize).widthIn(min = WIDTH.dp),
         fill = colors.surface,
         profile = MutantBody.Bar.profile.with(radius = RADIUS, marks = false),
     ) {
@@ -207,6 +216,33 @@ internal fun DatePickerBody(
             }
             DayGrid(days, lead, selectedDay, key, hidden) { pick(it) }
         }
+    }
+}
+
+/**
+ * B-178: the calendar keeps its size in a slot that gives less (cmp-ui-component §9, as the icon button keeps its side).
+ * It is measured with no upper bound and the slot's least kept, so a slot that gives as much or more measures it as
+ * before. Past a narrower slot it overflows both sides alike; past a shorter one it hangs from the slot's top and runs
+ * off its foot, as a sheet's content does (B-168's F-bottom-sheet-05), so its month never rises over what stands above
+ * it. Squeezed instead, the day grid was centred in what was left and its first week rose into the weekday names.
+ */
+private data object CalendarKeepsItsSize : ModifierNodeElement<CalendarKeepsItsSizeNode>() {
+    override fun create() = CalendarKeepsItsSizeNode()
+
+    override fun update(node: CalendarKeepsItsSizeNode) = Unit
+}
+
+private class CalendarKeepsItsSizeNode :
+    Modifier.Node(),
+    LayoutModifierNode {
+    override fun MeasureScope.measure(
+        measurable: Measurable,
+        constraints: Constraints,
+    ): MeasureResult {
+        val p = measurable.measure(constraints.copy(maxWidth = Constraints.Infinity, maxHeight = Constraints.Infinity))
+        val w = constraints.constrainWidth(p.width)
+        val h = constraints.constrainHeight(p.height)
+        return layout(w, h) { p.place((w - p.width) / 2, 0) }
     }
 }
 
