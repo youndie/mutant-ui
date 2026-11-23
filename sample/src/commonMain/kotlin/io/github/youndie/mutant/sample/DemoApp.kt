@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentWithReceiverOf
@@ -21,12 +22,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.components.MutantDrawerItem
@@ -105,6 +110,17 @@ internal fun DemoApp(
     val bar: @Composable BoxScope.() -> Unit =
         remember(s, nav) {
             movableContentWithReceiverOf<BoxScope> {
+                // B-174: moving to the new tab detaches the bar, and the focused item loses the focus with it; an item
+                // taken from the keyboard gets the focus back once the bar stands in the new tab.
+                val focusManager = LocalFocusManager.current
+                val barFocus = remember { FocusRequester() }
+                val keys = remember { DemoBarFocus() }
+                LaunchedEffect(nav.tab) {
+                    val to = keys.refocus ?: return@LaunchedEffect
+                    keys.refocus = null
+                    withFrameNanos { }
+                    if (barFocus.requestFocus()) repeat(to) { focusManager.moveFocus(FocusDirection.Next) }
+                }
                 MutantNavigationBar(
                     listOf(
                         MutantNavigationItem(s.onAir, MutantIcons.Home),
@@ -113,8 +129,15 @@ internal fun DemoApp(
                         MutantNavigationItem(s.settings, MutantIcons.Settings),
                     ),
                     nav.tab.ordinal,
-                    { nav.go(DemoTab.entries[it]) },
-                    Modifier.align(Alignment.BottomCenter).padding(8.dp),
+                    {
+                        if (keys.held) keys.refocus = it
+                        nav.go(DemoTab.entries[it])
+                    },
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(8.dp)
+                        .focusRequester(barFocus)
+                        .onFocusChanged { keys.held = it.hasFocus },
                     windowInsets = WindowInsets(0),
                 )
             }
@@ -198,4 +221,10 @@ internal fun TabScroll(content: @Composable ColumnScope.() -> Unit) {
         content()
         Spacer(Modifier.height(112.dp))
     }
+}
+
+/** Whether the navigation bar holds the focus, and the item to give it back to once the bar has moved to a new tab. */
+private class DemoBarFocus {
+    var held = false
+    var refocus: Int? = null
 }

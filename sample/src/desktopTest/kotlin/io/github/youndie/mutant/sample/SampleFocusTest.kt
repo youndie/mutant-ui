@@ -220,4 +220,18 @@ class SampleFocusTest {
             }
         }
     }
+
+    @Test
+    fun `Enter on a navigation item leaves the focus on it in the new tab`() =
+        phone(DemoScreen.Library) {
+            for (item in listOf(s.queue, s.settings, s.onAir)) {
+                val target = hasText(item) and hasClickAction() and hasAnyAncestor(hasTestTag("demo-library"))
+                onNode(target).performSemanticsAction(SemanticsActions.RequestFocus)
+                mainClock.advanceTimeBy(100)
+                onNode(target).performKeyInput { pressKey(Key.Enter) }
+                mainClock.advanceTimeBy(800)
+                // Before: nothing was focused once the bar had moved to the new tab, and Tab went nowhere.
+                assertTrue(focused().split(", ").contains(item), "after Enter on $item: ${focused()}")
+            }
+        }
 }
