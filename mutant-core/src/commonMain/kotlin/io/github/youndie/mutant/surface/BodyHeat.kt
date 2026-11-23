@@ -9,36 +9,68 @@ import io.github.youndie.mutant.tokens.MutantMotion
  * The boil's heat (the engine's `frame`): rising to 1 in 320 ms while pressed, cooling to 0 in 480 ms after,
  * from wherever it was. A pure function of the clock's time and the last press or release; only [on] is state. Under
  * the pause a release cools at once ([hold]).
+ *
+ * A mouse over the body heats only its tremble (B-193, the designer's answer 16): [trembleAt] rises to [HOVER_HEAT]
+ * at the same rates, while [at], the heat the fill, the bubbles, the held drops and the running mosaic follow, stays a
+ * press's alone.
  */
 @androidx.compose.runtime.Stable
 internal class HeatMachine {
     var on: Boolean by mutableStateOf(false)
         private set
 
-    /** A mouse over the body (B-63): it simmers at [HOVER_HEAT], under a press's full boil. */
+    /** A mouse over the body (B-63): its outline trembles as at [HOVER_HEAT], under a press's full boil (B-193). */
     var hovered: Boolean by mutableStateOf(false)
         private set
-    private var from = 0.0
-    private var since = 0.0
 
-    private val target: Double get() =
-        if (on) {
-            1.0
-        } else if (hovered) {
-            HOVER_HEAT
-        } else {
-            0.0
+    /** One heat ramping towards its target: rising at the press's rate, cooling at the release's. */
+    private class Ramp {
+        private var from = 0.0
+        private var since = 0.0
+
+        fun at(
+            now: Double,
+            target: Double,
+        ): Double =
+            if (from <= target) {
+                minOf(target, from + (now - since) / MutantMotion.BOIL_OVER_IN_MS)
+            } else {
+                maxOf(target, from - (now - since) / MutantMotion.BOIL_OVER_OUT_MS)
+            }
+
+        /** Starts a new ramp from where the one towards [target] stands at [now]. */
+        fun restart(
+            now: Double,
+            target: Double,
+        ) {
+            from = at(now, target)
+            since = now
         }
 
-    /** The heat at [now]: rising towards the target at the press's rate, cooling towards it at the release's. */
-    fun at(now: Double): Double {
-        val t = target
-        return if (from <= t) {
-            minOf(t, from + (now - since) / MutantMotion.BOIL_OVER_IN_MS)
-        } else {
-            maxOf(t, from - (now - since) / MutantMotion.BOIL_OVER_OUT_MS)
+        /** Stands at [target] from [now]: nothing left to ramp. */
+        fun land(
+            now: Double,
+            target: Double,
+        ) {
+            from = target
+            since = now
         }
     }
+
+    private val press = Ramp()
+    private val hover = Ramp()
+
+    private val pressTarget: Double get() = if (on) 1.0 else 0.0
+    private val hoverTarget: Double get() = if (hovered) HOVER_HEAT else 0.0
+
+    /** A press's heat at [now]: the boil's fill, its bubbles, its held drops and its running mosaic. */
+    fun at(now: Double): Double = press.at(now, pressTarget)
+
+    /** The hover's heat at [now], for the outline's tremble alone (B-193). */
+    fun hoverAt(now: Double): Double = hover.at(now, hoverTarget)
+
+    /** The heat the outline trembles at: a press's, or the hover's where it is the higher (B-193). */
+    fun trembleAt(now: Double): Double = maxOf(at(now), hoverAt(now))
 
     /** Whether the pause holds (D7): a heat above where it is going then lands there at once (B-176). */
     private var held = false
@@ -47,7 +79,8 @@ internal class HeatMachine {
      * Follows the pause from composition. While it holds, a release or a leave cools the body in the same frame, and a
      * heat still cooling when it starts lands: the body shows released for as long as the pause lasts, and has nothing to
      * cool when it lifts. A press under it does not boil, as the clock stands: the surface shows it as a still frame at heat
-     * 1 ([mutantPausedPressFill], B-190); a press held across it keeps its heat (B-176).
+     * 1 ([mutantPausedPressFill], B-190); a press held across it keeps its heat (B-176). A hover under it shows its
+     * finished tremble at once, and a leave takes it at once (D24, B-193).
      */
     fun hold(
         paused: Boolean,
@@ -59,41 +92,36 @@ internal class HeatMachine {
     }
 
     private fun settle(now: Double) {
-        val t = target
-        if (at(now) > t) {
-            from = t
-            since = now
-        }
+        val t = pressTarget
+        if (at(now) > t) press.land(now, t)
+        hover.land(now, hoverTarget)
     }
 
     fun press(now: Double) {
         if (on) return
-        from = at(now)
-        since = now
+        press.restart(now, pressTarget)
         on = true
     }
 
     fun release(now: Double) {
         if (!on) return
-        from = at(now)
-        since = now
+        press.restart(now, pressTarget)
         on = false
         if (held) settle(now)
     }
 
     fun hover(now: Double) {
         if (hovered) return
-        from = at(now)
-        since = now
+        hover.restart(now, hoverTarget)
         hovered = true
+        if (held) hover.land(now, hoverTarget)
     }
 
     fun leave(now: Double) {
         if (!hovered) return
-        from = at(now)
-        since = now
+        hover.restart(now, hoverTarget)
         hovered = false
-        if (held) settle(now)
+        if (held) hover.land(now, hoverTarget)
     }
 }
 
@@ -106,5 +134,8 @@ internal fun mutantPausedPressFill(
     colors: io.github.youndie.mutant.tokens.MutantColors,
 ): androidx.compose.ui.graphics.Color = boilFill(fill, colors, 1.0, 0.0)
 
-/** A hovered body's heat (designed here, B-63): a simmer the eye catches, a third of a press's boil. */
-internal const val HOVER_HEAT: Double = .3
+/**
+ * The heat a hovered body's outline trembles at (the designer's answer 16, B-193): heat 0.25's tremble, with no amber in
+ * the fill and no bubbles. B-63 had chosen a simmer of 0.3 that warmed the fill too.
+ */
+internal const val HOVER_HEAT: Double = .25

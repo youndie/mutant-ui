@@ -60,7 +60,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** B-63: the hand over every live control, none over a disabled one, and a body that simmers under the mouse. */
+/**
+ * B-63: the hand over every live control, none over a disabled one, and a body whose outline trembles under the mouse; since
+ * B-193 its fill stays as it is.
+ */
 @OptIn(ExperimentalTestApi::class)
 class HoverAndCursorTest {
     private val hand = SemanticsMatcher.expectValue(MutantHandCursor, true)
@@ -190,7 +193,7 @@ class HoverAndCursorTest {
     }
 
     @Test
-    fun `under the mouse the body simmers at the hot tick, and settles once the mouse leaves`() =
+    fun `under the mouse the body trembles at the hot tick in its own fill, and settles once the mouse leaves`() =
         runComposeUiTest {
             button()
             val limeRest = lime()
@@ -198,7 +201,7 @@ class HoverAndCursorTest {
             onNodeWithTag("b").performMouseInput { moveTo(center) }
             mainClock.advanceTimeBy(400)
             val hovered = changesASecond()
-            // Its heat shows in the fill: the acid lime turns a third of the way to amber, so few pixels stay lime.
+            // B-193: the hover keeps the fill, so the acid lime stays; only the outline trembles.
             val limeHovered = lime()
             onNodeWithTag("b").performMouseInput { moveTo(Offset(-100f, -100f)) }
             mainClock.advanceTimeBy(600)
@@ -207,7 +210,7 @@ class HoverAndCursorTest {
                 rest <= 9 && hovered >= 11 && after <= 9,
                 "changes a second: rest $rest, hovered $hovered, after $after",
             )
-            assertTrue(limeHovered * 2 < limeRest, "lime pixels at rest $limeRest, under the mouse $limeHovered")
+            assertTrue(limeHovered > limeRest * .85, "lime pixels at rest $limeRest, under the mouse $limeHovered")
         }
 
     @Test

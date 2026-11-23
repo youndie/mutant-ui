@@ -284,7 +284,7 @@ internal fun ButtonBody(
 /**
  * What a button's body hears of its interactions (B-168). While it is busy (Loading) it takes no click, so it shows no
  * press and no hover: a press or a hover under way when the work starts lets go, and a mouse still over it when the work
- * ends simmers again. Focus is read from the button's own source, not from this.
+ * ends trembles again (B-193). Focus is read from the button's own source, not from this.
  */
 private class QuietWhileBusy(
     private val source: InteractionSource,

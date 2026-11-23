@@ -340,7 +340,8 @@ internal object BodyPool {
 }
 
 /**
- * The last frame built in a frame, for its instance, time, heat and whether it has paths (B-160). A body redrawn on every
+ * The last frame built in a frame, for its instance, time, heat (the tremble's and the press's, B-193) and
+ * whether it has paths (B-160). A body redrawn on every
  * frame — sliding home, pouring a new fill, boiling — asked the generator for the same tick's frame each time; between
  * two ticks the frame is the same, and is taken from here.
  */
@@ -348,6 +349,7 @@ internal class FrameMemo {
     private var instance: Instance? = null
     private var at = Double.NaN
     private var heat = Double.NaN
+    private var pressHeat = Double.NaN
     private var pressed = false
     private var paths = false
     private var frame: BodyFrame? = null
@@ -356,12 +358,13 @@ internal class FrameMemo {
         g: Instance,
         t: Double,
         k: Double,
+        pressK: Double,
         pressed: Boolean,
         paths: Boolean,
         build: () -> BodyFrame,
     ): BodyFrame {
         val f = frame
-        if (f != null && instance === g && at == t && heat == k && this.pressed == pressed &&
+        if (f != null && instance === g && at == t && heat == k && pressHeat == pressK && this.pressed == pressed &&
             this.paths == paths
         ) {
             return f
@@ -371,6 +374,7 @@ internal class FrameMemo {
             instance = g
             at = t
             heat = k
+            pressHeat = pressK
             this.pressed = pressed
             this.paths = paths
         }
