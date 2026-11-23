@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +24,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -32,24 +32,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.LocalMutantStage
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
@@ -71,8 +78,9 @@ public class MutantCarouselItem(
  *
  * The current card boils as any card; the others stand calm, half its wear (`data-calm=".5"`). A swipe moves the
  * shelf; a press on a card beside the current one brings it to the middle, and a press on the current one goes to
- * [onClick] (designed here, D15: the page is a still). Under reduce motion the shelf moves at once. The cards are a
- * stage of their own, as the page's view is, so their bodies are seeded apart from the screen's.
+ * [onClick] (designed here, D15: the page is a still); the pointer slides to its new dot as the navigation bar's pill
+ * does. Under reduce motion the shelf and the pointer move at once. The cards are a stage of their own, as the page's
+ * view is, so their bodies are seeded apart from the screen's.
  */
 @Composable
 public fun MutantCarousel(
@@ -151,19 +159,61 @@ private fun CarouselShelf(
                 }
             }
         }
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(DOT_GAP, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            items.indices.forEach { i ->
-                val at = i == current
+        CarouselDots(items.size, current, indicatorKey)
+    }
+}
+
+/**
+ * The dots under the view and the pill pointer at the [current] one. The pointer is one body that slides from the dot
+ * it left, as the navigation bar's pill does (B-168; designed here, D15: the page is a still), and a dot stands at once
+ * where it was; each keeps the page's key of the dot it stands at.
+ */
+@Composable
+private fun CarouselDots(
+    count: Int,
+    current: Int,
+    indicatorKey: String,
+) {
+    val clock = readMutantClock()
+    val from = remember { PillFrom(current) }
+    from.follow(current, count, clock.nowMs, LocalMutantReduceMotion.current, LocalMutantSteppedMotion.current)
+    // The screen's direction of reading: the dots run the other way in a right-to-left layout, as the pager does.
+    val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
+    val chosen = current in 0 until count
+    Layout(
+        content = {
+            if (chosen) {
                 MutantSurface(
-                    if (at) MutantBody.Pill else MutantBody.Dot,
-                    "$indicatorKey$i",
-                    Modifier.size(if (at) POINTER_W else DOT, DOT),
-                ) { Box(Modifier.size(if (at) POINTER_W else DOT, DOT)) }
+                    MutantBody.Pill,
+                    "$indicatorKey$current",
+                    Modifier.size(POINTER_W, DOT),
+                    slide = SlideRequest(current, (CAROUSEL_DOT_STEP * (side * from.cells).toFloat()).value.toDouble()),
+                ) { Box(Modifier.size(POINTER_W, DOT)) }
             }
+            for (i in 0 until count) {
+                if (i != current) {
+                    key(i) {
+                        MutantSurface(MutantBody.Dot, "$indicatorKey$i", Modifier.size(DOT)) { Box(Modifier.size(DOT)) }
+                    }
+                }
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(Constraints()) }
+        val dot = DOT.roundToPx()
+        val step = dot + DOT_GAP.roundToPx()
+        val wide = POINTER_W.roundToPx() - dot
+        // As the page's centred row: a dot per card, 8 dp apart, the pointer 16 dp wider than a dot.
+        val row = if (count == 0) 0 else (count - 1) * step + dot + (if (chosen) wide else 0)
+        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else row
+        layout(width, if (count == 0) 0 else dot) {
+            val start = (width - row) / 2
+
+            fun x(i: Int) = start + i * step + if (chosen && i > current) wide else 0
+            var next = 0
+            if (chosen) placeables[next++].placeRelative(x(current), 0)
+            for (i in 0 until count) if (i != current) placeables[next++].placeRelative(x(i), 0)
         }
     }
 }
@@ -279,6 +329,9 @@ private val INDICATOR_GAP = 16.dp
 private val DOT = 10.dp
 private val POINTER_W = 26.dp
 private val DOT_GAP = 8.dp
+
+/** From one dot to the next: where the pointer slides from, per dot it left. */
+private val CAROUSEL_DOT_STEP = DOT + DOT_GAP
 
 /** The title (`16px`, 500), the subtitle (`13px`) and the status (Handjet `20px`), sp. */
 private const val TITLE_SIZE = 16
