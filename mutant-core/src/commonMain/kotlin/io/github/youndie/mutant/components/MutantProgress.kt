@@ -27,12 +27,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.MutantClock
-import io.github.youndie.mutant.clock.STILL_MS
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.jsRound
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
+import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
@@ -89,15 +90,17 @@ public fun MutantLinearProgress(
 
 /**
  * An indeterminate linear progress (`rewind`): the black track with a 96 dp band running through it — a quarter at
- * 15 % acid, a quarter at 40 %, half solid — 12 dp a scene tick, from beyond its start to beyond its end and round.
- * Under reduce motion it stands where the page's still frame has it (the engine's 5 s). Right to left it runs from the
- * right. With no width to fill (a horizontally scrolling row) it takes 200 dp, as the determinate track does. It reads
- * as indeterminate progress.
+ * 15 % acid, a quarter at 40 %, half solid — 12 dp a 125 ms tick, from beyond its start to beyond its end and round.
+ * It moves on every frame at that speed, and in 12 dp steps at the tick under [MutantTheme]'s `steppedMotion` (D22,
+ * B-191). Under reduce motion it stands centred on the track, so the track is never empty (B-191). Right to left it
+ * runs from the right. With no width to fill (a horizontally scrolling row) it takes 200 dp, as the determinate track
+ * does. It reads as indeterminate progress.
  */
 @Composable
 public fun MutantLinearProgress(modifier: Modifier = Modifier) {
     val clock = readMutantClock()
     val reduce = LocalMutantReduceMotion.current
+    val steps = LocalMutantSteppedMotion.current
     val acid = MutantTheme.colors.primary
     Canvas(
         modifier
@@ -106,14 +109,12 @@ public fun MutantLinearProgress(modifier: Modifier = Modifier) {
             .height(TRACK)
             .semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate },
     ) {
-        // Paused, it stands where the page's still frame has it: the clock's own tick 0 would leave it before the track.
-        val tick = if (reduce) STILL_TICK else clock.sceneTick
         fromStart {
             scale(density, Offset.Zero) {
-                // The engine measures the track and the band whole (`offsetWidth`).
-                val w = jsRound(size.width / density.toDouble()).toFloat()
-                drawTrack(size.width / density)
-                val x = ((tick * BAND_STEP) % (w + BAND).toLong()).toFloat() - BAND
+                val track = size.width / density
+                drawTrack(track)
+                // Paused, it stands centred on the track, its solid half from the middle on (B-191).
+                val x = if (reduce) (track - BAND) / 2 else progressBandX(track, progressTicks(clock, steps))
                 clipRect(0f, 0f, size.width / density, TRACK.value) {
                     drawRect(acid, Offset(x, 0f), Size(BAND / 4, TRACK.value), alpha = .15f)
                     drawRect(acid, Offset(x + BAND / 4, 0f), Size(BAND / 4, TRACK.value), alpha = .4f)
@@ -125,14 +126,16 @@ public fun MutantLinearProgress(modifier: Modifier = Modifier) {
 }
 
 /**
- * A circular progress, the reel: a 36 dp spool ringed 2.5 dp in black with three holes, turning 30° each scene tick
- * (`reel`), indeterminate. It stands under reduce motion. Given a box of another size, it keeps its 36 dp, centred.
+ * A circular progress, the reel: a 36 dp spool ringed 2.5 dp in black with three holes, turning 30° a 125 ms tick
+ * (`reel`), indeterminate: on every frame at that speed, and in 30° steps at the tick under [MutantTheme]'s
+ * `steppedMotion` (D22, B-191). It stands under reduce motion. Given a box of another size, it keeps its 36 dp, centred.
  */
 @Composable
 public fun MutantCircularProgress(modifier: Modifier = Modifier) {
     val clock = readMutantClock()
+    val steps = LocalMutantSteppedMotion.current
     Canvas(modifier.size(REEL).semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate }) {
-        val tick = clock.sceneTick
+        val turn = progressReelAngle(progressTicks(clock, steps))
         scale(density, Offset.Zero) {
             val r = REEL.value / 2
             // Given a box of another size, the spool keeps its 36 dp and stands in the box's middle.
@@ -140,7 +143,7 @@ public fun MutantCircularProgress(modifier: Modifier = Modifier) {
             // The ring is the page's `box-shadow`: a black disc under the spool, so their edges share no seam.
             drawCircle(BLACK, r + REEL_RING, c)
             drawCircle(SPOOL, r, c)
-            rotate(((tick * REEL_STEP) % 360).toFloat(), c) {
+            rotate(turn, c) {
                 for (hole in HOLES) {
                     drawCircle(
                         BLACK,
@@ -152,6 +155,38 @@ public fun MutantCircularProgress(modifier: Modifier = Modifier) {
         }
     }
 }
+
+/**
+ * How many 125 ms ticks into the clock the band and the reel are drawn, read in the draw so it is drawn again when it
+ * changes (B-191, D22):
+ * - frozen (the engine's `data-mu-t`) or under the theme's [steps] (`steppedMotion`), the scene's tick, whole, as the
+ *   engine's `stageStep` draws them;
+ * - else the time now over the tick, on every frame, so they move at the same speed without steps.
+ */
+internal fun progressTicks(
+    clock: MutantClock,
+    steps: Boolean,
+): Double {
+    val tick = clock.sceneTick
+    if (clock.frozen || steps) return tick.toDouble()
+    clock.frame
+    return clock.nowMs / MutantMotion.TICK_MS
+}
+
+/**
+ * The band's start on a [track] dp wide, [ticks] in: 12 dp a tick from a band's width before the track's start, round
+ * the track and the band (`translateX((fi * 12) % (pw + w) - w)`). The engine measures the track whole (`offsetWidth`).
+ */
+internal fun progressBandX(
+    track: Float,
+    ticks: Double,
+): Float {
+    val round = jsRound(track.toDouble()) + BAND
+    return ((ticks * BAND_STEP) % round).toFloat() - BAND
+}
+
+/** The reel's turn [ticks] in, degrees: 30° a tick, round. */
+internal fun progressReelAngle(ticks: Double): Float = ((ticks * REEL_STEP) % 360.0).toFloat()
 
 /**
  * Draws [block] from the layout's start: as it is left to right, mirrored right to left, so a fill grows from the start
@@ -205,17 +240,16 @@ private const val SEGMENT_GAP = 2f
 private val VALUE_GAP = 12.dp
 private const val VALUE_SIZE = 20
 
-/** The band: 96 dp, 12 dp a tick (`translateX((fi * 12) % (pw + w) - w)`); paused, at the still frame's tick. */
+/** The band: 96 dp, 12 dp a tick (`translateX((fi * 12) % (pw + w) - w)`); paused, centred on the track (B-191). */
 private const val BAND = 96f
-private const val BAND_STEP = 12L
-private val STILL_TICK = (STILL_MS / MutantClock.SCENE_TICK_MS).toLong()
+private const val BAND_STEP = 12.0
 
 /** The reel: 36 dp, ringed 2.5, its holes 8 dp at 14,4 · 5,20 · 23,20, 30° a tick. */
 private val REEL = 36.dp
 private const val REEL_RING = 2.5f
 private const val HOLE = 8f
 private val HOLES = listOf(Offset(14f, 4f), Offset(5f, 20f), Offset(23f, 20f))
-private const val REEL_STEP = 30L
+private const val REEL_STEP = 30.0
 
 /**
  * The page's literals in both themes, which «Копия» does not repaint: the black `#05060c` and the spool's paper

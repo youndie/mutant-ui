@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (30)
+## Open (29)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
-| [B-191](docs/backlog/B-191-progress-under-the-pause-and-the-steps.md) `[ ]` | The progress band under the pause and under the steps | P1 | S | - |
 | [B-193](docs/backlog/B-193-hover-keeps-the-fill.md) `[ ]` | Hover keeps the fill and only stirs the outline | P1 | S | - |
 | [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[ ]` | The pickers: today, disabled days, six rows, the clock's accent | P1 | M | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
@@ -93,7 +92,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (177)
+## Closed (178)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -276,6 +275,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-186](docs/backlog/B-186-the-caret-and-the-fields-mosaic.md) `[x]` - The caret restarts, sits beside the letters, and the mosaic ignores the text
 - [B-188](docs/backlog/B-188-the-carousel-glides-on-tab-and-fits-a-narrow-shelf.md) `[x]` - The carousel glides on Tab and fits a narrow shelf
 - [B-190](docs/backlog/B-190-a-press-under-the-pause.md) `[x]` - A press under the pause shows a still frame at heat 1
+- [B-191](docs/backlog/B-191-progress-under-the-pause-and-the-steps.md) `[x]` - The progress band under the pause and under the steps
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection

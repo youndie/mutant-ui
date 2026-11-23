@@ -64,10 +64,15 @@ class ProgressBehaviourTest {
     private fun ComposeUiTest.show(
         reduceMotion: Boolean = false,
         colors: io.github.youndie.mutant.tokens.MutantColors = MutantPalettes.Efir,
+        steppedMotion: Boolean = false,
         content: @Composable () -> Unit,
     ) = setContent {
         CompositionLocalProvider(LocalDensity provides Density(1f)) {
-            MutantTheme(colors = colors, reduceMotion = reduceMotion) { Box { content() } }
+            MutantTheme(
+                colors = colors,
+                reduceMotion = reduceMotion,
+                steppedMotion = steppedMotion,
+            ) { Box { content() } }
         }
     }
 
@@ -135,7 +140,8 @@ class ProgressBehaviourTest {
         val starts = ArrayList<Int>()
         runComposeUiTest {
             mainClock.autoAdvance = false
-            show { MutantLinearProgress(Modifier.width(200.dp).testTag("b")) }
+            // In the design's steps (`steppedMotion`), read a tick apart; by default it moves on every frame (B-191).
+            show(steppedMotion = true) { MutantLinearProgress(Modifier.width(200.dp).testTag("b")) }
             onNodeWithTag(
                 "b",
             ).assert(
@@ -170,12 +176,12 @@ class ProgressBehaviourTest {
         // The band's quarters over the black: 15 %, 40 % and solid acid, read where each stands whole.
         runComposeUiTest {
             mainClock.autoAdvance = false
-            // Paused, it stands at the still frame's tick 40: 480 dp round a 200 dp track and its band, 88 dp in.
+            // Paused, it stands centred on the 200 dp track (B-191): from 52 dp to 148, its solid half from 100.
             show(reduceMotion = true) { MutantLinearProgress(Modifier.width(200.dp).testTag("q")) }
             mainClock.advanceTimeByFrame()
             val px = onNodeWithTag("q").captureToImage().toPixelMap()
             val end = acidColumns("q").last()
-            assertEquals(183, end, "the band's end, paused at the still frame")
+            assertEquals(147, end, "the band's end, paused centred")
             val black = Color(0xFF05060C)
 
             fun over(a: Float) =
@@ -193,7 +199,8 @@ class ProgressBehaviourTest {
     fun `the reel turns 30 degrees a tick, whole again after twelve, and stands when paused`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
-            show { MutantCircularProgress(Modifier.testTag("r")) }
+            // In the design's steps (`steppedMotion`); by default it turns on every frame (B-191).
+            show(steppedMotion = true) { MutantCircularProgress(Modifier.testTag("r")) }
             onNodeWithTag(
                 "r",
             ).assert(
@@ -269,7 +276,8 @@ class ProgressBehaviourTest {
     fun `with no width to fill, the running band keeps the determinate track's 200 dp`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
-            show {
+            // In the design's steps, so the band's edges stand on whole pixels.
+            show(steppedMotion = true) {
                 Row(Modifier.horizontalScroll(rememberScrollState())) {
                     MutantLinearProgress(Modifier.testTag("b"))
                     MutantCircularProgress()
