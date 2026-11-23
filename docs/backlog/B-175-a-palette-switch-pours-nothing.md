@@ -1,7 +1,7 @@
 ---
 id: B-175
 title: "A palette switch pours nothing: every body takes the new palette at once"
-status: wip
+status: done
 priority: P2
 size: S
 stage: stage-6-later
@@ -60,8 +60,9 @@ colours at once.
   pour starts, the frames read from what is drawn at density 2 with the test's clock advanced by hand:
   - `HeaderPaletteSwitchTest` (sample): the chosen chip's word reads ≥ 4.5:1 on its fill on every frame, and «RU»
     shows no pixel of the old palette's fill;
-  - `PaletteSwitchPoursNothingTest`: a card's title and subtitle ≥ 4.5:1 and no more of the old fill in the card than
-    it shows at rest, alone and under a dialog's held clock; the cassette's reels ≥ 4.5:1 on their window.
+  - `PaletteSwitchPoursNothingTest`: a card's title and subtitle ≥ 4.5:1 and at most 100 px of the old palette's
+    fill in the card (a resting card in «Эфир» shows 36 near «Копия»'s cream, a pour from it some 75 000), alone and
+    under a dialog's held clock; the cassette's reels ≥ 4.5:1 on their window.
 - A toggle still pours as before (the same test: a chip selected pours lime over frames), and a switch mid-pour lands
   it (no pixel of the old fill from the switch's frame on).
 - Every golden, parity cell and behaviour test unchanged (none draws a palette switch).
@@ -69,3 +70,41 @@ colours at once.
   `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantSurface.kt`,
   `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/PaletteSwitchPoursNothingTest.kt`,
   `sample/src/desktopTest/kotlin/io/github/youndie/mutant/sample/HeaderPaletteSwitchTest.kt`
+
+## Findings, 2026-11-23
+
+Frames before and after, the header's three chips, a card, a card switched back mid-pour, a card under a dialog and the
+cassette, each switched to «Копия» and back (contact sheets and per-frame readings): `/private/tmp/b175/{before,after}/`.
+Before, the window of the cassette pours cream from the top past its dark reels and the card under the dialog stands
+navy under dark words for as long as the dialog shows; after, every frame from the switch's is the new palette at rest.
+
+Read by the kept tests (the "before" column is the fix's wiring reverted, `main`'s behaviour):
+
+| Face | Before | After |
+|---|---|---|
+| Header, «Copy» chosen | 1.81:1 in frames 1–3; «RU» shows 3 874 px of «Эфир»'s fill, gone by frame 11 | 16.68:1 from frame 1; 0 px |
+| Header, back to «Эфир» | «RU» shows 3 787 px of «Копия»'s fill for 11 frames | «On air» 9.75:1 from frame 1; 0 px |
+| Card | title 1.46:1 (5 frames), subtitle 1.85:1 (9), 75 621 px of the old fill in frame 1; back, 74 602 px | 13.62 / 5.43:1 («Копия»), 12.06 / 6.69:1 («Эфир») on every frame; ≤ 36 px |
+| Card switched back mid-pour (336 ms) | a second pour runs over the first: the title flicks to 1.46:1 in one frame 192 ms later | lands both times: 13.62 / 5.43:1, then 12.06 / 6.69:1 from the switch's frame |
+| Card under a dialog | 1.46 / 1.85:1 and 75 817 px of the old fill on every frame, held | as the card alone |
+| Cassette | reels 1.03:1 for 9 frames (144 ms); back, 1.06:1 for 9 | 15.52:1 / 15.82:1 on every frame |
+| A chip's toggle, palette switched at frame 8 | the pour runs on from «Эфир»'s fill: 5 535 px of it at the switch | lime whole at the switch, 0 px of the old fill |
+
+The toggle alone pours as before: the frame after it shows under a fifth of the lime, and the lime grows frame by frame.
+
+**Mutants**, each one line after the commit, each killed by its aimed test (the `<failure>` read from the JUnit XML):
+
+- the surface not passing its palette (`MutantSurface`, `follow(…, instant)`): every face fails — the header's
+  «Copy» 1.81:1 and 3 874 px in «RU», the card 1.46:1 and 75 621 px, under the dialog 75 817 px on all 40 frames, the
+  reels 1.03:1, the toggle's old fill 5 535 px at the switch;
+- the running pour not landed (`pourUnder = null` dropped): the toggle switched mid-pour keeps 5 535 px of «Эфир»'s
+  fill in the switch's frame; the other faces pass, as nothing else pours at a switch;
+- every change of fill taken for a palette switch (`repainted = this.palette != null`): the toggle no longer pours —
+  its first frame shows 12 177 lime px of 11 971.
+
+A first version also set `pourSince` to the far past; with `pourUnder` gone nothing pours either way, so that line could
+not be killed and was dropped.
+
+**Gate**: `:mutant-core:desktopTest` 512 tests and `:sample:desktopTest` 23, no failure (read from the JUnit XML), every
+golden and parity cell among them unchanged and no golden file touched; ktlint and the ABI dump unchanged; the iOS
+simulator and wasm builds compile.
