@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,6 +40,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.surface.BodyState
@@ -95,27 +97,46 @@ internal fun CarouselBody(
     indicatorKey: String,
     hidden: Boolean = false,
 ) {
-    // The cards are seeded by the view's own stage, `<stage>-view`, as the page's `l-carousel-view`.
-    val viewStage = "${LocalMutantStage.current}-view"
-    val scope = rememberCoroutineScope()
-    val instant = LocalMutantReduceMotion.current
     val current = state.currentPage
-    Column(
+    BoxWithConstraints(
         modifier
             // With no width given (a scrolling row), the page's view: a pager cannot measure in an endless one.
             .layout { m, c ->
                 val p = m.measure(if (c.hasBoundedWidth) c else c.copy(maxWidth = DESIGN_WIDTH.roundToPx()))
                 layout(p.width, p.height) { p.place(0, 0) }
             }.semantics { stateDescription = "${current + 1} / ${items.size}" },
-        verticalArrangement = Arrangement.spacedBy(INDICATOR_GAP),
     ) {
+        CarouselShelf(items, state, onClick, key, indicatorKey, hidden, (maxWidth - START - CARD_W).coerceAtLeast(0.dp))
+    }
+}
+
+/** The view and the dots under it; [end] is the room after the last card. */
+@Composable
+private fun CarouselShelf(
+    items: List<MutantCarouselItem>,
+    state: PagerState,
+    onClick: ((Int) -> Unit)?,
+    key: String,
+    indicatorKey: String,
+    hidden: Boolean,
+    end: Dp,
+) {
+    // The cards are seeded by the view's own stage, `<stage>-view`, as the page's `l-carousel-view`.
+    val viewStage = "${LocalMutantStage.current}-view"
+    val scope = rememberCoroutineScope()
+    val instant = LocalMutantReduceMotion.current
+    val current = state.currentPage
+    Column(verticalArrangement = Arrangement.spacedBy(INDICATOR_GAP)) {
         CompositionLocalProvider(LocalMutantStage provides viewStage) {
             HorizontalPager(
                 state,
                 // The view is 172 dp, the card's 120 and the drips' room under it; a larger font scale grows the card
                 // and the view with it.
                 Modifier.fillMaxWidth().heightIn(min = VIEW).clipToBounds(),
-                contentPadding = PaddingValues(start = START, top = TOP, bottom = VIEW - TOP - CARD_H),
+                // Room after the last card, so that it too stands 84 dp in when it is the current one (B-168): without it
+                // the shelf stopped where the cards end, and in a wide view (three cards over 421 dp) the last card could
+                // never become the current one.
+                contentPadding = PaddingValues(start = START, top = TOP, end = end, bottom = VIEW - TOP - CARD_H),
                 pageSize = PageSize.Fixed(CARD_W),
                 pageSpacing = CARD_GAP,
                 verticalAlignment = Alignment.Top,

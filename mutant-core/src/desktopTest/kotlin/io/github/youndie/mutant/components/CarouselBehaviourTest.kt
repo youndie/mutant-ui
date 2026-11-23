@@ -3,6 +3,9 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -76,5 +79,37 @@ class CarouselBehaviourTest {
                 ).fetchSemanticsNodes()
                     .map { it.config[SemanticsProperties.StateDescription] }
             assertTrue("2 / 3" in said, "state descriptions $said")
+        }
+
+    @Test
+    fun `B-168 the last card is reached and stands where the current one stands, at any width`() =
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            var width by mutableStateOf(400.dp)
+            lateinit var state: PagerState
+            val clicks = ArrayList<Int>()
+            setContent {
+                Still {
+                    state = rememberPagerState(initialPage = 1) { items.size }
+                    MutantCarousel(items, Modifier.width(width), state, onClick = { clicks += it })
+                }
+            }
+            // 400 dp, the page's shelf; 328, the demo's column; 520, the sample's cell, where the shelf's travel was
+            // shorter than a card past the middle one.
+            for (w in listOf(400, 328, 520)) {
+                width = w.dp
+                mainClock.advanceTimeByFrame()
+                state.requestScrollToPage(1)
+                mainClock.advanceTimeByFrame()
+                onNode(hasText("Настроечная таблица")).performTouchInput { click() }
+                mainClock.advanceTimeByFrame()
+                assertEquals(2, state.currentPage, "$w dp: the last card is the current one")
+                val left = onNode(hasText("Настроечная таблица")).fetchSemanticsNode().positionInRoot.x
+                assertEquals(84f, left, "$w dp: the last card's left")
+                onNode(hasText("Настроечная таблица")).performTouchInput { click() }
+                mainClock.advanceTimeByFrame()
+                assertEquals(2, clicks.lastOrNull(), "$w dp: a press on it is the click")
+                clicks.clear()
+            }
         }
 }
