@@ -130,7 +130,7 @@ internal fun DemoScreenFrame(
             DemoScreen.Recording -> strings.demoRecording to "demo-recording"
             DemoScreen.Settings -> strings.demoSettings to "demo-settings"
         }
-    Screen(title, tag, roundedClip, keyframeLoss && screen == DemoScreen.Library) { DemoApp(nav, strings) }
+    Screen(title, tag, roundedClip, keyframeLoss && screen == DemoScreen.Library, nav.screen) { DemoApp(nav, strings) }
 }
 
 /**
@@ -143,12 +143,13 @@ private fun Screen(
     tag: String,
     roundedClip: Boolean,
     keyframeLoss: Boolean = false,
+    shows: Any? = null,
     content: @Composable () -> Unit,
 ) {
     // Each phone its own clock (B-90): the Settings screen's dialog stands that screen alone, not its neighbours.
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText(title, style = MutantTheme.textStyles.display(28.sp))
-        MutantScreenClock { ScreenBox(tag, roundedClip, keyframeLoss, content) }
+        MutantScreenClock { ScreenBox(tag, roundedClip, keyframeLoss, shows, content) }
     }
 }
 
@@ -157,6 +158,7 @@ private fun ScreenBox(
     tag: String,
     roundedClip: Boolean,
     keyframeLoss: Boolean,
+    shows: Any?,
     content: @Composable () -> Unit,
 ) {
     val colors = MutantTheme.colors
@@ -170,8 +172,13 @@ private fun ScreenBox(
             .nestedScroll(PhoneKeepsItsFling)
             .testTag(tag),
     ) {
-        // The engine loses one screen's keyframe at a time; the sample gives the loss to its first screen.
-        if (keyframeLoss) MutantKeyframeLoss(Modifier.fillMaxSize(), colors.background) { content() } else content()
+        // The engine loses one screen's keyframe at a time; the sample gives the loss to its first screen, and tells it
+        // which of the app's screens it shows (B-198).
+        if (keyframeLoss) {
+            MutantKeyframeLoss(Modifier.fillMaxSize(), colors.background, screen = shows) { content() }
+        } else {
+            content()
+        }
     }
 }
 

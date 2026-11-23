@@ -317,7 +317,7 @@ public final class io/github/youndie/mutant/pattern/MutantPatternKt {
 }
 
 public final class io/github/youndie/mutant/surface/MutantKeyframeLossKt {
-	public static final fun MutantKeyframeLoss-3IgeMak (Landroidx/compose/ui/Modifier;JLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun MutantKeyframeLoss-sW7UJKQ (Landroidx/compose/ui/Modifier;JLjava/lang/Object;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/surface/MutantTapeKt {

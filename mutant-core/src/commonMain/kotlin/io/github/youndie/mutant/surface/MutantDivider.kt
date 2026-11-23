@@ -1,12 +1,43 @@
 package io.github.youndie.mutant.surface
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.layout.onGloballyPositioned
 import io.github.youndie.mutant.gen.Mulberry32
 import io.github.youndie.mutant.gen.jsRound
 import io.github.youndie.mutant.gen.jsToFixed
 import io.github.youndie.mutant.tokens.MutantColors
+
+/**
+ * A tracking divider [h] dp tall across what [modifier] gives it, as the screen's keyframe loss sees it (B-198): a body
+ * of its scene, so the band takes its strokes into the picture it drags and cuts them where it lies, as the engine's
+ * loss, which takes the whole stage, does. The generator's numbers are dp: drawn inside a scale by the density.
+ */
+@Composable
+internal fun TrackingDivider(
+    seed: String,
+    h: Float,
+    colors: MutantColors,
+    modifier: Modifier,
+) {
+    val scene = LocalMutantMoshScene.current
+    val body = rememberMoshBody(scene)
+    Spacer(
+        modifier
+            .onGloballyPositioned { body.coords = it }
+            .drawWithCache {
+                moshBehind(scene, body) {
+                    scale(density, Offset.Zero) { drawTrackingDivider(seed, size.width / density, h, colors) }
+                }
+            },
+    )
+}
 
 /**
  * A tracking divider (`data-mu-divider`, the engine's `buildStage`): 2 dp runs of the no-signal blue, 6–52 dp

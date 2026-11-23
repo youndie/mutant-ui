@@ -639,6 +639,8 @@ A hover's look (answer 16, [B-193](../backlog/B-193-hover-keeps-the-fill.md)) re
 
 Where an answer counts the steps of a movement (the slider's settle «330 мс … 4 шага», answer 4), those are the steps `steppedMotion = true` draws; by default the movement runs on every frame, as D22 says for every other transition. That is this repository's reading of the answer, not the designer's word, and its items say so.
 
+The keyframe loss and a screen change (answer 24, [B-198](../backlog/B-198-the-keyframe-loss-ends-on-a-screen-change.md)): the kit learns of a screen change from a key the consumer passes, `MutantKeyframeLoss(screen = …)`, until a screen host (B-180) passes its own; on a change the loss ends at once and none starts for 1 s. A scroll is not a screen change. The tracking dividers are bodies of the loss's scene.
+
 Deferred by the designer: the list's scroll shear (answer 6) and typed digits in the pickers (answer 21). Answer 25 says the designer's next package will clip the mosaic to the clean zone as well; under D20 that package is a list of proposals, and [B-199](../backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) makes the change here first.
 
 ## 3. Risks and open questions

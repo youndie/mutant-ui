@@ -18,6 +18,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentWithReceiverOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -59,6 +60,12 @@ internal class DemoNav(
 ) {
     var tab by mutableStateOf(tab)
     var open by mutableStateOf(open)
+
+    /** The recording's tab, per tape opened: kept here, so the phone's keyframe loss hears it switch (B-198). */
+    val pages = mutableStateMapOf<Int, Int>()
+
+    /** The screen the phone shows, for its keyframe loss (B-198): the tab, or the tape opened over it and its tab. */
+    val screen: Any get() = open?.let { it to (pages[it] ?: 0) } ?: tab
 
     /** The tab bar's menu button: the drawer it opens, and the dialog the Settings tab opens under, give focus back to it. */
     val menu = FocusRequester()
@@ -145,7 +152,7 @@ internal fun DemoApp(
     Box(Modifier.fillMaxSize()) {
         val open = nav.open
         if (open != null) {
-            holder.SaveableStateProvider("recording-$open") { Recording(s, tapes[open], nav) }
+            holder.SaveableStateProvider("recording-$open") { Recording(s, tapes[open], nav, tape = open) }
         } else {
             holder.SaveableStateProvider(nav.tab) {
                 when (nav.tab) {
