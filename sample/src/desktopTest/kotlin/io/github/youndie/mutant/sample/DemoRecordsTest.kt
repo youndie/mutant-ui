@@ -1,18 +1,27 @@
 package io.github.youndie.mutant.sample
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -106,7 +115,6 @@ class DemoRecordsTest {
             assertTrue(failures.isEmpty(), failures.joinToString("\n"))
         }
 
-
     /**
      * The acid pixels in the selection box of the table's row that reads [title]: its 40 dp column, 48 dp tall. The box's
      * acid reads #cfe411 over the phone's ground, so an acid pixel is a bright yellow-green one: no other ink of the row's
@@ -153,6 +161,53 @@ class DemoRecordsTest {
             assertTrue(left < 28, "the place the chosen record left shows no acid in the first frame: $left of $chosen")
             assertTrue(reached > chosen * 9 / 10, "the place it reached shows its whole box: $reached of $chosen")
         }
+
+    /**
+     * The days shown chosen in the date picker under [within]: its selected nodes that read a number with no leading zero
+     * (the time picker beside it reads «02»).
+     */
+    private fun ComposeUiTest.chosenDays(within: SemanticsMatcher): List<String> =
+        onAllNodes(isSelected() and hasAnyAncestor(within))
+            .fetchSemanticsNodes()
+            .map { n -> n.config.getOrElse(SemanticsProperties.Text) { emptyList() }.joinToString { it.text } }
+            .filter { it.isNotEmpty() && it.all(Char::isDigit) && !it.startsWith("0") }
+
+    @Test
+    fun `the chosen day stands chosen in its own month alone, on the page and in the demo's timer`() {
+        val scroll = ScrollState(0)
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent { MutantUiSample(SampleSettings(group = SpecGroup.Selection), scroll) }
+            mainClock.advanceTimeBy(1_000)
+            val section = hasTestTag("section-DatePicker")
+            val top = onNode(section, useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y
+            runOnUiThread { scroll.dispatchRawDelta(top) }
+            mainClock.advanceTimeBy(100)
+            assertEquals(listOf("13"), chosenDays(section), "November, as the page opens")
+            onNode(hasContentDescription(s.nextMonth) and hasAnyAncestor(section)).performClick()
+            mainClock.advanceTimeBy(600)
+            assertEquals(emptyList(), chosenDays(section), "December: the 13th of November is not chosen in it")
+            onNode(hasText("20") and hasAnyAncestor(section)).performClick()
+            mainClock.advanceTimeBy(600)
+            onNode(hasContentDescription(s.previousMonth) and hasAnyAncestor(section)).performClick()
+            mainClock.advanceTimeBy(600)
+            assertEquals(emptyList(), chosenDays(section), "November once the 20th of December is chosen")
+        }
+        phone {
+            onNodeWithText(s.settings).performClick()
+            mainClock.advanceTimeBy(800)
+            // The timer's row stands below the phone's fold; its click is the semantics' (performScrollTo can hang the JVM
+            // with the clock held).
+            onNode(hasText(s.timerRecording) and hasClickAction()).performSemanticsAction(SemanticsActions.OnClick)
+            mainClock.advanceTimeBy(800)
+            val sheet = hasTestTag("demo-library")
+            assertEquals(listOf("24"), chosenDays(sheet), "the timer's November")
+            onNode(hasContentDescription(s.nextMonth) and hasAnyAncestor(sheet)).performClick()
+            mainClock.advanceTimeBy(600)
+            assertEquals(emptyList(), chosenDays(sheet), "the timer's December")
+            onNodeWithText(s.timerLine(24, 11, 2, 40), useUnmergedTree = true).assertExists()
+        }
+    }
 
     private companion object {
         /** Where the phone stands in the test's window: under its 28 dp title and the 16 dp gap. */

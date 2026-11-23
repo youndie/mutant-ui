@@ -187,7 +187,9 @@ internal fun Searches(s: SampleStrings) {
 
 @Composable
 internal fun DatePickers(s: SampleStrings) {
-    var day by remember { mutableIntStateOf(13) }
+    // B-174: the chosen day is a date, kept with its month; the month shown is another state, so the 13th chosen in
+    // November is not chosen in every month the arrows show.
+    var chosen by remember { mutableStateOf(SampleDate(2026, 11, 13)) }
     var month by remember { mutableIntStateOf(11) }
     var year by remember { mutableIntStateOf(2026) }
     States(s) {
@@ -195,8 +197,8 @@ internal fun DatePickers(s: SampleStrings) {
             MutantDatePicker(
                 year,
                 month,
-                day.coerceAtMost(31),
-                { day = it },
+                chosen.dayIn(year, month),
+                { chosen = SampleDate(year, month, it) },
                 { y, m ->
                     year = y
                     month = m
@@ -222,4 +224,17 @@ internal fun TimePickers(s: SampleStrings) {
             }, hourLabel = s.hours, minuteLabel = s.minutes)
         }
     }
+}
+
+/** A chosen day with its month and year, as a date picker's caller keeps it. */
+internal data class SampleDate(
+    val year: Int,
+    val month: Int,
+    val day: Int,
+) {
+    /** The day to show chosen in [year] and [month]: this one's, in its own month only. */
+    fun dayIn(
+        year: Int,
+        month: Int,
+    ): Int? = day.takeIf { year == this.year && month == this.month }
 }
