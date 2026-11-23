@@ -98,3 +98,14 @@ bytes as they were.
 With the seam on and the same delay, the Demo comparison is the same picture as without it. Every arm — page late, alone
 late, both late — draws 1 674 images / 111 vectors on the page and 806 / 66 alone. Every arm has the same 28 counts as
 the run with no delay: 1–3 px, one instant 146. Both tests pass under every build late.
+
+**Mutants**, each run against its test and its failure read in the JUnit XML:
+
+| Mutant | Test | Result |
+|---|---|---|
+| the page's Tape back over the Demo phones (`MutantUiSample.kt`, B-101's defect) | `DemoTapeOnceTest` | killed: 28 of 28 instants, 55 172–61 216 px |
+| the tick's image rasterised whole, its band ignored (`rasterisedBody(…, null)` in `MutantSurface.kt`, B-86's) | «a tall body rasterises the band…» | killed: «the last image's bytes 4934400 against the whole 4479840» |
+
+**Gate**, on this Mac: `:mutant-core:desktopTest` 492 tests and `:sample:desktopTest` 22 tests, none failed;
+`ktlintCheck` on both modules, `:mutant-core:checkKotlinAbi` and `:mutant-core:compileKotlinIosSimulatorArm64` passed.
+Each fixed test was then run five times in a row, its test task forced each time, and passed 5 of 5.
