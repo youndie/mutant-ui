@@ -321,11 +321,12 @@ class ButtonBehaviourTest {
     }
 
     @Test
-    fun `a loading button shows no press, no simmer and no hand, and simmers again under the mouse when done`() =
+    fun `a loading button shows no press, no hover and no hand, and trembles again under the mouse when done`() =
         runComposeUiTest {
             // B-168 (F-buttons-01): busy, the button takes no click (B-62), so its body answers neither a press nor the
             // mouse; a mouse already over it when the work starts lets go, and one still over it when the work ends
-            // simmers again (B-63).
+            // trembles again (B-63). Since B-193 a hover keeps the fill, so it is read by the hot tick it redraws at: a
+            // second of frames changes 12 times or more under the mouse, and 10 or fewer at the resting tick.
             mainClock.autoAdvance = false
             var state by mutableStateOf(MutantButtonState.Idle)
             setContent {
@@ -349,6 +350,20 @@ class ButtonBehaviourTest {
                     mainClock.advanceTimeByFrame()
                     acid("b")
                 }
+
+            // How often the button's picture changes over a second of frames.
+            fun changesASecond(): Int {
+                var n = 0
+                var last = pixels("b")
+                repeat(SECOND_OF_FRAMES) {
+                    Thread.sleep(3)
+                    mainClock.advanceTimeByFrame()
+                    val now = pixels("b")
+                    if (now != last) n++
+                    last = now
+                }
+                return n
+            }
             frames(30)
             state = MutantButtonState.Loading
             val busy = frames(30)
@@ -357,6 +372,11 @@ class ButtonBehaviourTest {
             // The mouse over it, then pressed and held: the fill stays acid on every frame.
             onNodeWithTag("b").performMouseInput { moveTo(center) }
             val hovered = frames(30)
+            val busyUnderTheMouse = changesASecond()
+            assertTrue(
+                busyUnderTheMouse <= RESTING_CHANGES,
+                "loading under the mouse, changes a second: $busyUnderTheMouse",
+            )
             onNodeWithTag("b").performMouseInput { press() }
             val pressed = frames(30)
             onNodeWithTag("b").performMouseInput { release() }
@@ -365,14 +385,27 @@ class ButtonBehaviourTest {
                 assertTrue(counts.min() > rest * .8, "$phase while loading, acid pixels: $counts against $rest")
             }
             onNodeWithTag("b").assert(SemanticsMatcher.keyNotDefined(MutantHandCursor))
-            // Done with the mouse still over it: the live button simmers, and shows the hand again.
+            // Done with the mouse still over it: the live button trembles at the hot tick in its own fill, and shows the
+            // hand again.
             state = MutantButtonState.Idle
-            val done = frames(30)
-            assertTrue(done.last() < rest * .2, "idle under the mouse simmers: $done")
+            frames(10)
+            val done = changesASecond()
+            assertTrue(done >= HOT_CHANGES, "idle under the mouse, changes a second: $done")
+            assertTrue(acid("b") > rest * .8, "idle under the mouse keeps its fill (B-193): ${acid("b")} against $rest")
             onNodeWithTag("b").assert(SemanticsMatcher.expectValue(MutantHandCursor, true))
-            // Working again with the mouse over it: the simmer lets go.
+            // Working again with the mouse over it: the hover lets go.
             state = MutantButtonState.Loading
-            val again = frames(40)
-            assertTrue(again.last() > rest * .8, "the simmer lets go when the work starts: $again")
+            frames(10)
+            val again = changesASecond()
+            assertTrue(again <= RESTING_CHANGES, "the hover lets go when the work starts, changes a second: $again")
         }
+
+    private companion object {
+        /** A second of the test clock's 16 ms frames. */
+        const val SECOND_OF_FRAMES = 63
+
+        /** Changes a second at the resting tick (8 a second, a loading body's 9 or 10) and at the hot tick (12, 13). */
+        const val RESTING_CHANGES = 10
+        const val HOT_CHANGES = 12
+    }
 }
