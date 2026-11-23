@@ -585,6 +585,7 @@ The owner, on 2026-11-16: changes to the design system are to be made here, not 
   | [B-186](../backlog/B-186-the-caret-and-the-fields-mosaic.md) | `MutantField_Focused_*`, `MutantSearchBar_Focused_*` | the block caret 2 dp past the text, not the page's 8 dp gap (the designer's answer 17) | `LocalMutantTextFieldAsDesigned` |
 
   B-186 also moves what no cell sees, as the cells take the engine's clean zone: a field's own zone is its input area, not its texts (answer 18), so an empty field's body loses the marks right of its placeholder.
+  [B-199](../backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) moves no cell either, 2026-11-23: a pressed body's running mosaic draws no tile that meets the clean zone (answer 25), where the engine shifts it in over the label. No parity cell and none of the generator goldens' 27 hot frames has such a tile; `runningMosaic(asDesigned = true)` draws the engine's, and `GeneratorGoldenTest`'s `B199_ZONE_FRAMES` lists the hot golden frames it moves (none).
 - **Rejected**: keeping the vendored files as an editable source of our own, edited here and regenerated from. The generator would then live twice, as JavaScript and as its Kotlin port, and every change would be made in both and proved equal. The Kotlin is what ships.
 
 ---
