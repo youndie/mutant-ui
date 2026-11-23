@@ -49,6 +49,8 @@ dated record, below.
   `1 − p`, joined with the new run's own `sin πp` stretch by the larger where both stretch the same way (so a re-aim
   never stretches past the design's 1.4) and by their sum where they pull apart (a run across re-aimed down). With
   nothing carried, the transform is the engine's to the bit.
+  - The carousel's pointer (B-168 F-carousel-02, built on the bar's `PillFrom`) passes its run the same way and inherits
+    the carried stretch.
   - The navigation bar's pill and the calendar's drop pass their run with the request (`SlideRequest.run`), and their
     icon and number colours (`PillPlace`, `DropPlace`) read the same run, so what they test against is what the body
     draws. Their own carry of the remainder (B-168's `PillFrom`, `DropFrom`) is gone: redundant once the surface does it.
