@@ -58,13 +58,12 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (28)
+## Open (27)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
-| [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[ ]` | The pickers: today, disabled days, six rows, the clock's accent | P1 | M | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-198](docs/backlog/B-198-the-keyframe-loss-ends-on-a-screen-change.md) `[ ]` | The keyframe loss ends on a screen change and takes the dividers | P1 | M | - |
 | [B-199](docs/backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) `[ ]` | No mosaic block in the clean zone, pressed or at rest | P1 | M | - |
@@ -91,7 +90,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (180)
+## Closed (181)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -276,6 +275,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-190](docs/backlog/B-190-a-press-under-the-pause.md) `[x]` - A press under the pause shows a still frame at heat 1
 - [B-191](docs/backlog/B-191-progress-under-the-pause-and-the-steps.md) `[x]` - The progress band under the pause and under the steps
 - [B-193](docs/backlog/B-193-hover-keeps-the-fill.md) `[x]` - Hover keeps the fill and only stirs the outline
+- [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[x]` - The pickers: today, disabled days, six rows, the clock's accent
 - [B-208](docs/backlog/B-208-the-paused-press-shader-test-in-seconds.md) `[x]` - The paused press's shader test runs in seconds
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
