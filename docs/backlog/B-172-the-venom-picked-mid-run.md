@@ -64,8 +64,8 @@ press for a later pick steers the run toward that pick.
 - **Cost.** A pick reaches its slot later than from rest: up to half a run (360 ms) of settling before its own 720 ms
   run. A drawer that a consumer closes on a second pick made while the first run plays holds for the first pick's
   720 + 160 ms (B-102), so it can leave before the second run lands; a drawer closed on its first pick takes no second.
-- **Not changed.** A run from rest draws the frames it drew (the same progress at every moment, stepped or not, the
-  words of the drawer switching 340 ms into it); reduce motion and a held clock still move the window at once; a pick
+- **Not changed.** A run from rest draws the frames it drew (the same progress at every moment, stepped or not);
+  reduce motion and a held clock still move the window at once; a pick
   to or from no window (−1) runs nothing.
 - **The departure.** The page's jump is the engine's, so no check holds it: no generator golden, transition golden,
   parity cell or library golden draws a pick during a run, and none moves. Recorded here and in `VenomRun`'s KDoc;
@@ -83,7 +83,8 @@ press for a later pick steers the run toward that pick.
 - At a pick at any moment of a run, no frame-to-frame change is above a run from rest's largest, with and without
   `steppedMotion`, in the segmented button, the menu and the drawer.
 - Reduce motion unchanged: the window and the words move in the pick's frame.
-- Every golden and parity cell unchanged; `SegmentedWordsOnSlimeTest` and `MenuWordsOnSlimeTest` pass unchanged.
+- Every golden and parity cell unchanged; `SegmentedWordsOnSlimeTest`, `MenuWordsOnSlimeTest` and
+  `DrawerWordsOnSlimeTest` pass unchanged, and the words read on the slime while a run settles.
 
 ## After (2026-11-23)
 
@@ -105,18 +106,24 @@ a run to «LP · 4 h»), `after/menu-repick-2-then-1-at-96.png` (the run plays b
 `after/drawer-repick-2-then-1-at-608.png` (the window shows on «Search» while the run lands, then goes to «Queue»).
 The words read on the slime through a pick at 48–640 ms, to the start and to a third slot, in the segmented button and
 the menu (`SegmentedWordsOnSlimeTest`'s and `MenuWordsOnSlimeTest`'s reading, run by a throwaway test over ten moments:
-no word under 3:1). Reduce motion, the goldens and the parity tests are unchanged (the gate).
+no word under 3:1). Rebased on batch D (`8f9e583`), the drawer's masked words read the settling run's window as the
+menu's do. Reduce motion, the goldens and the parity tests are unchanged (the gate).
 
 - **Held by** `VenomPickMidRunTest`: each of the three, with and without `steppedMotion`, picked 0 → 2 and again at
   48, 160, 304, 400 and 496 and 608 ms (to 0 and to 1; under `steppedMotion` one of the two in turn), and four picks
   64 ms apart; the clock held and moved a frame at a time; no frame from the second pick until the last run lands
   changes more pixels (a channel moved by more than 16) than a run from rest's largest frame plus the body's largest
   tick at rest, both measured in the same test.
+- **Held by** `VenomPickMidRunWordsTest`: each of the three picked 0 → 2 and then 1 at 160 ms (played back, run on),
+  1 at 400 ms (landed on 2, the window springing there while 1 is chosen, run on) and 0 at 608 ms (the window shown on
+  2 played back); every frame from the second pick until the last run lands, each word read as its words test reads it
+  against a bare twin, its tenth percentile at least 3:1. The worst words: segmented 9.75:1, menu and drawer 12.06:1
+  (the pale words on the body; no word stands in the wrong ink).
 
 ## Anchors
 
 - `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/VenomPickMidRunTest.kt`
-
+- `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/components/VenomPickMidRunWordsTest.kt`
 - `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/VenomRun.kt`
 - `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantSegmentedButton.kt`
 - `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantMenu.kt`
