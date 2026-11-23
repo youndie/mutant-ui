@@ -19,6 +19,7 @@ import io.github.youndie.mutant.gen.MosaicSide
 import io.github.youndie.mutant.gen.MosaicTile
 import io.github.youndie.mutant.gen.Mulberry32
 import io.github.youndie.mutant.gen.MutantGenerator
+import io.github.youndie.mutant.gen.Slot
 import io.github.youndie.mutant.gen.errorBlocks
 import io.github.youndie.mutant.gen.jsRound
 import io.github.youndie.mutant.gen.jsToFixed
@@ -121,8 +122,13 @@ internal fun runningMosaic(
 internal fun loadingBands(
     g: Instance,
     t: Double,
+): List<Rect> = loadingBands(g.slot, t)
+
+/** [loadingBands] from the slot alone, which is all they read (B-177's stand-in). */
+internal fun loadingBands(
+    el: Slot,
+    t: Double,
 ): List<Rect> {
-    val el = g.slot
     val ph = (t % 900) / 900
     return List(2) { i ->
         val y = jsToFixed(el.oy + el.h + 4 - ((ph + i * .45) % 1) * (el.h + 12), 1).toFloat()
@@ -183,8 +189,13 @@ internal fun MutantGenerator.decorOf(
 internal fun DrawScope.drawBrackets(
     g: Instance,
     color: Color,
+) = drawBrackets(g.slot, color)
+
+/** [drawBrackets] around a slot (B-177's stand-in). */
+internal fun DrawScope.drawBrackets(
+    el: Slot,
+    color: Color,
 ) {
-    val el = g.slot
     drawCornerBrackets(
         (el.ox - 7).toFloat(),
         (el.oy - 7).toFloat(),
@@ -273,15 +284,30 @@ internal fun DrawScope.drawDisabledBody(
     outline: Float,
     patterns: StagePatterns,
     patternOrigin: Offset,
+) = drawDisabledBody(g.slot, g.seed, g.mosaicTiles, fill, highlight, colors, outline, patterns, patternOrigin)
+
+/**
+ * [drawDisabledBody] from what it reads of the instance: its slot, its seed (the dropouts and the shifted band) and its
+ * edge mosaic's [tiles]. B-177's stand-in draws it with no tiles, the one part that needs the instance generated.
+ */
+internal fun DrawScope.drawDisabledBody(
+    el: Slot,
+    seed: String,
+    tiles: List<MosaicTile>,
+    fill: Color,
+    highlight: Color,
+    colors: MutantColors,
+    outline: Float,
+    patterns: StagePatterns,
+    patternOrigin: Offset,
 ) {
-    val el = g.slot
     val ox = el.ox
     val oy = el.oy
     val w = el.w
     val h = el.h
     val cz = el.cleanZone
     val r = el.r.toFloat()
-    val rnd = Mulberry32(g.seed, "vhs")
+    val rnd = Mulberry32(seed, "vhs")
     val dark =
         if (if (colors.print) {
                 saturation(
@@ -354,7 +380,7 @@ internal fun DrawScope.drawDisabledBody(
     }
     drawPath(bodyPath, body)
     clipPath(bodyPath) {
-        for (t in g.mosaicTiles) {
+        for (t in tiles) {
             drawRect(
                 if (t.black) Color.Black else Color.White,
                 Offset(t.x.toFloat(), t.y.toFloat()),
@@ -420,8 +446,16 @@ internal fun DrawScope.drawCleanBody(
     highlight: Color,
     ink: Color,
     outline: Float,
+) = drawCleanBody(g.slot, fill, highlight, ink, outline)
+
+/** [drawCleanBody] from the slot alone, which is all it reads (B-177's stand-in). */
+internal fun DrawScope.drawCleanBody(
+    el: Slot,
+    fill: Color,
+    highlight: Color,
+    ink: Color,
+    outline: Float,
 ) {
-    val el = g.slot
     val ox = el.ox.toFloat()
     val oy = el.oy.toFloat()
     val w = el.w.toFloat()

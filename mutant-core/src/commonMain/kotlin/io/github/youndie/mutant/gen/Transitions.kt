@@ -28,11 +28,16 @@ internal class ErrorBlock(
 )
 
 /** `errBlocks`: fourteen 4 or 8 dp blocks along the body's perimeter. */
-internal fun MutantGenerator.errorBlocks(g: Instance): List<ErrorBlock> {
-    val el = g.slot
+internal fun MutantGenerator.errorBlocks(g: Instance): List<ErrorBlock> = errorBlocks(g.slot, g.seed)
+
+/** [errorBlocks] from the slot and the instance's seed alone, which is all they read: B-177's stand-in draws them. */
+internal fun MutantGenerator.errorBlocks(
+    el: Slot,
+    seed: String,
+): List<ErrorBlock> {
     val w = el.w
     val h = el.h
-    val rnd = Mulberry32(g.seed, "err")
+    val rnd = Mulberry32(seed, "err")
     val out = ArrayList<ErrorBlock>()
     for (i in 0 until 14) {
         val bs = if (rnd.next() < .4) 8.0 else 4.0

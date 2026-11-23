@@ -189,6 +189,9 @@ internal fun MutantSurface(
             slip = (slip ?: if (colors.print && !p.round) PRINT_SLIP else 0.0).toFloat(),
             shadow = shadow,
         )
+    // B-176: the pause ends the running moves and lands a cooling heat, so lifting it replays nothing.
+    if (instant) moves.stand()
+    boil.hold(instant, clock.nowMs)
     // B-91: the fill a boiling body shows now, for its words to read against; null at rest. Derived per frame, its
     // readers recompose only when their pick of colour changes.
     val fillNow by androidx.compose.runtime.rememberUpdatedState(bodyFill)
@@ -679,7 +682,20 @@ internal fun MutantSurface(
                             built to if (still) null else buildAheadInSteps(g, cache, dead, firstAt, null, grow = true)
                         }
                         standInProbe?.invoke()
-                        return@drawWithCache onDrawBehind { drawStandIn(slot, look, d) }
+                        // B-177: the stand-in draws the body's state, its heat and its stroke, as far as no instance is needed.
+                        val standInHeat = heat ?: boil.at(clock.nowMs)
+                        val standInHot = heat?.let { it > 0 } ?: (boil.on || boil.hovered || standInHeat > 0)
+                        val standIn =
+                            StandInState(
+                                state,
+                                focused,
+                                standInHeat,
+                                if (standInHot) clock.hotTimeMs() else clock.restTimeMs(),
+                                "${gen.cassette}/$key",
+                                gen,
+                                colors,
+                            ) { StagePatterns.of(cassette, stage) }
+                        return@drawWithCache onDrawBehind { drawStandIn(slot, look, d, standIn) }
                     }
                 }
                 // B-162: in the browser a body whose slot changed (a text zone, a size settled once its font came) goes
