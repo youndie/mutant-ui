@@ -1,7 +1,7 @@
 ---
 id: B-203
 title: "A button as wide as its widest state"
-status: open
+status: wip
 priority: P1
 size: S
 stage: stage-6-later

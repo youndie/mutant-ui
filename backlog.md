@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
-| [B-203](docs/backlog/B-203-a-button-as-wide-as-its-widest-state.md) `[ ]` | A button as wide as its widest state | P1 | S | - |
+| [B-203](docs/backlog/B-203-a-button-as-wide-as-its-widest-state.md) `[~]` | A button as wide as its widest state | P1 | S | - |
 | [B-204](docs/backlog/B-204-the-navigation-badge-grows-right.md) `[ ]` | The navigation badge grows right and stops at 99+ | P1 | S | - |
 | [B-207](docs/backlog/B-207-focus-after-the-snackbar-and-in-the-drawer.md) `[ ]` | Focus returns after the snackbar and cycles in the drawer | P1 | S | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
