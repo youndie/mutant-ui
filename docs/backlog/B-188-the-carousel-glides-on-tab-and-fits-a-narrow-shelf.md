@@ -1,7 +1,7 @@
 ---
 id: B-188
 title: "The carousel glides on Tab and fits a narrow shelf"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-6-later
