@@ -160,7 +160,14 @@ internal fun Settings(
                 MutantButton(s.done, { timer = false }, key = "timer-done")
             }
         }
-        MutantDialog(nav.erasing, s.eraseQuestion, { nav.erasing = false }, text = s.eraseNamed) {
+        // B-174: the dialog stands open as the screen opens, so no control opened it; the focus goes to the screen's first.
+        MutantDialog(
+            nav.erasing,
+            s.eraseQuestion,
+            { nav.erasing = false },
+            text = s.eraseNamed,
+            returnFocusTo = nav.menu,
+        ) {
             MutantDialogAction(s.cancel, { nav.erasing = false })
             MutantDialogAction(s.erase, { nav.erasing = false }, primary = true)
         }

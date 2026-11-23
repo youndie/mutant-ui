@@ -19,6 +19,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
@@ -48,6 +50,10 @@ internal fun Search(
     val selected = remember { mutableStateListOf<Int>() }
     var erasing by remember { mutableStateOf(false) }
     var sorting by remember { mutableStateOf(false) }
+    // B-174: the dialog gives the focus back to the button that opened it, or, once the erase has left nothing to erase
+    // and the button is disabled, to the sort button beside the table.
+    val eraseButton = remember { FocusRequester() }
+    val sortButton = remember { FocusRequester() }
     var order by rememberSaveable { mutableIntStateOf(0) }
     val rows =
         when (order) {
@@ -113,7 +119,12 @@ internal fun Search(
                     var sortWidth by remember { mutableStateOf(0.dp) }
                     val density = LocalDensity.current
                     Box(Modifier.onSizeChanged { sortWidth = with(density) { it.width.toDp() } }) {
-                        MutantTextButton(s.sortBy(order), { sorting = true }, key = "demo-sort")
+                        MutantTextButton(
+                            s.sortBy(order),
+                            { sorting = true },
+                            Modifier.focusRequester(sortButton),
+                            key = "demo-sort",
+                        )
                         MutantMenu(
                             sorting,
                             { sorting = false },
@@ -150,13 +161,20 @@ internal fun Search(
                 MutantOutlinedButton(
                     s.eraseSelected(selected.size),
                     { erasing = true },
+                    Modifier.focusRequester(eraseButton),
                     enabled = selected.isNotEmpty(),
                     key = "demo-erase",
                 )
             }
         }
         bar()
-        MutantDialog(erasing, s.eraseQuestion, { erasing = false }, text = s.eraseText) {
+        MutantDialog(
+            erasing,
+            s.eraseQuestion,
+            { erasing = false },
+            text = s.eraseText,
+            returnFocusTo = if (selected.isEmpty()) sortButton else eraseButton,
+        ) {
             MutantDialogAction(s.cancel, { erasing = false })
             MutantDialogAction(s.erase, {
                 selected.clear()

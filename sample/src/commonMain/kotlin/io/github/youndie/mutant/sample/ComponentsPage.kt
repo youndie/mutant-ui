@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.sample
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.FocusInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -24,6 +25,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -238,12 +240,15 @@ internal fun held(
 /**
  * An overlay's specimen: a screen of its own, so the overlay holds this box's clock, not the page's (B-90). An overlay
  * shown from the first frame takes focus, and the focus asks the page to scroll to it; the stage keeps that request to
- * itself, so the page opens at its top.
+ * itself, so the page opens at its top. A [still] stage is a picture of a state: focus never enters it, so the overlay
+ * in it neither takes the focus as it appears nor holds it, as an open overlay does, away from the rest of the page
+ * (B-174: «Try it»'s dialog and drawer, opened beside one, never got the focus, and Escape went to the picture).
  */
 @Composable
 internal fun Stage(
     width: Dp,
     height: Dp,
+    still: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     MutantScreenClock {
@@ -251,10 +256,14 @@ internal fun Stage(
             Modifier
                 .size(width, height)
                 .then(StayPut)
+                .then(if (still) StillStage else Modifier)
                 .background(MutantTheme.colors.page),
         ) { content() }
     }
 }
+
+/** A group the focus never enters, by the keys or by a request from inside it. */
+private val StillStage = Modifier.focusProperties { onEnter = { cancelFocusChange() } }.focusGroup()
 
 /** Swallows a request to bring something inside into view: the page around does not scroll for it. */
 internal data object StayPut : ModifierNodeElement<StayPutNode>() {

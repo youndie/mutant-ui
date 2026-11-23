@@ -23,6 +23,8 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -52,6 +54,9 @@ internal class DemoNav(
 ) {
     var tab by mutableStateOf(tab)
     var open by mutableStateOf(open)
+
+    /** The tab bar's menu button: the drawer it opens, and the dialog the Settings tab opens under, give focus back to it. */
+    val menu = FocusRequester()
     var drawer by mutableStateOf(false)
     var erasing by mutableStateOf(erasing)
 
@@ -135,6 +140,7 @@ internal fun DemoApp(
             nav.tab.ordinal,
             { nav.go(DemoTab.entries[it]) },
             title = s.channels,
+            returnFocusTo = nav.menu,
             key = "demo-drawer",
         )
     }
@@ -145,9 +151,10 @@ internal fun DemoApp(
 internal fun BarAction(
     icon: ImageVector,
     label: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    MutantTooltipBox(label) { MutantIconButton(icon, label, onClick, key = "bar-$label") }
+    MutantTooltipBox(label) { MutantIconButton(icon, label, onClick, modifier, key = "bar-$label") }
 }
 
 /** A tab's top bar: the menu opens the drawer. */
@@ -161,7 +168,13 @@ internal fun TabBar(
 ) {
     MutantTopAppBar(
         title,
-        navigationIcon = { BarAction(MutantIcons.Menu, s.menu) { nav.drawer = true } },
+        navigationIcon = {
+            BarAction(
+                MutantIcons.Menu,
+                s.menu,
+                Modifier.focusRequester(nav.menu),
+            ) { nav.drawer = true }
+        },
         status = status,
         windowInsets = WindowInsets(0),
         actions = actions,
