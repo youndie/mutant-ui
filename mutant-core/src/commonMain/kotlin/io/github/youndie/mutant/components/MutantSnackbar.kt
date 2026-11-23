@@ -21,6 +21,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
@@ -64,6 +66,12 @@ import kotlin.math.roundToInt
  * back down in 200 ms, its action no longer answering from the moment it starts to leave, and once gone it is not
  * composed at all and [onHidden] is called. Turned back half-way, it rides back from where it stands. Under reduce
  * motion both are at once. Whatever holds it at the screen's bottom hides what has ridden off.
+ *
+ * The bar never takes focus itself; the keyboard reaches its action. If the action holds focus as the bar starts to
+ * leave — its action taken, or hidden while focused — focus goes to [returnFocusTo], a requester on whatever held it
+ * before (B-207). Compose cannot tell the bar where focus stood before it, so without one focus is left to the window,
+ * which clears it. If the action never held focus nothing moves; if [returnFocusTo] is on nothing composed any more, no
+ * node is focused, as without one.
  */
 @Composable
 public fun MutantSnackbar(
@@ -74,8 +82,9 @@ public fun MutantSnackbar(
     onAction: () -> Unit = {},
     onHidden: () -> Unit = {},
     key: String = "snack",
+    returnFocusTo: FocusRequester? = null,
 ) {
-    SnackbarBody(message, modifier, visible, actionLabel, onAction, onHidden, key)
+    SnackbarBody(message, modifier, visible, actionLabel, onAction, onHidden, key, returnFocusTo = returnFocusTo)
 }
 
 /**
@@ -95,6 +104,7 @@ internal fun SnackbarBody(
     hidden: Boolean = false,
     playIn: Boolean = true,
     probe: ((Instance) -> Unit)? = null,
+    returnFocusTo: FocusRequester? = null,
 ) {
     val colors = MutantTheme.colors
     val clock = readMutantClock()
@@ -109,6 +119,10 @@ internal fun SnackbarBody(
     val gone = !visible && p >= 1
     val done by rememberUpdatedState(onHidden)
     LaunchedEffect(gone) { if (gone && ride.left) done() }
+    // Read in composition, before the action's going disabled drops its focus (B-207).
+    val focusBack = remember { SnackbarFocusBack() }
+    focusBack.follow(visible)
+    LaunchedEffect(visible) { if (focusBack.take()) returnFocusTo?.requestFocus() }
     if (gone) return
     // How far below its place it stands: all the way before it enters and after it leaves.
     val out = ride.out(p)
@@ -155,7 +169,7 @@ internal fun SnackbarBody(
                 softWrap = false,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (actionLabel != null) SnackbarAction(actionLabel, onAction, visible, hidden)
+            if (actionLabel != null) SnackbarAction(actionLabel, onAction, visible, hidden, focusBack)
         }
     }
 }
@@ -170,6 +184,7 @@ private fun SnackbarAction(
     onAction: () -> Unit,
     enabled: Boolean,
     hidden: Boolean,
+    focusBack: SnackbarFocusBack,
 ) {
     val colors = MutantTheme.colors
     val source = remember { MutableInteractionSource() }
@@ -178,6 +193,7 @@ private fun SnackbarAction(
     Box(
         Modifier
             .mutantHand(enabled)
+            .onFocusChanged { focusBack.action = it.isFocused }
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onAction)
             .layout { m, c ->
                 // Measured before the weighted message, with the whole bar to take: half of it at most.
@@ -220,6 +236,26 @@ private fun SnackbarAction(
             overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+/**
+ * Whether the action held focus as the bar started to leave (B-207): [follow] is read in composition, where the change
+ * of `visible` is seen before the disabled action loses its focus, and [take] once, from the effect that hands it on.
+ */
+internal class SnackbarFocusBack {
+    /** The action holds focus now. */
+    var action: Boolean = false
+
+    private var shown: Boolean? = null
+    private var armed = false
+
+    fun follow(visible: Boolean) {
+        if (shown == true && !visible) armed = action
+        if (visible) armed = false
+        shown = visible
+    }
+
+    fun take(): Boolean = armed.also { armed = false }
 }
 
 /** The share of the bar an action may take (B-70). */

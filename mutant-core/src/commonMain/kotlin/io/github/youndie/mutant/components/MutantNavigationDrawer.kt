@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -116,7 +118,9 @@ public class MutantDrawerItem(
  * every frame, in the kit's transition steps under `steppedMotion`) with the scrim coming in, and out in 200 ms; turned
  * round mid-way it goes on from where it stands, and under reduce motion it is there at once. A click on the scrim, Escape or the system back gesture calls
  * [onDismissRequest]; from then on no row answers. Focus moves into the drawer as it opens, Up or Down there takes it to
- * the chosen row and then from row to row; once the drawer has gone it goes to [returnFocusTo].
+ * the chosen row and then from row to row; Tab steps the rows, coming round from the last to the first and with
+ * Shift+Tab the other way, and never leaves the drawer while it is open. Once the drawer has gone focus goes to
+ * [returnFocusTo].
  */
 @Composable
 public fun MutantNavigationDrawer(
@@ -195,8 +199,19 @@ internal fun DrawerFrame(
             modifier
                 .fillMaxSize()
                 .clipToBounds()
-                .focusProperties { onExit = { if (visible) cancelFocusChange() } }
-                .focusGroup()
+                // Focus stays in here while it is open; Tab past the last row comes round to the first, and Shift+Tab
+                // from the drawer itself to the last, as in the dialog (B-207).
+                .focusProperties {
+                    onExit = {
+                        if (visible) {
+                            when (requestedFocusDirection) {
+                                FocusDirection.Next -> rows.firstOrNull()?.requestFocus()
+                                FocusDirection.Previous -> rows.lastOrNull()?.requestFocus()
+                                else -> null
+                            } ?: cancelFocusChange()
+                        }
+                    }
+                }.focusGroup()
                 .focusRequester(focus)
                 .onPreviewKeyEvent {
                     if (visible && it.type == KeyEventType.KeyDown && it.key == Key.Escape) {
@@ -402,9 +417,12 @@ internal fun DrawerWindow(
                                 Modifier.focusRequester(focus[i]).onPreviewKeyEvent {
                                     if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                                     val to =
-                                        when (it.key) {
-                                            Key.DirectionDown -> (i + 1) % items.size
-                                            Key.DirectionUp -> (i - 1 + items.size) % items.size
+                                        when {
+                                            it.key == Key.DirectionDown -> (i + 1) % items.size
+                                            it.key == Key.DirectionUp -> (i - 1 + items.size) % items.size
+                                            // Shift+Tab on the first row would stop on the drawer itself, which shows
+                                            // nothing: round to the last row instead, as the dialog does (B-207).
+                                            it.key == Key.Tab && it.isShiftPressed && i == 0 -> items.lastIndex
                                             else -> return@onPreviewKeyEvent false
                                         }
                                     focus[to].requestFocus()
