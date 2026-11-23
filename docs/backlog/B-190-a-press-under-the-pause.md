@@ -17,5 +17,5 @@ Under reduce motion a press shows nothing on buttons, the FAB, toggles and the r
 - AC:
   - under reduce motion, pressed: the fill carries the amber mix of heat 1, and two frames 500 ms apart are identical; released: the rest picture on the next frame
   - without reduce motion the press is unchanged
-  - each new test fails on the code before and kills a mutant after the commit; goldens and parity cells at rest unchanged, or the moved ones listed with this item and looked at
+  - each new test of the first criterion fails on the code before, and every new test kills a mutant after the commit; goldens and parity cells at rest unchanged, or the moved ones listed with this item and looked at (rewritten 2026-11-23: the second criterion says nothing changes, so its guard passes on the code before by construction; it is held by the mutant that drops the pause from the rule)
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyHeat.kt`, `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/BodyDrawing.kt`, `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt`

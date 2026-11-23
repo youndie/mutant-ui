@@ -214,7 +214,7 @@ Settled by [B-10](../backlog/B-10-mutant-surface.md).
 
 | *Settled by [B-11](../backlog/B-11-surface-states.md):* the eight states the Components page draws — the button pressed at heat 1, loading, success and disabled; the field focused, in error and disabled; the card disabled — differ from the kit's on at most 0.011 % of pixels, against the body's 0.02 % | `BodyParityTest`, 2026-11-14 |
 | The engine redraws a pressed body on every frame while its heat changes (its key holds the heat to two decimals), but draws it at the hot tick's time; the kit redraws it on the hot tick, 12 times a second, as the handoff states the rule («пока нагрев > 0: тик в 1.5 раза чаще») | `reference/design-system/mutant-engine.js` (`frame`: the `'h' + … + heat.toFixed(2)` key), `MutantSurface` |
-| Under the engine's pause a press does not boil: heat is a function of the engine's time, which stands | `reference/design-system/mutant-engine.js` (`frame`), `SurfaceStatesTest` |
+| Under the engine's pause a press does not boil: heat is a function of the engine's time, which stands. The kit leaves it since [B-190](../backlog/B-190-a-press-under-the-pause.md) (D24): a press under the pause is a still frame at heat 1 | `reference/design-system/mutant-engine.js` (`frame`), `SurfaceStatesTest`, `PressUnderThePauseTest` |
 
 **Consequence 9.** The kit's body is the page's, layer for layer. Where the page relies on its host —
 stage coordinates for the noise, the slot count for the tremble — the kit uses the body's own (D16).
