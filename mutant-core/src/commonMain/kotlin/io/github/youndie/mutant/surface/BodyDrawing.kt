@@ -131,6 +131,30 @@ internal class BodyPaths(
 }
 
 /**
+ * A pour under way: under its [front] the picture it runs over — [base], and each band's colour above its own frozen
+ * front, the later over the earlier (B-171). A pour from a resting body has no bands.
+ */
+internal class BodyPour(
+    val front: Path,
+    val base: Color,
+    val bands: List<Pair<Path, Color>> = emptyList(),
+)
+
+/** [pour]'s old picture under its front, inside [bb]: one path where it has no bands, as before B-171. */
+private fun DrawScope.drawPour(
+    pour: BodyPour,
+    bb: Rect,
+) {
+    if (pour.bands.isEmpty()) return drawPath(pour.front, pour.base)
+    clipPath(pour.front) {
+        drawRect(pour.base, bb.topLeft, bb.size)
+        for ((front, color) in pour.bands) {
+            clipPath(front, ClipOp.Difference) { drawRect(color, bb.topLeft, bb.size) }
+        }
+    }
+}
+
+/**
  * Draws one body as the engine's `itemHtml` layers it, bottom to top: the misregistered shadow, the group
  * clipped by the outline and shifted by `slip` (fill, the stage's speckle, the edge mosaic, dead pixels, the
  * flow lines), the highlight inside its two clip rectangles (under the bottom edge, in the top-left corner),
@@ -146,7 +170,7 @@ internal fun DrawScope.drawBody(
     speckleOrigin: Offset,
     deadPixels: DeadPixels? = null,
     decor: BodyDecor = BodyDecor(),
-    pour: Pair<Path, Color>? = null,
+    pour: BodyPour? = null,
     skip: Set<BodyPart> = emptySet(),
     still: StillImage? = null,
     pastContour: Boolean = false,
@@ -165,7 +189,7 @@ internal fun DrawScope.drawBody(
     translate(look.slip, look.slip) {
         clipPathUnless(BodyPart.ContourClip in skip, paths.contour) {
             if (BodyPart.Fill !in skip) drawRect(look.fill, bb.topLeft, bb.size)
-            pour?.let { (path, from) -> drawPath(path, from) }
+            pour?.let { drawPour(it, bb) }
             if (still != null && decor.runningMosaic == null) {
                 // B-117: the still layers, drawn once into an image on this canvas's own pixel grid, are one draw under
                 // the clip instead of hundreds. Undo the slip and the scale, so the image's pixels land on the canvas's.

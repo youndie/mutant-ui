@@ -59,7 +59,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
@@ -68,7 +67,6 @@ import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.LocalMutantStage
-import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 import io.github.youndie.mutant.type.LocalMutantTextRaster
@@ -200,9 +198,8 @@ private fun CarouselDots(
     current: Int,
     indicatorKey: String,
 ) {
-    val clock = readMutantClock()
     val from = remember { PillFrom(current) }
-    from.follow(current, count, clock.nowMs, LocalMutantReduceMotion.current, LocalMutantSteppedMotion.current)
+    from.follow(current, count)
     // The screen's direction of reading: the dots run the other way in a right-to-left layout, as the pager does.
     val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
     val chosen = current in 0 until count
@@ -213,7 +210,14 @@ private fun CarouselDots(
                     MutantBody.Pill,
                     "$indicatorKey$current",
                     Modifier.size(POINTER_W, DOT),
-                    slide = SlideRequest(current, (CAROUSEL_DOT_STEP * (side * from.cells).toFloat()).value.toDouble()),
+                    // From the dot it left; a pick under way starts from where the pill is drawn, its stretch included,
+                    // through the run it shares with its body (B-171).
+                    slide =
+                        SlideRequest(
+                            current,
+                            (CAROUSEL_DOT_STEP * (side * from.cells).toFloat()).value.toDouble(),
+                            run = from.run,
+                        ),
                 ) { Box(Modifier.size(POINTER_W, DOT)) }
             }
             for (i in 0 until count) {

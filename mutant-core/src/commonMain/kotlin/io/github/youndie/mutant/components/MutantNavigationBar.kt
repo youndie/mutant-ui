@@ -57,25 +57,21 @@ import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.gen.jsToFixed
 import io.github.youndie.mutant.icons.MutantIcon
+import io.github.youndie.mutant.surface.MutantSlideRun
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
-import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
-import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
-import kotlin.math.PI
-import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 /** One destination of [MutantNavigationBar]: its label, always shown, its icon, and an optional [badge]. */
 @Immutable
@@ -126,13 +122,7 @@ internal fun NavigationBarBody(
 ) {
     val clock = readMutantClock()
     val from = remember { PillFrom(selectedIndex) }
-    from.follow(
-        selectedIndex,
-        items.size,
-        clock.nowMs,
-        LocalMutantReduceMotion.current,
-        LocalMutantSteppedMotion.current,
-    )
+    from.follow(selectedIndex, items.size)
     MutantSurface(
         MutantBody.Bar,
         key,
@@ -173,14 +163,14 @@ internal fun NavigationBarBody(
             Layout(
                 content = {
                     if (chosen) {
-                        // Where the pill stands, on the screen.
+                        // Where the pill's run starts, from the cell it left; a pick under way starts from where it stands (B-171).
                         val dx = cell * (side * from.cells).toFloat()
                         MutantSurface(
                             MutantBody.Pill,
                             pillKey,
                             // The pill is a body inside the bar: the engine keeps it in the bar's clean zone.
                             Modifier.size(box).mutantCleanZone(),
-                            slide = SlideRequest(selectedIndex, dx.value.toDouble()),
+                            slide = SlideRequest(selectedIndex, dx.value.toDouble(), run = from.run),
                             probe = pillProbe,
                         ) {
                             Box(Modifier.size(box), contentAlignment = Alignment.Center) {
@@ -383,9 +373,9 @@ private fun Modifier.underPill(
     }
 
 /**
- * Where the pill is drawn now, from item [over]'s icon centre, dp: its box as the body slides it (`slid`: run home by
- * `1 − (1 − p)²`, stretched `1 + .4 sin πp` along and squeezed `1 − .18 sin πp` across). While it runs, the reader reads
- * every frame of the [clock].
+ * Where the pill is drawn now, from item [over]'s icon centre, dp: its box as the body slides it (`slid`, read from the
+ * pill's own run: run home by `1 − (1 − p)²`, stretched `1 + .4 sin πp` along and squeezed `1 − .18 sin πp` across, a
+ * re-aimed run's stretch eased from what it showed). While it runs, the reader reads every frame of the [clock].
  */
 internal class PillPlace(
     private val from: PillFrom,
@@ -398,43 +388,36 @@ internal class PillPlace(
     private val steps: Boolean,
 ) {
     fun over(i: Int): Rect {
-        val p = if (instant) 1.0 else stepped(clock.nowMs - from.since, MutantMotion.SLIDE_MS, steps)
+        val run = from.run
+        val p = run.progress(clock.nowMs, instant, steps)
         if (p < 1) clock.frame
-        val q = sin(PI * p)
-        val cx = side * cell * (chosen - i + from.cells * (1 - p).pow(2))
-        val hw = width / 2 * jsToFixed(1 + .4 * q, 2)
-        val hh = ICON_BOX_H.value / 2 * jsToFixed(1 - .18 * q, 2)
+        val cx = side * cell * (chosen - i) + run.offsetX(p)
+        val hw = width / 2 * jsToFixed(1 + run.stretchX(p), 2)
+        val hh = ICON_BOX_H.value / 2 * jsToFixed(1 + run.stretchY(p), 2)
         return Rect((cx - hw).toFloat(), (-hh).toFloat(), (cx + hw).toFloat(), hh.toFloat())
     }
 }
 
 /**
- * Follows the selected index from composition without writing state: the pill slides from where it stands. A pick while
- * it is under way starts the new slide from the place it has reached, not from the cell picked before (B-168).
+ * Follows the selected index from composition without writing state: the pill slides over from the cell it left. A pick
+ * while it is under way starts from where it stands: the pill's [run] carries that (B-171; B-168 did it here).
  */
 internal class PillFrom(
     private var now: Int,
 ) {
-    /** Where the pill's slide starts, in cells from the chosen one in reading order; 0 when it does not slide. */
+    /** Where the pill's slide starts, in cells from the chosen one in reading order, from the cell it left; 0 when it does not slide. */
     var cells: Double = 0.0
         private set
 
-    /** When that slide started, the screen's clock ms. */
-    var since: Double = Double.NEGATIVE_INFINITY
-        private set
+    /** The pill's slide, shared with its body: the body re-aims it, this reads it. */
+    val run: MutantSlideRun = MutantSlideRun()
 
     fun follow(
         to: Int,
         count: Int,
-        nowMs: Double,
-        instant: Boolean,
-        steps: Boolean,
     ) {
         if (to == now) return
-        // What is left of the slide under way, as the body draws it: `dx · (1 − e)` with `e = 1 − (1 − p)²`.
-        val left = if (instant) 0.0 else (1 - stepped(nowMs - since, MutantMotion.SLIDE_MS, steps)).pow(2)
-        cells = if (now in 0 until count && to in 0 until count) now - to + cells * left else 0.0
-        since = nowMs
+        cells = if (now in 0 until count && to in 0 until count) (now - to).toDouble() else 0.0
         now = to
     }
 }

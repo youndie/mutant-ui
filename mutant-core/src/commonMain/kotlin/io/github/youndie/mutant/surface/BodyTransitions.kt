@@ -93,13 +93,16 @@ internal fun PourFront.toPath(): Path =
 /**
  * Draws [block] as a sliding body at progress [p] from [dx] dp away (the switch's thumb): eased home by
  * `1 − (1 − p)²` and stretched by `sin(πp)` — 40 % wider, 18 % flatter at the middle — about its centre, the
- * numbers rounded as the engine writes its transform.
+ * numbers rounded as the engine writes its transform. [sx] and [sy] are the scales' changes from 1 where a re-aimed run
+ * gives them ([MutantSlideRun.stretchX]); null, the run's own.
  */
 internal inline fun DrawScope.slid(
     g: Instance,
     p: Double,
     dx: Double,
     dy: Double = 0.0,
+    sx: Double? = null,
+    sy: Double? = null,
     block: DrawScope.() -> Unit,
 ) {
     if (p >= 1) return block()
@@ -112,39 +115,49 @@ internal inline fun DrawScope.slid(
     val along = jsToFixed(1 + .4 * q, 2).toFloat()
     val across = jsToFixed(1 - .18 * q, 2).toFloat()
     val down = kotlin.math.abs(dy) > kotlin.math.abs(dx)
+    val scaleX = sx?.let { jsToFixed(1 + it, 2).toFloat() } ?: if (down) across else along
+    val scaleY = sy?.let { jsToFixed(1 + it, 2).toFloat() } ?: if (down) along else across
     translate(jsToFixed(dx * (1 - e), 1).toFloat(), jsToFixed(dy * (1 - e), 1).toFloat()) {
-        scale(if (down) across else along, if (down) along else across, Offset(cx, cy)) { block() }
+        scale(scaleX, scaleY, Offset(cx, cy)) { block() }
     }
 }
 
 /**
  * An indicator melting in ([on]) or out (`melt`, `meltStep`): in 330 ms, stepped, it drops 7 dp from above while
  * stretched up to 1.9 times and is revealed from the top; out, it sinks and is eaten from the top, and is gone at
- * the end. Read from the screen's clock; the first state shows at once.
+ * the end. Read from the screen's clock; the first state shows at once. Reversed while it runs, it retraces the motion
+ * it was in from where it stands (B-171).
  */
 internal fun Modifier.mutantMelt(on: Boolean): Modifier =
     composed {
         val clock = readMutantClock()
         val melt = remember { MeltFollower(on) }
-        melt.follow(on, clock.nowMs)
         val instant = io.github.youndie.mutant.theme.LocalMutantReduceMotion.current
         val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
-        val elapsed = if (instant) Double.POSITIVE_INFINITY else clock.nowMs - melt.since
-        val p = stepped(elapsed, MutantMotion.MELT_IN_MS, steps)
+        melt.follow(on, clock.nowMs, instant, steps)
+        val m = melt.at(clock.nowMs, instant, steps)
+        val running = melt.running(m)
         // While it runs, the melt reads every frame, as the engine steps it; done, it reads nothing. Done is the
-        // stepped progress at 1, which comes at 333.3 ms, not at the 330 ms duration (B-54).
-        if (p < 1) clock.frame
-        val q = if (on) 1 - p else p
+        // stepped progress at its end, which comes at 333.3 ms, not at the 330 ms duration (B-54).
+        if (running) clock.frame
+        // Done, the indicator stands as its target's rest: whole, or gone (the melt-out's end).
+        val inward = if (running) melt.inward else on
+        val q =
+            when {
+                !running -> if (on) 0.0 else 1.0
+                inward -> 1 - m
+                else -> m
+            }
         this
             .graphicsLayer {
                 transformOrigin = TransformOrigin(.5f, 0f)
-                translationY = (jsToFixed((if (on) -q else q) * 7, 1) * density).toFloat()
+                translationY = (jsToFixed((if (inward) -q else q) * 7, 1) * density).toFloat()
                 scaleY = jsToFixed(1 + q * .9, 2).toFloat()
-                alpha = if (!on && p >= 1) 0f else 1f
+                alpha = if (!running && !on) 0f else 1f
             }.drawWithContent {
                 if (q <= 0.0) return@drawWithContent drawContent()
-                val inset = if (on) jsRound(q * 100) / 100 else jsRound(q * 85) / 100
-                if (on) {
+                val inset = if (inward) jsRound(q * 100) / 100 else jsRound(q * 85) / 100
+                if (inward) {
                     clipRect(bottom = size.height * (1 - inset.toFloat())) { this@drawWithContent.drawContent() }
                 } else {
                     clipRect(top = size.height * inset.toFloat()) { this@drawWithContent.drawContent() }
@@ -152,19 +165,58 @@ internal fun Modifier.mutantMelt(on: Boolean): Modifier =
             }
     }
 
-/** Follows a melt's target from composition without writing state: a change starts the melt at that moment. */
+/**
+ * Follows a melt's target from composition without writing state: a change starts the melt at that moment. A change
+ * while a melt runs reverses it: the same motion runs back from where it stands, at the same pace, so the indicator
+ * never jumps to the other motion's start (B-171).
+ */
 internal class MeltFollower(
     private var shown: Boolean,
 ) {
+    /** Which motion is drawn: the melt-in's (revealed from the top, dropping) or the melt-out's (sinking, eaten). */
+    var inward: Boolean = shown
+        private set
+
+    /** Whether the motion runs toward its end, or back toward its start after a reversal. */
+    private var forward = true
+
+    /** The motion's progress at [since]. */
+    private var start = 0.0
+
     var since: Double = Double.NEGATIVE_INFINITY
         private set
+
+    /** The motion's progress at [now], 0 at its start and 1 at its end; at its end at once under reduce motion. */
+    fun at(
+        now: Double,
+        instant: Boolean,
+        steps: Boolean,
+    ): Double {
+        if (instant) return if (forward) 1.0 else 0.0
+        val s = stepped(now - since, MutantMotion.MELT_IN_MS, steps)
+        return if (forward) min(1.0, start + s) else max(0.0, start - s)
+    }
+
+    /** Whether the motion at [m] is still under way. */
+    fun running(m: Double): Boolean = if (forward) m < 1 else m > 0
 
     fun follow(
         on: Boolean,
         now: Double,
+        instant: Boolean = false,
+        steps: Boolean = false,
     ) {
         if (on == shown) return
         shown = on
+        val m = at(now, instant, steps)
+        if (running(m)) {
+            forward = !forward
+            start = m
+        } else {
+            inward = on
+            forward = true
+            start = 0.0
+        }
         since = now
     }
 }

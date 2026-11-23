@@ -63,27 +63,22 @@ import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.jsToFixed
+import io.github.youndie.mutant.surface.MutantSlideRun
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
-import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
-import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.LocalMutantTextRaster
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 /**
  * A date picker, the recording timer's calendar: a dark `bar` (the surface's fill, radius 12, no marks) 284 dp wide,
@@ -238,7 +233,7 @@ private fun DayGrid(
     val instant = LocalMutantReduceMotion.current
     val steps = LocalMutantSteppedMotion.current
     val from = remember { DropFrom(selectedDay ?: 0, lead, days) }
-    from.follow(selectedDay ?: 0, lead, days, clock.nowMs, instant, steps)
+    from.follow(selectedDay ?: 0, lead, days)
     val cellDp = remember { floatArrayOf(CELL.toFloat()) }
     // Right to left the grid is mirrored with its weekday row, the drop's run and the arrow keys with it (B-168).
     val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
@@ -276,7 +271,7 @@ private fun DayGrid(
                     "$key-day",
                     Modifier.size(CELL.dp),
                     profile = MutantBody.Pill.profile.with(radius = DROP_RADIUS),
-                    slide = SlideRequest(from.run, side * from.cols * cellDp[0], from.rows * cellDp[0]),
+                    slide = SlideRequest(from.id, side * from.cols * cellDp[0], from.rows * cellDp[0], from.run),
                 ) {}
             }
             for (d in 1..days) {
@@ -435,8 +430,9 @@ private fun inOval(
 }
 
 /**
- * Where the drop is drawn now, from the middle of cell [over], dp: its oval as the body slides it (`slid`: run home by
- * `1 − (1 − p)²`, stretched `1 + .4 sin πp` along its run and squeezed `1 − .18 sin πp` across), half its outline inside.
+ * Where the drop is drawn now, from the middle of cell [over], dp: its oval as the body slides it (`slid`, read from the
+ * drop's own run: run home by `1 − (1 − p)²`, stretched `1 + .4 sin πp` along its run and squeezed `1 − .18 sin πp`
+ * across, a re-aimed run's stretch eased from what it showed), half its outline inside.
  * [side] is -1 right to left, where the grid is mirrored. While it runs, the reader reads every frame of the [clock].
  */
 private class DropPlace(
@@ -449,19 +445,15 @@ private class DropPlace(
     private val steps: Boolean,
 ) {
     fun over(i: Int): Rect {
-        val p = if (instant) 1.0 else stepped(clock.nowMs - from.since, MutantMotion.SLIDE_MS, steps)
+        val run = from.run
+        val p = run.progress(clock.nowMs, instant, steps)
         if (p < 1) clock.frame
-        val q = sin(PI * p)
-        val left = (1 - p).pow(2)
         val c = cell[0].toDouble()
-        val x = side * c * (chosen % 7 - i % 7 + from.cols * left)
-        val y = c * (chosen / 7 - i / 7 + from.rows * left)
-        val along = jsToFixed(1 + .4 * q, 2)
-        val across = jsToFixed(1 - .18 * q, 2)
-        val down = abs(from.rows) > abs(from.cols)
+        val x = side * c * (chosen % 7 - i % 7) + run.offsetX(p)
+        val y = c * (chosen / 7 - i / 7) + run.offsetY(p)
         val inset = MutantBody.Pill.profile.outline / 2
-        val hw = c / 2 * (if (down) across else along) - inset
-        val hh = c / 2 * (if (down) along else across) - inset
+        val hw = c / 2 * jsToFixed(1 + run.stretchX(p), 2) - inset
+        val hh = c / 2 * jsToFixed(1 + run.stretchY(p), 2) - inset
         return Rect((x - hw).toFloat(), (y - hh).toFloat(), (x + hw).toFloat(), (y + hh).toFloat())
     }
 }
@@ -733,35 +725,31 @@ private const val DIGIT_HALF = 5.5f
 
 /**
  * Follows the chosen day from composition without writing state (B-93): where the drop's run starts, in cells from the
- * chosen cell, and since when. A pick while the drop is under way starts the new run from the place it has reached, not
- * from the day picked before (B-168). A new month moves the drop without a run.
+ * chosen cell, from the day it left. A pick while the drop is under way starts the new run from the place it has
+ * reached: the drop's [run] carries that (B-171; B-168 did it here). A new month moves the drop without a run.
  */
 private class DropFrom(
     private var now: Int,
     private var lead: Int,
     private var days: Int,
 ) {
-    /** The run's start, columns and rows from the chosen cell; 0 when it does not run. */
+    /** The run's start, columns and rows from the chosen cell to the day it left; 0 when it does not run. */
     var cols: Double = 0.0
         private set
     var rows: Double = 0.0
         private set
 
-    /** When the run started, the screen's clock ms. */
-    var since: Double = Double.NEGATIVE_INFINITY
+    /** Which run this is: the body's slide restarts on a new one only. */
+    var id: Int = 0
         private set
 
-    /** Which run this is: the body's slide restarts on a new one only. */
-    var run: Int = 0
-        private set
+    /** The drop's slide, shared with its body: the body re-aims it, this reads it. */
+    val run: MutantSlideRun = MutantSlideRun()
 
     fun follow(
         to: Int,
         lead: Int,
         days: Int,
-        nowMs: Double,
-        instant: Boolean,
-        steps: Boolean,
     ) {
         if (lead != this.lead || days != this.days) {
             // Another month: the drop stands on its day there, and a run under way goes on as the body draws it.
@@ -772,14 +760,11 @@ private class DropFrom(
         }
         if (to == now) return
         if (now in 1..days && to in 1..days) {
-            // What is left of the run under way, as the body draws it: `(1 − p)²` of its start.
-            val left = if (instant) 0.0 else (1 - stepped(nowMs - since, MutantMotion.SLIDE_MS, steps)).pow(2)
             val a = lead + now - 1
             val b = lead + to - 1
-            cols = a % 7 - b % 7 + cols * left
-            rows = a / 7 - b / 7 + rows * left
-            since = nowMs
-            run++
+            cols = (a % 7 - b % 7).toDouble()
+            rows = (a / 7 - b / 7).toDouble()
+            id++
         } else {
             cols = 0.0
             rows = 0.0

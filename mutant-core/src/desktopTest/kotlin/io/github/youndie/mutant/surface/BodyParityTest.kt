@@ -137,7 +137,13 @@ class BodyParityTest {
         val pour =
             obj("pour")?.let { p ->
                 val at = p["p"]!!.jsonPrimitive.double
-                if (at >= 1) null else gen.pourFront(g, at).toPath() to hexColor(p["from"]!!.jsonPrimitive.content)
+                if (at >=
+                    1
+                ) {
+                    null
+                } else {
+                    BodyPour(gen.pourFront(g, at).toPath(), hexColor(p["from"]!!.jsonPrimitive.content))
+                }
             }
         val slide = obj("slide")?.let { it["p"]!!.jsonPrimitive.double to it["dx"]!!.jsonPrimitive.double }
         return {
