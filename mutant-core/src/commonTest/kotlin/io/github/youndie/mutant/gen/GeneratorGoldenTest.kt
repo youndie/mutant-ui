@@ -5,6 +5,7 @@ import io.github.youndie.mutant.gen.goldens.genGoldens
 import io.github.youndie.mutant.gen.goldens.goldenHashes
 import io.github.youndie.mutant.gen.goldens.goldenNoise
 import io.github.youndie.mutant.gen.goldens.goldenStreams
+import io.github.youndie.mutant.surface.runningMosaic
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -100,6 +101,61 @@ class GeneratorGoldenTest {
         assertEquals(B97_CUT_FRAMES, cut.toSet(), "golden frames whose engine field reaches its grid's edge")
         report.append("paths byte-identical: $exact of $total")
         println(report)
+    }
+
+    @Test
+    fun `only the hot golden frames B-199 names move and only by the tiles it keeps out of the clean zone`() {
+        // B-199 (D20, answer 25): a pressed body's running mosaic draws no tile that meets the clean zone; the engine
+        // (`drawItem`, the `data-px` tiles) shifts it in. A frame with no heat draws no running mosaic and cannot move.
+        val moved = ArrayList<String>()
+        var hot = 0
+        for (golden in genGoldens) {
+            val g = instanceOf(golden)
+            for (f in golden.frames) {
+                val at = "${golden.name} @${f.t}"
+                val engine = runningMosaic(g, f.t, f.heat, asDesigned = true)
+                val kit = runningMosaic(g, f.t, f.heat)
+                if (f.heat <= 0) {
+                    assertEquals(engine.size, kit.size, "$at: a frame with no heat lost a tile")
+                    continue
+                }
+                hot++
+                // What the kit draws is the engine's, but for the tiles that meet the zone.
+                val left =
+                    engine.filter { (t, _) ->
+                        g.slot.blockMeetsCleanZone(t.x - g.slot.ox, t.y - g.slot.oy, t.size)
+                    }
+                assertEquals(engine.size - left.size, kit.size, "$at: tiles drawn")
+                val kept = engine - left.toSet()
+                for ((a, b) in kept.zip(kit)) {
+                    assertEquals(
+                        listOf(a.first.x, a.first.y, a.first.size, a.first.opacity),
+                        listOf(b.first.x, b.first.y, b.first.size, b.first.opacity),
+                        at,
+                    )
+                    assertEquals(a.second, b.second, at)
+                }
+                if (left.isNotEmpty()) moved += at
+            }
+        }
+        assertTrue(hot > 0, "no golden frame has heat")
+        // The control: the same golden instances, hot over 240 ticks, do meet the zone the engine's way.
+        val control =
+            genGoldens.sumOf { golden ->
+                val g = instanceOf(golden)
+                (0 until 240).sumOf { k ->
+                    runningMosaic(g, 5000 + k * 83.33, 1.0, asDesigned = true).count { (t, _) ->
+                        g.slot.blockMeetsCleanZone(t.x - g.slot.ox, t.y - g.slot.oy, t.size)
+                    }
+                }
+            }
+        println("B-199: golden frames with heat $hot, moved ${moved.size}; the control's tiles in the zone $control")
+        assertTrue(control > 0, "the control found no tile in the zone")
+        assertEquals(
+            B199_ZONE_FRAMES,
+            moved.toSet(),
+            "golden frames with heat whose running mosaic meets the clean zone",
+        )
     }
 
     @Test
@@ -230,3 +286,10 @@ class GeneratorGoldenTest {
  * grid grows past it and closes the contour, so these contours are the port's own, not the engine's.
  */
 internal val B97_CUT_FRAMES: Set<String> = setOf("fab-b @5000.0", "fab-b @12100.0", "fab-b @15990.0")
+
+/**
+ * B-199: the golden frames with heat whose running mosaic, as the engine draws it, puts a tile in the clean zone; the kit
+ * leaves it out (D20, the designer's answer 25). Every other frame's tiles are the engine's. None of the 27 hot frames
+ * does: their ticks shift no tile into a zone, while the same instances over 240 hot ticks do (the test's control).
+ */
+internal val B199_ZONE_FRAMES: Set<String> = setOf()
