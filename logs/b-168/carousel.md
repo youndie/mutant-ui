@@ -46,6 +46,14 @@ pager's `currentPage`, offset fraction, settled and target page.
 - **The design / item.** B-47: «the current card stands 84 dp in»; the KDoc: «a press on a card beside the current one
   brings it to the middle». The first card already stands 84 dp in with nothing before it.
 - **Cause.** `contentPadding` has a start (84) and no end.
+- **Fixed** (`3a0fe64`). Room after the last card, as wide as the view leaves past a card standing 84 dp in
+  (`maxWidth − 84 − 220`, none under 304 dp); the view now measures it through `BoxWithConstraints`. Nothing at rest
+  moves: `CarouselParityTest` unchanged. `CarouselBehaviourTest` «B-168 the last card is reached and stands where the
+  current one stands, at any width»: at 400, 328 and 520 dp a press on the last card makes it the current one at exactly
+  84 dp, and a second press is its click. Mutant: no room after it (`end = 0.dp * end.value`), killed — «400 dp: the
+  last card's left expected 84.0 but was 180.0».
+- **After** (`/private/tmp/b168-carousel/after/`): `last-*`, `width*-last-*` and `tolast-*` all `page=2 frac=0.000`,
+  the card 84 dp in (112 dp from the left in right to left, its right edge 84 dp in); the first card as before.
 
 ### F-carousel-02 — the pill jumps to the next dot, and for three frames the pointer is a lime dot beside a dark pill — local
 
@@ -60,6 +68,22 @@ pager's `currentPage`, offset fraction, settled and target page.
   slime jumping instead of moving as the class to fix.
 - **The brief's worry** (a pill re-aimed mid-move): nothing moves, so nothing is re-aimed; the fix below inherits
   F-nav-bar-03 (a re-aimed slide restarts its stretch) from `surface/BodyTransitions.kt`, already reported.
+- **Fixed** (`973575f`). The pointer is one `pill` body laid over the dots, keyed by the dot it stands at (`cd1` at
+  rest, as the page keys it), with the body's `slide` from the dot it left: the navigation bar's `PillFrom` (read, not
+  changed) keeps where a slide under way stands, so a page turning back mid-slide starts from there. The dot left
+  appears at once under the leaving pill; the dot reached is gone at once under the arriving one. No number is new: the
+  slide is the body's (330 ms, ease-out², the stretch), and at once under reduce motion. `CarouselParityTest` unchanged.
+  `CarouselBehaviourTest` «B-168 the pointer slides to the next dot and stays lime on every frame»: a press on the next
+  card, then 50 frames, the lime on the dots' row read from the pixels: no frame under half the lime at rest (least 87
+  against 122, the limit 61) and the lime's centre never more than 9 px from the frame before (half a dot's step; widest
+  4.2), ending 18 dp on. Mutants, both killed:
+  - no slide (`0.0 *` the dots' step): «frame 3: the pointer leapt from 200.4 to 217.6»;
+  - the indicator of `3a0fe64` (each dot's slot turning pill and dot in place): «frame 3: 51 lime pixels on the dots'
+    row, 122 at rest».
+- **After** (`after/tapzoom-*.png`, `after/tap-*.png` in every look, `*.txt`): the lime capsule stretches and runs to
+  the next dot in about 330 ms, lime in every frame, both ways and right to left; the browser's way draws the same runs
+  as the desktop. A tap on the moving shelf stops it (Compose's own), so a pick is not re-aimed by taps; a drag turning
+  back past half-way re-aims the pill from where it stands, and inherits F-nav-bar-03's stretch restarting.
 
 ### F-carousel-03 — one notch of the wheel moves the shelf 11 dp and springs back — local
 
@@ -69,6 +93,16 @@ pager's `currentPage`, offset fraction, settled and target page.
   passes to the page, as it should (`wheelV-Efir.txt`).
 - **The rule.** `cmp-ui-component` §4, The wheel: one notch steps one item where content snaps; a trackpad's small
   deltas are summed to whole notches, reset on a change of direction.
+- **Fixed** (`2a87519`). A pointer handler before the pager's own takes a sideways scroll (or shift with the wheel
+  where the platform leaves it vertical), sums it to whole notches, the sum dropped when it turns, and steps
+  `targetPage` by each, through `animateScrollToPage` (at once under reduce motion); right to left the other way. A plain
+  vertical turn is left alone. `CarouselBehaviourTest` «B-168 one notch of the wheel steps one card, a vertical one
+  leaves the shelf»: one notch on and one back, three deltas of 0.3 not a notch and a fourth one, three vertical notches
+  moving nothing (fraction within 0.001, the pager's own notch moved 0.047). Mutants, both killed: no step
+  (`0 * notches.toInt()`) — «a notch on expected 2 but was 1»; the sum not dropped on turning — «a vertical turn is the
+  page's expected 1 but was 2» (the 0.2 left over swallowed the notch back).
+- **After** (`after/wheelC-Efir.txt`): one notch glides to the next card and stops at `frac=0.000`; five more clamp at
+  the last.
 
 ### F-carousel-04 — a mouse drag moves nothing — local
 
@@ -77,6 +111,14 @@ pager's `currentPage`, offset fraction, settled and target page.
   sample runs. With no horizontal wheel, a mouse user can move the shelf only a card at a time by pressing the card
   beside the current one.
 - **The item.** B-47: «A swipe moves the shelf» — by touch only, as built.
+- **Fixed** (`30b8916`). For a mouse only, a pointer handler takes the drag past the touch slop in the initial pass,
+  so the card's press under it is cancelled: the shelf follows the pointer from there (the slop subtracted, no jump),
+  and at the release the pager's own fling behaviour settles it by the pointer's speed. A finger is left to the pager.
+  `CarouselBehaviourTest` «B-168 a mouse drags the shelf with the pointer, with no jump by the slop, and clicks
+  nothing»: a 180 px drag in 12 px frames moves the shelf 162 px (the limit 140), no frame more than 18 px (each is
+  12; a jump by the slop made 24), it settles on the next card and no click fires. Mutants, both killed: the handler
+  for an unknown pointer type instead of the mouse — «the shelf moved 0.0 px under a 180 px drag»; the slop not
+  subtracted — «frame 1: the next card moved from 318.0 to 294.0».
 
 ### F-carousel-05 — under 304 dp the current card is cut at the right — reported (owner; B-47's 84 dp)
 
@@ -122,10 +164,23 @@ pager's `currentPage`, offset fraction, settled and target page.
   never over the dots (F-buttons-07's class does not reach here).
 - **Focus brackets**: shown on the focused card in the test window after a press, as every component's in keyboard mode.
 
+## Gate
+
+`./gradlew :mutant-core:desktopTest :sample:desktopTest :mutant-core:ktlintCheck :sample:ktlintCheck --continue` on
+this Mac at `30b8916`, the scratch test deleted, read from the JUnit XML: `mutant-core` 458 tests, no `<failure>` or
+`<error>`; `sample` 22 tests, one failure — `DemoTapeOnceTest` «instant 1: 6 498 px unlike the phone alone» (the
+Recording phone, no carousel in it), the flake the orchestrator already holds, here on the Mac under the shared
+machine's load. Run alone it passed, and `:sample:desktopTest --rerun` passed 22 of 22. Both ktlint checks clean.
+`:mutant-core:compileKotlinIosSimulatorArm64` compiles (the new private top-levels are `CarouselShelf`, `CarouselDots`,
+`carouselWheel`, `carouselMouseDrag`, `CAROUSEL_DOT_STEP`). The public API did not change (`MutantCarousel`'s
+signature is as it was), so `updateKotlinAbi` was not run.
+
 ## Not verified
 
 - The phone and the browser itself: the browser's way was drawn through the seams on the desktop JVM only, the body
   shader (B-167's class) not at all.
+- A real mouse and wheel: the mouse drag and the wheel were driven by `performMouseInput` only; a real trackpad's
+  deltas and a platform's shift-wheel conversion were not seen.
 - A real window's input mode under a mouse (whether a desktop mouse press focuses a card and so takes F-carousel-07's
   snap): the test's `performMouseInput` click took the glide.
 - The sample's own composition was not filmed separately: its «Carousel» cell is this shelf at 520 dp (`width520-*`),
