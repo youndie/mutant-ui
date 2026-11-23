@@ -179,7 +179,7 @@ internal fun MutantSurface(
     val bodyFill = fill ?: colors.fillOf(p.fill)
     val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
     val pastContour = io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
-    moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps, instant)
+    moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps, instant, colors)
     val look =
         BodyLook(
             fill = bodyFill,
