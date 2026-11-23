@@ -76,8 +76,11 @@ class NavigationBarBehaviourTest {
         within: Float = .06f,
     ) = abs(a.red - b.red) + abs(a.green - b.green) + abs(a.blue - b.blue) < within
 
-    /** The pill's lime: its first and last column in row [y] of the bar, or null. */
-    private fun ComposeUiTest.pill(y: Int = 26): IntRange? {
+    /**
+     * The pill's lime: its first and last column in row [y] of the bar, or null. Row 28 by default, under the badge's
+     * ring, which ends in row 26 and since B-204 stands over the second pill's right end.
+     */
+    private fun ComposeUiTest.pill(y: Int = 28): IntRange? {
         val lime = MutantPalettes.Efir.primary
         val px = onNodeWithTag("n").captureToImage().toPixelMap()
         val xs = (0 until px.width).filter { near(px[it, y], lime) }
@@ -351,18 +354,19 @@ class NavigationBarBehaviourTest {
     }
 
     @Test
-    fun `the badge is the amber count over the icon box's corner`() =
+    fun `the badge is the amber count at the icon's corner`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             bar({ 0 })
             mainClock.advanceTimeByFrame()
             val px = onNodeWithTag("n").captureToImage().toPixelMap()
             val amber = MutantPalettes.Efir.amber
-            // The second cell, 82 to 164: its icon box 95 to 151, the badge's right 6 dp in, its top 2 dp above.
+            // The second cell, 82 to 164: its icon box 95 to 151, the icon 112 to 134; the badge from the icon's right
+            // edge (B-204), its top 2 dp above the box.
             val xs = (82 until 164).filter { x -> (0 until 68).any { y -> near(px[x, y], amber, .03f) } }
             val ys = (0 until 68).filter { y -> (82 until 164).any { x -> near(px[x, y], amber, .03f) } }
             assertTrue(xs.isNotEmpty(), "an amber plate")
-            assertEquals(144, xs.last(), "its right edge 6 dp in from the icon box's, at 145")
+            assertEquals(134, xs.first(), "its left edge on the icon's right")
             assertEquals(9, ys.first(), "2 dp above the icon box")
             assertEquals(16, ys.size, "16 dp tall")
             val elsewhere = (0 until 82).any { x -> (0 until 68).any { y -> near(px[x, y], amber, .03f) } }

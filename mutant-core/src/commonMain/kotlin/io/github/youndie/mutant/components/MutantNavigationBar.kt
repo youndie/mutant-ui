@@ -12,17 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -73,7 +72,11 @@ import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
 import kotlin.math.roundToInt
 
-/** One destination of [MutantNavigationBar]: its label, always shown, its icon, and an optional [badge]. */
+/**
+ * One destination of [MutantNavigationBar]: its label, always shown, its icon, and an optional [badge]. The badge stands
+ * at the icon's top-right corner and grows right with its text, past the cell where the cell is narrow; a whole number
+ * above 99 reads «99+», any other text as it is given.
+ */
 @Immutable
 public class MutantNavigationItem(
     public val label: String,
@@ -86,7 +89,7 @@ public class MutantNavigationItem(
  * The navigation bar: the `bar` body, 68 dp tall, across what it is given, its items in equal cells, each the whole
  * cell's target. An item is a 22 dp icon in a 56 × 30 box over its label (Rubik 11/500, always shown); the selected
  * one stands on the `pill`, a lime body under its icon, and its label takes the text colour. A [MutantNavigationItem.badge]
- * is the page's amber count over the icon's corner. A new [selectedIndex] slides the pill over from the cell it left
+ * is the page's amber count at the icon's top-right corner, growing right (B-204). A new [selectedIndex] slides the pill over from the cell it left
  * with the body's stretch (330 ms), at once under reduce motion; -1 shows no pill. The bar stands above [windowInsets],
  * the navigation bar by default, and draws nothing under it.
  */
@@ -298,11 +301,8 @@ private fun NavigationItem(
                 }
                 item.badge?.let {
                     BadgeBody(
-                        it,
-                        Modifier
-                            .align(Alignment.TopEnd)
-                            .wrapContentSize(Alignment.TopEnd, unbounded = true)
-                            .offset(-BADGE_RIGHT, -BADGE_UP),
+                        navigationBadgeText(it),
+                        Modifier.navigationBadgePlace(LocalMutantNavigationBarAsDesigned.current),
                         compact = true,
                         hidden = hidden,
                     )
@@ -440,9 +440,51 @@ private const val LABEL_SIZE = 11
 /** A label too long for its cell keeps 4 dp from the cell's sides, then an ellipsis (designed here, D15). */
 private val LABEL_MARGIN = 4.dp
 
-/** The badge ([MutantBadge], compact) 6 dp in from the icon box's right and 2 dp above it. */
-private val BADGE_RIGHT = 6.dp
-private val BADGE_UP = 2.dp
+/**
+ * The badge ([MutantBadge], compact) 2 dp above the icon box, its plate's left edge on the 22 dp icon's right edge, so a
+ * longer count grows right, away from the icon (B-204). The page's `right: 6px` stands it 6 dp in from the icon box's
+ * right instead, where a two-digit count covers half the icon; [LocalMutantNavigationBarAsDesigned] keeps that for the
+ * parity cells.
+ */
+private val NAVIGATION_BADGE_UP = 2.dp
+private val NAVIGATION_BADGE_RIGHT_AS_DESIGNED = 6.dp
+
+/** The most a navigation badge counts: a whole number above it reads «99+» (B-204, the designer's answer 36). */
+private const val NAVIGATION_BADGE_MAX = 99
+
+/**
+ * B-204's departure from the page, for the parity cells (research D20's registry): true stands the badge's right edge
+ * 6 dp in from the icon box's right, as the page's `right: 6px` does; the kit's grows right from the icon's top-right
+ * corner (the designer's answer 36).
+ */
+internal val LocalMutantNavigationBarAsDesigned = staticCompositionLocalOf { false }
+
+/**
+ * A badge's text as the bar shows it: a whole number above [NAVIGATION_BADGE_MAX], of any length, reads «99+»; any other
+ * text as it is. Read by its digits, never parsed, so a count past `Long.MAX_VALUE` caps as well.
+ */
+internal fun navigationBadgeText(text: String): String {
+    val digits = text.trimStart('0')
+    val count = text.isNotEmpty() && text.all { it in '0'..'9' }
+    val over = digits.length > NAVIGATION_BADGE_MAX.toString().length || (digits.isNotEmpty() && digits.toInt() > NAVIGATION_BADGE_MAX)
+    return if (count && over) "$NAVIGATION_BADGE_MAX+" else text
+}
+
+/**
+ * Stands the badge in the icon box: its plate's left edge on the icon's right edge, 2 dp above the box, so it grows right
+ * whatever its count; mirrored in a right-to-left layout, its right edge on the icon's left. [asDesigned]: the page's
+ * place, the right edge 6 dp in from the box's. The badge never takes the box's room.
+ */
+private fun Modifier.navigationBadgePlace(asDesigned: Boolean): Modifier =
+    layout { measurable, constraints ->
+        val p = measurable.measure(Constraints())
+        val w = constraints.maxWidth
+        // Where the box's centring puts the icon (BiasAlignment's rounding), so the corner is the icon's to the pixel.
+        val icon = ICON.roundToPx()
+        val iconRight = ((w - icon) / 2f).roundToInt() + icon
+        val x = if (asDesigned) w - NAVIGATION_BADGE_RIGHT_AS_DESIGNED.roundToPx() - p.width else iconRight
+        layout(w, constraints.maxHeight) { p.placeRelative(x, -NAVIGATION_BADGE_UP.roundToPx()) }
+    }
 
 /** The black on the pill: the page's literal `#05060c` in both themes, not «Копия»'s own ink. */
 private val INK = Color(0xFF05060C)
