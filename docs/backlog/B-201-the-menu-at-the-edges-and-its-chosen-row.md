@@ -78,5 +78,13 @@ Near the window's foot the menu slides up over its anchor (Compose's popup clamp
     in the sheet; the anchor's chip stays clear);
   - in the scratch sheet, a menu opened by a touch press and stepped by Down showed no focus brackets on the focused row
     (the test window's input mode, probably, as B-168 saw for the mouse); not followed.
-- **Gate**: see the pull request. **Not verified**: a phone, iOS and a real browser; a real window's popup (Compose
-  Desktop's test window only); right to left.
+- **ABI**: `MutantSurface`'s new internal parameter renames the synthetic content lambdas of six components in the
+  desktop and android dumps (as B-147 saw); no public declaration changed. Taken with `./gradlew updateKotlinAbi`.
+- **Gate**, this Mac, rebased on `c691ffd`: `./gradlew check --continue` ran `:mutant-core:desktopTest` 558 tests, 0
+  failed, `:mutant-core:iosSimulatorArm64Test` 26, 0 failed, ktlint, lint and `checkKotlinAbi` green, and
+  `:sample:desktopTest` 40 tests, 1 failed: `AccessibilityTest` hit its 1-minute `runTest` limit
+  (`UncompletedCoroutinesError`), twice, both times in the full gate's parallel load. Run alone it passes, in 84 s and
+  68 s on this branch and 75 s on `origin/main`. It opens no menu, and main's CI passes it. It is load, not this change.
+  `./gradlew :mutant-core:compileKotlinIosArm64` green; `make check` and `make docs-against BASE=origin/main` clean.
+- **Not verified**: a phone, iOS and a real browser; a real window's popup (Compose Desktop's test window only); right
+  to left.
