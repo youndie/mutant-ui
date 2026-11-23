@@ -1,7 +1,7 @@
 ---
 id: B-199
 title: "No mosaic block in the clean zone, pressed or at rest"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-6-later
