@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (10)
+## Open (9)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-195](docs/backlog/B-195-a-play-icon.md) `[~]` | A play icon | P2 | XS | - |
 | [B-200](docs/backlog/B-200-the-tooltip-at-the-edges.md) `[ ]` | The tooltip stays in the window and wraps | P2 | M | - |
 | [B-202](docs/backlog/B-202-the-data-table-at-a-large-font.md) `[ ]` | The data table at a large font and in a narrow slot | P2 | M | - |
 | [B-205](docs/backlog/B-205-mirrored-for-right-to-left.md) `[ ]` | Every layout mirrored for right to left | P2 | L | - |
@@ -73,7 +72,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (200)
+## Closed (201)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -269,6 +268,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-192](docs/backlog/B-192-text-buttons-pressed.md) `[x]` - The text button and the snackbar action show a press
 - [B-193](docs/backlog/B-193-hover-keeps-the-fill.md) `[x]` - Hover keeps the fill and only stirs the outline
 - [B-194](docs/backlog/B-194-the-cassette-label-translated.md) `[x]` - The cassette label is a translated string that fits
+- [B-195](docs/backlog/B-195-a-play-icon.md) `[x]` - A play icon
 - [B-196](docs/backlog/B-196-the-pickers-today-disabled-days-six-rows.md) `[x]` - The pickers: today, disabled days, six rows, the clock's accent
 - [B-198](docs/backlog/B-198-the-keyframe-loss-ends-on-a-screen-change.md) `[x]` - The keyframe loss ends on a screen change and takes the dividers
 - [B-199](docs/backlog/B-199-no-mosaic-in-the-clean-zone-when-pressed.md) `[x]` - No mosaic block in the clean zone, pressed or at rest

@@ -85,7 +85,7 @@ const text = L.join('\n');
 if (process.argv.includes('--check')) {
   let now = '';
   try { now = readFileSync(OUT, 'utf8'); } catch {}
-  if (now !== text) { console.error(`${OUT} is not what the Icons page says; run node scripts/icons.mjs`); process.exit(1); }
+  if (now !== text) { console.error(`${OUT} is not what the Icons page and KIT say; run node scripts/icons.mjs`); process.exit(1); }
   console.log(`icons: ${ICONS.length} icons match the Icons page; the kit's own: ${KIT.map(([n, , , i]) => `${n} (${i})`).join(', ')}`);
 } else {
   writeFileSync(OUT, text);
