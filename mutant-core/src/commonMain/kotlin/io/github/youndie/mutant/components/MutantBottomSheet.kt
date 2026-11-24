@@ -36,6 +36,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
@@ -47,6 +48,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.semantics
@@ -59,6 +62,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
+import io.github.youndie.mutant.surface.HeatMachine
 import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
@@ -78,7 +82,11 @@ import io.github.youndie.mutant.tokens.MutantBody
  * The design draws it open; its motion is designed here (D15): it rises from below over 330 ms (ease-out²) with the
  * scrim coming in, and sinks in 200 ms, both on every frame and in the kit's 83 ms steps under `steppedMotion`; under
  * reduce motion it is there at once. A sink during the rise, or a rise during the sink, goes on from where the sheet
- * stands. It is not dragged. A click on the scrim, Escape or the system back gesture calls [onDismissRequest]. Focus
+ * stands. A finger or a mouse drags it down from anywhere on it, 1:1 from the pointer's first move, and its body boils
+ * while dragged (B-183, the designer's answer 5): let go past 40 % of its height or faster than 800 dp/s down, it calls
+ * [onDismissRequest] and goes on down; otherwise it settles back in 330 ms on the slide curve. Pulled up past open it
+ * moves 0.3 of the pointer, at most 24 dp. The scrim is as dark as the sheet is up, rising, sinking or dragged. A drag a
+ * scrolling content takes first is the content's. A click on the scrim, Escape or the system back gesture calls [onDismissRequest]. Focus
  * moves into the sheet as it opens and stays there, a Tab on its controls only, coming round from the last to the
  * first and with Shift+Tab the other way; once it has sunk focus goes to [returnFocusTo], or with none is left to the
  * window. As it starts to sink, it and what is on it answer no press and no key.
@@ -126,13 +134,24 @@ internal fun SheetFrame(
     val follow =
         remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, RISE_MS, SINK_MS) }
     val steps = LocalMutantSteppedMotion.current
+    // B-183: dragged shut by a finger or a mouse, and boiling while dragged (the designer's answer 5).
+    val drag = remember { PanelDrag() }
+    val heat = remember { HeatMachine() }
+    drag.over = PANEL_DRAG_OVER_DP * LocalDensity.current.density
     ProvideMutantClock(own) {
         val clock = readMutantClock()
         follow.follow(visible, clock.nowMs)
         val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (visible) RISE_MS else SINK_MS, steps)
-        if (p < 1) clock.frame
         val shown = if (visible) p else 1 - p
-        val gone = !visible && p >= 1
+        // Ease-out²: the sheet rises fast and settles.
+        val rise = (1 - (1 - shown) * (1 - shown)).toFloat()
+        drag.scripted = 1 - rise
+        // How far down the window stands, a share of its height: where a drag puts it, or the rise.
+        val down = drag.follow(visible, clock.nowMs, still = reduce || clock.frozen, steps) ?: (1 - rise)
+        if (p < 1 || drag.gliding) clock.frame
+        SideEffect { if (drag.taken) heat.press(clock.nowMs) else heat.release(clock.nowMs) }
+        // A drag's close glides on past the sink's end; the sheet stays until it is over.
+        val gone = !visible && p >= 1 && !drag.closing
         // Held while anything of it shows: the screen behind stands still.
         DisposableEffect(screen, gone) {
             if (!gone) screen.holds++
@@ -145,7 +164,7 @@ internal fun SheetFrame(
         // The sheet floats over the screen, so the screen's keyframe loss does not take its body: a loss held mid-run by
         // the sheet would cut its band out of the sheet for as long as it shows (B-98's rule, B-168).
         CompositionLocalProvider(LocalMutantMoshScene provides null) {
-            SheetScene(visible, onDismissRequest, modifier, windowInsets, key, content, shown.toFloat(), height)
+            SheetScene(visible, onDismissRequest, modifier, windowInsets, key, content, down, height, drag, heat)
         }
     }
 }
@@ -158,11 +177,16 @@ private fun SheetScene(
     windowInsets: WindowInsets,
     key: String,
     content: @Composable ColumnScope.() -> Unit,
-    shown: Float,
+    down: Float,
     height: Dp?,
+    drag: PanelDrag,
+    heat: HeatMachine,
 ) {
     val colors = MutantTheme.colors
-    val dismiss by rememberUpdatedState(onDismissRequest)
+    val dismissState = rememberUpdatedState(onDismissRequest)
+    val dismiss by dismissState
+    val open = rememberUpdatedState(visible)
+    val towardsClosed = remember { mutableStateOf<(Offset) -> Float>({ o -> o.y }) }
     val focus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     // Whether the sheet itself holds focus (as it opens, and where Shift+Tab from its first control would stop): it shows
@@ -170,8 +194,6 @@ private fun SheetScene(
     var onSelf by remember { mutableStateOf(false) }
     LaunchedEffect(visible) { if (visible) focus.requestFocus() }
     NavigationBackHandler(rememberNavigationEventState(NavigationEventInfo.None), isBackEnabled = visible) { dismiss() }
-    // Ease-out²: the sheet rises fast and settles.
-    val rise = 1 - (1 - shown) * (1 - shown)
     Box(
         modifier
             .fillMaxSize()
@@ -223,7 +245,8 @@ private fun SheetScene(
         Box(
             Modifier
                 .fillMaxSize()
-                .graphicsLayer { alpha = shown }
+                // As dark as the sheet is up, rising or dragged (the designer's answer 5).
+                .graphicsLayer { alpha = (1 - down).coerceIn(0f, 1f) }
                 .background(SCRIM)
                 .focusProperties { canFocus = false }
                 .clickable(remember { MutableInteractionSource() }, indication = null, enabled = visible) { dismiss() },
@@ -232,9 +255,13 @@ private fun SheetScene(
             key,
             windowInsets,
             height,
+            heat,
             Modifier
                 .align(Alignment.BottomStart)
-                .graphicsLayer { translationY = (1 - rise) * size.height }
+                // The window drags it down (B-183); the scrim above it dismisses on a click.
+                .panelDrag(drag, open, dismissState, towardsClosed)
+                .onSizeChanged { drag.size = it.height.toFloat() }
+                .graphicsLayer { translationY = down * size.height }
                 .semantics {
                     dismiss {
                         dismiss()
@@ -255,6 +282,7 @@ private fun SheetWindow(
     key: String,
     windowInsets: WindowInsets,
     height: Dp?,
+    heat: HeatMachine,
     modifier: Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -271,6 +299,7 @@ private fun SheetWindow(
                 fill = colors.surface,
                 // The page's `data-r="22" data-over="0" data-wob="1.6" data-marks="0"`.
                 profile = MutantBody.Blob.profile.with(radius = RADIUS, overhang = 0.0, wobble = WOBBLE, marks = false),
+                heatMachine = heat,
             ) {
                 Column(
                     Modifier.padding(

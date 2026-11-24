@@ -56,6 +56,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
@@ -74,12 +76,14 @@ import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.VenomShapes
+import io.github.youndie.mutant.surface.HeatMachine
 import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.drawVenomFill
 import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
+import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.toPath
@@ -116,7 +120,12 @@ public class MutantDrawerItem(
  *
  * The design draws it open; its motion is designed here (D15): it slides in from the start over 330 ms (ease-out², on
  * every frame, in the kit's transition steps under `steppedMotion`) with the scrim coming in, and out in 200 ms; turned
- * round mid-way it goes on from where it stands, and under reduce motion it is there at once. A click on the scrim, Escape or the system back gesture calls
+ * round mid-way it goes on from where it stands, and under reduce motion it is there at once. A finger or a mouse drags it
+ * towards the start from the window or the scrim, 1:1 from the pointer's first move, and its body boils while dragged
+ * (B-183, the designer's answer 5): let go past 40 % of its width or faster than 800 dp/s towards the start, it calls
+ * [onDismissRequest] and goes on out; otherwise it settles back in 330 ms on the slide curve. Pulled past open it moves
+ * 0.3 of the pointer, at most 24 dp. The scrim is as dark as the window is open, sliding or dragged. A closed drawer is
+ * not composed, so it is not pulled out from the edge. A click on the scrim, Escape or the system back gesture calls
  * [onDismissRequest]; from then on no row answers. Focus moves into the drawer as it opens, Up or Down there takes it to
  * the chosen row and then from row to row; Tab steps the rows, coming round from the last to the first and with
  * Shift+Tab the other way, and never leaves the drawer while it is open. Once the drawer has gone focus goes to
@@ -162,6 +171,10 @@ internal fun DrawerFrame(
     val follow = remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, IN_MS, OUT_MS) }
     val pick = remember { PickHold(selectedIndex) }
     val steps = LocalMutantSteppedMotion.current
+    // B-183: dragged shut by a finger or a mouse, and boiling while dragged (the designer's answer 5).
+    val drag = remember { PanelDrag() }
+    val heat = remember { HeatMachine() }
+    drag.over = PANEL_DRAG_OVER_DP * LocalDensity.current.density
     ProvideMutantClock(own) {
         val clock = readMutantClock()
         // B-102: a pick that closes the drawer holds it until the venom run has landed on the new row and lingered, then
@@ -172,9 +185,15 @@ internal fun DrawerFrame(
         val showing = visible || holding
         follow.follow(showing, clock.nowMs)
         val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, if (showing) IN_MS else OUT_MS, steps)
-        if (p < 1) clock.frame
         val shown = (if (showing) p else 1 - p).toFloat()
-        val gone = !showing && p >= 1
+        val slide = 1 - (1 - shown) * (1 - shown)
+        drag.scripted = 1 - slide
+        // How far towards closed the window stands, a share of its width: where a drag puts it, or the slide.
+        val closed = drag.follow(visible, clock.nowMs, still = reduce || clock.frozen, steps) ?: (1 - slide)
+        if (p < 1 || drag.gliding) clock.frame
+        SideEffect { if (drag.taken) heat.press(clock.nowMs) else heat.release(clock.nowMs) }
+        // A drag's close glides on past the slide out's end; the drawer stays until it is over.
+        val gone = !showing && p >= 1 && !drag.closing
         pick.showing = !gone
         DisposableEffect(screen, gone) {
             if (!gone) screen.holds++
@@ -184,7 +203,8 @@ internal fun DrawerFrame(
         // screen, and an Enter pressed then would reach the opener under it and open the drawer again (B-168).
         ReturnFocus(!gone, returnFocusTo)
         if (gone) return@ProvideMutantClock
-        val dismiss by rememberUpdatedState(onDismissRequest)
+        val dismissState = rememberUpdatedState(onDismissRequest)
+        val dismiss by dismissState
         val focus = remember { FocusRequester() }
         val rows = remember(items.size) { List(items.size) { FocusRequester() } }
         LaunchedEffect(visible) { if (visible) focus.requestFocus() }
@@ -192,9 +212,11 @@ internal fun DrawerFrame(
             rememberNavigationEventState(NavigationEventInfo.None),
             isBackEnabled = visible,
         ) { dismiss() }
-        val slide = 1 - (1 - shown) * (1 - shown)
         // It comes in from the screen's start: the left edge, or the right one right to left.
         val from = if (LocalLayoutDirection.current == LayoutDirection.Rtl) 1 else -1
+        val open = rememberUpdatedState(visible)
+        // Towards closed is towards the screen's start.
+        val towardsClosed = rememberUpdatedState<(Offset) -> Float> { o -> from * o.x }
         Box(
             modifier
                 .fillMaxSize()
@@ -228,12 +250,15 @@ internal fun DrawerFrame(
                     if (!visible || it.type != KeyEventType.KeyDown || !arrow) return@onKeyEvent false
                     rows.getOrNull(if (selectedIndex in items.indices) selectedIndex else 0)?.requestFocus()
                     true
-                }.focusable(),
+                }.focusable()
+                // The window and the scrim alike drag it towards the start (B-183).
+                .panelDrag(drag, open, dismissState, towardsClosed),
         ) {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = shown }
+                    // The scrim is as dark as the window is open, sliding or dragged (the designer's answer 5).
+                    .graphicsLayer { alpha = (1 - closed).coerceIn(0f, 1f) }
                     .background(SCRIM)
                     .focusProperties { canFocus = false }
                     .clickable(
@@ -254,15 +279,18 @@ internal fun DrawerFrame(
                     hidden,
                     visible,
                     rows,
-                    Modifier
-                        .fillMaxHeight()
-                        .graphicsLayer { translationX = from * (1 - slide) * size.width }
-                        .semantics {
-                            dismiss {
-                                dismiss()
-                                true
-                            }
-                        },
+                    heat = heat,
+                    modifier =
+                        Modifier
+                            .fillMaxHeight()
+                            .onSizeChanged { drag.size = it.width.toFloat() }
+                            .graphicsLayer { translationX = from * closed * size.width }
+                            .semantics {
+                                dismiss {
+                                    dismiss()
+                                    true
+                                }
+                            },
                 )
             }
         }
@@ -281,6 +309,7 @@ internal fun DrawerWindow(
     open: Boolean,
     focus: List<FocusRequester>,
     modifier: Modifier,
+    heat: HeatMachine? = null,
 ) {
     val colors = MutantTheme.colors
     val clock = readMutantClock()
@@ -352,6 +381,7 @@ internal fun DrawerWindow(
                 slip = SLIP,
                 shadow = colors.misregister,
                 profile = MutantBody.Bar.profile.with(radius = 0.0, marks = false, mosaic = false),
+                heatMachine = heat,
             ) {
                 Layout(
                     content = {
@@ -406,7 +436,8 @@ internal fun DrawerWindow(
                             MutantText(
                                 title,
                                 Modifier.mutantCleanZone(),
-                                style = code.copy(color = if (hidden) Color.Transparent else colors.textOsd),
+                                // On a body boiling amber while dragged, the amber title turns dark (B-183).
+                                style = code.copy(color = if (hidden) Color.Transparent else inkOnBody(colors.textOsd)),
                                 maxLines = 1,
                                 softWrap = false,
                                 overflow = TextOverflow.Ellipsis,
@@ -505,6 +536,8 @@ private fun DrawerRow(
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    // The words off the slime: the text's colour, dark on a body boiling amber while dragged (B-183).
+    val plain = inkOnBody(colors.text)
 
     // A lambda, not a reference to a local function: two references to `ink` compare equal whatever selection they
     // captured, so the words' node kept the first one and coloured the rows by the selection it was composed with (B-103).
@@ -513,9 +546,9 @@ private fun DrawerRow(
         when {
             hidden -> Color.Transparent
             words.pass == DrawerWordPass.OnSlime -> colors.onPrimary
-            words.pass == DrawerWordPass.OffSlime -> colors.text
+            words.pass == DrawerWordPass.OffSlime -> plain
             index == selectedIndex -> colors.onPrimary
-            else -> colors.text
+            else -> plain
         }
     }
     Row(
