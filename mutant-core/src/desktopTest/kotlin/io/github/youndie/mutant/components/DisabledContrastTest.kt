@@ -45,111 +45,121 @@ class DisabledContrastTest {
         return if (v <= 0.04045) v / 12.92 else ((v + 0.055) / 1.055).pow(2.4)
     }
 
+    /**
+     * [channel] of every 8-bit value. Three `pow`s a pixel, for the pixel and again for its box's ground, through one
+     * `getRGB` call a pixel, were most of the test's time (B-210); the table gives the same doubles.
+     */
+    private val channels = DoubleArray(256) { channel(it) }
+
     private fun luminance(rgb: Int): Double =
-        0.2126 * channel(rgb shr 16 and 0xFF) + 0.7152 * channel(rgb shr 8 and 0xFF) + 0.0722 * channel(rgb and 0xFF)
+        0.2126 * channels[rgb shr 16 and 0xFF] + 0.7152 * channels[rgb shr 8 and 0xFF] + 0.0722 * channels[rgb and 0xFF]
 
+    /** The contrast ratio of two luminances. */
     private fun ratio(
-        a: Int,
-        b: Int,
-    ): Double {
-        val la = luminance(a)
-        val lb = luminance(b)
-        return (max(la, lb) + .05) / (min(la, lb) + .05)
-    }
+        la: Double,
+        lb: Double,
+    ): Double = (max(la, lb) + .05) / (min(la, lb) + .05)
 
-    @Test
-    fun `the disabled words stand where they were measured, under the Tape`() {
+    /**
+     * One theme's cycle, [print] for «Копия». Both ran as one test in 18 s on a Mac (B-210); each is a test of its own now,
+     * the same two bodies. Of «Копия»'s 8 s, nearly all is the kit's frames: a disabled body draws its halftone a dot at a
+     * time.
+     */
+    private fun stand(print: Boolean) {
         val lines = ArrayList<String>()
         var lowest = 99.0
         var edgeFrames = 0
-        for (print in listOf(false, true)) {
-            val clock = MutantClock()
-            runComposeUiTest {
-                mainClock.autoAdvance = false
-                setContent {
-                    CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                        MutantTheme(
-                            colors = if (print) MutantPalettes.Kopiya else MutantPalettes.Efir,
-                            reduceMotion = false,
-                        ) {
-                            ProvideMutantClock(clock) {
-                                val colors = MutantTheme.colors
-                                Column(
-                                    Modifier
-                                        .width(360.dp)
-                                        .background(colors.background)
-                                        .mutantTape()
-                                        .testTag("d"),
-                                ) {
-                                    MutantButton("Отключено", {}, enabled = false)
-                                    MutantCheckbox(true, {}, label = "Шум головки", enabled = false)
-                                    MutantSwitch(true, {}, label = "Автотрекинг", enabled = false)
-                                    MutantTextField(
-                                        "",
-                                        {},
-                                        Modifier.width(328.dp),
-                                        placeholder = "Найти запись",
-                                        enabled = false,
-                                    )
-                                    MutantCard(
-                                        Modifier.width(328.dp),
-                                        enabled = false,
-                                    ) { MutantCardTitle("Без подписи №3") }
-                                }
+        val clock = MutantClock()
+        runComposeUiTest {
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    MutantTheme(
+                        colors = if (print) MutantPalettes.Kopiya else MutantPalettes.Efir,
+                        reduceMotion = false,
+                    ) {
+                        ProvideMutantClock(clock) {
+                            val colors = MutantTheme.colors
+                            Column(
+                                Modifier
+                                    .width(360.dp)
+                                    .background(colors.background)
+                                    .mutantTape()
+                                    .testTag("d"),
+                            ) {
+                                MutantButton("Отключено", {}, enabled = false)
+                                MutantCheckbox(true, {}, label = "Шум головки", enabled = false)
+                                MutantSwitch(true, {}, label = "Автотрекинг", enabled = false)
+                                MutantTextField(
+                                    "",
+                                    {},
+                                    Modifier.width(328.dp),
+                                    placeholder = "Найти запись",
+                                    enabled = false,
+                                )
+                                MutantCard(
+                                    Modifier.width(328.dp),
+                                    enabled = false,
+                                ) { MutantCardTitle("Без подписи №3") }
                             }
                         }
                     }
                 }
+            }
+            mainClock.advanceTimeByFrame()
+            val o = onNodeWithTag("d").fetchSemanticsNode().boundsInRoot
+            val boxes =
+                onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .map { it.config[SemanticsProperties.Text].joinToString { s -> s.text } to it.boundsInRoot }
+            val worst = HashMap<String, Double>()
+            val edged = HashMap<String, Double>()
+            // Every frame of a whole cycle, bounded so a clock that never moves fails instead of hanging.
+            var frames = 0
+            while (clock.nowMs < MutantMotion.TRACKING_EVERY_MS && frames++ < MAX_FRAMES) {
                 mainClock.advanceTimeByFrame()
-                val o = onNodeWithTag("d").fetchSemanticsNode().boundsInRoot
-                val boxes =
-                    onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
-                        .fetchSemanticsNodes()
-                        .map { it.config[SemanticsProperties.Text].joinToString { s -> s.text } to it.boundsInRoot }
-                val worst = HashMap<String, Double>()
-                val edged = HashMap<String, Double>()
-                // Every frame of a whole cycle, bounded so a clock that never moves fails instead of hanging.
-                var frames = 0
-                while (clock.nowMs < MutantMotion.TRACKING_EVERY_MS && frames++ < MAX_FRAMES) {
-                    mainClock.advanceTimeByFrame()
-                    val band = tapeBandTop(clock.nowMs, o.height)
-                    val img = onNodeWithTag("d").captureToImage().toAwtImage()
-                    for ((t, b) in boxes) {
-                        val top = max(0, (b.top - o.top).toInt())
-                        val bottom = min(img.height, (b.bottom - o.top).toInt() + 1)
-                        val counts = HashMap<Int, Int>()
-                        val px = ArrayList<Int>()
-                        for (y in top until bottom) {
-                            for (x in max(0, (b.left - o.left).toInt()) until
-                                min(img.width, (b.right - o.left).toInt() + 1)) {
-                                val c = img.getRGB(x, y) and 0xFFFFFF
-                                px += c
-                                counts[c] = (counts[c] ?: 0) + 1
-                            }
-                        }
-                        if (px.isEmpty()) continue
-                        val ground = counts.maxBy { it.value }.key
-                        val r = px.maxOf { ratio(it, ground) }
-                        // The band's borders: its top row and the row 23 dp under it (`drawTape`).
-                        val edge = band != null && listOf(band, band + 23).any { it.toInt() in top until bottom }
-                        if (edge) {
-                            edgeFrames++
-                            edged[t] = min(edged[t] ?: 99.0, r)
-                        } else {
-                            worst[t] = min(worst[t] ?: 99.0, r)
+                val band = tapeBandTop(clock.nowMs, o.height)
+                val img = onNodeWithTag("d").captureToImage().toAwtImage()
+                // The frame's pixels in one call, not one `getRGB` a pixel.
+                val w = img.width
+                val rgb = img.getRGB(0, 0, w, img.height, null, 0, w)
+                for ((t, b) in boxes) {
+                    val top = max(0, (b.top - o.top).toInt())
+                    val bottom = min(img.height, (b.bottom - o.top).toInt() + 1)
+                    val left = max(0, (b.left - o.left).toInt())
+                    val right = min(w, (b.right - o.left).toInt() + 1)
+                    val counts = HashMap<Int, Int>()
+                    for (y in top until bottom) {
+                        for (x in left until right) {
+                            val c = rgb[y * w + x] and 0xFFFFFF
+                            counts[c] = (counts[c] ?: 0) + 1
                         }
                     }
+                    if (counts.isEmpty()) continue
+                    val ground = luminance(counts.maxBy { it.value }.key)
+                    var r = 0.0
+                    for (y in top until bottom) {
+                        for (x in left until right) r = max(r, ratio(luminance(rgb[y * w + x] and 0xFFFFFF), ground))
+                    }
+                    // The band's borders: its top row and the row 23 dp under it (`drawTape`).
+                    val edge = band != null && listOf(band, band + 23).any { it.toInt() in top until bottom }
+                    if (edge) {
+                        edgeFrames++
+                        edged[t] = min(edged[t] ?: 99.0, r)
+                    } else {
+                        worst[t] = min(worst[t] ?: 99.0, r)
+                    }
                 }
-                kotlin.test.assertTrue(
-                    clock.nowMs >= MutantMotion.TRACKING_EVERY_MS,
-                    "the clock reached ${clock.nowMs} ms in $frames frames",
-                )
-                val theme = if (print) "Копия" else "Эфир"
-                lowest = minOf(lowest, worst.values.min())
-                for ((t, r) in worst.entries.sortedBy { it.value }) {
-                    lines +=
-                        "$theme   %.2f  %s".format(r, t) + (edged[t]?.let { "   under a border %.2f".format(it) } ?: "")
-                }
+            }
+            kotlin.test.assertTrue(
+                clock.nowMs >= MutantMotion.TRACKING_EVERY_MS,
+                "the clock reached ${clock.nowMs} ms in $frames frames",
+            )
+            val theme = if (print) "Копия" else "Эфир"
+            lowest = minOf(lowest, worst.values.min())
+            for ((t, r) in worst.entries.sortedBy { it.value }) {
+                lines +=
+                    "$theme   %.2f  %s".format(r, t) + (edged[t]?.let { "   under a border %.2f".format(it) } ?: "")
             }
         }
         println("A11Y-DISABLED\n" + lines.joinToString("\n"))
@@ -159,6 +169,12 @@ class DisabledContrastTest {
         )
         kotlin.test.assertTrue(lowest >= 4.3, "a disabled word under 4.3: $lowest\n" + lines.joinToString("\n"))
     }
+
+    @Test
+    fun `the disabled words stand where they were measured, under the Tape, in Efir`() = stand(print = false)
+
+    @Test
+    fun `the disabled words stand where they were measured, under the Tape, in Kopiya`() = stand(print = true)
 
     private companion object {
         /** Frames of 16 ms in a cycle, and some to spare. */

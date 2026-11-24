@@ -123,47 +123,64 @@ class StillLayersOnceTest {
         return 100.0 * far / (a.width * a.height)
     }
 
-    @Test
-    fun `the still layers drawn once draw what each tick draws`() {
+    /**
+     * The cases of one clock and one theme, at both densities. All four ran as one test in 36 s on a Mac (B-210), half of
+     * it the 6 ms a frame given to the images ahead; each is a test of its own now, the same cases between them.
+     */
+    private fun drawnOnce(
+        frozen: Boolean,
+        print: Boolean,
+    ) {
         val dir = File("build/b-117").apply { mkdirs() }
         val lines = ArrayList<String>()
         var worst = 0.0
-        for (frozen in listOf(false, true)) {
-            for (print in listOf(false, true)) {
-                for (d in listOf(1f, 2.625f)) {
-                    for (c in cases) {
-                        val counted = Count()
-                        val each = render(c, once = false, d, print, Count(), frozen)
-                        val once = render(c, once = true, d, print, counted, frozen)
-                        // A frozen clock draws in the frame (fixtures, references); a running one from its tick's image.
-                        if (!frozen) {
-                            assertTrue(
-                                counted.asImage >= 4,
-                                "${c.name} at $d: ticks drawn from an image ${counted.asImage}",
-                            )
-                        }
-                        // The first tick of an off-frame body draws no body yet (B-50); every tick after it is compared.
-                        if (frozen) {
-                            val same = each.indices.all { i -> sameImage(each[i], once[i]) }
-                            assertTrue(same, "${c.name} at $d under a frozen clock: the fixtures' pixels moved")
-                        }
-                        val shares = (1 until each.size).map { farShare(each[it], once[it]) }
-                        worst = maxOf(worst, shares.max())
-                        val tag = "${c.name}-${if (print) "kopiya" else "efir"}-$d${if (frozen) "-frozen" else ""}"
-                        lines += "$tag by more than 16, per tick: ${shares.joinToString(" ") { "%.3f".format(it) }} %"
-                        val a = each.last()
-                        val sheet = BufferedImage(a.width * 2 + 8, a.height, BufferedImage.TYPE_INT_ARGB)
-                        sheet.graphics.apply {
-                            drawImage(a, 0, 0, null)
-                            drawImage(once.last(), a.width + 8, 0, null)
-                        }
-                        ImageIO.write(sheet, "png", File(dir, "$tag.png"))
-                    }
+        for (d in listOf(1f, 2.625f)) {
+            for (c in cases) {
+                val counted = Count()
+                val each = render(c, once = false, d, print, Count(), frozen)
+                val once = render(c, once = true, d, print, counted, frozen)
+                // A frozen clock draws in the frame (fixtures, references); a running one from its tick's image.
+                if (!frozen) {
+                    assertTrue(
+                        counted.asImage >= 4,
+                        "${c.name} at $d: ticks drawn from an image ${counted.asImage}",
+                    )
                 }
+                // The first tick of an off-frame body draws no body yet (B-50); every tick after it is compared.
+                if (frozen) {
+                    val same = each.indices.all { i -> sameImage(each[i], once[i]) }
+                    assertTrue(same, "${c.name} at $d under a frozen clock: the fixtures' pixels moved")
+                }
+                val shares = (1 until each.size).map { farShare(each[it], once[it]) }
+                worst = maxOf(worst, shares.max())
+                val tag = "${c.name}-${if (print) "kopiya" else "efir"}-$d${if (frozen) "-frozen" else ""}"
+                lines += "$tag by more than 16, per tick: ${shares.joinToString(" ") { "%.3f".format(it) }} %"
+                val a = each.last()
+                val sheet = BufferedImage(a.width * 2 + 8, a.height, BufferedImage.TYPE_INT_ARGB)
+                sheet.graphics.apply {
+                    drawImage(a, 0, 0, null)
+                    drawImage(once.last(), a.width + 8, 0, null)
+                }
+                ImageIO.write(sheet, "png", File(dir, "$tag.png"))
             }
         }
-        File(dir, "shares.txt").writeText(lines.joinToString("\n") + "\n")
+        val part = "${if (print) "kopiya" else "efir"}${if (frozen) "-frozen" else ""}"
+        File(dir, "shares-$part.txt").writeText(lines.joinToString("\n") + "\n")
         println(lines.joinToString("\n"))
         assertTrue(worst <= 0.2, "a case over the line of 0.2 %: ${lines.joinToString("; ")}")
     }
+
+    @Test
+    fun `the still layers drawn once draw what each tick draws, in Efir`() = drawnOnce(frozen = false, print = false)
+
+    @Test
+    fun `the still layers drawn once draw what each tick draws, in Kopiya`() = drawnOnce(frozen = false, print = true)
+
+    @Test
+    fun `under a frozen clock the still layers drawn once draw the same pixels, in Efir`() =
+        drawnOnce(frozen = true, print = false)
+
+    @Test
+    fun `under a frozen clock the still layers drawn once draw the same pixels, in Kopiya`() =
+        drawnOnce(frozen = true, print = true)
 }

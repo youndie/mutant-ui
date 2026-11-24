@@ -90,31 +90,40 @@ class MenuEdgesAndChosenRowTest {
             assertEquals(90f, window("menu").top)
         }
 
-    @Test
-    fun `30 rows in a 400 dp window stand 16 dp from its top and 34 dp from its foot and scroll to the last`() {
-        for (d in listOf(1f, 2f)) {
-            runDesktopComposeUiTest((400 * d).toInt(), (400 * d).toInt()) {
-                val items = List(30) { "ПУНКТ ${it + 1}" }
-                openAt(d, 40, 20, items)
-                val menu = window("menu")
-                assertEquals(16f * d, menu.top, "16 dp from the window's top at density $d")
-                assertEquals((400f - 34f) * d, menu.bottom, "34 dp from the window's foot at density $d")
-                onNode(hasText("ПУНКТ 1")).assertIsFocused()
-                // Down through every row, then once more round to the first: each focused row is brought into the view.
-                for (i in 1..30) {
-                    val to = items[i % 30]
-                    onNode(isFocused()).performKeyInput { pressKey(Key.DirectionDown) }
-                    mainClock.advanceTimeBy(250)
-                    onNode(hasText(to)).assertIsFocused()
-                    val row = onNode(hasText(to)).fetchSemanticsNode().boundsInWindow
-                    assertTrue(
-                        row.top >= menu.top - .5f && row.bottom <= menu.bottom + .5f,
-                        "$to in view at density $d: $row in $menu",
-                    )
-                }
+    /**
+     * 30 rows at density [d]. Both densities ran as one test in 15–35 s on a Mac (B-210), each a body of 30 key presses
+     * 250 ms apart; each density is a test of its own now.
+     */
+    private fun thirtyRows(d: Float) {
+        runDesktopComposeUiTest((400 * d).toInt(), (400 * d).toInt()) {
+            val items = List(30) { "ПУНКТ ${it + 1}" }
+            openAt(d, 40, 20, items)
+            val menu = window("menu")
+            assertEquals(16f * d, menu.top, "16 dp from the window's top at density $d")
+            assertEquals((400f - 34f) * d, menu.bottom, "34 dp from the window's foot at density $d")
+            onNode(hasText("ПУНКТ 1")).assertIsFocused()
+            // Down through every row, then once more round to the first: each focused row is brought into the view.
+            for (i in 1..30) {
+                val to = items[i % 30]
+                onNode(isFocused()).performKeyInput { pressKey(Key.DirectionDown) }
+                mainClock.advanceTimeBy(250)
+                onNode(hasText(to)).assertIsFocused()
+                val row = onNode(hasText(to)).fetchSemanticsNode().boundsInWindow
+                assertTrue(
+                    row.top >= menu.top - .5f && row.bottom <= menu.bottom + .5f,
+                    "$to in view at density $d: $row in $menu",
+                )
             }
         }
     }
+
+    @Test
+    fun `30 rows in a 400 dp window stand 16 dp from its top and 34 dp from its foot and scroll to the last`() =
+        thirtyRows(1f)
+
+    @Test
+    fun `at density 2, 30 rows in a 400 dp window stand 16 dp from its top and 34 dp from its foot and scroll`() =
+        thirtyRows(2f)
 
     /** Lime pixels outside rows [from, to) of the menu drawn 40 dp into the stage. */
     private fun ComposeUiTest.limeOutside(

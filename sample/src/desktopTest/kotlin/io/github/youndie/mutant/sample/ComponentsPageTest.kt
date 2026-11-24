@@ -84,15 +84,13 @@ class ComponentsPageTest {
         block()
     }
 
-    /** B-148: the page composes one group at a time; [block] runs on each in turn, chosen through the settings. */
+    /**
+     * B-148: the page composes one group at a time; [block] runs on each in turn, on a page opened at it. B-210: a page of
+     * its own for each group, where one page switched through all seven in 7 s on a Mac, a body of 1 s each.
+     */
     private fun everyGroup(block: ComposeUiTest.(SpecGroup) -> Unit) {
-        val settings = SampleSettings(language = SampleLanguage.English)
-        page(settings) {
-            for (group in SpecGroup.entries) {
-                settings.group = group
-                mainClock.advanceTimeBy(1_000)
-                block(group)
-            }
+        for (group in SpecGroup.entries) {
+            page(SampleSettings(language = SampleLanguage.English, group = group)) { block(group) }
         }
     }
 
@@ -239,33 +237,50 @@ class ComponentsPageTest {
         }
     }
 
-    @Test
-    fun `no design stage is named on either page, in either language`() {
+    /**
+     * The texts of the page opened at each group, or at each demo screen when [demo], in [language], that name a design
+     * stage. B-210: each place opens a page of its own, as `the page opens at its top` does, where one page per language
+     * switched through all ten in 12–18 s on a Mac and passed its minute under load (PR #136's CI, run 45262647941). A
+     * page opened at a place reads the texts a page switched to it reads, compared place by place when this changed.
+     */
+    private fun stagesNamed(
+        language: SampleLanguage,
+        demo: Boolean,
+    ): List<String> {
         val stage = Regex("""(?i)\bmvp\b|\bv1\b|\blater\b|позже""")
+        val places =
+            if (demo) {
+                DemoScreen.entries.map {
+                    "Demo, ${it.name}" to SampleSettings(language = language, page = SamplePage.Demo, demoScreen = it)
+                }
+            } else {
+                SpecGroup.entries.map { it.name to SampleSettings(language = language, group = it) }
+            }
         val failures = ArrayList<String>()
-        for (language in SampleLanguage.entries) {
-            val settings = SampleSettings(language = language)
+        for ((where, settings) in places) {
             page(settings) {
-                fun look(where: String) {
-                    val texts =
-                        onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
-                    for (t in texts.texts()) if (stage.containsMatchIn(t)) failures += "$language, $where: «$t»"
-                }
-                for (group in SpecGroup.entries) {
-                    settings.group = group
-                    mainClock.advanceTimeBy(1_000)
-                    look(group.name)
-                }
-                settings.page = SamplePage.Demo
-                for (screen in DemoScreen.entries) {
-                    settings.demoScreen = screen
-                    mainClock.advanceTimeBy(1_000)
-                    look("Demo, ${screen.name}")
-                }
+                val texts = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+                for (t in texts.texts()) if (stage.containsMatchIn(t)) failures += "$language, $where: «$t»"
             }
         }
-        assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+        return failures
     }
+
+    @Test
+    fun `no design stage is named on the Components page, in English`() =
+        assertEquals(emptyList(), stagesNamed(SampleLanguage.English, demo = false))
+
+    @Test
+    fun `no design stage is named on the Components page, in Russian`() =
+        assertEquals(emptyList(), stagesNamed(SampleLanguage.Russian, demo = false))
+
+    @Test
+    fun `no design stage is named on the Demo page, in English`() =
+        assertEquals(emptyList(), stagesNamed(SampleLanguage.English, demo = true))
+
+    @Test
+    fun `no design stage is named on the Demo page, in Russian`() =
+        assertEquals(emptyList(), stagesNamed(SampleLanguage.Russian, demo = true))
 
     @Test
     fun `the page's own words read at 4_5 to 1 on a section's ground in both palettes`() {

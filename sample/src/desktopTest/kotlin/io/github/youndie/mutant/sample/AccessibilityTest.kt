@@ -86,116 +86,130 @@ class AccessibilityTest {
 
     private fun saturatedRed(c: Int) = (c shr 16 and 0xFF) > 200 && (c shr 8 and 0xFF) < 90 && (c and 0xFF) < 90
 
-    @Test
-    fun `active words hold 4_5 to 1 after the Tape at the worst tick, no tick flashes a quarter, the red stays`() {
+    /**
+     * One case in both themes: [screen], with its dialog [open]. The four cases ran as one test in 25–43 s on a Mac
+     * (B-210), its eight `runComposeUiTest` bodies 2–4 s each; each case is a test of its own now, the same eight bodies.
+     */
+    private fun holds(
+        screen: DemoScreen,
+        open: Boolean,
+    ) {
         val lines = ArrayList<String>()
         val failures = ArrayList<String>()
         val strings = SampleStrings(SampleLanguage.Russian)
         val dialogWords = setOf(strings.eraseQuestion, strings.eraseNamed, strings.cancel, strings.erase)
-        // The settings screen twice: its dialog's words over the scrim, and its form with the dialog closed — words under
-        // a modal's scrim are darkened on purpose, and no reader reads them.
-        val cases =
-            listOf(
-                DemoScreen.Library to true,
-                DemoScreen.Recording to true,
-                DemoScreen.Settings to true,
-                DemoScreen.Settings to false,
-            )
         for (print in listOf(false, true)) {
             val theme = if (print) "Копия" else "Эфир"
-            for ((screen, open) in cases) {
-                runComposeUiTest {
-                    mainClock.autoAdvance = false
-                    setContent {
-                        CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                            MutantTheme(colors = if (print) MutantPalettes.Kopiya else MutantPalettes.Efir) {
-                                DemoScreenFrame(screen, strings, dialogOpen = open)
-                            }
+            runComposeUiTest {
+                mainClock.autoAdvance = false
+                setContent {
+                    CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                        MutantTheme(colors = if (print) MutantPalettes.Kopiya else MutantPalettes.Efir) {
+                            DemoScreenFrame(screen, strings, dialogOpen = open)
                         }
                     }
-                    mainClock.advanceTimeBy(600)
-                    val tag = "demo-" + screen.name.lowercase()
-                    val o = onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-                    val boxes =
-                        texts()
-                            .filter { (b, _) ->
-                                b.left >= o.left && b.top >= o.top && b.bottom <= o.bottom &&
-                                    b.width > 0
-                            }.filter { (_, t) -> screen != DemoScreen.Settings || !open || t in dialogWords }
-                            .map { (b, t) ->
-                                val box =
-                                    intArrayOf(
-                                        (b.left - o.left).toInt(),
-                                        (b.top - o.top).toInt(),
-                                        (b.right - o.left).toInt() + 1,
-                                        (b.bottom - o.top).toInt() + 1,
-                                    )
-                                t to box
-                            }
-                    val worst = HashMap<String, Double>()
-                    var previous: Frame? = null
-                    var largest = 0
-                    var red = 0
-                    val reds = ArrayList<String>()
-                    val redArea = ArrayList<Int>()
-                    // A Tape cycle is 7 s: 56 scene ticks.
-                    repeat(56) {
-                        val img = frame(onNodeWithTag(tag, useUnmergedTree = true).captureToImage().toAwtImage())
-                        for ((t, box) in boxes) worst[t] = min(worst[t] ?: 99.0, contrast(img, box))
-                        redArea += img.rgb.count { saturatedRed(it) }
-                        previous?.let { p ->
-                            var changed = 0
-                            var r = 0
-                            for (i in img.rgb.indices) {
-                                val a = p.rgb[i]
-                                val b = img.rgb[i]
-                                val la = p.luminance[i]
-                                val lb = img.luminance[i]
-                                if (abs(la - lb) >= .1 && min(la, lb) < .8) changed++
-                                if (saturatedRed(a) != saturatedRed(b)) {
-                                    r++
-                                    if (reds.size <
-                                        3
-                                    ) {
-                                        reds +=
-                                            "#${a.toString(16)}→#${b.toString(16)} at ${i % img.width},${i / img.width}"
-                                    }
+                }
+                mainClock.advanceTimeBy(600)
+                val tag = "demo-" + screen.name.lowercase()
+                val o = onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val boxes =
+                    texts()
+                        .filter { (b, _) ->
+                            b.left >= o.left && b.top >= o.top && b.bottom <= o.bottom &&
+                                b.width > 0
+                        }.filter { (_, t) -> screen != DemoScreen.Settings || !open || t in dialogWords }
+                        .map { (b, t) ->
+                            val box =
+                                intArrayOf(
+                                    (b.left - o.left).toInt(),
+                                    (b.top - o.top).toInt(),
+                                    (b.right - o.left).toInt() + 1,
+                                    (b.bottom - o.top).toInt() + 1,
+                                )
+                            t to box
+                        }
+                val worst = HashMap<String, Double>()
+                var previous: Frame? = null
+                var largest = 0
+                var red = 0
+                val reds = ArrayList<String>()
+                val redArea = ArrayList<Int>()
+                // A Tape cycle is 7 s: 56 scene ticks.
+                repeat(56) {
+                    val img = frame(onNodeWithTag(tag, useUnmergedTree = true).captureToImage().toAwtImage())
+                    for ((t, box) in boxes) worst[t] = min(worst[t] ?: 99.0, contrast(img, box))
+                    redArea += img.rgb.count { saturatedRed(it) }
+                    previous?.let { p ->
+                        var changed = 0
+                        var r = 0
+                        for (i in img.rgb.indices) {
+                            val a = p.rgb[i]
+                            val b = img.rgb[i]
+                            val la = p.luminance[i]
+                            val lb = img.luminance[i]
+                            if (abs(la - lb) >= .1 && min(la, lb) < .8) changed++
+                            if (saturatedRed(a) != saturatedRed(b)) {
+                                r++
+                                if (reds.size <
+                                    3
+                                ) {
+                                    reds +=
+                                        "#${a.toString(16)}→#${b.toString(16)} at ${i % img.width},${i / img.width}"
                                 }
                             }
-                            largest = max(largest, changed)
-                            red = max(red, r)
                         }
-                        previous = img
-                        mainClock.advanceTimeBy(125)
+                        largest = max(largest, changed)
+                        red = max(red, r)
                     }
-                    val case = if (screen == DemoScreen.Settings) (if (open) " (dialog)" else " (form)") else ""
-                    val share = "%.1f".format(largest * 100.0 / (360 * 720))
-                    lines +=
-                        "$theme ${screen.name}$case: largest change $share %; red changing $red, red area ${redArea.min()}–${redArea.max()} px"
-                    for ((t, r) in worst) {
-                        if (r <
-                            4.5
-                        ) {
-                            failures += "$theme ${screen.name}$case: «$t» %.2f under 4.5".format(r)
-                        }
-                    }
-                    if (largest >
-                        360 * 720 / 4
+                    previous = img
+                    mainClock.advanceTimeBy(125)
+                }
+                val case = if (screen == DemoScreen.Settings) (if (open) " (dialog)" else " (form)") else ""
+                val share = "%.1f".format(largest * 100.0 / (360 * 720))
+                lines +=
+                    "$theme ${screen.name}$case: largest change $share %; red changing $red, red area ${redArea.min()}–${redArea.max()} px"
+                for ((t, r) in worst) {
+                    if (r <
+                        4.5
                     ) {
-                        failures += "$theme ${screen.name}$case: a tick changed $share % of the screen"
+                        failures += "$theme ${screen.name}$case: «$t» %.2f under 4.5".format(r)
                     }
-                    // Steady red: the error's offset outline and the radio's dot move with their bodies, never on and off.
-                    if (screen == DemoScreen.Settings && !open && redArea.min() < redArea.max() * 3 / 4) {
-                        failures += "$theme settings: the red's area ran ${redArea.min()}–${redArea.max()}"
-                    }
-                    for ((t, r) in worst.entries.sortedBy { it.value }.take(5)) {
-                        lines +=
-                            "   %.2f  %s".format(r, t.take(40))
-                    }
+                }
+                if (largest >
+                    360 * 720 / 4
+                ) {
+                    failures += "$theme ${screen.name}$case: a tick changed $share % of the screen"
+                }
+                // Steady red: the error's offset outline and the radio's dot move with their bodies, never on and off.
+                if (screen == DemoScreen.Settings && !open && redArea.min() < redArea.max() * 3 / 4) {
+                    failures += "$theme settings: the red's area ran ${redArea.min()}–${redArea.max()}"
+                }
+                for ((t, r) in worst.entries.sortedBy { it.value }.take(5)) {
+                    lines +=
+                        "   %.2f  %s".format(r, t.take(40))
                 }
             }
         }
         println("A11Y\n" + lines.joinToString("\n"))
         kotlin.test.assertTrue(failures.isEmpty(), failures.joinToString("\n") + "\n" + lines.joinToString("\n"))
     }
+
+    @Test
+    fun `the library's active words hold 4_5 to 1 after the Tape at the worst tick, no tick flashes a quarter`() =
+        holds(DemoScreen.Library, open = true)
+
+    @Test
+    fun `the recording's active words hold 4_5 to 1 after the Tape at the worst tick, no tick flashes a quarter`() =
+        holds(DemoScreen.Recording, open = true)
+
+    // The settings screen twice: its dialog's words over the scrim, and its form with the dialog closed — words under a
+    // modal's scrim are darkened on purpose, and no reader reads them.
+
+    @Test
+    fun `the settings dialog's words hold 4_5 to 1 after the Tape at the worst tick, no tick flashes a quarter`() =
+        holds(DemoScreen.Settings, open = true)
+
+    @Test
+    fun `the settings form's active words hold 4_5 to 1 after the Tape, no tick flashes a quarter, the red stays`() =
+        holds(DemoScreen.Settings, open = false)
 }
