@@ -1,7 +1,7 @@
 ---
 id: B-205
 title: "Every layout mirrored for right to left"
-status: open
+status: wip
 priority: P2
 size: L
 stage: stage-6-later

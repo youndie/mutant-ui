@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-205](docs/backlog/B-205-mirrored-for-right-to-left.md) `[ ]` | Every layout mirrored for right to left | P2 | L | - |
+| [B-205](docs/backlog/B-205-mirrored-for-right-to-left.md) `[~]` | Every layout mirrored for right to left | P2 | L | - |
 | [B-206](docs/backlog/B-206-default-keys-by-place.md) `[ ]` | A body's default key is its place in the composition | P2 | M | - |
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
