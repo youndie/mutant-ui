@@ -69,10 +69,11 @@ public class MutantTab(
  * Tabs: no body, the labels in a row 24 dp apart, the selected one in the accent. Under it stands a 4 dp acid bar
  * as wide as its label, ringed in black, with an echo of three fading strokes to its right. A new [selectedIndex]
  * sends the bar across in 330 ms, stepped twelve times a second, its echo trailing behind it; under reduce motion it
- * lands at once. An index outside the tabs, -1 for none, shows no bar. Each tab is a target 48 dp tall reaching half
- * the gap to each side (at least 48 wide), so the row stands 12 dp wider each side and 1 dp taller each way than
- * what it draws; keyboard focus draws the corner brackets around a tab. Tabs that need more than the row's width keep
- * their own: the row scrolls, and brings the focused tab and a newly selected one into view (B-60). The echo is drawn
+ * lands at once. The old label loses the accent in the selection's first frame and the new one takes it 280 ms after
+ * the bar sets off; with no run (from no selection) and under reduce motion, at once. An index outside the tabs, -1 for
+ * none, shows no bar. Each tab is a target 48 dp tall reaching half the gap to each side (at least 48 wide), so the
+ * row stands 12 dp wider each side and 1 dp taller each way than what it draws; keyboard focus draws the corner
+ * brackets around a tab. Tabs that need more than the row's width keep their own: the row scrolls, and brings the focused tab and a newly selected one into view (B-60). The echo is drawn
  * past the row's ends, as a body's drips hang past its slot: a row that fits never cuts it; a row that scrolls cuts the
  * bar and its echo at its edges.
  */
@@ -107,7 +108,17 @@ public fun MutantTabs(
     }
     Layout(
         content = {
-            tabs.forEachIndexed { i, tab -> TabItem(tab, i == selectedIndex, { onSelect(i) }, marks, i) }
+            // The new label takes the accent 280 ms after the bar sets off; the old one has lost it in the first frame
+            // (B-187). A bar that arrives with no run, and reduce motion, hand it over at once. Read at draw: waiting, the
+            // word reads the frames, so it turns in the frame the time comes and reads nothing after.
+            val accent = {
+                reduce || slide.fromX == null || clock.nowMs - slide.since >= TAB_ACCENT_HANDOVER_MS ||
+                    run {
+                        clock.frame
+                        false
+                    }
+            }
+            tabs.forEachIndexed { i, tab -> TabItem(tab, i == selectedIndex, accent, { onSelect(i) }, marks, i) }
         },
         modifier =
             modifier
@@ -192,6 +203,7 @@ public fun MutantTabs(
 private fun TabItem(
     tab: MutantTab,
     selected: Boolean,
+    accent: () -> Boolean,
     onClick: () -> Unit,
     marks: TabMarks,
     index: Int,
@@ -200,12 +212,13 @@ private fun TabItem(
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
-    val color =
+    val color = {
         when {
             !tab.enabled -> colors.textDisabled
-            selected -> colors.textAccent
+            selected && accent() -> colors.textAccent
             else -> colors.textSecondary
         }
+    }
     Box(
         Modifier
             .mutantHand(tab.enabled)
@@ -237,7 +250,7 @@ private fun TabItem(
                     fontFamily = LocalMutantFonts.current?.text,
                     fontWeight = FontWeight.Medium,
                     fontSize = LABEL_SIZE.sp,
-                    color = color,
+                    color = colors.textSecondary,
                     platformStyle = LocalMutantTextRaster.current,
                 ).cssLine(MutantFaceMetrics.Rubik),
             maxLines = 1,
@@ -245,7 +258,7 @@ private fun TabItem(
             overflow = TextOverflow.Ellipsis,
             // Handed over as well, so a selection's colour alone redraws the word: a kept layout whose style changes only
             // its colour is not redrawn by itself (F-buttons-02 of B-168), and the bar no longer redraws the row's layer.
-            color = { color },
+            color = color,
         )
     }
 }
@@ -376,6 +389,12 @@ private fun DrawScope.drawIndicator(
         }
     }
 }
+
+/**
+ * How long after a selection the new label takes the accent, ms: the designer's answer 9 to B-168 (B-187), «как в Menu и
+ * Segmented button». A number no token names, beside the bar's `slide` 330 (research D24).
+ */
+internal const val TAB_ACCENT_HANDOVER_MS: Double = 280.0
 
 /** A tab's target and the row it stands in, the label's row inside it, and the label's 1 dp from the top. */
 private val TAB_HEIGHT = 48.dp

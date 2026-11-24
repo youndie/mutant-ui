@@ -117,7 +117,9 @@ class BarTabsBehaviourTest {
             onNodeWithText("Заметки").assertIsSelected()
             onNodeWithText("Копии").assertIsNotEnabled().performClick()
             assertEquals(1, at)
-            // A disabled label greys; a live one stands in the secondary colour, the selected in the accent.
+            // A disabled label greys; a live one stands in the secondary colour, the selected in the accent, which it takes
+            // 280 ms after the click (B-187).
+            mainClock.advanceTimeBy(320)
             val c = MutantPalettes.Efir
             for ((label, colour) in listOf(
                 "Копии" to c.textDisabled,
