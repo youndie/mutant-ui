@@ -44,6 +44,7 @@ import io.github.youndie.mutant.components.MutantTopAppBar
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.illustration.MutantIllustration
 import io.github.youndie.mutant.illustration.MutantIllustrationKind
+import io.github.youndie.mutant.surface.MutantScreen
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -72,112 +73,129 @@ internal fun Recording(
         }
     }
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            MutantTopAppBar(
-                name,
-                navigationIcon = { BarAction(MutantIcons.Back, s.back) { nav.open = null } },
-                windowInsets = WindowInsets(0),
-                actions = {
-                    BarAction(MutantIcons.Edit, s.rename) {
-                        queued = false
-                        rename = true
-                    }
-                },
-            )
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                MutantIllustration(
-                    MutantIllustrationKind.Cassette,
-                    Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp),
-                )
-                Spacer(Modifier.height(42.dp))
-                // B-174: the side and its line are the tape's own; the design's tape reads the design's words.
-                val design = t.title == s.untitled
-                BasicText(
-                    if (design) s.sideAShort else t.side.substringBefore(" · "),
-                    style = MutantTheme.textStyles.display(24.sp),
-                )
-                Osd(if (design) s.sideALine else "${t.length} · ${t.channel}")
-                Spacer(Modifier.height(14.dp))
-                // The design's bar with the elapsed time beside it in the on-screen-display amber, not the kit's percent.
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    MutantLinearProgress(played, Modifier.weight(1f), showValue = false)
-                    Osd(
-                        recordingClock(
-                            (played * recordingSeconds(t.length)).roundToInt(),
-                            t.length.count { it == ':' } > 1,
-                        ),
-                    )
-                }
-                Spacer(Modifier.height(22.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    MutantButton(if (listening) s.pause else s.listen, {
-                        listening = !listening
-                    }, Modifier.weight(1f), key = "buttonB")
-                    MutantOutlinedButton(s.toQueue, { queued = true }, key = "button-o")
-                    MutantTooltipBox(s.shareWord) {
-                        MutantIconButton(MutantIcons.Share, s.shareWord, {
+        // B-180: the recording tunes in as it opens; the tab it opened from goes in one frame, and comes back the same way.
+        MutantScreen(tape) {
+            Column(Modifier.padding(horizontal = 16.dp)) {
+                MutantTopAppBar(
+                    name,
+                    navigationIcon = { BarAction(MutantIcons.Back, s.back) { nav.open = null } },
+                    windowInsets = WindowInsets(0),
+                    actions = {
+                        BarAction(MutantIcons.Edit, s.rename) {
                             queued = false
-                            share = true
-                        }, key = "iconbtn")
-                    }
-                }
-                Spacer(Modifier.height(26.dp))
-                MutantTabs(listOf(MutantTab(s.tracks), MutantTab(s.notes), MutantTab(s.copies)), tab, {
-                    nav.pages[tape] =
-                        it
-                })
-                when (tab) {
-                    0 -> {
-                        MutantListItem(
-                            s.testCard,
-                            supporting = s.fourthGeneration,
-                            leadingIcon = MutantIcons.Home,
-                            trailingText = "12:04",
-                            key = "tile1",
-                        )
-                        MutantDivider(key = "0")
-                        MutantListItem(
-                            s.nightTuesday,
-                            supporting = s.recordedOverShort,
-                            leadingIcon = MutantIcons.Home,
-                            trailing = { MutantBadge(s.brandNew) },
-                            key = "tile2",
-                        )
-                        MutantDivider(key = "1")
-                        MutantListItem(
-                            s.staticBetween,
-                            supporting = s.noiseNine,
-                            leadingIcon = MutantIcons.Home,
-                            trailingText = "09:02",
-                            key = "tile3",
-                        )
-                        MutantDivider(key = "2")
-                    }
-
-                    1 -> {
-                        Spacer(Modifier.height(16.dp))
-                        BasicText(
-                            s.notesText,
-                            style = MutantTheme.textStyles.text(15.sp),
+                            rename = true
+                        }
+                    },
+                )
+                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                    MutantIllustration(
+                        MutantIllustrationKind.Cassette,
+                        Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp),
+                    )
+                    Spacer(Modifier.height(42.dp))
+                    // B-174: the side and its line are the tape's own; the design's tape reads the design's words.
+                    val design = t.title == s.untitled
+                    BasicText(
+                        if (design) s.sideAShort else t.side.substringBefore(" · "),
+                        style = MutantTheme.textStyles.display(24.sp),
+                    )
+                    Osd(if (design) s.sideALine else "${t.length} · ${t.channel}")
+                    Spacer(Modifier.height(14.dp))
+                    // The design's bar with the elapsed time beside it in the on-screen-display amber, not the kit's percent.
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        MutantLinearProgress(played, Modifier.weight(1f), showValue = false)
+                        Osd(
+                            recordingClock(
+                                (played * recordingSeconds(t.length)).roundToInt(),
+                                t.length.count { it == ':' } > 1,
+                            ),
                         )
                     }
-
-                    else -> {
-                        for ((i, copy) in listOf(s.master, s.secondGeneration, s.fourthGeneration).withIndex()) {
-                            MutantListItem(copy, supporting = t.channel, leadingIcon = MutantIcons.Done, key = "copy$i")
-                            MutantDivider(key = "c$i")
+                    Spacer(Modifier.height(22.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        MutantButton(if (listening) s.pause else s.listen, {
+                            listening = !listening
+                        }, Modifier.weight(1f), key = "buttonB")
+                        MutantOutlinedButton(s.toQueue, { queued = true }, key = "button-o")
+                        MutantTooltipBox(s.shareWord) {
+                            MutantIconButton(MutantIcons.Share, s.shareWord, {
+                                queued = false
+                                share = true
+                            }, key = "iconbtn")
                         }
                     }
+                    Spacer(Modifier.height(26.dp))
+                    MutantTabs(listOf(MutantTab(s.tracks), MutantTab(s.notes), MutantTab(s.copies)), tab, {
+                        nav.pages[tape] =
+                            it
+                    })
+                    // B-180: the tab's page tunes in as the tabs' bar starts for it; the page it left goes in one frame.
+                    MutantScreen(tab) {
+                        Column {
+                            when (tab) {
+                                0 -> {
+                                    MutantListItem(
+                                        s.testCard,
+                                        supporting = s.fourthGeneration,
+                                        leadingIcon = MutantIcons.Home,
+                                        trailingText = "12:04",
+                                        key = "tile1",
+                                    )
+                                    MutantDivider(key = "0")
+                                    MutantListItem(
+                                        s.nightTuesday,
+                                        supporting = s.recordedOverShort,
+                                        leadingIcon = MutantIcons.Home,
+                                        trailing = { MutantBadge(s.brandNew) },
+                                        key = "tile2",
+                                    )
+                                    MutantDivider(key = "1")
+                                    MutantListItem(
+                                        s.staticBetween,
+                                        supporting = s.noiseNine,
+                                        leadingIcon = MutantIcons.Home,
+                                        trailingText = "09:02",
+                                        key = "tile3",
+                                    )
+                                    MutantDivider(key = "2")
+                                }
+
+                                1 -> {
+                                    Spacer(Modifier.height(16.dp))
+                                    BasicText(
+                                        s.notesText,
+                                        style = MutantTheme.textStyles.text(15.sp),
+                                    )
+                                }
+
+                                else -> {
+                                    for ((i, copy) in listOf(
+                                        s.master,
+                                        s.secondGeneration,
+                                        s.fourthGeneration,
+                                    ).withIndex()) {
+                                        MutantListItem(
+                                            copy,
+                                            supporting = t.channel,
+                                            leadingIcon = MutantIcons.Done,
+                                            key = "copy$i",
+                                        )
+                                        MutantDivider(key = "c$i")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(24.dp))
+                    MutantSlider(volume, { volume = it }, Modifier.fillMaxWidth(), label = s.volume, valueRange = 0..10)
+                    Spacer(Modifier.height(96.dp))
                 }
-                Spacer(Modifier.height(24.dp))
-                MutantSlider(volume, { volume = it }, Modifier.fillMaxWidth(), label = s.volume, valueRange = 0..10)
-                Spacer(Modifier.height(96.dp))
             }
         }
         MutantSnackbar(

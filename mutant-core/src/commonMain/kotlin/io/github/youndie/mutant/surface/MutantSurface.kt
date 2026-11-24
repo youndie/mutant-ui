@@ -192,8 +192,8 @@ internal fun MutantSurface(
     tuned.seed = "$cassette/$key"
     if (tuneBodies != null) {
         androidx.compose.runtime.DisposableEffect(tuneBodies, tuned) {
-            tuneBodies.bodies += tuned
-            onDispose { tuneBodies.bodies -= tuned }
+            tuneBodies.add(tuned)
+            onDispose { tuneBodies.remove(tuned) }
         }
     }
     val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current

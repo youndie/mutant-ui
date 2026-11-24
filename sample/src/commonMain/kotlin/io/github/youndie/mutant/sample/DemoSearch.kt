@@ -39,6 +39,7 @@ import io.github.youndie.mutant.components.MutantTableColumn
 import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.MutantAppear
+import io.github.youndie.mutant.surface.MutantScreen
 import io.github.youndie.mutant.theme.MutantTheme
 
 @Composable
@@ -80,98 +81,101 @@ internal fun Search(
                 it.value.title.contains(query.trim(), ignoreCase = true)
         }
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            TabBar(s.find, s, nav)
-            TabScroll {
-                Spacer(Modifier.height(8.dp))
-                MutantSearchBar(
-                    query,
-                    { query = it },
-                    Modifier.fillMaxWidth(),
-                    prefix = s.search,
-                    placeholder = s.findRecording,
-                    clearLabel = s.clear,
-                    key = "demo-search",
-                ) {
-                    if (query.isBlank()) {
-                        MutantSearchSuggestions(listOf(s.night, s.rainWord, s.noiseWord), { query = it })
-                    } else if (found.isEmpty()) {
-                        Osd(s.noSignal.uppercase(), MutantTheme.colors.textSecondary, size = 18)
-                    } else {
-                        Column {
-                            for ((i, t) in found) {
-                                // B-179: a result tunes in as it arrives; one that stays does not tune in again.
-                                key(i) {
-                                    MutantAppear {
-                                        MutantSearchResult(
-                                            t.title,
-                                            query.trim(),
-                                            supporting = t.side,
-                                            leadingIcon = MutantIcons.Schedule,
-                                            onClick = { nav.open = i },
-                                            key = "sr$i",
-                                        )
+        // B-180: the screen tunes in as the navigation bar's pill starts for it; the bar stands outside, and moves.
+        MutantScreen(nav.tab) {
+            Column(Modifier.padding(horizontal = 16.dp)) {
+                TabBar(s.find, s, nav)
+                TabScroll {
+                    Spacer(Modifier.height(8.dp))
+                    MutantSearchBar(
+                        query,
+                        { query = it },
+                        Modifier.fillMaxWidth(),
+                        prefix = s.search,
+                        placeholder = s.findRecording,
+                        clearLabel = s.clear,
+                        key = "demo-search",
+                    ) {
+                        if (query.isBlank()) {
+                            MutantSearchSuggestions(listOf(s.night, s.rainWord, s.noiseWord), { query = it })
+                        } else if (found.isEmpty()) {
+                            Osd(s.noSignal.uppercase(), MutantTheme.colors.textSecondary, size = 18)
+                        } else {
+                            Column {
+                                for ((i, t) in found) {
+                                    // B-179: a result tunes in as it arrives; one that stays does not tune in again.
+                                    key(i) {
+                                        MutantAppear {
+                                            MutantSearchResult(
+                                                t.title,
+                                                query.trim(),
+                                                supporting = t.side,
+                                                leadingIcon = MutantIcons.Schedule,
+                                                onClick = { nav.open = i },
+                                                key = "sr$i",
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                Spacer(Modifier.height(28.dp))
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Osd(s.archiveWord, MutantTheme.colors.textSecondary, size = 18)
-                    Spacer(Modifier.weight(1f))
-                    // B-174: the menu stands from the button's end, inside the screen; from its start, at the screen's
-                    // right, its 216 dp ran past the phone.
-                    var sortWidth by remember { mutableStateOf(0.dp) }
-                    val density = LocalDensity.current
-                    Box(Modifier.onSizeChanged { sortWidth = with(density) { it.width.toDp() } }) {
-                        MutantTextButton(
-                            s.sortBy(order),
-                            { sorting = true },
-                            Modifier.focusRequester(sortButton),
-                            key = "demo-sort",
-                        )
-                        MutantMenu(
-                            sorting,
-                            { sorting = false },
-                            s.sortOrders,
-                            order,
-                            {
-                                order = it
-                                sorting = false
-                            },
-                            offset = DpOffset(sortWidth - SORT_MENU_WIDTH, SORT_MENU_TOP),
-                            key = "demo-sort-menu",
-                        )
+                    Spacer(Modifier.height(28.dp))
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Osd(s.archiveWord, MutantTheme.colors.textSecondary, size = 18)
+                        Spacer(Modifier.weight(1f))
+                        // B-174: the menu stands from the button's end, inside the screen; from its start, at the screen's
+                        // right, its 216 dp ran past the phone.
+                        var sortWidth by remember { mutableStateOf(0.dp) }
+                        val density = LocalDensity.current
+                        Box(Modifier.onSizeChanged { sortWidth = with(density) { it.width.toDp() } }) {
+                            MutantTextButton(
+                                s.sortBy(order),
+                                { sorting = true },
+                                Modifier.focusRequester(sortButton),
+                                key = "demo-sort",
+                            )
+                            MutantMenu(
+                                sorting,
+                                { sorting = false },
+                                s.sortOrders,
+                                order,
+                                {
+                                    order = it
+                                    sorting = false
+                                },
+                                offset = DpOffset(sortWidth - SORT_MENU_WIDTH, SORT_MENU_TOP),
+                                key = "demo-sort-menu",
+                            )
+                        }
                     }
+                    Spacer(Modifier.height(12.dp))
+                    MutantDataTable(
+                        rows,
+                        listOf(
+                            MutantTableColumn(s.columnRecord) { it.title },
+                            MutantTableColumn(s.columnLength, 70.dp, MutantTableCellStyle.Osd) { it.length },
+                            MutantTableColumn(s.columnChannel, 60.dp, MutantTableCellStyle.OsdSecondary) { it.channel },
+                        ),
+                        Modifier.fillMaxWidth(),
+                        selected = selected.map { rows.indexOf(tapes[it]) }.toSet(),
+                        onSelectedChange = { i, on ->
+                            val at = tapes.indexOf(rows[i])
+                            if (on) selected += at else selected -= at
+                        },
+                        key = "demo-row",
+                        // B-174: a sort moves each row's box, its pour and its slime with the record, not the place.
+                        rowKey = { it.title },
+                    )
+                    Spacer(Modifier.height(20.dp))
+                    MutantOutlinedButton(
+                        s.eraseSelected(selected.size),
+                        { erasing = true },
+                        Modifier.focusRequester(eraseButton),
+                        enabled = selected.isNotEmpty(),
+                        key = "demo-erase",
+                    )
                 }
-                Spacer(Modifier.height(12.dp))
-                MutantDataTable(
-                    rows,
-                    listOf(
-                        MutantTableColumn(s.columnRecord) { it.title },
-                        MutantTableColumn(s.columnLength, 70.dp, MutantTableCellStyle.Osd) { it.length },
-                        MutantTableColumn(s.columnChannel, 60.dp, MutantTableCellStyle.OsdSecondary) { it.channel },
-                    ),
-                    Modifier.fillMaxWidth(),
-                    selected = selected.map { rows.indexOf(tapes[it]) }.toSet(),
-                    onSelectedChange = { i, on ->
-                        val at = tapes.indexOf(rows[i])
-                        if (on) selected += at else selected -= at
-                    },
-                    key = "demo-row",
-                    // B-174: a sort moves each row's box, its pour and its slime with the record, not the place.
-                    rowKey = { it.title },
-                )
-                Spacer(Modifier.height(20.dp))
-                MutantOutlinedButton(
-                    s.eraseSelected(selected.size),
-                    { erasing = true },
-                    Modifier.focusRequester(eraseButton),
-                    enabled = selected.isNotEmpty(),
-                    key = "demo-erase",
-                )
             }
         }
         bar()

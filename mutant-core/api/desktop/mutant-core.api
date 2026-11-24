@@ -324,6 +324,10 @@ public final class io/github/youndie/mutant/surface/MutantKeyframeLossKt {
 	public static final fun MutantKeyframeLoss-sW7UJKQ (Landroidx/compose/ui/Modifier;JLjava/lang/Object;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class io/github/youndie/mutant/surface/MutantScreenKt {
+	public static final fun MutantScreen (Ljava/lang/Object;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/youndie/mutant/surface/MutantTapeKt {
 	public static final fun mutantTape (Landroidx/compose/ui/Modifier;)Landroidx/compose/ui/Modifier;
 }

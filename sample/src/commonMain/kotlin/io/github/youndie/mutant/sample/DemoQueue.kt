@@ -26,6 +26,7 @@ import io.github.youndie.mutant.components.MutantLinearProgress
 import io.github.youndie.mutant.components.MutantListItem
 import io.github.youndie.mutant.components.MutantPullToRefresh
 import io.github.youndie.mutant.icons.MutantIcons
+import io.github.youndie.mutant.surface.MutantScreen
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlinx.coroutines.delay
 
@@ -55,42 +56,45 @@ internal fun Queue(
         }
     }
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-            TabBar(s.queue, s, nav, status = s.inLine(queue.size))
-            Spacer(Modifier.height(8.dp))
-            Osd(s.copying, size = 18)
-            Spacer(Modifier.height(10.dp))
-            MutantLinearProgress(copied)
-            Spacer(Modifier.height(18.dp))
-            MutantPullToRefresh(
-                refreshing,
-                { refreshing = true },
-                Modifier.fillMaxWidth().weight(1f),
-                refreshingLabel = s.refreshingWord,
-                doneLabel = s.refreshedWord,
-                key = "demo-ptr",
-            ) {
-                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                    // B-174: a row and its divider are keyed by the record, so a tape put in at the top moves the rows
-                    // below it with their tiles, dividers and remembered state instead of handing each the one above.
-                    for (t in queue) {
-                        key(t.title) {
-                            val fresh = t.title == s.freshOffTheAir
-                            MutantListItem(
-                                t.title,
-                                supporting = t.side,
-                                leadingIcon = MutantIcons.Schedule,
-                                trailingText = if (fresh) null else t.length,
-                                trailing = if (fresh) ({ MutantBadge(s.brandNew) }) else null,
-                                onClick = { tapes.indexOf(t).takeIf { it >= 0 }?.let { nav.open = it } },
-                                key = "queue-${t.title}",
-                            )
-                            MutantDivider(key = "q-${t.title}")
+        // B-180: the screen tunes in as the navigation bar's pill starts for it; the bar stands outside, and moves.
+        MutantScreen(nav.tab) {
+            Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                TabBar(s.queue, s, nav, status = s.inLine(queue.size))
+                Spacer(Modifier.height(8.dp))
+                Osd(s.copying, size = 18)
+                Spacer(Modifier.height(10.dp))
+                MutantLinearProgress(copied)
+                Spacer(Modifier.height(18.dp))
+                MutantPullToRefresh(
+                    refreshing,
+                    { refreshing = true },
+                    Modifier.fillMaxWidth().weight(1f),
+                    refreshingLabel = s.refreshingWord,
+                    doneLabel = s.refreshedWord,
+                    key = "demo-ptr",
+                ) {
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        // B-174: a row and its divider are keyed by the record, so a tape put in at the top moves the rows
+                        // below it with their tiles, dividers and remembered state instead of handing each the one above.
+                        for (t in queue) {
+                            key(t.title) {
+                                val fresh = t.title == s.freshOffTheAir
+                                MutantListItem(
+                                    t.title,
+                                    supporting = t.side,
+                                    leadingIcon = MutantIcons.Schedule,
+                                    trailingText = if (fresh) null else t.length,
+                                    trailing = if (fresh) ({ MutantBadge(s.brandNew) }) else null,
+                                    onClick = { tapes.indexOf(t).takeIf { it >= 0 }?.let { nav.open = it } },
+                                    key = "queue-${t.title}",
+                                )
+                                MutantDivider(key = "q-${t.title}")
+                            }
                         }
+                        Spacer(Modifier.height(16.dp))
+                        Osd(s.pullToRefresh, MutantTheme.colors.textSecondary, size = 16)
+                        Spacer(Modifier.height(112.dp))
                     }
-                    Spacer(Modifier.height(16.dp))
-                    Osd(s.pullToRefresh, MutantTheme.colors.textSecondary, size = 16)
-                    Spacer(Modifier.height(112.dp))
                 }
             }
         }

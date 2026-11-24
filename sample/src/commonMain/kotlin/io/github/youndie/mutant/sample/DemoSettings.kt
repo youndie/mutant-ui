@@ -37,6 +37,7 @@ import io.github.youndie.mutant.components.MutantTextButton
 import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.components.MutantTimePicker
 import io.github.youndie.mutant.icons.MutantIcons
+import io.github.youndie.mutant.surface.MutantScreen
 import io.github.youndie.mutant.theme.MutantTheme
 
 @Composable
@@ -64,70 +65,80 @@ internal fun Settings(
     var hour by rememberSaveable { mutableIntStateOf(2) }
     var minute by rememberSaveable { mutableIntStateOf(40) }
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            TabBar(s.settings, s, nav)
-            TabScroll {
-                Spacer(Modifier.height(12.dp))
-                MutantTextField(name, { name = it }, Modifier.fillMaxWidth(), prefix = s.name, key = "fieldC0")
-                Spacer(Modifier.height(30.dp))
-                MutantTextField("99", {}, Modifier.fillMaxWidth(), prefix = s.channel, isError = true, key = "fieldC1")
-                Spacer(Modifier.height(22.dp))
-                // The page's error line: 18 px, tracked .5.
-                Osd(s.noSignal99, MutantTheme.colors.textError, size = 18, tracking = .5f)
-                Spacer(Modifier.height(16.dp))
-                Osd(s.speed)
-                Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
-                    listOf("SP", "LP", "EP").forEachIndexed { i, label ->
-                        MutantRadioButton(speed == i, { speed = i }, label = label, key = "radio")
+        // B-180: the screen tunes in as the navigation bar's pill starts for it; the bar stands outside, and moves.
+        MutantScreen(nav.tab) {
+            Column(Modifier.padding(horizontal = 16.dp)) {
+                TabBar(s.settings, s, nav)
+                TabScroll {
+                    Spacer(Modifier.height(12.dp))
+                    MutantTextField(name, { name = it }, Modifier.fillMaxWidth(), prefix = s.name, key = "fieldC0")
+                    Spacer(Modifier.height(30.dp))
+                    MutantTextField(
+                        "99",
+                        {},
+                        Modifier.fillMaxWidth(),
+                        prefix = s.channel,
+                        isError = true,
+                        key = "fieldC1",
+                    )
+                    Spacer(Modifier.height(22.dp))
+                    // The page's error line: 18 px, tracked .5.
+                    Osd(s.noSignal99, MutantTheme.colors.textError, size = 18, tracking = .5f)
+                    Spacer(Modifier.height(16.dp))
+                    Osd(s.speed)
+                    Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+                        listOf("SP", "LP", "EP").forEachIndexed { i, label ->
+                            MutantRadioButton(speed == i, { speed = i }, label = label, key = "radio")
+                        }
                     }
+                    MutantSwitch(
+                        tracking,
+                        { tracking = it },
+                        Modifier.fillMaxWidth(),
+                        label = s.autoTracking,
+                        key = "switch",
+                    )
+                    MutantSwitch(clean, { clean = it }, Modifier.fillMaxWidth(), label = s.clean, key = "switch2")
+                    MutantCheckbox(noise, { noise = it }, label = s.headNoise, key = "check")
+                    MutantCheckbox(loss, { loss = it }, label = s.frameLoss, key = "check2")
+                    Spacer(Modifier.height(20.dp))
+                    MutantSlider(
+                        trackingLevel,
+                        { trackingLevel = it },
+                        Modifier.fillMaxWidth(),
+                        label = s.tracking,
+                        key = "demo-tracking",
+                    )
+                    Spacer(Modifier.height(24.dp))
+                    MutantDropdown(s.picture, s.pictureModes, picture, { picture = it }, key = "demo-picture")
+                    Spacer(Modifier.height(24.dp))
+                    Osd(s.sleepTimer)
+                    Spacer(Modifier.height(10.dp))
+                    MutantSegmentedButton(
+                        s.sleepOptions,
+                        sleep,
+                        { sleep = it },
+                        Modifier.fillMaxWidth(),
+                        key = "demo-sleep",
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    MutantListItem(
+                        s.timerRecording,
+                        supporting = s.timerLine(day, dayMonth, hour, minute),
+                        leadingIcon = MutantIcons.Schedule,
+                        onClick = { timer = true },
+                        key = "demo-timer",
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    MutantTextButton(s.resetSettings, {
+                        tracking = true
+                        clean = false
+                        noise = true
+                        loss = false
+                        speed = 0
+                        trackingLevel = -2
+                    }, key = "reset")
                 }
-                MutantSwitch(
-                    tracking,
-                    { tracking = it },
-                    Modifier.fillMaxWidth(),
-                    label = s.autoTracking,
-                    key = "switch",
-                )
-                MutantSwitch(clean, { clean = it }, Modifier.fillMaxWidth(), label = s.clean, key = "switch2")
-                MutantCheckbox(noise, { noise = it }, label = s.headNoise, key = "check")
-                MutantCheckbox(loss, { loss = it }, label = s.frameLoss, key = "check2")
-                Spacer(Modifier.height(20.dp))
-                MutantSlider(
-                    trackingLevel,
-                    { trackingLevel = it },
-                    Modifier.fillMaxWidth(),
-                    label = s.tracking,
-                    key = "demo-tracking",
-                )
-                Spacer(Modifier.height(24.dp))
-                MutantDropdown(s.picture, s.pictureModes, picture, { picture = it }, key = "demo-picture")
-                Spacer(Modifier.height(24.dp))
-                Osd(s.sleepTimer)
-                Spacer(Modifier.height(10.dp))
-                MutantSegmentedButton(
-                    s.sleepOptions,
-                    sleep,
-                    { sleep = it },
-                    Modifier.fillMaxWidth(),
-                    key = "demo-sleep",
-                )
-                Spacer(Modifier.height(16.dp))
-                MutantListItem(
-                    s.timerRecording,
-                    supporting = s.timerLine(day, dayMonth, hour, minute),
-                    leadingIcon = MutantIcons.Schedule,
-                    onClick = { timer = true },
-                    key = "demo-timer",
-                )
-                Spacer(Modifier.height(8.dp))
-                MutantTextButton(s.resetSettings, {
-                    tracking = true
-                    clean = false
-                    noise = true
-                    loss = false
-                    speed = 0
-                    trackingLevel = -2
-                }, key = "reset")
             }
         }
         bar()

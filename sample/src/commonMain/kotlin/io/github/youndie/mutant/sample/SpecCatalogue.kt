@@ -220,7 +220,8 @@ internal enum class SpecId(
     ),
     NavigationBar(
         SpecGroup.Navigation,
-        listOf("MutantNavigationBar", "MutantNavigationItem"),
+        // B-180: the screen a destination shows tunes in through MutantScreen as the pill starts.
+        listOf("MutantNavigationBar", "MutantNavigationItem", "MutantScreen"),
         "Navigation bar",
         "Нижняя навигация",
         "Moves between the app's top destinations.",
