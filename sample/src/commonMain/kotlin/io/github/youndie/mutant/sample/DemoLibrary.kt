@@ -39,6 +39,7 @@ import io.github.youndie.mutant.components.MutantTextField
 import io.github.youndie.mutant.components.MutantTooltipBox
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.illustration.MutantIllustrationKind
+import io.github.youndie.mutant.surface.MutantAppear
 import io.github.youndie.mutant.theme.MutantTheme
 
 @Composable
@@ -82,18 +83,23 @@ internal fun Library(
                     }
                 }
                 Spacer(Modifier.height(12.dp))
+                // B-179: what takes the other's place tunes in; the one it replaces goes in one frame.
                 if (shown.isEmpty()) {
-                    MutantEmptyState(
-                        MutantIllustrationKind.Cassette,
-                        s.emptyTitle,
-                        Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                        text = s.emptyText,
-                    )
+                    MutantAppear {
+                        MutantEmptyState(
+                            MutantIllustrationKind.Cassette,
+                            s.emptyTitle,
+                            Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                            text = s.emptyText,
+                        )
+                    }
                 } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(30.dp)) {
-                        for ((i, t) in shown.take(2)) TapeCard(t, "cardA$i") { nav.open = i }
-                        // The third tape is still being copied: its card has not hatched yet.
-                        MutantCocoon(Modifier.fillMaxWidth().height(80.dp), key = "0")
+                    MutantAppear {
+                        Column(verticalArrangement = Arrangement.spacedBy(30.dp)) {
+                            for ((i, t) in shown.take(2)) TapeCard(t, "cardA$i") { nav.open = i }
+                            // The third tape is still being copied: its card has not hatched yet.
+                            MutantCocoon(Modifier.fillMaxWidth().height(80.dp), key = "0")
+                        }
                     }
                 }
                 Spacer(Modifier.height(24.dp))

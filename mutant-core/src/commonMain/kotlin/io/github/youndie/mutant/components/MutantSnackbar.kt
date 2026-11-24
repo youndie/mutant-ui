@@ -41,9 +41,11 @@ import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.MutantTune
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
+import io.github.youndie.mutant.surface.tuneStands
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -72,6 +74,10 @@ import kotlin.math.roundToInt
  * before (B-207). Compose cannot tell the bar where focus stood before it, so without one focus is left to the window,
  * which clears it. If the action never held focus nothing moves; if [returnFocusTo] is on nothing composed any more, no
  * node is focused, as without one.
+ *
+ * As it rides in, its body tunes in: a 16 dp mosaic, an 8 dp mosaic, then the bar with its words, 320 ms in three steps;
+ * as it leaves, the 8 dp mosaic, then nothing, by 160 ms (B-179). A new [message] while it stands tunes it in again, the
+ * new words on the third step. A snackbar the consumer takes straight out of the composition cannot step out: hide it.
  */
 @Composable
 public fun MutantSnackbar(
@@ -116,6 +122,12 @@ internal fun SnackbarBody(
     // While it rides it reads every frame, so composition follows it and it leaves the moment it is gone. Stepped, it
     // lands a step after its duration (250 ms for 200): asked by the time alone, it would stand at 83 % for ever.
     if (p < 1) clock.frame
+    // B-179: its body tunes in as it rides in, its words on the third step, and steps out as it leaves; a new message
+    // tunes in again (the designer's answer 1).
+    val tuneStill = tuneStands(clock)
+    val tune = remember { MutantTune(visible, clock.nowMs, play = playIn) }
+    tune.follow(visible, clock.nowMs, tuneStill)
+    tune.restartFor(message, clock.nowMs, tuneStill)
     val gone = !visible && p >= 1
     val done by rememberUpdatedState(onHidden)
     LaunchedEffect(gone) { if (gone && ride.left) done() }
@@ -139,6 +151,7 @@ internal fun SnackbarBody(
         // The page's `data-r="6"` and `data-marks="0"`.
         profile = MutantBody.Bar.profile.with(radius = RADIUS, marks = false),
         probe = probe,
+        tune = tune,
     ) {
         Row(
             Modifier.fillMaxWidth().height(IntrinsicSize.Min).heightIn(min = HEIGHT).padding(

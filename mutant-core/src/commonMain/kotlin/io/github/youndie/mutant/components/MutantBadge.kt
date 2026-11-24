@@ -21,6 +21,9 @@ import io.github.youndie.mutant.type.cssLine
  * A badge: a clean on-screen-display plate, no body — [text] in Handjet in black on the amber, ringed 1.5 dp in black.
  * Full size (a list row's `НОВОЕ`) it is Handjet 16 on a 20 dp line, 6 dp in; [compact] (a navigation item's count)
  * Handjet 14 on 16, 5 dp in. Both blacks and the amber are the page's in both themes.
+ *
+ * It appears in one frame, whole: an on-screen caption that switches on (the designer's answer 1, B-179). Inside a
+ * tuning [io.github.youndie.mutant.surface.MutantAppear] it switches on with the other words, on the third step.
  */
 @Composable
 public fun MutantBadge(

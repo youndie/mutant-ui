@@ -283,7 +283,8 @@ internal fun SuggestionsBody(
  * One result under a [MutantSearchBar]: a list row 60 dp tall, its [leadingIcon] on a 40 dp `icon` tile whose drips
  * hang 6 dp at most, the [headline] (Rubik 15/500) with the first match of [query] in it, case aside, drawn in the
  * accent colour, over the [supporting] line (Rubik 13, secondary). Given [onClick] the whole row is the button. Put a
- * [MutantDivider] between rows.
+ * [MutantDivider] between rows. In a [io.github.youndie.mutant.surface.MutantAppear] it tunes in as it arrives, its
+ * tile as mosaics and its words on the third step (B-179), as results taking the place of [MutantSearchResultLoading].
  */
 @Composable
 public fun MutantSearchResult(

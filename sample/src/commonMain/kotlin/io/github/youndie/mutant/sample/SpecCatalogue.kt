@@ -268,7 +268,8 @@ internal enum class SpecId(
     ),
     Cocoon(
         SpecGroup.Communication,
-        listOf("MutantCocoon"),
+        // B-179: the cocoon hands over to its content through MutantAppear.
+        listOf("MutantCocoon", "MutantAppear"),
         "Cocoon",
         "Кокон",
         "The shape of content still loading.",

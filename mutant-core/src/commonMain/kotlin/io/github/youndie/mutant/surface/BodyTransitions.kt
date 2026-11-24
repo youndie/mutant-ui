@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
@@ -384,4 +385,260 @@ internal fun venomSpring(
     val along = jsToFixed(1 - amp, 3).toFloat()
     val across = jsToFixed(1 + amp * .5, 3).toFloat()
     return if (vertical) across to along else along to across
+}
+
+/*
+ * B-179, the designer's answer 1 (research D24): a body tunes in as it appears and steps out as it leaves. Appearing is
+ * `tune-in`, 320 ms in three steps — a 16 dp mosaic over the slot, an 8 dp mosaic, the finished body — and its words and
+ * icons show only on the third; leaving is two steps over 160 ms, the 8 dp mosaic, then nothing. The steps are a
+ * picture sequence, not a movement: they step whatever `steppedMotion` says (D22 is about movement). There is no alpha
+ * anywhere. Under reduce motion, and on a clock that stands, the finished frame shows at once and leaving removes at once.
+ * Built once here, for every body that appears: B-180's screens, B-181's switching on and B-185's dialog take it too.
+ */
+
+/** `tune-in`: 320 ms (tokens `motion`, the designer's answer 1), in three steps. */
+internal const val TUNE_IN_MS: Double = 320.0
+internal const val TUNE_IN_STEPS: Int = 3
+
+/** Leaving: 160 ms in two steps, the 8 dp mosaic, then nothing (the designer's answer 1). */
+internal const val TUNE_OUT_MS: Double = 160.0
+internal const val TUNE_OUT_STEPS: Int = 2
+
+/** The mosaics' blocks, dp: the first step's, and the second's (leaving's first). */
+internal const val TUNE_COARSE_DP: Int = 16
+internal const val TUNE_FINE_DP: Int = 8
+
+/** What a tuning body shows at a moment. */
+internal enum class MutantTuneLook {
+    /** The 16 dp mosaic over the slot: tune-in's first step. */
+    Coarse,
+
+    /** The 8 dp mosaic: tune-in's second step, and leaving's first. */
+    Fine,
+
+    /** The finished body, its words and icons with it. */
+    Whole,
+
+    /** Nothing: leaving's second step, and gone. */
+    Nothing,
+}
+
+/**
+ * Follows whether a body is shown, from composition, without writing state (as [MeltFollower]): a change starts its
+ * tune-in or its leaving at that moment on the screen's clock. Composed shown with [play], it tunes in from its first
+ * frame; without, it stands finished (a fixture's still). Turned back half-way, it goes on from the picture it shows: a
+ * leaving body still at its 8 dp mosaic tunes in again from that mosaic, and an appearing one leaves from the 8 dp
+ * mosaic whatever step it stood at. [still] (reduce motion, a frozen, paused or held clock) shows the end at once.
+ */
+internal class MutantTune(
+    visible: Boolean,
+    now: Double,
+    play: Boolean,
+) {
+    /** Whether the body is shown, or leaving or gone. */
+    var shown: Boolean = visible
+        private set
+
+    /** When the current run began, its steps counted from here. */
+    private var since: Double = if (visible && play) now else Double.NEGATIVE_INFINITY
+
+    /** The picture the body shows, for [restartFor]: a new one tunes in again. */
+    private var picture: Any? = Unset
+
+    fun follow(
+        visible: Boolean,
+        now: Double,
+        still: Boolean,
+    ) {
+        if (visible != shown) {
+            val was = look(now, still)
+            shown = visible
+            since =
+                when {
+                    // Back in from leaving's 8 dp mosaic: tune-in from its own 8 dp step.
+                    visible && was == MutantTuneLook.Fine -> now - TUNE_IN_MS / TUNE_IN_STEPS
+
+                    else -> now
+                }
+        }
+        if (still) since = Double.NEGATIVE_INFINITY
+    }
+
+    /**
+     * A body that stays shown but takes a new [picture] (a snackbar's new message) tunes in again, its new words on the
+     * third step (the designer's answer 1, F-snackbar-06). The first picture seen starts nothing.
+     */
+    fun restartFor(
+        picture: Any?,
+        now: Double,
+        still: Boolean,
+    ) {
+        val was = this.picture
+        this.picture = picture
+        if (was !== Unset && was != picture && shown && !still) since = now
+    }
+
+    fun look(
+        now: Double,
+        still: Boolean,
+    ): MutantTuneLook {
+        if (still) return if (shown) MutantTuneLook.Whole else MutantTuneLook.Nothing
+        val e = now - since
+        return if (shown) {
+            when {
+                e >= TUNE_IN_MS * 2 / TUNE_IN_STEPS -> MutantTuneLook.Whole
+                e >= TUNE_IN_MS / TUNE_IN_STEPS -> MutantTuneLook.Fine
+                else -> MutantTuneLook.Coarse
+            }
+        } else if (e < TUNE_OUT_MS / TUNE_OUT_STEPS) {
+            MutantTuneLook.Fine
+        } else {
+            MutantTuneLook.Nothing
+        }
+    }
+
+    /** Whether a run is under way: the tune-in until its 320 ms, the leaving until its 160. */
+    fun running(
+        now: Double,
+        still: Boolean,
+    ): Boolean = !still && now - since < if (shown) TUNE_IN_MS else TUNE_OUT_MS
+
+    /** Whether the body has left: hidden, and its 160 ms over (at once when [still]). */
+    fun gone(
+        now: Double,
+        still: Boolean,
+    ): Boolean = !shown && (still || now - since >= TUNE_OUT_MS)
+
+    private object Unset
+}
+
+/** The bodies a tuning host draws as mosaics: every [MutantSurface] composed inside it registers its slot here. */
+internal class MutantTuneBodies {
+    val bodies: MutableList<MutantTunedBody> = mutableListOf()
+
+    /** The host's own coordinates, which the slots are drawn in. */
+    var host: androidx.compose.ui.layout.LayoutCoordinates? = null
+}
+
+/** The hosts' registry, provided by a tuning host to its content; null outside one. */
+internal val LocalMutantTuneBodies =
+    androidx.compose.runtime.staticCompositionLocalOf<MutantTuneBodies?> { null }
+
+/** One body's slot as a tuning host draws it: where it stands, its corner, its fill and its seed. */
+internal class MutantTunedBody {
+    var coords: androidx.compose.ui.layout.LayoutCoordinates? = null
+    var fill: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified
+    var radius: Double = 0.0
+    var seed: String = ""
+
+    private var laidFor: List<Any>? = null
+    private var paints: IntArray = IntArray(0)
+
+    /**
+     * Each block's paint over a slot [cols] × [rows] blocks of [side] dp: an index into the body's fill and the
+     * cocoon's two paints, from the stream `rng(<cassette>/<key>, tune<side>)`, laid out once per size.
+     */
+    fun paintsOf(
+        cols: Int,
+        rows: Int,
+        side: Int,
+    ): IntArray {
+        val inputs = listOf(cols, rows, side, seed)
+        if (inputs != laidFor) {
+            laidFor = inputs
+            val q =
+                io.github.youndie.mutant.gen
+                    .Mulberry32(seed, "tune$side")
+            paints =
+                IntArray(cols * rows) {
+                    val r = q.next()
+                    when {
+                        r < TUNE_FILL_SHARE -> 0
+                        r < TUNE_FILL_SHARE + (1 - TUNE_FILL_SHARE) / 2 -> 1
+                        else -> 2
+                    }
+                }
+        }
+        return paints
+    }
+}
+
+/** The share of a tuning mosaic's blocks in the body's own fill; the rest are the cocoon's two paints, half each. */
+private const val TUNE_FILL_SHARE = .5
+
+/**
+ * Draws the mosaic of blocks of [side] dp over each registered body's slot, in the host's coordinates: the larger slots
+ * first, so a body inside another shows its own mosaic over its container's.
+ */
+internal fun DrawScope.drawTuneMosaics(
+    bodies: MutantTuneBodies,
+    side: Int,
+    colors: io.github.youndie.mutant.tokens.MutantColors,
+) {
+    val host = bodies.host?.takeIf { it.isAttached } ?: return
+    val shown =
+        bodies.bodies
+            .mapNotNull { b -> b.coords?.takeIf { it.isAttached }?.let { b to it } }
+            .sortedByDescending { (_, c) -> c.size.width.toLong() * c.size.height }
+    for ((b, c) in shown) {
+        val at = host.localPositionOf(c, Offset.Zero)
+        translate(at.x, at.y) {
+            drawTuneMosaic(b, c.size.width / density, c.size.height / density, side, colors)
+        }
+    }
+}
+
+/**
+ * Draws [body]'s mosaic of blocks of [side] dp over its slot, [w] × [h] dp from the origin, clipped to its rounded
+ * corners: each block in the body's fill or one of the cocoon's two paints ([MutantTunedBody.paintsOf]).
+ */
+internal fun DrawScope.drawTuneMosaic(
+    body: MutantTunedBody,
+    w: Float,
+    h: Float,
+    side: Int,
+    colors: io.github.youndie.mutant.tokens.MutantColors,
+) {
+    if (w <= 0f || h <= 0f) return
+    val cols = kotlin.math.ceil(w / side).toInt()
+    val rows = kotlin.math.ceil(h / side).toInt()
+    val paints = body.paintsOf(cols, rows, side)
+    val palette = arrayOf(body.fill, colors.cocoon1, colors.cocoon2)
+    val r = minOf(body.radius.toFloat(), w / 2, h / 2)
+    val clip =
+        Path().apply {
+            addRoundRect(
+                androidx.compose.ui.geometry.RoundRect(
+                    0f,
+                    0f,
+                    w,
+                    h,
+                    androidx.compose.ui.geometry
+                        .CornerRadius(r, r),
+                ),
+            )
+        }
+    // The fill under the whole slot, then each other paint's blocks as one path: blocks drawn one by one at a fractional
+    // offset (a riding snackbar) left hairline seams between neighbours of one paint.
+    val other = Array(palette.size) { Path() }
+    for (y in 0 until rows) {
+        for (x in 0 until cols) {
+            val k = paints[y * cols + x]
+            if (k == 0) continue
+            other[k].addRect(
+                androidx.compose.ui.geometry.Rect(
+                    (x * side).toFloat(),
+                    (y * side).toFloat(),
+                    ((x + 1) * side).toFloat(),
+                    ((y + 1) * side).toFloat(),
+                ),
+            )
+        }
+    }
+    scale(density, Offset.Zero) {
+        drawPath(clip, palette[0])
+        clipPath(clip) {
+            for (k in 1 until palette.size) drawPath(other[k], palette[k])
+        }
+    }
 }

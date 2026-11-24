@@ -95,7 +95,9 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * `data-slide`); no fixture passes either today, and they stay because dropping them renames the content lambdas of
  * four components in the ABI dump (B-147). [probe] is told the instance each time the body's drawing is built: for
  * tests only, never for a consumer. [heatMachine] is the boil's heat when the caller drives it too, as the menu gives its
- * window a heat impulse (B-201); by default the surface keeps its own.
+ * window a heat impulse (B-201); by default the surface keeps its own. [tune] is the body's own tune-in and leaving
+ * (B-179), which its owner follows ([MutantTune]): the body and its content are drawn as the tune's mosaics over the slot,
+ * then whole. Inside a [MutantAppear] (or another tuning host) the body instead tells the host its slot.
  */
 @Composable
 internal fun MutantSurface(
@@ -117,6 +119,7 @@ internal fun MutantSurface(
     stroke: Color? = null,
     probe: ((io.github.youndie.mutant.gen.Instance) -> Unit)? = null,
     heatMachine: HeatMachine? = null,
+    tune: MutantTune? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val colors = LocalMutantColors.current
@@ -180,6 +183,19 @@ internal fun MutantSurface(
     val view = remember { BodyView() }
     val reach = with(androidx.compose.ui.platform.LocalDensity.current) { OFF_SCREEN_REACH.dp.toPx() }
     val bodyFill = fill ?: colors.fillOf(p.fill)
+    // B-179: inside a tuning host the body tells it its slot, which the host draws as a mosaic while it tunes in or out.
+    // A [tune] of its own is drawn the same way over its own slot.
+    val tuneBodies = LocalMutantTuneBodies.current
+    val tuned = remember { MutantTunedBody() }
+    tuned.fill = bodyFill
+    tuned.radius = p.radius
+    tuned.seed = "$cassette/$key"
+    if (tuneBodies != null) {
+        androidx.compose.runtime.DisposableEffect(tuneBodies, tuned) {
+            tuneBodies.bodies += tuned
+            onDispose { tuneBodies.bodies -= tuned }
+        }
+    }
     val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
     val pastContour = io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
     moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps, instant, colors)
@@ -305,6 +321,7 @@ internal fun MutantSurface(
             .onGloballyPositioned {
                 registry.surface = it
                 moshBody.coords = it
+                tuned.coords = it
                 view.place(it, reach)
                 // B-149: no instance yet, and a running clock: ask for the first build, started with the frame's others
                 // by the first body drawn in it. A standing clock's first build also makes its image (B-83): in its draw.
@@ -338,7 +355,15 @@ internal fun MutantSurface(
                         }
                     }
                 }
-            }
+            }.then(
+                if (tune == null) {
+                    Modifier
+                } else {
+                    Modifier.mutantTuneDraw(tune, clock, tuneStands(clock)) { side ->
+                        drawTuneMosaic(tuned, size.width / density, size.height / density, side, colors)
+                    }
+                },
+            )
             // B-135: a layer of its own, so a tick records the body and its content and nothing beside it.
             .graphicsLayer()
             .drawWithCache {

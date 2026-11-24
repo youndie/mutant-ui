@@ -123,8 +123,9 @@ class SnackbarBehaviourTest {
             assertTrue(first in 55f..60f, "entering from 56 dp below: $first")
             mainClock.advanceTimeBy(100)
             val mid = top()
-            // 116 ms in is one 83 ms step of 240: eased out by the cube, (1 - 0.35)^3 of the way still to go, about 16 dp.
-            assertTrue(mid in 10f..24f, "under way, eased: $mid")
+            // 116 ms in, eased out by the cube: about 8 dp still to go on every frame (D22), 16 under the design's steps.
+            // Its body is the 8 dp mosaic by then (B-179), whose top is the slot's own, not the outline's first full row.
+            assertTrue(mid in 5f..24f, "under way, eased: $mid")
             mainClock.advanceTimeBy(200)
             // At its place the first full row of blue is 1 to 3, under the outline as the running body wobbles.
             assertTrue(top() <= 4f, "at its place by 240 ms: ${top()}")
