@@ -53,6 +53,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantNavigationDrawer.kt` | `MutantNavigationDrawer`, `MutantDrawerItem` ([B-34](../backlog/B-34-navigation-drawer.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTooltip.kt` | `MutantTooltipBox` and its plate ([B-32](../backlog/B-32-tooltip.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantBottomSheet.kt` | `MutantBottomSheet`, its window and tear line ([B-35](../backlog/B-35-bottom-sheet.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/PanelDrag.kt` | `PanelDrag` and `panelDrag`: the drawer and the sheet dragged by a finger or a mouse, their settle and close glides ([B-183](../backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantPullToRefresh.kt` | `MutantPullToRefresh`, its tongue, pill and pull ([B-36](../backlog/B-36-pull-to-refresh.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTextField.kt` | `MutantTextField` and its block caret ([B-20](../backlog/B-20-text-field.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantCard.kt` | `MutantCard`, `MutantCardTitle`, `MutantCardSubtitle` ([B-21](../backlog/B-21-card.md)) |

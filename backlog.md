@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (16)
+## Open (15)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-183](docs/backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md) `[~]` | The drawer and the sheet follow a finger and a mouse | P2 | L | - |
 | [B-184](docs/backlog/B-184-the-sheet-scrolls-its-content.md) `[ ]` | The bottom sheet scrolls its content and hands a pull at the top to its drag | P2 | M | B-183 |
 | [B-187](docs/backlog/B-187-tab-labels-and-a-narrow-top-bar.md) `[ ]` | Tab labels hand the accent over late; a narrow top bar drops its status first | P2 | S | - |
 | [B-189](docs/backlog/B-189-a-press-held-inside-a-scroll.md) `[ ]` | A press inside a scroll heats after 100 ms | P2 | M | - |
@@ -79,7 +78,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (194)
+## Closed (195)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -263,6 +262,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-180](docs/backlog/B-180-a-screen-tunes-in.md) `[x]` - A new screen tunes in as the switch starts
 - [B-181](docs/backlog/B-181-a-body-loses-its-signal-in-steps.md) `[x]` - A body loses its signal in three steps and tunes in when enabled
 - [B-182](docs/backlog/B-182-the-slider-moves-by-itself-on-a-slide.md) `[x]` - The slider moves by itself on the slide curve
+- [B-183](docs/backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md) `[x]` - The drawer and the sheet follow a finger and a mouse
 - [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[x]` - The dialog rises opaque and keeps a margin when tall
 - [B-186](docs/backlog/B-186-the-caret-and-the-fields-mosaic.md) `[x]` - The caret restarts, sits beside the letters, and the mosaic ignores the text
 - [B-188](docs/backlog/B-188-the-carousel-glides-on-tab-and-fits-a-narrow-shelf.md) `[x]` - The carousel glides on Tab and fits a narrow shelf
