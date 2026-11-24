@@ -181,6 +181,9 @@ with `git checkout`, the tree clean after:
 
 **Gates on this Mac:** `make check`; `make docs-against BASE=origin/main`; `./gradlew check --continue` with the test
 tasks' outputs cleaned first (686 tests, 0 failures; ktlint, `checkKotlinAbi` and `compileKotlinIosArm64` ran in it).
-No declaration was added to `commonMain`.
+No declaration was added to `commonMain`. Rebased on [B-179](B-179-bodies-tune-in-as-they-appear.md) (`de4794af`), which
+changes the demo screens' bodies: `./gradlew check --continue` again, 696 tests, 0 failures, 12.6 min. In it the changed
+tests ran 1.5–18.7 s but the sample's first, `AccessibilityTest`'s Recording, at 30.2 s beside the other modules' tests;
+alone after the rebase the sample's changed tests run 2.3–9.0 s, that one 8.1 s.
 
 **Not verified.** The CI runner's times; no phone.
