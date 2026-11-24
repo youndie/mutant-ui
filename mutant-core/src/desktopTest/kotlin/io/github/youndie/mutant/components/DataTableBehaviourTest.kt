@@ -163,11 +163,11 @@ class DataTableBehaviourTest {
                     assertTrue(node.boundsInRoot.width > 0f, "$name is ${node.boundsInRoot.width} wide")
                     assertTrue(!laid.single().hasVisualOverflow, "$name is cut at ${node.boundsInRoot.width}")
                 }
-                // The box column, the widest name and the length column, no more.
+                // The box column, the widest name and the 8 dp gap at its end (B-202), and the length column, no more.
                 val names = rows.map { onNode(hasText(it.first), useUnmergedTree = true).fetchSemanticsNode() }
                 val widest = names.maxOf { it.boundsInRoot.width }
                 val row = onAllNodes(checkbox).fetchSemanticsNodes().first().boundsInRoot
-                assertEquals(40f + widest + 90f, row.width)
+                assertEquals(40f + widest + 8f + 90f, row.width)
             }
         }
     }
