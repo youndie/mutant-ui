@@ -409,8 +409,11 @@ class SheetBehaviourTest {
                     scroll(60f)
                 }
                 mainClock.advanceTimeBy(1_000)
-                val last = onNodeWithTag("last", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y
-                assertTrue(last < 300f, "scrolls=$scrolls: scrolled to its end, the last line shows: $last")
+                val last = onNodeWithTag("last", useUnmergedTree = true).fetchSemanticsNode()
+                val foot = last.positionInRoot.y + last.size.height
+                // Whole: before B-184 a plain content's rows past the room were measured 0 tall at the room's foot.
+                assertTrue(last.size.height > 10, "scrolls=$scrolls: the last line ${last.size.height} tall")
+                assertTrue(foot <= 300f, "scrolls=$scrolls: scrolled to its end, the last line's foot at $foot")
             }
         }
     }
