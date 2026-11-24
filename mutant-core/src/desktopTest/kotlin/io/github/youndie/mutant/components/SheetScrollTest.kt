@@ -102,9 +102,13 @@ class SheetScrollTest {
 
     /** How far the content is scrolled, dp: the title's distance above its place under the window's top. */
     private fun ComposeUiTest.scrolled(rig: Rig): Float =
-        top(rig) + TITLE_DOWN - onNodeWithTag("title", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y / rig.d
+        top(rig) + TITLE_DOWN -
+            onNodeWithTag("title", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y / rig.d
 
-    private fun ComposeUiTest.slop(rig: Rig): Float = onRoot().fetchSemanticsNode().layoutInfo.viewConfiguration.touchSlop / rig.d
+    private fun ComposeUiTest.slop(rig: Rig): Float =
+        onRoot()
+            .fetchSemanticsNode()
+            .layoutInfo.viewConfiguration.touchSlop / rig.d
 
     private fun ComposeUiTest.finger(
         rig: Rig,
@@ -143,7 +147,10 @@ class SheetScrollTest {
                 }
                 val s = scrolled(rig)
                 // Compose's scroll starts past its slop and passes on what lies beyond, within a step.
-                assertTrue(s >= 120f - slop(rig) - 12f, "density $d, a finger: scrolled $s after 120 dp, the slop ${slop(rig)}")
+                assertTrue(
+                    s >= 120f - slop(rig) - 12f,
+                    "density $d, a finger: scrolled $s after 120 dp, the slop ${slop(rig)}",
+                )
                 lift()
                 mainClock.advanceTimeBy(1_000)
             }
@@ -270,7 +277,12 @@ class SheetScrollTest {
                 }
                 assertEquals(0f, scrolled(rig), .5f, "the content at its top")
                 val pulled = top(rig) - rig.rest
-                assertEquals(travel - s - slop - step / 2, pulled, step / 2 + 1f, "the window after $travel dp, $s of it scrolled back")
+                assertEquals(
+                    travel - s - slop - step / 2,
+                    pulled,
+                    step / 2 + 1f,
+                    "the window after $travel dp, $s of it scrolled back",
+                )
                 // Still for a moment, then let go: short of two fifths it settles back, past them it is dismissed.
                 fingerBy(rig, Offset.Zero)
                 mainClock.advanceTimeBy(120)
