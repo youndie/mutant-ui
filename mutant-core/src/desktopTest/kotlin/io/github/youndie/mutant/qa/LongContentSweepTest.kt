@@ -34,21 +34,36 @@ class LongContentSweepTest {
     private val texts = listOf("no spaces" to NO_SPACES, "words" to WORDS, "empty" to "", "mixed" to MIXED)
     private val wraps = places.filter { it.name in setOf("width 120", "unbounded width", "unbounded height") }
 
-    @Test
-    fun `every component takes long, empty and mixed text without throwing`() {
+    /**
+     * Every component with the text named [tn] in each of [wraps], each in a test of its own. One test for all four texts
+     * ran about 620 of them in 47 s on a Mac, and passed its minute under load (B-210): split by text, each holds a
+     * quarter of the cells, the same cells.
+     */
+    private fun takes(tn: String) {
+        val t = texts.toMap().getValue(tn)
         val failures = mutableListOf<String>()
         for (s in subjects) {
-            for ((tn, t) in texts) {
-                for (p in wraps) {
-                    // F01, held by ConstraintsSweepTest.
-                    if (s.name == "NavigationBar" && p.name == "unbounded width") continue
-                    val e = attempt { MutantTheme { p.wrap { m -> s.content(m, t) } } }
-                    if (e != null) failures += "${s.name} / $tn / ${p.name}: ${e.brief()}"
-                }
+            for (p in wraps) {
+                // F01, held by ConstraintsSweepTest.
+                if (s.name == "NavigationBar" && p.name == "unbounded width") continue
+                val e = attempt { MutantTheme { p.wrap { m -> s.content(m, t) } } }
+                if (e != null) failures += "${s.name} / $tn / ${p.name}: ${e.brief()}"
             }
         }
         assertEquals(emptyList(), failures)
     }
+
+    @Test
+    fun `every component takes 300 characters with no space without throwing`() = takes("no spaces")
+
+    @Test
+    fun `every component takes 300 characters of words without throwing`() = takes("words")
+
+    @Test
+    fun `every component takes the empty string without throwing`() = takes("empty")
+
+    @Test
+    fun `every component takes mixed scripts without throwing`() = takes("mixed")
 
     @Test
     fun `tabs and the navigation bar take 0, 1 and 12 items and any index`() {
