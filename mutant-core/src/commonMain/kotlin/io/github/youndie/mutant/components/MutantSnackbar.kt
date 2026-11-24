@@ -3,6 +3,7 @@ package io.github.youndie.mutant.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -15,15 +16,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
@@ -189,7 +193,9 @@ internal fun SnackbarBody(
 
 /**
  * The action: its word 16 dp from the bar's end, its target the bar's height and at least 48 wide, and never more than
- * half the bar: a longer word ends in an ellipsis and the message keeps the rest (B-70).
+ * half the bar: a longer word ends in an ellipsis and the message keeps the rest (B-70). Pressed, its word drops 1 dp
+ * and a solid 2 dp line in the word's colour, as wide as the word, stands 5 dp under its line box; released, it is at
+ * rest in the next frame, under reduce motion too (B-192).
  */
 @Composable
 private fun SnackbarAction(
@@ -202,7 +208,10 @@ private fun SnackbarAction(
     val colors = MutantTheme.colors
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
+    // Read where it is drawn and placed, not here: a press changes no composition (B-192).
+    val pressed = source.collectIsPressedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    val ink = if (hidden) Color.Transparent else colors.onNoSignalAccent
     Box(
         Modifier
             .mutantHand(enabled)
@@ -235,13 +244,14 @@ private fun SnackbarAction(
     ) {
         MutantText(
             label,
-            Modifier.mutantCleanZone(),
+            // The line under the word's place at rest, and the word dropped inside its clean zone, which stays put (B-192).
+            Modifier.snackbarPressLine(pressed, ink).mutantCleanZone().labelPressDrop(pressed),
             style =
                 TextStyle(
                     fontFamily = LocalMutantFonts.current?.display,
                     fontSize = ACTION_SIZE.sp,
                     letterSpacing = ACTION_TRACKING.sp,
-                    color = if (hidden) Color.Transparent else colors.onNoSignalAccent,
+                    color = ink,
                     platformStyle = LocalMutantTextRaster.current,
                 ).cssLine(MutantFaceMetrics.Handjet),
             maxLines = 1,
@@ -250,6 +260,22 @@ private fun SnackbarAction(
         )
     }
 }
+
+/**
+ * B-192, the designer's answer 15: pressed, a solid line [SNACKBAR_PRESS_LINE] tall in the word's [ink], as wide as the
+ * word's box, [SNACKBAR_PRESS_GAP] under its line box (the text button's gap between its label and its divider). Whole
+ * pixels, so its edges are sharp at any density.
+ */
+private fun Modifier.snackbarPressLine(
+    pressed: State<Boolean>,
+    ink: Color,
+): Modifier =
+    drawBehind {
+        if (pressed.value) {
+            val top = size.height + SNACKBAR_PRESS_GAP.roundToPx()
+            drawRect(ink, Offset(0f, top), Size(size.width, SNACKBAR_PRESS_LINE.roundToPx().toFloat()))
+        }
+    }
 
 /**
  * Whether the action held focus as the bar started to leave (B-207): [follow] is read in composition, where the change
@@ -339,6 +365,10 @@ private const val ACTION_TRACKING = 1
 /** The action's target and the room it keeps before its word (designed here, D15). */
 private val TOUCH = 48.dp
 private val ACTION_GAP = 12.dp
+
+/** The pressed action's line (the designer's answer 15) and its distance under the word's line box (the text button's). */
+private val SNACKBAR_PRESS_LINE = 2.dp
+private val SNACKBAR_PRESS_GAP = 5.dp
 
 /** The brief's `osd-in` and `osd-out`, and how far below its place it rides from (designed here, D15). */
 private const val IN_MS = 240.0
