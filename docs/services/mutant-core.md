@@ -51,7 +51,7 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/VenomRun.kt` | the venom window's run, shared by the segmented button and the menu ([B-31](../backlog/B-31-segmented-button.md), [B-33](../backlog/B-33-menu.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantMenu.kt` | `MutantMenu`, `MutantDropdown` ([B-33](../backlog/B-33-menu.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantNavigationDrawer.kt` | `MutantNavigationDrawer`, `MutantDrawerItem` ([B-34](../backlog/B-34-navigation-drawer.md)) |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTooltip.kt` | `MutantTooltipBox` and its plate ([B-32](../backlog/B-32-tooltip.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantTooltip.kt` | `MutantTooltipBox` and its plate ([B-32](../backlog/B-32-tooltip.md)), kept inside the window and wrapped ([B-200](../backlog/B-200-the-tooltip-at-the-edges.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantBottomSheet.kt` | `MutantBottomSheet`, its window and tear line ([B-35](../backlog/B-35-bottom-sheet.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/PanelDrag.kt` | `PanelDrag` and `panelDrag`: the drawer and the sheet dragged by a finger or a mouse, their settle and close glides ([B-183](../backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/components/MutantPullToRefresh.kt` | `MutantPullToRefresh`, its tongue, pill and pull ([B-36](../backlog/B-36-pull-to-refresh.md)) |

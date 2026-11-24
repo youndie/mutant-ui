@@ -528,6 +528,8 @@ wait for review of what is designed here.
 
 Numbers chosen for the button under this decision (B-15): the label 24 dp from the body's sides (the page draws fixed widths); a text button's divider as wide as its label (the page draws 76 dp under a 69 dp label in a fixed cell); a disabled text button greys its label; keyboard focus draws the field's brackets and calm (`focused`). Given no width, the filled button is as wide as its widest state in every state: the check Success adds (24 dp and its 8 dp gap) keeps its room at rest, pressed, loading and disabled, so no state change moves the width or regenerates the body under D17; a new label is a new measurement, and a caller's width wins ([B-203](../backlog/B-203-a-button-as-wide-as-its-widest-state.md), the designer's answer 35).
 
+Numbers chosen for the tooltip at the window's edges ([B-200](../backlog/B-200-the-tooltip-at-the-edges.md), the designer's answers 26 and 27, which state the 8 dp, the 240 dp, the three lines and their heights): below its anchor the plate's top stands 8 dp under it, the room the plain plate's drips leave above it, and its drips still hang down, as every body's do; it goes below only where it does not fit above and does below, else it stays above; the plate's words are set at `line-height: 1` (the plain plate's one line stands where it stood), and the amber plate's first line stays one line, the supporting text taking up to two.
+
 ### D16. A body's origin is its own
 
 The kit generates every body with its slot at (0, 0) and anchors its speckle to the body, so a body that

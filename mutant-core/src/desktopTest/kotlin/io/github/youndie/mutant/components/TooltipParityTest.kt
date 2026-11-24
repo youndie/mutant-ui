@@ -21,7 +21,7 @@ class TooltipParityTest {
         for (theme in listOf("Efir", "Kopiya")) {
             for ((name, text, supporting, key) in cells) {
                 val c =
-                    ComponentParity.split("MutantTooltip_$name", theme, TEXT_INK) { m, hidden ->
+                    ComponentParity.split("MutantTooltip_$name", theme, TEXT_INK, fit = true) { m, hidden ->
                         TooltipPlate(text!!, supporting, key!!, m, hidden)
                     }
                 val stem = "MutantTooltip_${name}_$theme"
