@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-195](docs/backlog/B-195-a-play-icon.md) `[ ]` | A play icon | P2 | XS | - |
+| [B-195](docs/backlog/B-195-a-play-icon.md) `[~]` | A play icon | P2 | XS | - |
 | [B-200](docs/backlog/B-200-the-tooltip-at-the-edges.md) `[ ]` | The tooltip stays in the window and wraps | P2 | M | - |
 | [B-202](docs/backlog/B-202-the-data-table-at-a-large-font.md) `[ ]` | The data table at a large font and in a narrow slot | P2 | M | - |
 | [B-205](docs/backlog/B-205-mirrored-for-right-to-left.md) `[ ]` | Every layout mirrored for right to left | P2 | L | - |

@@ -1,7 +1,7 @@
 ---
 id: B-195
 title: "A play icon"
-status: open
+status: wip
 priority: P2
 size: XS
 stage: stage-6-later
