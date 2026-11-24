@@ -1,7 +1,7 @@
 ---
 id: B-206
 title: "A body's default key is its place in the composition"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-6-later
