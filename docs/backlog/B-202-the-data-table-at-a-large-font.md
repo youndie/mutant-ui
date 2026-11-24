@@ -1,7 +1,7 @@
 ---
 id: B-202
 title: "The data table at a large font and in a narrow slot"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-6-later
