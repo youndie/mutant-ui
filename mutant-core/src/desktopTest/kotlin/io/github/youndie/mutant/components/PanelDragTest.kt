@@ -480,6 +480,47 @@ class PanelDragTest {
         }
     }
 
+    @Test
+    fun `right to left the drawer drags towards the right`() =
+        runComposeUiTest {
+            var visible by mutableStateOf(true)
+            mainClock.autoAdvance = false
+            setContent {
+                CompositionLocalProvider(
+                    LocalDensity provides Density(1f),
+                    androidx.compose.ui.platform.LocalLayoutDirection provides
+                        androidx.compose.ui.unit.LayoutDirection.Rtl,
+                ) {
+                    MutantTheme {
+                        MutantScreenClock {
+                            Box(Modifier.size(360.dp, 600.dp).testTag("screen")) {
+                                MutantNavigationDrawer(
+                                    visible,
+                                    { visible = false },
+                                    NAMES.mapIndexed { i, n -> MutantDrawerItem("CH 0${i + 1}", n) },
+                                    0,
+                                    {},
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            mainClock.advanceTimeBy(1_000)
+            val rest = word(Panel.Drawer)!!
+            // The window stands at the screen's right; a press on its body, then a drag to the right.
+            onNodeWithTag("screen").performTouchInput { down(Offset(210f, 400f)) }
+            var moved = 0f
+            repeat(10) {
+                move(false, Offset(6f, 0f))
+                moved += 6f
+                mainClock.advanceTimeByFrame()
+                val x = word(Panel.Drawer)!! - rest
+                assertTrue(abs(x - moved) <= 1f, "right to left: at $x after $moved")
+            }
+            lift(false)
+        }
+
     private companion object {
         val NAMES = listOf("Эфир", "Очередь", "Поиск")
         const val WORD = "Слово"
