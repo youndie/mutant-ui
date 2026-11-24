@@ -79,9 +79,13 @@ import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.MutantTune
+import io.github.youndie.mutant.surface.MutantTuned
+import io.github.youndie.mutant.surface.composed
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.stepped
+import io.github.youndie.mutant.surface.tuneStands
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -98,12 +102,16 @@ import kotlin.math.roundToInt
  * clock is held — everything behind it stands still (the brief's `pause`) — under a 62 % black scrim and a pause band
  * across the screen 56 dp above its foot; the window, the `bar` body as a clean frame with 12 dp corners, 280 dp wide
  * at most and 24 from the screen's sides, centred, holds the [title] (Handjet 22), the [text] (Rubik 14) and the
- * [actions] at its end, usually [MutantDialogAction]s.
+ * [actions] at its end, usually [MutantDialogAction]s. A window taller than the screen stands 24 dp from its top and foot
+ * as well, its title and actions in view and its text scrolling between them.
  *
- * With [visible] true, from the start or set later, it opens: scrim, band and window come up together in 320 ms
- * (`pause`); set false they go in 200 (`play`), the screen's clock running again, and it is gone from the composition
- * after. Both run on every frame, step twelve times a second under the theme's `steppedMotion` (B-100), and under
- * reduce motion are at once; a close during the open, or an open during the close, goes on from where the dialog
+ * With [visible] true, from the start or set later, it opens: the window is opaque from its first frame and tunes in
+ * (`tune-in`, as [io.github.youndie.mutant.surface.MutantAppear]: a 16 dp mosaic, an 8 dp mosaic, then the window with its
+ * words, 320 ms in three steps), while the scrim and the band darken over 200 ms. Set false, the window steps out (the
+ * 8 dp mosaic, then nothing, by 160 ms) while the scrim and the band lighten over 200 ms, the screen's clock running
+ * again, and it is gone from the composition after. The scrim runs on every frame and steps twelve times a second under
+ * the theme's `steppedMotion` (B-100); the window's steps are a picture sequence and keep to the clock either way; under
+ * reduce motion both are at once. A close during the open, or an open during the close, goes on from where the dialog
  * stands. A click on the scrim, Escape or the system back gesture calls [onDismissRequest]. Focus moves into the
  * dialog as it opens and stays there, a Tab on its actions only, coming round from the last to the first and with
  * Shift+Tab the other way. Once the dialog has gone it goes to [returnFocusTo], a requester on whatever opened it, or
@@ -148,16 +156,20 @@ internal fun DialogFrame(
     val own = remember { MutantClock(startMs = screen.nowMs, frozen = screen.frozen) }
     SideEffect { own.paused = reduce }
     val follow =
-        remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, OPEN_MS, CLOSE_MS) }
+        remember { DialogFollow(visible, if (playIn) own.nowMs else Double.NEGATIVE_INFINITY, SCRIM_MS, SCRIM_MS) }
     val steps = LocalMutantSteppedMotion.current
     ProvideMutantClock(own) {
         val clock = readMutantClock()
         follow.follow(visible, clock.nowMs)
-        val duration = if (visible) OPEN_MS else CLOSE_MS
-        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, duration, steps)
+        // The scrim and the band fade over 200 ms each way (the designer's answer 7: the one fade the kit keeps).
+        val p = if (reduce) 1.0 else stepped(clock.nowMs - follow.since, SCRIM_MS, steps)
         if (p < 1) clock.frame
         val shown = if (visible) p else 1 - p
-        val gone = !visible && p >= 1
+        // The window tunes in opaque and steps out (B-179, the designer's answer 7), on the dialog's own clock.
+        val still = tuneStands(clock)
+        val tune = remember { MutantTune(visible, clock.nowMs, play = playIn) }
+        tune.follow(visible, clock.nowMs, still)
+        val gone = !visible && p >= 1 && !tune.composed(clock, still)
         // Held while anything of it shows: the screen behind stands still.
         DisposableEffect(screen, gone) {
             if (!gone) screen.holds++
@@ -178,6 +190,7 @@ internal fun DialogFrame(
                 text,
                 actions,
                 shown.toFloat(),
+                tune,
                 windowTop,
                 hidden,
                 probe,
@@ -195,6 +208,7 @@ private fun DialogScene(
     text: String?,
     actions: @Composable RowScope.() -> Unit,
     shown: Float,
+    tune: MutantTune,
     windowTop: Dp?,
     hidden: Boolean,
     probe: ((Instance) -> Unit)?,
@@ -211,7 +225,6 @@ private fun DialogScene(
         modifier
             .fillMaxSize()
             .clipToBounds()
-            .graphicsLayer { alpha = shown }
             // Focus stays in here while it is open, and what is under the scrim cannot be reached by the keys.
             .focusProperties {
                 onExit = {
@@ -247,91 +260,109 @@ private fun DialogScene(
                 }
             }.focusable(),
     ) {
-        // The scrim: it takes every click under the window, and a click on it dismisses.
+        // The scrim and the band fade as one, the window over them opaque: the screen's words never read through it.
+        Box(Modifier.fillMaxSize().graphicsLayer { alpha = shown }) {
+            // The scrim: it takes every click under the window, and a click on it dismisses.
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(SCRIM)
+                    // Not a Tab stop: nothing of it shows focus, and Enter on it would dismiss unseen (B-57).
+                    .focusProperties { canFocus = false }
+                    .clickable(remember { MutableInteractionSource() }, indication = null, enabled = visible) {
+                        dismiss()
+                    },
+            )
+            PauseBand(Modifier.align(Alignment.BottomStart).offset(BAND_SHIFT, -BAND_FROM_FOOT))
+        }
         Box(
             Modifier
                 .fillMaxSize()
-                .background(SCRIM)
-                // Not a Tab stop: nothing of it shows focus, and Enter on it would dismiss unseen (B-57).
-                .focusProperties { canFocus = false }
-                .clickable(remember { MutableInteractionSource() }, indication = null, enabled = visible) { dismiss() },
-        )
-        PauseBand(Modifier.align(Alignment.BottomStart).offset(BAND_SHIFT, -BAND_FROM_FOOT))
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = SIDE),
+                // A window taller than the screen keeps 24 dp from its top and foot as from its sides (answer 29). A
+                // fixture's window placed at [windowTop] stands where it is put.
+                .padding(horizontal = SIDE, vertical = if (windowTop == null) SIDE else 0.dp),
             contentAlignment = if (windowTop == null) Alignment.Center else Alignment.TopCenter,
         ) {
-            MutantSurface(
-                MutantBody.Bar,
-                WINDOW_KEY,
+            // The window and its action's body show the tune's mosaics while it tunes in or steps out, its words with the
+            // finished window on the third step.
+            MutantTuned(
+                tune,
                 (if (windowTop == null) Modifier else Modifier.offset(y = windowTop))
                     .widthIn(max = WINDOW)
-                    .fillMaxWidth()
-                    // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a
-                    // press on a clickable asks for focus, which a target that cannot take it hands to its first
-                    // action, unseen, for the next Enter to fire (B-168). Not a Tab stop either (B-57), but a group:
-                    // Tab from the dialog itself goes into it, to the first action.
-                    .focusGroup()
-                    .pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false) } }
-                    .semantics {
-                        dialog()
-                        paneTitle = title
-                        dismiss {
-                            dismiss()
-                            true
-                        }
-                    },
-                // The engine's `data-state="clean"`: the clean frame, drawn with no print slip.
-                state = BodyState.Success,
-                profile = MutantBody.Bar.profile.with(radius = WINDOW_RADIUS),
-                probe = probe,
+                    .fillMaxWidth(),
+                // Its actions go disabled and its keys stay with it as it closes, as before (B-168): the host only draws.
+                leaving = !visible,
+                deafLeaving = false,
             ) {
-                Column(
-                    Modifier.padding(start = PAD, top = PAD, end = PAD, bottom = PAD_FOOT),
-                    verticalArrangement = Arrangement.spacedBy(GAP),
+                MutantSurface(
+                    MutantBody.Bar,
+                    WINDOW_KEY,
+                    Modifier
+                        .fillMaxWidth()
+                        // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a
+                        // press on a clickable asks for focus, which a target that cannot take it hands to its first
+                        // action, unseen, for the next Enter to fire (B-168). Not a Tab stop either (B-57), but a group:
+                        // Tab from the dialog itself goes into it, to the first action.
+                        .focusGroup()
+                        .pointerInput(Unit) { awaitEachGesture { awaitFirstDown(requireUnconsumed = false) } }
+                        .semantics {
+                            dialog()
+                            paneTitle = title
+                            dismiss {
+                                dismiss()
+                                true
+                            }
+                        },
+                    // The engine's `data-state="clean"`: the clean frame, drawn with no print slip.
+                    state = BodyState.Success,
+                    profile = MutantBody.Bar.profile.with(radius = WINDOW_RADIUS),
+                    probe = probe,
                 ) {
-                    MutantText(
-                        title,
-                        Modifier.semantics { heading() }.mutantCleanZone(),
-                        style =
-                            TextStyle(
-                                fontFamily = fonts?.display,
-                                fontSize = TITLE_SIZE.sp,
-                                color = if (hidden) Color.Transparent else colors.text,
-                                platformStyle = raster,
-                            ).cssLine(MutantFaceMetrics.Handjet),
-                    )
-                    if (text != null) {
-                        // Measured after the title and the actions, which keep their size: a text taller than the room
-                        // left scrolls inside the window (B-59). A text that fits draws exactly as without the scroll.
-                        CssParagraph(
-                            text,
-                            TextStyle(
-                                fontFamily = fonts?.text,
-                                fontSize = TEXT_SIZE.sp,
-                                color = if (hidden) Color.Transparent else colors.textSecondary,
-                                platformStyle = raster,
-                            ).cssLine(MutantFaceMetrics.Rubik, TEXT_LINE),
-                            TEXT_SIZE * TEXT_LINE,
-                            Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
-                        )
-                    }
-                    androidx.compose.runtime.CompositionLocalProvider(
-                        LocalDialogHidden provides hidden,
-                        LocalDialogOpen provides visible,
-                        LocalDialogActionFocus provides actionFocus,
+                    Column(
+                        Modifier.padding(start = PAD, top = PAD, end = PAD, bottom = PAD_FOOT),
+                        verticalArrangement = Arrangement.spacedBy(GAP),
                     ) {
-                        Row(
-                            Modifier.fillMaxWidth().padding(top = ACTIONS_TOP),
-                            horizontalArrangement = Arrangement.spacedBy(ACTIONS_GAP, Alignment.End),
-                            verticalAlignment = Alignment.CenterVertically,
+                        MutantText(
+                            title,
+                            Modifier.semantics { heading() }.mutantCleanZone(),
+                            style =
+                                TextStyle(
+                                    fontFamily = fonts?.display,
+                                    fontSize = TITLE_SIZE.sp,
+                                    color = if (hidden) Color.Transparent else colors.text,
+                                    platformStyle = raster,
+                                ).cssLine(MutantFaceMetrics.Handjet),
+                        )
+                        if (text != null) {
+                            // Measured after the title and the actions, which keep their size: a text taller than the room
+                            // left scrolls inside the window (B-59). A text that fits draws exactly as without the scroll.
+                            CssParagraph(
+                                text,
+                                TextStyle(
+                                    fontFamily = fonts?.text,
+                                    fontSize = TEXT_SIZE.sp,
+                                    color = if (hidden) Color.Transparent else colors.textSecondary,
+                                    platformStyle = raster,
+                                ).cssLine(MutantFaceMetrics.Rubik, TEXT_LINE),
+                                TEXT_SIZE * TEXT_LINE,
+                                Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                            )
+                        }
+                        androidx.compose.runtime.CompositionLocalProvider(
+                            LocalDialogHidden provides hidden,
+                            LocalDialogOpen provides visible,
+                            LocalDialogActionFocus provides actionFocus,
                         ) {
-                            // Each action takes at most an even share of the row and its own width under it, so a
-                            // long label ellipsizes in its share and never squeezes the next one out (B-59).
-                            androidx.compose.runtime.CompositionLocalProvider(LocalDialogActionRow provides this) {
-                                actions()
+                            Row(
+                                Modifier.fillMaxWidth().padding(top = ACTIONS_TOP),
+                                horizontalArrangement = Arrangement.spacedBy(ACTIONS_GAP, Alignment.End),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                // Each action takes at most an even share of the row and its own width under it, so a
+                                // long label ellipsizes in its share and never squeezes the next one out (B-59).
+                                androidx.compose.runtime.CompositionLocalProvider(LocalDialogActionRow provides this) {
+                                    actions()
+                                }
                             }
                         }
                     }
@@ -558,7 +589,10 @@ internal val LocalDialogActionRow = androidx.compose.runtime.staticCompositionLo
 /** A fixture's bare twin, for the actions it composes: their words transparent. False in the kit. */
 internal val LocalDialogHidden = androidx.compose.runtime.staticCompositionLocalOf { false }
 
-/** The window: 280 dp at most, 24 from the screen's sides, 12 dp corners (`data-r="12"`), the engine's key. */
+/**
+ * The window: 280 dp at most, 24 from the screen's sides (and from its top and foot when it is taller, the designer's
+ * answer 29), 12 dp corners (`data-r="12"`), the engine's key.
+ */
 private val WINDOW = 280.dp
 private val SIDE = 24.dp
 private const val WINDOW_RADIUS = 12.0
@@ -603,6 +637,8 @@ private val BAND_FILL = Color(0x1AE9F2E4)
 private val BAND_EDGE_LIGHT = Color(0x59E9F2E4)
 private val BAND_EDGE_DARK = Color(0x9905060C)
 
-/** The open (`pause`) and the close (`play`), ms. */
-private const val OPEN_MS = 320.0
-private const val CLOSE_MS = 200.0
+/**
+ * The scrim's and the band's fade, ms, each way: the brief's `play`. The designer's answer 7 keeps it for the scrim, which
+ * until B-185 came up with the window over the 320 ms of `pause`; the window now tunes in over the token's 320 ms.
+ */
+private const val SCRIM_MS = 200.0

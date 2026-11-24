@@ -96,7 +96,7 @@ class DialogBehaviourTest {
     private fun ComposeUiTest.corner(): Float = onNodeWithTag("screen").captureToImage().toPixelMap()[350, 590].alpha
 
     @Test
-    fun `it opens over 320 ms and closes over 200, then is gone and gives focus back to its opener`() =
+    fun `its scrim darkens over 200 ms and lightens over 200, then it is gone and gives focus back to its opener`() =
         runComposeUiTest {
             mainClock.autoAdvance = false
             screen()

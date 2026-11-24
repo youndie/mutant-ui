@@ -83,13 +83,17 @@ internal fun MutantTune.composed(
 /**
  * The tuning host: draws [content] as [tune] says at each frame — the bodies registered inside it as mosaics
  * ([drawTuneMosaics]), the content whole, or nothing ([mutantTuneDraw]). [leaving] takes its pointer, keys and
- * semantics away. For [MutantAppear], and for a component that keeps its own visibility (the tooltip's popup).
+ * semantics away, unless [deafLeaving] is false: a component that answers for its own content while it leaves (the
+ * dialog, whose actions go disabled as it closes) still passes [leaving], since its change is what redraws the host when
+ * the tune turns. For [MutantAppear], and for a component that keeps its own visibility (the tooltip's popup, the
+ * dialog's window).
  */
 @Composable
 internal fun MutantTuned(
     tune: MutantTune,
     modifier: Modifier = Modifier,
     leaving: Boolean = false,
+    deafLeaving: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val clock = readMutantClock()
@@ -97,7 +101,7 @@ internal fun MutantTuned(
     val colors = LocalMutantColors.current
     val bodies = remember { MutantTuneBodies() }
     val deaf =
-        if (leaving) {
+        if (leaving && deafLeaving) {
             Modifier
                 .clearAndSetSemantics {}
                 .onPreviewKeyEvent { true }
