@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-181](docs/backlog/B-181-a-body-loses-its-signal-in-steps.md) `[ ]` | A body loses its signal in three steps and tunes in when enabled | P2 | M | B-179 |
+| [B-181](docs/backlog/B-181-a-body-loses-its-signal-in-steps.md) `[~]` | A body loses its signal in three steps and tunes in when enabled | P2 | M | B-179 |
 | [B-182](docs/backlog/B-182-the-slider-moves-by-itself-on-a-slide.md) `[ ]` | The slider moves by itself on the slide curve | P2 | S | - |
 | [B-183](docs/backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md) `[ ]` | The drawer and the sheet follow a finger and a mouse | P2 | L | - |
 | [B-184](docs/backlog/B-184-the-sheet-scrolls-its-content.md) `[ ]` | The bottom sheet scrolls its content and hands a pull at the top to its drag | P2 | M | B-183 |

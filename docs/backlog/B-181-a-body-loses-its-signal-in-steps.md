@@ -1,7 +1,7 @@
 ---
 id: B-181
 title: "A body loses its signal in three steps and tunes in when enabled"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-6-later
