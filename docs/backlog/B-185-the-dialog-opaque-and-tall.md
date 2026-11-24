@@ -1,7 +1,7 @@
 ---
 id: B-185
 title: "The dialog rises opaque and keeps a margin when tall"
-status: open
+status: wip
 priority: P1
 size: M
 stage: stage-6-later
