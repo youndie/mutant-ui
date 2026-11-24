@@ -57,16 +57,20 @@ class DialogOpaqueAndTallTest {
         val glyphs: Int,
     )
 
-    /** A screen of one [ground] colour under a dialog; every frame of the open, then of the close. */
+    /**
+     * A screen of one [ground] colour under a dialog; every frame of the open, then of the close. [fromStart] composes it
+     * open, as a screen that opens under its dialog does, its frames counted from the first one drawn.
+     */
     private fun ComposeUiTest.strip(
         colors: MutantColors,
         d: Float,
         ground: Color,
         reduce: Boolean = false,
         primary: Boolean = true,
+        fromStart: Boolean = false,
     ): Pair<List<Shot>, List<Shot>> {
         mainClock.autoAdvance = false
-        open = false
+        open = fromStart
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(d)) {
                 MutantTheme(colors = colors, reduceMotion = reduce) {
@@ -84,7 +88,7 @@ class DialogOpaqueAndTallTest {
                 }
             }
         }
-        mainClock.advanceTimeBy(500)
+        if (!fromStart) mainClock.advanceTimeBy(500)
         var seen: Rect? = null
 
         fun shot(ms: Int): Shot {
@@ -198,7 +202,7 @@ class DialogOpaqueAndTallTest {
             if (a in redOut && a.ms >= 80) continue
             val inside = w.inside(d)
             val area = inside.width * inside.height
-            val through = count(a.px, inside) { true } - countSame(a.px, b.px, inside)
+            val through = through(a, b, d)
             assertTrue(through <= area * .001f, "$tag: the screen reads through the window at ${a.ms} ms ($through px)")
         }
         // The window: the 16 dp mosaic to 96 ms, the 8 dp one to 208, then itself with its words.
@@ -260,6 +264,33 @@ class DialogOpaqueAndTallTest {
         assertTrue(light[11] > full * .03f, "$tag: not yet clear at 176 ms: $light")
         assertTrue(light[13] < full * .01f, "$tag: clear from 208 ms: $light")
     }
+
+    /** The pixels of the window's inside where two renders over different screens differ: the screen read through. */
+    private fun through(
+        a: Shot,
+        b: Shot,
+        d: Float,
+    ): Int {
+        val inside = a.window!!.inside(d)
+        return count(a.px, inside) { true } - countSame(a.px, b.px, inside)
+    }
+
+    @Test
+    fun `composed open, the window tunes in opaque from its first frame too`() =
+        runComposeUiTest {
+            val (red, _) = strip(MutantPalettes.Efir, 1f, Color(0xFFE0_2020), fromStart = true)
+            val (green, _) = strip(MutantPalettes.Efir, 1f, Color(0xFF20_C040), fromStart = true)
+            for (i in 0 until red.size) {
+                val (a, b) = red[i] to green[i]
+                assertTrue(a.window != null, "composed at frame $i")
+                val inside = a.window.inside(1f)
+                val n = through(a, b, 1f)
+                assertTrue(n <= inside.width * inside.height * .001f, "the screen reads through at frame $i ($n px)")
+                // Counted from the first frame drawn, which the clock may already have moved 16 ms into the tune.
+                if (i < 5) assertEquals(0, a.glyphs, "no word at frame $i")
+                if (i >= 15) assertTrue(a.glyphs > 60, "the words at frame $i (${a.glyphs} px)")
+            }
+        }
 
     private fun countSame(
         a: PixelMap,
