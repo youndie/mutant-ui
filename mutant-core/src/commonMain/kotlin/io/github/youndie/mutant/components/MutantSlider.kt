@@ -5,9 +5,11 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.drag
+import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -61,14 +66,21 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
+import io.github.youndie.mutant.surface.HeatMachine
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
+import io.github.youndie.mutant.theme.LocalMutantReduceMotion
+import io.github.youndie.mutant.theme.LocalMutantSteppedMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
+import io.github.youndie.mutant.tokens.MutantMotion
 import io.github.youndie.mutant.type.MutantFaceMetrics
 import io.github.youndie.mutant.type.cssLine
+import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -83,6 +95,11 @@ import kotlin.math.roundToInt
  * moves across or lifts, so a scroll of the page that starts on the row scrolls the page. Arrows step the value, Home
  * and End go to the ends. Disabled, the handle loses its signal and the fill and the words grey. Right to left the
  * slider mirrors: its start, the range's first value, at the right.
+ *
+ * What the handle does by itself glides (B-182, the designer's answer 4): a press away from it, the settle at release
+ * and a [value] the app sets take it 330 ms on the slide curve, boiling as when it is dragged, on every frame or in the
+ * kit's four steps under `steppedMotion`; a drag moves with the pointer 1:1 while the way to it closes. A key lands in
+ * one frame and kicks the handle's heat to 0.8. Under reduce motion every move lands at once.
  *
  * Its width is the one given; with none (a scrolling row), the page's 300 dp. A range of one value or a reversed one
  * draws the handle at the start and takes no input.
@@ -153,11 +170,15 @@ internal fun SliderBody(
     rangeTextRtl: String = rangeText,
     range: () -> Triple<Float, ClosedFloatingPointRange<Float>, Int>? = { null },
     hidden: Boolean = false,
+    heat: HeatMachine = remember { HeatMachine() },
 ) {
     val colors = MutantTheme.colors
     val styles = MutantTheme.textStyles
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
+    val clock = readMutantClock()
+    val reduce = LocalMutantReduceMotion.current
+    val steps = LocalMutantSteppedMotion.current
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     // Right to left the slider mirrors (B-65's rule): the start, and the range's first value, at the right. Positions
     // are kept from the start and turned at the edges: the pointer as it comes in, the handle and the fill as drawn.
@@ -165,7 +186,29 @@ internal fun SliderBody(
     val rtlNow by rememberUpdatedState(rtl)
     // While held, the handle follows the pointer; let go, it stands where the value puts it.
     var held by remember { mutableStateOf<Float?>(null) }
-    val at = (held ?: fraction).let { if (it.isNaN()) 0f else it.coerceIn(0f, 1f) }
+    val target = (held ?: fraction).let { if (it.isNaN()) 0f else it.coerceIn(0f, 1f) }
+    // B-182: it glides to where it is going, unless a key sent it there (one frame) or the clock stands.
+    var keyed by remember { mutableStateOf(false) }
+    val glide = remember { SliderGlide() }
+    val still = reduce || clock.frozen || clock.paused || clock.holds > 0
+    val at = glide.follow(target, held != null, keyed, clock.nowMs, still, steps)
+    val gliding = glide.running(clock.nowMs, steps)
+    // While it glides it reads every frame; at rest it reads nothing.
+    if (gliding) clock.frame
+    if (keyed) SideEffect { keyed = false }
+    // The handle boils while it is pressed and while it glides (the designer's answer 4). The surface is given the heat
+    // rather than the interactions, as a tap's release comes before the glide it starts has ended.
+    val pressed by source.collectIsPressedAsState()
+    val boiling = pressed || gliding
+    SideEffect { if (boiling) heat.press(clock.nowMs) else heat.release(clock.nowMs) }
+    LaunchedEffect(source, clock) {
+        source.interactions.collect {
+            when (it) {
+                is HoverInteraction.Enter -> heat.hover(clock.nowMs)
+                is HoverInteraction.Exit -> heat.leave(clock.nowMs)
+            }
+        }
+    }
     val onMove by rememberUpdatedState(onFraction)
     val atNow by rememberUpdatedState(at)
     val words =
@@ -221,14 +264,22 @@ internal fun SliderBody(
                 }
             }.onKeyEvent {
                 if (!enabled || it.type != KeyEventType.KeyDown) return@onKeyEvent false
+                val by =
+                    when (it.key) {
+                        Key.DirectionUp -> 1
+                        Key.DirectionDown -> -1
+                        Key.DirectionRight -> if (rtl) -1 else 1
+                        Key.DirectionLeft -> if (rtl) 1 else -1
+                        Key.MoveHome, Key.MoveEnd -> 0
+                        else -> return@onKeyEvent false
+                    }
+                // A key's move lands in its frame, and the handle takes a heat impulse (B-182).
+                keyed = true
+                heat.impulse(clock.nowMs, SLIDER_KEY_IMPULSE)
                 when (it.key) {
-                    Key.DirectionUp -> step(1)
-                    Key.DirectionDown -> step(-1)
-                    Key.DirectionRight -> step(if (rtl) -1 else 1)
-                    Key.DirectionLeft -> step(if (rtl) 1 else -1)
                     Key.MoveHome -> onMove(0f)
                     Key.MoveEnd -> onMove(1f)
-                    else -> return@onKeyEvent false
+                    else -> step(by)
                 }
                 true
             }.focusable(enabled, source),
@@ -256,7 +307,7 @@ internal fun SliderBody(
                     fill = colors.amber,
                     state = if (enabled) BodyState.Rest else BodyState.Disabled,
                     focused = focused && keyboard,
-                    interactionSource = source,
+                    heatMachine = heat,
                     // The page's disabled handle sets only its radius; the one to drag also its drips, no marks, no
                     // mosaic.
                     profile =
@@ -332,6 +383,8 @@ internal fun SliderBody(
                                     val x0 = fromStart(down.position.x)
                                     val onHandle = x0 in left..(left + handle)
                                     val grip = if (onHandle) x0 - left else handle / 2
+                                    // Taken by itself, it stops where it was drawn under the pointer (B-182).
+                                    if (onHandle) glide.grab()
 
                                     fun follow(x: Float) {
                                         val f = ((fromStart(x) - grip) / travel).coerceIn(0f, 1f)
@@ -399,6 +452,78 @@ internal fun SliderBody(
         }
     }
 }
+
+/**
+ * The handle's glide (B-182, the designer's answer 4): where it is drawn, as a fraction of the travel. A move it makes
+ * by itself (a press away from it, the settle at release, a value the app sets) starts a glide from where it is drawn:
+ * a way back to it that closes in 330 ms on the slide curve, `(1 − p)²` of it left, as the switch's thumb slides home
+ * (`slid`), on every frame or in the hot tick's steps under `steppedMotion` (D22). The pointer's moves while held do not
+ * start one: the handle moves with the pointer 1:1, the way left closing over it. A handle taken by itself ([grab])
+ * stops where the pointer took it, and a press away from it glides to the pointer. A key's move, and any move while the
+ * clock stands (reduce motion, a fixture, a dialog's hold), lands at once (D24).
+ */
+@Stable
+private class SliderGlide {
+    private var target = Float.NaN
+    private var held = false
+    private var grabbed = false
+    private var way = 0f
+    private var since = Double.NEGATIVE_INFINITY
+
+    /**
+     * From the gesture: the pointer took the handle itself, by where it was drawn at the press. The composition that sees
+     * it comes a frame later, and the glide would have gone on under the pointer for that frame.
+     */
+    fun grab() {
+        grabbed = true
+    }
+
+    /** The glide's progress at [now], 1 when there is none. */
+    private fun progress(
+        now: Double,
+        steps: Boolean,
+    ): Double = if (since == Double.NEGATIVE_INFINITY) 1.0 else stepped(now - since, MutantMotion.SLIDE_MS, steps)
+
+    /** What is left of the way back at [now]. */
+    private fun left(
+        now: Double,
+        steps: Boolean,
+    ): Float = progress(now, steps).let { p -> if (p >= 1) 0f else (way * (1 - p) * (1 - p)).toFloat() }
+
+    fun running(
+        now: Double,
+        steps: Boolean,
+    ): Boolean = progress(now, steps) < 1
+
+    /** From composition: where the handle is drawn at [now], going to [to], [held] by the pointer or not. */
+    fun follow(
+        to: Float,
+        held: Boolean,
+        keyed: Boolean,
+        now: Double,
+        still: Boolean,
+        steps: Boolean,
+    ): Float {
+        val took = held && !this.held && grabbed
+        if (held) grabbed = false
+        if (target.isNaN() || still || took || (keyed && to != target)) {
+            way = 0f
+            since = Double.NEGATIVE_INFINITY
+        } else if (held != this.held || (!held && to != target)) {
+            way = target + left(now, steps) - to
+            since = if (abs(way) > SLIDER_GLIDE_LEAST) now else Double.NEGATIVE_INFINITY
+        }
+        target = to
+        this.held = held
+        return to + left(now, steps)
+    }
+}
+
+/** A way shorter than this, of the travel, is no glide: a handle taken where it stands (B-182). */
+private const val SLIDER_GLIDE_LEAST = 1e-4f
+
+/** The heat a key's step gives the handle (the designer's answer 4, B-182). */
+private const val SLIDER_KEY_IMPULSE = .8
 
 /** Where a line stands in the box a layout gave it: centred in it, or against its end. */
 private enum class InkPlace { Centre, End }
