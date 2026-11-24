@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
@@ -22,8 +24,14 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -31,6 +39,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
@@ -50,12 +59,20 @@ import io.github.youndie.mutant.type.cssLine
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * A tooltip (v1): an on-screen hint whose plate flows down onto what it speaks of. Over its [anchor] stands a `blob`
  * plate (r 6, drips of 20 hanging towards the anchor): one line of OSD type on the blue plate, 30 dp tall; with a
  * [supportingText], two lines on the amber plate, 44 dp tall. It is centred over the anchor, its bottom 28 dp above it
  * (22 for the two-line plate), as the page stands them.
+ *
+ * At the window's edges (B-200, designed here): the plate shifts along the edge to stand 8 dp inside the window, still
+ * over its anchor; where it does not fit above, it stands below the anchor, its top 8 dp under it, its drips still
+ * hanging down. It is at most 240 dp wide (and 16 dp narrower than the window): a longer hint wraps, to at most three
+ * lines in all — 30, 44 and 58 dp tall — and the last ends in an ellipsis. On the amber plate the first line stays one
+ * line and the supporting text takes the other two.
  *
  * The design draws it shown, not appearing; this is designed here (D15). It shows while a mouse hovers the anchor, while
  * the anchor holds keyboard focus, and after a finger's long press, until 1.5 s after it lifts. Its plate tunes in as
@@ -81,9 +98,13 @@ public fun MutantTooltipBox(
     // Whether the focus the anchor holds came with a press: a pointer, not the keyboard.
     var pressed by remember { mutableStateOf(false) }
     var byPress by remember { mutableStateOf(false) }
+    // B-200: where the anchor stands in the window, unclipped, for the plate to keep inside the window.
+    var anchorRect by remember { mutableStateOf<Rect?>(null) }
     Box(
         modifier
-            .onFocusChanged {
+            .onGloballyPositioned {
+                anchorRect = Rect(it.positionInWindow(), it.size.toSize())
+            }.onFocusChanged {
                 if (it.hasFocus && !focused) byPress = pressed
                 if (!it.hasFocus) pressed = false
                 focused = it.hasFocus
@@ -153,11 +174,14 @@ public fun MutantTooltipBox(
         val still = tuneStands(clock)
         val tune = remember { MutantTune(shown, clock.nowMs, play = true) }
         tune.follow(shown, clock.nowMs, still)
-        if (tune.composed(clock, still)) TooltipPopup(text, supportingText, key, tune, leaving = !shown)
+        if (tune.composed(clock, still)) TooltipPopup(text, supportingText, key, tune, leaving = !shown) { anchorRect }
     }
 }
 
-/** The plate over the anchor in a popup of no size: it draws past its bounds and takes no press (plakat-ui B-72). */
+/**
+ * The plate over the anchor in a popup of no size: it draws past its bounds and takes no press (plakat-ui B-72). The
+ * popup's point is the anchor's top middle; the plate is placed from it so that it stands inside the window (B-200).
+ */
 @Composable
 private fun TooltipPopup(
     text: String,
@@ -165,8 +189,10 @@ private fun TooltipPopup(
     key: String,
     tune: MutantTune,
     leaving: Boolean,
+    anchor: () -> Rect?,
 ) {
     val gap = if (supportingText == null) GAP_PLAIN else GAP_RICH
+    val window = LocalWindowInfo.current.containerSize
     Popup(
         popupPositionProvider = AboveTheMiddle,
         properties = PopupProperties(focusable = false, clippingEnabled = false),
@@ -174,10 +200,52 @@ private fun TooltipPopup(
         Layout(content = {
             MutantTuned(tune, leaving = leaving) { TooltipPlate(text, supportingText, key, Modifier) }
         }) { measurables, _ ->
-            val p = measurables.first().measure(Constraints())
-            layout(0, 0) { p.place(-p.width / 2, -gap.dp.roundToPx() - p.height) }
+            val margin = EDGE_MARGIN.dp.roundToPx()
+            // Never wider than the window keeps room for: the plate's own 240 dp limit is the plate's.
+            val room = if (window.width > 0) max(0, window.width - 2 * margin) else Constraints.Infinity
+            val p = measurables.first().measure(Constraints(maxWidth = room))
+            layout(0, 0) {
+                val above = IntOffset(-p.width / 2, -gap.dp.roundToPx() - p.height)
+                val at = anchor()
+                val origin = coordinates?.positionInWindow()
+                if (at == null || origin == null || window.width <= 0 || window.height <= 0) {
+                    p.place(above)
+                } else {
+                    val spot =
+                        tooltipSpot(
+                            at,
+                            IntSize(p.width, p.height),
+                            window,
+                            margin,
+                            gapAbove = gap.dp.roundToPx(),
+                            gapBelow = GAP_BELOW.dp.roundToPx(),
+                        )
+                    p.place(spot.x - origin.x.roundToInt(), spot.y - origin.y.roundToInt())
+                }
+            }
         }
     }
+}
+
+/**
+ * Where a plate of [plate] stands in a window of [window] for an anchor at [anchor], all in window pixels (B-200): centred
+ * over the anchor and [gapAbove] above it; shifted along the edge to stand [margin] inside the window; below the anchor,
+ * [gapBelow] under it, only where it does not fit above and does below.
+ */
+internal fun tooltipSpot(
+    anchor: Rect,
+    plate: IntSize,
+    window: IntSize,
+    margin: Int,
+    gapAbove: Int,
+    gapBelow: Int,
+): IntOffset {
+    val middle = (anchor.left + anchor.width / 2).roundToInt()
+    val x = (middle - plate.width / 2).coerceIn(margin, max(margin, window.width - margin - plate.width))
+    val top = anchor.top.roundToInt() - gapAbove - plate.height
+    val under = anchor.bottom.roundToInt() + gapBelow
+    val y = if (top < margin && under + plate.height <= window.height - margin) under else top
+    return IntOffset(x, y)
 }
 
 /** The popup's point: the anchor's top middle. */
@@ -211,10 +279,14 @@ internal fun TooltipPlate(
             colors.onNoSignal
         }
     val raster = LocalMutantTextRaster.current
+    // B-200: the lines the words were laid out in, read as they are measured, to set the plate's height by them.
+    val lines = remember { IntArray(2) }
+    val first = remember { { r: TextLayoutResult -> lines[0] = r.lineCount } }
+    val second = remember { { r: TextLayoutResult -> lines[1] = r.lineCount } }
     MutantSurface(
         MutantBody.Blob,
         key,
-        modifier.heightIn(min = if (rich) RICH_HEIGHT.dp else PLAIN_HEIGHT.dp),
+        modifier.widthIn(max = MAX_WIDTH.dp).heightIn(min = if (rich) RICH_HEIGHT.dp else PLAIN_HEIGHT.dp),
         fill = if (rich) colors.amber else colors.noSignal,
         // The page's `data-r="6" data-over="20" data-cf="0" data-marks="0" data-edge="0" data-ow="2.5"`.
         profile =
@@ -227,13 +299,19 @@ internal fun TooltipPlate(
                 mosaic = false,
             ),
     ) {
-        // A taller line (font scale 2) grows the plate; at font scale 1 it is the page's 30 or 44 dp.
+        // `line-height: 1`, Handjet 18 (and 16 for the supporting text). The plate is 30, 44 or 58 dp tall for one, two
+        // or three lines, the words centred in it; a taller line (font scale 2) grows it past that.
         Column(
-            Modifier.heightIn(min = if (rich) RICH_HEIGHT.dp else PLAIN_HEIGHT.dp).padding(horizontal = PADDING.dp),
-            verticalArrangement = Arrangement.Center,
+            Modifier
+                .layout { m, c ->
+                    val p = m.measure(c.copy(minHeight = 0))
+                    val n = if (rich) 1 + lines[1] else lines[0]
+                    val least = (PLAIN_HEIGHT + LINE_STEP * (n.coerceIn(1, MAX_LINES) - 1)).dp.roundToPx()
+                    val h = max(p.height, least).coerceIn(c.minHeight, c.maxHeight)
+                    layout(p.width, h) { p.place(0, (h - p.height) / 2) }
+                }.padding(horizontal = PADDING.dp),
         ) {
             if (rich) {
-                // `line-height: 1`, the two lines Handjet 18 and 16.
                 MutantText(
                     text,
                     Modifier.mutantCleanZone(),
@@ -243,8 +321,8 @@ internal fun TooltipPlate(
                                 18.sp,
                             ).cssLine(MutantFaceMetrics.Handjet, 1f)
                             .copy(color = ink, platformStyle = raster),
+                    overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
-                    softWrap = false,
                 )
                 MutantText(
                     supportingText.orEmpty(),
@@ -255,19 +333,24 @@ internal fun TooltipPlate(
                                 16.sp,
                             ).cssLine(MutantFaceMetrics.Handjet, 1f)
                             .copy(color = ink, platformStyle = raster),
-                    maxLines = 1,
-                    softWrap = false,
+                    onTextLayout = second,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = MAX_LINES - 1,
                 )
             } else {
-                Box(Modifier.heightIn(min = PLAIN_HEIGHT.dp), contentAlignment = Alignment.CenterStart) {
-                    MutantText(
-                        text,
-                        Modifier.mutantCleanZone(),
-                        style = styles.osd(18.sp).copy(color = ink, platformStyle = raster),
-                        maxLines = 1,
-                        softWrap = false,
-                    )
-                }
+                MutantText(
+                    text,
+                    Modifier.mutantCleanZone(),
+                    style =
+                        styles
+                            .osd(
+                                18.sp,
+                            ).cssLine(MutantFaceMetrics.Handjet, 1f)
+                            .copy(color = ink, platformStyle = raster),
+                    onTextLayout = first,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = MAX_LINES,
+                )
             }
         }
     }
@@ -284,6 +367,15 @@ private const val OUTLINE = 2.5
 /** From the plate's bottom to the anchor's top, as the page stands its two tooltips. */
 private const val GAP_PLAIN = 28
 private const val GAP_RICH = 22
+
+/** B-200, the designer's answers 26 and 27: 8 dp from the window; at most 240 dp wide and three lines, 30/44/58 dp. */
+private const val EDGE_MARGIN = 8
+private const val MAX_WIDTH = 240
+private const val MAX_LINES = 3
+private const val LINE_STEP = 14
+
+/** Below the anchor (designed here): the plate's top 8 dp under it, the room its drips' tips keep above it. */
+private const val GAP_BELOW = 8
 
 /** How long a long-pressed tooltip stays after the finger lifts (designed here). */
 private const val TOUCH_LINGER_MS = 1500L
