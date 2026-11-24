@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-183](docs/backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md) `[ ]` | The drawer and the sheet follow a finger and a mouse | P2 | L | - |
+| [B-183](docs/backlog/B-183-the-drawer-and-the-sheet-follow-a-finger.md) `[~]` | The drawer and the sheet follow a finger and a mouse | P2 | L | - |
 | [B-184](docs/backlog/B-184-the-sheet-scrolls-its-content.md) `[ ]` | The bottom sheet scrolls its content and hands a pull at the top to its drag | P2 | M | B-183 |
 | [B-187](docs/backlog/B-187-tab-labels-and-a-narrow-top-bar.md) `[ ]` | Tab labels hand the accent over late; a narrow top bar drops its status first | P2 | S | - |
 | [B-189](docs/backlog/B-189-a-press-held-inside-a-scroll.md) `[ ]` | A press inside a scroll heats after 100 ms | P2 | M | - |

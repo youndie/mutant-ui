@@ -1,7 +1,7 @@
 ---
 id: B-183
 title: "The drawer and the sheet follow a finger and a mouse"
-status: open
+status: wip
 priority: P2
 size: L
 stage: stage-6-later
