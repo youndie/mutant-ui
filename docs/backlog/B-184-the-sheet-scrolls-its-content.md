@@ -101,6 +101,10 @@ The bottom sheet does not scroll its content; B-178 left its content running off
   ones above it left, as the page's column does, and with it both cells read exactly as on `main` (2.082 % and 2 103 px
   in «Эфир», 1.709 % and 1 726 px in «Копия», the bare twins 0 and 40 px). No golden moved: the kit has no sheet golden
   but these cells.
+- **ABI**: unchanged; every new declaration is internal or private (`checkKotlinAbi` green).
+- **Gates on this Mac**: `make check` green; `./gradlew check` green (676 tests in `mutant-core`'s and the sample's
+  desktop suites, none failed, read from the JUnit XML); `./gradlew :mutant-core:compileKotlinIosArm64` green;
+  `make docs-against BASE=origin/main` clean.
 - **Not verified**: a phone, a real window and the browser (no device, adb or real browser used); a stylus; an Android
   stretch overscroll (none is applied: what the content leaves over goes to the sheet); a lazy list moved by its own
   state in code is not seen as away from its top until it scrolls (the KDoc says so).
