@@ -91,6 +91,7 @@ internal fun Recording(
                     MutantIllustration(
                         MutantIllustrationKind.Cassette,
                         Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp),
+                        cassetteLabel = s.cassetteLabel,
                     )
                     Spacer(Modifier.height(42.dp))
                     // B-174: the side and its line are the tape's own; the design's tape reads the design's words.

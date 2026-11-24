@@ -14,6 +14,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.illustration.CASSETTE_LABEL
 import io.github.youndie.mutant.illustration.IllustrationArt
 import io.github.youndie.mutant.illustration.IllustrationParts
 import io.github.youndie.mutant.illustration.MutantIllustrationKind
@@ -29,6 +30,9 @@ import io.github.youndie.mutant.type.cssLine
  * 20 dp apart (a [MutantButton], say — the page draws none). The words wrap and stay centred. Given less than the
  * art's width, the art keeps its size, centred, and overflows both sides alike.
  *
+ * [cassetteLabel] is the word on the cassette's label, as [io.github.youndie.mutant.illustration.MutantIllustration]
+ * takes it: the design's «БЕЗ ПОДПИСИ» unless the app translates it (B-194).
+ *
  * In a [io.github.youndie.mutant.surface.MutantAppear] it tunes in as it takes the content's place, its art as mosaics
  * and its words on the third step, and steps out as it leaves (B-179); composed alone it shows whole in its first frame.
  */
@@ -38,9 +42,10 @@ public fun MutantEmptyState(
     title: String,
     modifier: Modifier = Modifier,
     text: String? = null,
+    cassetteLabel: String = CASSETTE_LABEL,
     action: (@Composable () -> Unit)? = null,
 ) {
-    EmptyStateBody(kind, title, modifier, text, action)
+    EmptyStateBody(kind, title, modifier, text, action, cassetteLabel = cassetteLabel)
 }
 
 /** [MutantEmptyState]; a fixture draws the art on another page's [stage] and leaves out its [parts] and words. */
@@ -53,6 +58,7 @@ internal fun EmptyStateBody(
     action: (@Composable () -> Unit)?,
     stage: String = kind.stage,
     parts: IllustrationParts = IllustrationParts.All,
+    cassetteLabel: String = CASSETTE_LABEL,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
@@ -61,7 +67,7 @@ internal fun EmptyStateBody(
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         // Given less than the art's width, the art keeps its size and stands centred over the words, overflowing both
         // sides alike, as `IllustrationArt` sizes itself (B-170).
-        IllustrationArt(kind, Modifier, parts, stage)
+        IllustrationArt(kind, Modifier, parts, stage, cassetteLabel)
         Spacer(Modifier.height(ART_GAP))
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

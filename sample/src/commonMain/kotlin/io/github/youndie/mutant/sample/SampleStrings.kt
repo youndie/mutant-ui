@@ -116,6 +116,10 @@ class SampleStrings(
     val search = t("SEARCH", "ПОИСК")
     val findRecording = t("Find a recording", "Найти запись")
     val untitled = t("Untitled No. 3", "Без подписи №3")
+
+    // B-194: the cassette's label, the design's «БЕЗ ПОДПИСИ», in the sample's language.
+    val cassetteLabel = t("UNTITLED", "БЕЗ ПОДПИСИ")
+
     val sideA = t("Side A · 46 min", "Сторона A · 46 мин")
     val nightTuesday = t("On air, Tuesday night", "Эфир, ночь на вторник")
     val recordedOver = t("Recorded over · 12 min", "Записано поверх · 12 мин")

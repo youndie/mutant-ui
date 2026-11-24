@@ -150,6 +150,7 @@ internal fun EmptyStates(s: SampleStrings) {
                 s.emptyTitle,
                 Modifier.fillMaxWidth(),
                 text = s.emptyText,
+                cassetteLabel = s.cassetteLabel,
                 action = { MutantButton(s.record, {}, key = "empty-record") },
             )
         }

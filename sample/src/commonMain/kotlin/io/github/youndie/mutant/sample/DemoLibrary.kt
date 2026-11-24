@@ -96,6 +96,7 @@ internal fun Library(
                                     s.emptyTitle,
                                     Modifier.fillMaxWidth().padding(vertical = 24.dp),
                                     text = s.emptyText,
+                                    cassetteLabel = s.cassetteLabel,
                                 )
                             }
                         } else {
