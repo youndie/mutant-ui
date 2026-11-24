@@ -12,17 +12,20 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * B-14: every icon at 48 and at 16 dp against the Icons page, drawn by [MutantIcon] in the colour the page's
+ * B-14: every icon of the page at 48 and at 16 dp against the Icons page, drawn by [MutantIcon] in the colour the page's
  * cell gives it over the ground behind the cell, at whole pixels as Chrome snaps an `<svg>` (drawn at the
  * cell's fraction of a pixel instead, every icon reads worse: 216 px for Menu at 48).
  *
  * 25 of the 32 cells match to the pixel. The rest is the two renderers on the same strokes, read on each
  * `_DIFF` (research §1.13): only partial-coverage pixels, never a stroke moved — and held to what was measured,
  * never raised.
+ *
+ * B-195: the kit's own icons, which the page does not draw, are its known entries (research D20), each with the item
+ * that added it; [PlayIconTest] holds Play to its own golden.
  */
 class IconParityTest {
     @Test
-    fun `the sixteen icons are the page's in its order`() {
+    fun `the sixteen icons are the page's in its order, then the kit's own`() {
         assertEquals(
             listOf(
                 "Menu",
@@ -41,16 +44,35 @@ class IconParityTest {
                 "Warning",
                 "Info",
                 "Schedule",
+                "Play",
             ),
             MutantIcons.all.map { it.first },
         )
         assertEquals(MutantIconPaths.all.map { it.first }, MutantIcons.all.map { it.first })
+        assertEquals(mapOf("Play" to "B-195"), MutantIconPaths.kit, "the kit's own icons and their items")
+        assertEquals(
+            MutantIconPaths.kit.keys.toList(),
+            MutantIcons.all.map { it.first }.takeLast(MutantIconPaths.kit.size),
+        )
+    }
+
+    @Test
+    fun `a known entry is one the page does not draw`() {
+        // The Icons page's references are its sixteen; one rendered under a kit icon's name would mean the page drew it.
+        val stems = DesignParity.stems().filter { it.startsWith("Icon_") }
+        for (name in MutantIconPaths.kit.keys) {
+            assertTrue(
+                stems.none { it.startsWith("Icon_$name") },
+                "$name has a reference",
+            )
+        }
+        assertEquals(32, stems.size, "the page's sixteen icons at 48 and 16 dp")
     }
 
     @Test
     fun `every icon matches the page at 48 and 16 dp`() {
         val results =
-            MutantIcons.all.flatMap { (name, icon) ->
+            MutantIcons.all.filter { it.first !in MutantIconPaths.kit }.flatMap { (name, icon) ->
                 listOf(48, 16).map { size ->
                     val stem = "Icon_$name${size}_Efir"
                     val ref = DesignParity.reference(stem)

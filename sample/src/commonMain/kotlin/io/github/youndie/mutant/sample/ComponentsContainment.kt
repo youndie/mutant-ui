@@ -49,7 +49,7 @@ internal fun ListItems(s: SampleStrings) {
             MutantListItem(
                 s.testCard,
                 supporting = s.fourthGeneration,
-                leadingIcon = MutantIcons.Home,
+                leadingIcon = MutantIcons.Play,
                 trailingText = "12:04",
                 onClick = {},
                 key = "tile1",
@@ -59,7 +59,7 @@ internal fun ListItems(s: SampleStrings) {
             MutantListItem(
                 s.nightTuesday,
                 supporting = s.recordedOver,
-                leadingIcon = MutantIcons.Home,
+                leadingIcon = MutantIcons.Play,
                 trailing = { MutantBadge(s.brandNew) },
                 onClick = {},
                 key = "tile2",

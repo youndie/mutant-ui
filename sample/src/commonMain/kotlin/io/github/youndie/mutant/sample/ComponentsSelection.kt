@@ -176,7 +176,7 @@ internal fun Searches(s: SampleStrings) {
                         s.nightTuesday,
                         query,
                         supporting = s.recordedOver,
-                        leadingIcon = MutantIcons.Schedule,
+                        leadingIcon = MutantIcons.Play,
                         onClick = {},
                     )
                     MutantDivider(key = "search")

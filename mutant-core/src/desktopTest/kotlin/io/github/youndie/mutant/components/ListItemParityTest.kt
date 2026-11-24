@@ -24,9 +24,6 @@ import kotlin.test.assertTrue
  * themes. The tile is the slot; the words beside it are held one by one, where the page's ink lies and in its colour.
  */
 class ListItemParityTest {
-    /** The page's play triangle: list content, not one of the design's icons. */
-    private val play = MutantIcons.icon("Play", "M8 5l11 7-11 7z")
-
     private fun split(
         cell: String,
         theme: String,
@@ -55,7 +52,7 @@ class ListItemParityTest {
                     ),
                     Modifier,
                     if (badge) "Записано поверх" else "Копия 4-го поколения",
-                    play,
+                    MutantIcons.Play,
                     if (badge) null else "12:04",
                     if (badge) ({ BadgeBody("НОВОЕ", Modifier, compact = false, hidden = hidden) }) else null,
                     null,

@@ -235,6 +235,8 @@ final object io.github.youndie.mutant.icons/MutantIcons { // io.github.youndie.m
         final fun <get-Info>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Info.<get-Info>|<get-Info>(){}[0]
     final val Menu // io.github.youndie.mutant.icons/MutantIcons.Menu|{}Menu[0]
         final fun <get-Menu>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Menu.<get-Menu>|<get-Menu>(){}[0]
+    final val Play // io.github.youndie.mutant.icons/MutantIcons.Play|{}Play[0]
+        final fun <get-Play>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Play.<get-Play>|<get-Play>(){}[0]
     final val Refresh // io.github.youndie.mutant.icons/MutantIcons.Refresh|{}Refresh[0]
         final fun <get-Refresh>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.youndie.mutant.icons/MutantIcons.Refresh.<get-Refresh>|<get-Refresh>(){}[0]
     final val Schedule // io.github.youndie.mutant.icons/MutantIcons.Schedule|{}Schedule[0]

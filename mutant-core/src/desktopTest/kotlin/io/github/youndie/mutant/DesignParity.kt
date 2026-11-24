@@ -134,6 +134,9 @@ internal object DesignParity {
     private val dir = File("src/desktopTest/snapshots/design")
     private val manifest by lazy { Json.parseToJsonElement(File(dir, "manifest.json").readText()).jsonObject }
 
+    /** Every reference's stem, as the manifest lists them. */
+    fun stems(): List<String> = manifest["references"]!!.jsonArray.map { it.jsonObject["stem"]!!.jsonPrimitive.content }
+
     fun reference(stem: String): JsonObject =
         manifest["references"]!!.jsonArray.map { it.jsonObject }.single { it["stem"]!!.jsonPrimitive.content == stem }
 

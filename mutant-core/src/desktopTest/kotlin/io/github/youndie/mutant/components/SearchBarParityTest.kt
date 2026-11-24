@@ -98,7 +98,7 @@ class SearchBarParityTest {
                                             },
                                             Modifier,
                                             "Записано поверх · 12 мин",
-                                            MutantIcons.icon("Play", "M8 5l11 7-11 7z"),
+                                            MutantIcons.Play,
                                             null,
                                             null,
                                             null,
