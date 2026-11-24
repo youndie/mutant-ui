@@ -58,12 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (20)
+## Open (19)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
-| [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[~]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-180](docs/backlog/B-180-a-screen-tunes-in.md) `[ ]` | A new screen tunes in as the switch starts | P2 | M | B-179 |
@@ -83,7 +82,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (190)
+## Closed (191)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -264,6 +263,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-177](docs/backlog/B-177-the-stand-in-keeps-the-state.md) `[x]` - The browser's stand-in draws the body's state and stroke
 - [B-178](docs/backlog/B-178-the-calendar-short-of-height.md) `[x]` - The calendar given less room than it wants keeps its size
 - [B-179](docs/backlog/B-179-bodies-tune-in-as-they-appear.md) `[x]` - Bodies tune in as they appear and step out as they leave
+- [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[x]` - The dialog rises opaque and keeps a margin when tall
 - [B-186](docs/backlog/B-186-the-caret-and-the-fields-mosaic.md) `[x]` - The caret restarts, sits beside the letters, and the mosaic ignores the text
 - [B-188](docs/backlog/B-188-the-carousel-glides-on-tab-and-fits-a-narrow-shelf.md) `[x]` - The carousel glides on Tab and fits a narrow shelf
 - [B-190](docs/backlog/B-190-a-press-under-the-pause.md) `[x]` - A press under the pause shows a still frame at heat 1
