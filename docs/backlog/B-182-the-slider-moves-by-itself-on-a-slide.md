@@ -1,7 +1,7 @@
 ---
 id: B-182
 title: "The slider moves by itself on the slide curve"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-6-later
