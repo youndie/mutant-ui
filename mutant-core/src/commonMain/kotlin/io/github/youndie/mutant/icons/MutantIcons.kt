@@ -15,9 +15,10 @@ import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.theme.MutantTheme
 
 /**
- * The kit's sixteen icons (research §1.13): each the Material icon of its name redrawn on a 24 dp grid with a
- * 2 dp line, square caps and one accent of damage already in its path — a cut shifted by 1 dp or a dropped
- * segment. They are one colour, never animated and never generated: a seed or a tick does not change them.
+ * The kit's icons (research §1.13): the design's sixteen, each the Material icon of its name redrawn on a 24 dp grid
+ * with a 2 dp line, square caps and one accent of damage already in its path — a cut shifted by 1 dp or a dropped
+ * segment — and the kit's own after them, on the same grid and line ([Play]). They are one colour, never animated and
+ * never generated: a seed or a tick does not change them.
  */
 public object MutantIcons {
     public val Menu: ImageVector by lazy { icon("Menu", MutantIconPaths.MENU) }
@@ -37,7 +38,13 @@ public object MutantIcons {
     public val Info: ImageVector by lazy { icon("Info", MutantIconPaths.INFO) }
     public val Schedule: ImageVector by lazy { icon("Schedule", MutantIconPaths.SCHEDULE) }
 
-    /** Every icon in the design page's order, by name. */
+    /**
+     * A play triangle, the kit's own (B-195, the designer's answer 20): the design's pages draw it on a play action and
+     * on a recording's row, and its Icons page has none. The page's grid, line and caps, with no accent of damage.
+     */
+    public val Play: ImageVector by lazy { icon("Play", MutantIconPaths.PLAY) }
+
+    /** Every icon, the design page's sixteen in its order and then the kit's own, by name. */
     public val all: List<Pair<String, ImageVector>> by lazy {
         listOf(
             "Menu" to Menu,
@@ -56,6 +63,7 @@ public object MutantIcons {
             "Warning" to Warning,
             "Info" to Info,
             "Schedule" to Schedule,
+            "Play" to Play,
         )
     }
 

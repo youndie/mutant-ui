@@ -120,9 +120,14 @@ internal fun Recording(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        MutantButton(if (listening) s.pause else s.listen, {
-                            listening = !listening
-                        }, Modifier.weight(1f), key = "buttonB")
+                        // B-195: the design's play triangle before «Listen»; the kit has no pause icon, so «Pause» goes without.
+                        MutantButton(
+                            if (listening) s.pause else s.listen,
+                            { listening = !listening },
+                            Modifier.weight(1f),
+                            icon = if (listening) null else MutantIcons.Play,
+                            key = "buttonB",
+                        )
                         MutantOutlinedButton(s.toQueue, { queued = true }, key = "button-o")
                         MutantTooltipBox(s.shareWord) {
                             MutantIconButton(MutantIcons.Share, s.shareWord, {
@@ -144,7 +149,7 @@ internal fun Recording(
                                     MutantListItem(
                                         s.testCard,
                                         supporting = s.fourthGeneration,
-                                        leadingIcon = MutantIcons.Home,
+                                        leadingIcon = MutantIcons.Play,
                                         trailingText = "12:04",
                                         key = "tile1",
                                     )
@@ -152,7 +157,7 @@ internal fun Recording(
                                     MutantListItem(
                                         s.nightTuesday,
                                         supporting = s.recordedOverShort,
-                                        leadingIcon = MutantIcons.Home,
+                                        leadingIcon = MutantIcons.Play,
                                         trailing = { MutantBadge(s.brandNew) },
                                         key = "tile2",
                                     )
@@ -160,7 +165,7 @@ internal fun Recording(
                                     MutantListItem(
                                         s.staticBetween,
                                         supporting = s.noiseNine,
-                                        leadingIcon = MutantIcons.Home,
+                                        leadingIcon = MutantIcons.Play,
                                         trailingText = "09:02",
                                         key = "tile3",
                                     )

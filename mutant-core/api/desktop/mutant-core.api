@@ -273,6 +273,7 @@ public final class io/github/youndie/mutant/icons/MutantIcons {
 	public final fun getHome ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getInfo ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getMenu ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPlay ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getRefresh ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getSchedule ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getSearch ()Landroidx/compose/ui/graphics/vector/ImageVector;
