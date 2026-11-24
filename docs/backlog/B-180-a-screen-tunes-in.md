@@ -1,7 +1,7 @@
 ---
 id: B-180
 title: "A new screen tunes in as the switch starts"
-status: open
+status: wip
 priority: P2
 size: M
 stage: stage-6-later
