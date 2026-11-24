@@ -18,7 +18,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.AbsoluteAlignment
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.focusProperties
@@ -46,6 +46,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toOffset
@@ -97,7 +99,9 @@ import kotlin.math.roundToInt
  *
  * A segment is 104 dp where the button is given no width. The whole button is one focus stop, and the arrows choose.
  * A label wider than its segment ends where the segment does, in an ellipsis. Disabled, the body loses its signal, no
- * window shows and the labels grey.
+ * window shows and the labels grey. Right to left the segments are mirrored, the first at the right, with the window,
+ * the venom's run and the press; Left and Right choose the segment on that side, and Down and Up the next and the one
+ * before (B-205). The body itself is drawn as it is left to right.
  */
 @Composable
 public fun MutantSegmentedButton(
@@ -138,6 +142,8 @@ internal fun SegmentedBody(
     val run = remember { VenomRun(shown, PILL_RADIUS) }
     run.steps = LocalMutantSteppedMotion.current
     val geo = remember { SegmentGeometry() }
+    geo.rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    geo.count = n
     run.key = pillKey
     run.cassette = cassette
     run.slot = geo::slot
@@ -175,10 +181,13 @@ internal fun SegmentedBody(
             .selectableGroup()
             .onKeyEvent {
                 if (!enabled || n == 0 || it.type != KeyEventType.KeyDown) return@onKeyEvent false
+                // The segment on the arrow's side: right to left the next one stands to the left (B-205).
                 val to =
                     when (it.key) {
-                        Key.DirectionRight, Key.DirectionDown -> (selectedIndex + 1).coerceIn(0, n - 1)
-                        Key.DirectionLeft, Key.DirectionUp -> (selectedIndex - 1).coerceIn(0, n - 1)
+                        Key.DirectionRight -> (selectedIndex + geo.side).coerceIn(0, n - 1)
+                        Key.DirectionLeft -> (selectedIndex - geo.side).coerceIn(0, n - 1)
+                        Key.DirectionDown -> (selectedIndex + 1).coerceIn(0, n - 1)
+                        Key.DirectionUp -> (selectedIndex - 1).coerceIn(0, n - 1)
                         else -> return@onKeyEvent false
                     }
                 if (to != selectedIndex) {
@@ -319,8 +328,8 @@ internal fun SegmentedBody(
                     val d = density
                     val placed =
                         words.mapIndexed { i, m ->
-                            val l = ((geo.inset + i * geo.cell) * d).roundToInt()
-                            val r = ((geo.inset + (i + 1) * geo.cell) * d).roundToInt()
+                            val l = ((geo.inset + geo.column(i) * geo.cell) * d).roundToInt()
+                            val r = ((geo.inset + (geo.column(i) + 1) * geo.cell) * d).roundToInt()
                             m.measure(Constraints.fixed((r - l).coerceAtLeast(0), c.maxHeight)) to l
                         }
                     layout(c.maxWidth, c.maxHeight) { placed.forEach { (p, l) -> p.place(l, 0) } }
@@ -371,16 +380,24 @@ private fun SegmentLabel(
     MutantText(
         text,
         Modifier
-            // The line from the segment's left whatever the direction: the draw below centres it from there.
+            // The line at the segment's start: the draw below centres it from the segment's left (B-205).
             .fillMaxWidth()
-            .wrapContentWidth(AbsoluteAlignment.Left)
+            .wrapContentWidth(Alignment.Start)
             .mutantCleanZone()
             .drawWithContent {
                 val w = line
                 if (w.isNaN()) return@drawWithContent drawContent()
                 val d = density
-                val cellLeft = (run.inset + index * run.cell) * d
-                val x = cellLeft - cellLeft.roundToInt() + (run.cell * d - w) / 2
+                val column = run.column(index)
+                val cellLeft = (run.inset + column * run.cell) * d
+                // Right to left the line's box stands at the segment's right: what it leaves is drawn back over.
+                val slack =
+                    if (run.rtl) {
+                        ((run.inset + (column + 1) * run.cell) * d).roundToInt() - cellLeft.roundToInt() - size.width
+                    } else {
+                        0f
+                    }
+                val x = cellLeft - cellLeft.roundToInt() - slack + (run.cell * d - w) / 2
                 // Blink floors a line box's half-leading; a grid centres an item at the half pixel and paints it on the
                 // next one.
                 val y =
@@ -401,11 +418,22 @@ private fun SegmentLabel(
     )
 }
 
-/** The segments' geometry the window moves over, in dp: the inset from the body and the width of a segment. */
+/**
+ * The segments' geometry the window moves over, in dp: the inset from the body and the width of a segment. Right to left
+ * ([rtl]) segment `i` of [count] stands in column `count - 1 - i` from the left (B-205).
+ */
 private class SegmentGeometry {
     var inset = 0f
     var cell = 0f
     var height = 0f
+    var rtl = false
+    var count = 0
+
+    /** The column from the left segment [i] stands in. */
+    fun column(i: Int): Int = if (rtl) count - 1 - i else i
+
+    /** Which way the next segment stands: 1 to the right, -1 to the left. */
+    val side: Int get() = if (rtl) -1 else 1
 
     /** The window's box in pixels, as laid out. */
     var pill = IntRect.Zero
@@ -415,7 +443,7 @@ private class SegmentGeometry {
         i: Int,
         density: Float,
     ): Pair<Int, Int> {
-        val l = ((inset + i * cell) * density).roundToInt()
+        val l = ((inset + column(i) * cell) * density).roundToInt()
         return l to (cell * density).roundToInt()
     }
 
@@ -430,7 +458,7 @@ private class SegmentGeometry {
     fun slot(i: Int): DoubleArray {
         val top = inset.roundToInt().toDouble()
         return doubleArrayOf(
-            (inset + i * cell).roundToInt().toDouble(),
+            (inset + column(i) * cell).roundToInt().toDouble(),
             top,
             cell.roundToInt().toDouble(),
             height - 2 * top,

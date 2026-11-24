@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -564,7 +565,10 @@ private class DropPlace(
     }
 }
 
-/** A month arrow: a filled triangle, the page's `◄`/`►`, in a target of 48 dp at least. */
+/**
+ * A month arrow: a filled triangle, the page's `◄`/`►`, in a target of 48 dp at least. Right to left the pair is mirrored
+ * with the row (B-205): the back arrow stands right of the forward one and points right, each target reaching outward.
+ */
 @Composable
 private fun Arrow(
     back: Boolean,
@@ -576,6 +580,8 @@ private fun Arrow(
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    // Which way the triangle points: back toward the row's start, forward toward its end.
+    val pointsLeft = back != (LocalLayoutDirection.current == LayoutDirection.Rtl)
     Box(
         Modifier
             // Laid out at the glyph's size, where the page's glyph stands. Its target is 48 dp square and meets the
@@ -587,7 +593,7 @@ private fun Arrow(
                 val w = ARROW_W.dp.roundToPx()
                 val h = ARROW_H.dp.roundToPx()
                 val half = (ARROW_GAP.dp / 2).roundToPx()
-                layout(w, h) { p.place(if (back) w + half - target else -half, (h - target) / 2) }
+                layout(w, h) { p.placeRelative(if (back) w + half - target else -half, (h - target) / 2) }
             }.mutantHand(true)
             .selectable(false, source, indication = null, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = label }
@@ -613,7 +619,7 @@ private fun Arrow(
             val h = size.height
             val p =
                 Path().apply {
-                    if (back) {
+                    if (pointsLeft) {
                         moveTo(w, 0f)
                         lineTo(0f, h / 2)
                         lineTo(w, h)
@@ -636,7 +642,8 @@ private fun Arrow(
  * its acid pouring in, and the digits turn as the pour passes them.
  * Up and Down step the one focused, wrapping (23 → 0, 59 → 0), and make it the one being set, the acid pouring to it
  * as a press would (B-196). Each reads to a screen reader as a value in its range that can be set; [hourLabel] and
- * [minuteLabel] name them. Designed here (D15): the design is a still.
+ * [minuteLabel] name them. Designed here (D15): the design is a still. Right to left it is not mirrored: on-screen time
+ * reads as a clock does, the hours at the left (B-205).
  */
 @Composable
 public fun MutantTimePicker(
@@ -667,21 +674,46 @@ internal fun TimePickerBody(
     hidden: Boolean = false,
     field: Int? = null,
 ) {
-    val colors = MutantTheme.colors
-    val fonts = LocalMutantFonts.current
-    val raster = LocalMutantTextRaster.current
     var pressed by remember { mutableIntStateOf(0) }
     val active = field ?: pressed
     var colonWidth by remember { mutableFloatStateOf(0f) }
     val change by rememberUpdatedState(onTimeChange)
     val h = hour.mod(24)
     val m = minute.mod(60)
+    // On-screen time is not mirrored (B-205, the designer's answer 37): right to left the hours still stand left of the
+    // minutes, the group at the slot's start, centred on its height. The consumer's modifier keeps the layout's direction.
+    Box(modifier, contentAlignment = Alignment.CenterStart) {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            TimePickerRow(h, m, active, colonWidth, { colonWidth = it }, change, hourLabel, minuteLabel, key, hidden) {
+                pressed = it
+            }
+        }
+    }
+}
+
+/** The time picker's row, always left to right: the hours, the colon, the minutes. */
+@Composable
+private fun TimePickerRow(
+    h: Int,
+    m: Int,
+    active: Int,
+    colonWidth: Float,
+    onColonWidth: (Float) -> Unit,
+    change: (Int, Int) -> Unit,
+    hourLabel: String,
+    minuteLabel: String,
+    key: String,
+    hidden: Boolean,
+    onPress: (Int) -> Unit,
+) {
+    val colors = MutantTheme.colors
+    val fonts = LocalMutantFonts.current
+    val raster = LocalMutantTextRaster.current
     Row(
-        modifier,
         horizontalArrangement = Arrangement.spacedBy(TIME_GAP.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TimeField(h, 24, active == 0, hourLabel, "$key-h", hidden, { pressed = 0 }) { change(it, m) }
+        TimeField(h, 24, active == 0, hourLabel, "$key-h", hidden, { onPress(0) }) { change(it, m) }
         MutantText(
             ":",
             // Chrome lays the colon at its fractional width and the next field on the pixel nearest; Compose would
@@ -692,7 +724,7 @@ internal fun TimePickerBody(
                     val w = colonWidth.takeIf { it > 0f }?.roundToInt() ?: p.width
                     layout(w, p.height) { p.place(0, 0) }
                 }.mutantCleanZone(),
-            onTextLayout = { colonWidth = it.getLineRight(0) - it.getLineLeft(0) },
+            onTextLayout = { onColonWidth(it.getLineRight(0) - it.getLineLeft(0)) },
             style =
                 TextStyle(
                     fontFamily = fonts?.display,
@@ -701,7 +733,7 @@ internal fun TimePickerBody(
                     platformStyle = raster,
                 ).cssLine(MutantFaceMetrics.Handjet),
         )
-        TimeField(m, 60, active == 1, minuteLabel, "$key-m", hidden, { pressed = 1 }) { change(h, it) }
+        TimeField(m, 60, active == 1, minuteLabel, "$key-m", hidden, { onPress(1) }) { change(h, it) }
     }
 }
 

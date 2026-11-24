@@ -34,6 +34,8 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
@@ -87,9 +89,10 @@ internal fun MutantText(
     maxLines: Int = Int.MAX_VALUE,
     color: ColorProducer? = null,
 ) {
-    val measurer = sharedMeasurer(LocalFontFamilyResolver.current, LocalDensity.current, LocalLayoutDirection.current)
+    val direction = LocalLayoutDirection.current
+    val measurer = sharedMeasurer(LocalFontFamilyResolver.current, LocalDensity.current, direction)
     val held = remember { arrayOfNulls<TextLayoutResult>(1) }
-    val measured = remember(style) { style.withoutColour() }
+    val measured = remember(style, direction) { style.withoutColour().inOwnDirection(direction) }
     val policy =
         remember(measurer, text, measured, overflow, softWrap, maxLines, onTextLayout) {
             TextPolicy(measurer, text, measured, overflow, softWrap, maxLines) { r ->
@@ -109,6 +112,24 @@ internal fun MutantText(
             }.then(TextDraw(held, text, style, color, overflow)),
         policy,
     )
+}
+
+/**
+ * Right to left, words in their own direction (B-205, the designer's answer 37): a left-to-right word is laid out left to
+ * right and ends in its ellipsis at its own end, the right, where Skia's paragraph took the layout's direction and drew
+ * the ellipsis at the word's start (F-data-table-06 of B-168). It still stands where the layout puts it: its start's
+ * alignment becomes the right, its end's the left. A style that names its direction keeps it; left to right nothing
+ * changes.
+ */
+private fun TextStyle.inOwnDirection(direction: LayoutDirection): TextStyle {
+    if (direction != LayoutDirection.Rtl || textDirection != TextDirection.Unspecified) return this
+    val align =
+        when (textAlign) {
+            TextAlign.Unspecified, TextAlign.Start -> TextAlign.Right
+            TextAlign.End -> TextAlign.Left
+            else -> textAlign
+        }
+    return copy(textDirection = TextDirection.Content, textAlign = align)
 }
 
 /** The style the layout is kept by: the colour is laid on at draw, so two colours of the same words share a layout. */
