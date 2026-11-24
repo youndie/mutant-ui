@@ -42,6 +42,7 @@ import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantFill
 import io.github.youndie.mutant.tokens.MutantGrid
 import io.github.youndie.mutant.tokens.MutantProfile
+import kotlinx.coroutines.launch
 
 /**
  * This profile with some numbers replaced, as the engine reads a slot's `data-r`, `data-over`, `data-cf`,
@@ -89,7 +90,8 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  * (B-181, [MutantSignal]). [focused] calms the damage to 0.3 and draws the amber brackets, in one frame. A press on
  * [interactionSource] boils the body: heat rises to 1 in 320 ms and cools in 480 ms on the screen's clock,
  * and while hot the body is redrawn on the hot tick; [heat] fixes it instead (a fixture, the engine's
- * `data-heat-k`).
+ * `data-heat-k`). A finger's press on a body inside a scrolling container heats it only after
+ * [HEAT_HOLD_IN_SCROLL_MS], and never when the gesture becomes a scroll or lifts before then (B-189, [MutantPressHold]).
  *
  * A change of [fill] pours the new colour down from the top (`clamp(260 + 5 · h, 300, 620)` ms); a new [slide]
  * request slides the body home from `dx` with its stretch (330 ms). Both step at 12 frames a second and land at
@@ -152,18 +154,48 @@ internal fun MutantSurface(
     val steadyWebs = !clock.frozen
     val ownBoil = remember { HeatMachine() }
     val boil = heatMachine ?: ownBoil
+    // B-189: a finger's press inside a scrolling container heats the body only after the tap timeout, and not at all
+    // once the gesture became a scroll (its press cancelled) or was lifted before it, as Compose shows it on Android.
+    val pressHold = remember { MutantPressHold() }
+    pressHold.inLazyItem = androidx.compose.ui.layout.LocalPinnableContainer.current != null
     if (interactionSource != null) {
         androidx.compose.runtime.LaunchedEffect(interactionSource, clock) {
+            val relay = this
+            var held: kotlinx.coroutines.Job? = null
             interactionSource.interactions.collect {
                 when (it) {
-                    is PressInteraction.Press -> boil.press(clock.nowMs)
+                    is PressInteraction.Press -> {
+                        if (pressHold.holds()) {
+                            held?.cancel()
+                            held =
+                                relay.launch {
+                                    kotlinx.coroutines.delay(HEAT_HOLD_IN_SCROLL_MS)
+                                    held = null
+                                    boil.press(clock.nowMs)
+                                }
+                        } else {
+                            boil.press(clock.nowMs)
+                        }
+                    }
 
-                    is PressInteraction.Release, is PressInteraction.Cancel -> boil.release(clock.nowMs)
+                    is PressInteraction.Release, is PressInteraction.Cancel -> {
+                        val waiting = held
+                        if (waiting != null) {
+                            waiting.cancel()
+                            held = null
+                        } else {
+                            boil.release(clock.nowMs)
+                        }
+                    }
 
                     // A mouse only: Compose's clickable reports no hover for a finger (B-63).
-                    is androidx.compose.foundation.interaction.HoverInteraction.Enter -> boil.hover(clock.nowMs)
+                    is androidx.compose.foundation.interaction.HoverInteraction.Enter -> {
+                        boil.hover(clock.nowMs)
+                    }
 
-                    is androidx.compose.foundation.interaction.HoverInteraction.Exit -> boil.leave(clock.nowMs)
+                    is androidx.compose.foundation.interaction.HoverInteraction.Exit -> {
+                        boil.leave(clock.nowMs)
+                    }
                 }
             }
         }
@@ -329,7 +361,9 @@ internal fun MutantSurface(
     }
     Box(
         modifier
+            .then(if (interactionSource != null) Modifier.mutantPressHoldWatch(pressHold) else Modifier)
             .onGloballyPositioned {
+                pressHold.coords = it
                 registry.surface = it
                 moshBody.coords = it
                 tuned.coords = it

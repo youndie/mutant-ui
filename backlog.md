@@ -58,14 +58,13 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (13)
+## Open (12)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-189](docs/backlog/B-189-a-press-held-inside-a-scroll.md) `[ ]` | A press inside a scroll heats after 100 ms | P2 | M | - |
 | [B-192](docs/backlog/B-192-text-buttons-pressed.md) `[ ]` | The text button and the snackbar action show a press | P2 | S | - |
 | [B-194](docs/backlog/B-194-the-cassette-label-translated.md) `[ ]` | The cassette label is a translated string that fits | P2 | S | - |
 | [B-195](docs/backlog/B-195-a-play-icon.md) `[ ]` | A play icon | P2 | XS | - |
@@ -76,7 +75,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (197)
+## Closed (198)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -266,6 +265,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-186](docs/backlog/B-186-the-caret-and-the-fields-mosaic.md) `[x]` - The caret restarts, sits beside the letters, and the mosaic ignores the text
 - [B-187](docs/backlog/B-187-tab-labels-and-a-narrow-top-bar.md) `[x]` - Tab labels hand the accent over late; a narrow top bar drops its status first
 - [B-188](docs/backlog/B-188-the-carousel-glides-on-tab-and-fits-a-narrow-shelf.md) `[x]` - The carousel glides on Tab and fits a narrow shelf
+- [B-189](docs/backlog/B-189-a-press-held-inside-a-scroll.md) `[x]` - A press inside a scroll heats after 100 ms
 - [B-190](docs/backlog/B-190-a-press-under-the-pause.md) `[x]` - A press under the pause shows a still frame at heat 1
 - [B-191](docs/backlog/B-191-progress-under-the-pause-and-the-steps.md) `[x]` - The progress band under the pause and under the steps
 - [B-193](docs/backlog/B-193-hover-keeps-the-fill.md) `[x]` - Hover keeps the fill and only stirs the outline

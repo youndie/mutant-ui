@@ -160,3 +160,97 @@ internal fun mutantPausedPressFill(
  * the fill and no bubbles. B-63 had chosen a simmer of 0.3 that warmed the fill too.
  */
 internal const val HOVER_HEAT: Double = .25
+
+/**
+ * How long a finger's press on a body inside a scrolling container waits before its heat starts (B-189, the designer's
+ * answer 11): Android's tap timeout, `ViewConfiguration.getTapTimeout()`, which Compose's own `clickable` waits there on
+ * Android only. A gesture that becomes a scroll within it never heats the body.
+ */
+internal const val HEAT_HOLD_IN_SCROLL_MS: Long = 100L
+
+/**
+ * Whether Compose's `clickable` already holds a finger's press inside a scrolling container for the tap timeout
+ * (`TapIndicationDelay`): on Android only. It is 0 on the desktop, iOS and in the browser (CMP 1.12.1), where the
+ * surface holds the heat itself ([MutantPressHold]); on Android a second hold would double it.
+ */
+internal expect val composeHoldsPressInScroll: Boolean
+
+/**
+ * What a surface knows of a press when it arrives (B-189): whether a finger (any pointer but a mouse) is down on the
+ * body, and whether the body stands inside a scrolling container. Compose reads the latter through its own gesture
+ * nodes (`hasWaitingParent`, an ancestor drag waiting for the slop), which are internal to foundation, as is the
+ * `isInScrollableContainer` that came before them; the surface reads it from what is public: an item of a lazy layout
+ * ([inLazyItem], Compose's `LocalPinnableContainer`), or a layout showing less than its content along an axis
+ * ([mutantInsideScroll]), as `verticalScroll` and `horizontalScroll` do once the content overflows them. A mouse and a
+ * key never start a scroll (a scrollable's drag takes no mouse), so their press heats at once, as Compose's does.
+ */
+internal class MutantPressHold {
+    /** The body's coordinates, set where it is placed. */
+    var coords: androidx.compose.ui.layout.LayoutCoordinates? = null
+
+    /** The body stands in an item of a lazy layout (a lazy list, a grid, a pager). */
+    var inLazyItem: Boolean = false
+
+    /** A finger (any pointer but a mouse) is down on the body: read in the pointer's first pass, before any press. */
+    var finger: Boolean = false
+
+    /** Whether a press arriving now waits [HEAT_HOLD_IN_SCROLL_MS] before it heats the body. */
+    fun holds(): Boolean =
+        !composeHoldsPressInScroll && finger &&
+            (inLazyItem || coords?.takeIf { it.isAttached }?.mutantInsideScroll() == true)
+}
+
+/**
+ * Whether these coordinates stand inside a container that can scroll: an ancestor showing less than its content along
+ * an axis, as `verticalScroll` and `horizontalScroll` lay theirs out once it overflows them. A container whose content
+ * fits cannot scroll, and its press is not held. The same reading as field-ui's B-93.
+ */
+internal fun androidx.compose.ui.layout.LayoutCoordinates.mutantInsideScroll(): Boolean {
+    var child = this
+    var parent = child.parentCoordinates
+    while (parent != null) {
+        if (child.size.height > parent.size.height || child.size.width > parent.size.width) return true
+        child = parent
+        parent = child.parentCoordinates
+    }
+    return false
+}
+
+/** Tells [hold] whether a finger is down on the body. It consumes nothing and shares the pointer with its siblings. */
+internal fun androidx.compose.ui.Modifier.mutantPressHoldWatch(hold: MutantPressHold): androidx.compose.ui.Modifier =
+    this then MutantPressHoldElement(hold)
+
+private class MutantPressHoldElement(
+    val hold: MutantPressHold,
+) : androidx.compose.ui.node.ModifierNodeElement<MutantPressHoldNode>() {
+    override fun create() = MutantPressHoldNode(hold)
+
+    override fun update(node: MutantPressHoldNode) {
+        node.hold = hold
+    }
+
+    override fun equals(other: Any?) = other is MutantPressHoldElement && other.hold === hold
+
+    override fun hashCode() = hold.hashCode()
+}
+
+private class MutantPressHoldNode(
+    var hold: MutantPressHold,
+) : androidx.compose.ui.Modifier.Node(),
+    androidx.compose.ui.node.PointerInputModifierNode {
+    override fun onPointerEvent(
+        pointerEvent: androidx.compose.ui.input.pointer.PointerEvent,
+        pass: androidx.compose.ui.input.pointer.PointerEventPass,
+        bounds: androidx.compose.ui.unit.IntSize,
+    ) {
+        if (pass != androidx.compose.ui.input.pointer.PointerEventPass.Initial) return
+        hold.finger =
+            pointerEvent.changes.any { it.pressed && it.type != androidx.compose.ui.input.pointer.PointerType.Mouse }
+    }
+
+    override fun onCancelPointerInput() {
+        hold.finger = false
+    }
+
+    override fun sharePointerInputWithSiblings(): Boolean = true
+}
