@@ -17,8 +17,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -68,14 +71,23 @@ public enum class MutantIllustrationKind(
  * fixed keys, so the same cassette draws the same picture everywhere, on the screen's clock. Its drips hang
  * below its bounds and take no space. The title and the line under it are the caller's (an empty state). Given less
  * than its size, it keeps its size, centred in what it is given, and overflows both sides alike.
+ *
+ * [cassetteLabel] is the word on the [MutantIllustrationKind.Cassette]'s label, the design's «БЕЗ ПОДПИСИ» unless the
+ * app translates it; the other kinds ignore it. It is one line, drawn at 20 dp whatever the font scale; a word wider
+ * than the label's 164 dp at 20 is drawn at 16, and one wider still, or a blank one, leaves the label without text,
+ * ruled with three lines (B-194).
  */
 @Composable
 public fun MutantIllustration(
     kind: MutantIllustrationKind,
     modifier: Modifier = Modifier,
+    cassetteLabel: String = CASSETTE_LABEL,
 ) {
-    IllustrationArt(kind, modifier, IllustrationParts.All)
+    IllustrationArt(kind, modifier, IllustrationParts.All, cassetteLabel = cassetteLabel)
 }
+
+/** The design's word on the cassette's label. */
+internal const val CASSETTE_LABEL = "БЕЗ ПОДПИСИ"
 
 /**
  * Which parts besides the bodies are drawn: [text] the labels, [kept] what the page marks `data-keep` (and the
@@ -104,12 +116,13 @@ internal fun IllustrationArt(
     modifier: Modifier,
     parts: IllustrationParts,
     stage: String = kind.stage,
+    cassetteLabel: String = CASSETTE_LABEL,
 ) {
     CompositionLocalProvider(LocalMutantStage provides stage) {
         Box(modifier.requiredSize(kind.width.dp, kind.height.dp)) {
             val art = Art(LocalMutantColors.current, parts)
             when (kind) {
-                MutantIllustrationKind.Cassette -> art.cassette()
+                MutantIllustrationKind.Cassette -> art.cassette(cassetteLabel)
                 MutantIllustrationKind.Television -> art.television()
                 MutantIllustrationKind.Antenna -> art.antenna()
                 MutantIllustrationKind.Floppy -> art.floppy()
@@ -224,15 +237,63 @@ private class Art(
     }
 
     @Composable
-    fun cassette() {
+    fun cassette(word: String) {
         val blob = MutantBody.Blob.profile.with(marks = false)
         body(MutantBody.Blob, "cassette", 0, 0, 216, 132, profile = blob) {
             body(MutantBody.Bar, "cassette-label", 18, 14, 180, 38, c.phosphor, plain(MutantBody.Bar, r = 4.0)) {
-                label("БЕЗ ПОДПИСИ", 20, INK, 2.0)
+                val size = cassetteLabelSize(word)
+                if (size != null) label(word, size, INK, CASSETTE_LABEL_SPACING) else cassetteRules()
             }
             body(MutantBody.Pill, "cassette-win", 44, 66, 128, 40, c.background) {
                 reel(8, 7)
                 reel(94, 7)
+            }
+        }
+    }
+
+    /**
+     * The size [word] fits the cassette's label at (B-194, the designer's answer 19): the design's 20, or 16 for a word
+     * wider than [CASSETTE_LABEL_ROOM] at 20; null for one wider still at 16, or a blank one. Measured in dp, as
+     * [label] draws it: at the screen's density and no font scale.
+     */
+    @Composable
+    private fun cassetteLabelSize(word: String): Int? {
+        if (word.isBlank()) return null
+        val measurer = rememberTextMeasurer()
+        val d = LocalDensity.current
+        val inDp = Density(d.density, 1f)
+        val font = LocalMutantFonts.current?.display
+        return listOf(CASSETTE_LABEL_SIZE, CASSETTE_LABEL_SMALL).firstOrNull { size ->
+            val style =
+                TextStyle(fontFamily = font, fontSize = size.sp, letterSpacing = (CASSETTE_LABEL_SPACING / size).em)
+            val width = measurer.measure(word, style, density = inDp).size.width / d.density
+            width <= CASSETTE_LABEL_ROOM
+        }
+    }
+
+    /**
+     * A label with no word: three rules of the page's ink across it, as a blank tape label is ruled for writing on
+     * (D15: the answer names the three lines; their length, weight and pitch are designed here, B-194). They stand
+     * where the word would, and like it they keep the clean zone and are left out where the text is.
+     */
+    @Composable
+    private fun cassetteRules() {
+        Canvas(
+            // Centred as the word is: the label passes its size down as constraints, not as a box to align in.
+            Modifier
+                .wrapContentSize(Alignment.Center, unbounded = true)
+                .size(CASSETTE_RULE_LENGTH.dp, (CASSETTE_RULE_PITCH * 2 + CASSETTE_RULE_WEIGHT).dp)
+                .mutantCleanZone(),
+        ) {
+            if (!parts.text) return@Canvas
+            illustrationInDp {
+                repeat(3) { i ->
+                    drawRect(
+                        INK,
+                        Offset(0f, i * CASSETTE_RULE_PITCH),
+                        Size(CASSETTE_RULE_LENGTH, CASSETTE_RULE_WEIGHT),
+                    )
+                }
             }
         }
     }
@@ -430,6 +491,19 @@ private val REEL_HOLES = listOf(10f to 2f, 3f to 15f, 17f to 15f)
 
 /** The remote's amber key, of nine. */
 private const val MIDDLE_KEY = 4
+
+/** The cassette label's word: 20 dp (`font-size: 20px`), tracked 2 dp (`letter-spacing: 2px`). */
+private const val CASSETTE_LABEL_SIZE = 20
+private const val CASSETTE_LABEL_SPACING = 2.0
+
+/** The answer's smaller size, and the room a word has at either: the 180 dp label less 8 dp a side (B-194). */
+private const val CASSETTE_LABEL_SMALL = 16
+private const val CASSETTE_LABEL_ROOM = 164f
+
+/** The three rules of a label with no word (D15, B-194): 148 dp long, 2 dp of ink, 8 dp from one to the next. */
+private const val CASSETTE_RULE_LENGTH = 148f
+private const val CASSETTE_RULE_WEIGHT = 2f
+private const val CASSETTE_RULE_PITCH = 8f
 
 /** The page's `rotate((fi * 30) % 360)` for a reel. */
 private const val REEL_STEP = 30L

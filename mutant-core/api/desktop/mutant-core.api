@@ -138,7 +138,7 @@ public final class io/github/youndie/mutant/components/MutantDrawerItem {
 }
 
 public final class io/github/youndie/mutant/components/MutantEmptyStateKt {
-	public static final fun MutantEmptyState (Lio/github/youndie/mutant/illustration/MutantIllustrationKind;Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun MutantEmptyState (Lio/github/youndie/mutant/illustration/MutantIllustrationKind;Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/components/MutantIconButtonKt {
@@ -298,7 +298,7 @@ public final class io/github/youndie/mutant/illustration/MutantIllustrationKind 
 }
 
 public final class io/github/youndie/mutant/illustration/MutantIllustrationKt {
-	public static final fun MutantIllustration (Lio/github/youndie/mutant/illustration/MutantIllustrationKind;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun MutantIllustration (Lio/github/youndie/mutant/illustration/MutantIllustrationKind;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/youndie/mutant/pattern/MutantPattern : java/lang/Enum {
