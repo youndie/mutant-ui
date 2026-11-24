@@ -290,30 +290,18 @@ internal fun DrawScope.drawDisabledBody(
     outline: Float,
     patterns: StagePatterns,
     patternOrigin: Offset,
-) = drawDisabledBody(g.slot, g.seed, g.mosaicTiles, fill, highlight, colors, outline, patterns, patternOrigin)
+    tearTop: Double? = null,
+) = drawDisabledBody(g.slot, g.seed, g.mosaicTiles, fill, highlight, colors, outline, patterns, patternOrigin, tearTop)
 
 /**
- * [drawDisabledBody] from what it reads of the instance: its slot, its seed (the dropouts and the shifted band) and its
- * edge mosaic's [tiles]. B-177's stand-in draws it with no tiles, the one part that needs the instance generated.
+ * The fill a disabled body shows for its [fill] (`staticHtml`): [desaturate]d, darkened where the fill is a saturated one
+ * (its [highlight] white on the screen, a saturation over 90 in print).
  */
-internal fun DrawScope.drawDisabledBody(
-    el: Slot,
-    seed: String,
-    tiles: List<MosaicTile>,
+internal fun disabledFill(
     fill: Color,
     highlight: Color,
     colors: MutantColors,
-    outline: Float,
-    patterns: StagePatterns,
-    patternOrigin: Offset,
-) {
-    val ox = el.ox
-    val oy = el.oy
-    val w = el.w
-    val h = el.h
-    val cz = el.cleanZone
-    val r = el.r.toFloat()
-    val rnd = Mulberry32(seed, "vhs")
+): Color {
     val dark =
         if (if (colors.print) {
                 saturation(
@@ -327,8 +315,73 @@ internal fun DrawScope.drawDisabledBody(
         } else {
             1.0
         }
-    val body = desaturate(fill, dark, colors.disabledTint)
-    val hh = max(4.0, jsRound(h * .14))
+    return desaturate(fill, dark, colors.disabledTint)
+}
+
+/** The height of a disabled body's shifted band on a slot [h] dp tall: 14 % of it, at least 4 dp. */
+internal fun disabledBandHeight(h: Double): Double = max(4.0, jsRound(h * .14))
+
+/** How far right a disabled body's band is shifted, 4–7 dp: the stream `vhs`'s second number, after the band's top. */
+private fun disabledShift(rnd: Mulberry32): Float = jsToFixed(4 + 3 * rnd.next(), 1).toFloat()
+
+/** [disabledShift] for the body of [seed] (`<cassette>/<key>`), as its «нет сигнала» draws it. */
+internal fun disabledShiftOf(seed: String): Float =
+    Mulberry32(seed, "vhs").let {
+        it.next()
+        disabledShift(it)
+    }
+
+/**
+ * B-181: a tear band over a body losing its signal, [height] dp tall from [top], the slot's sides 20 dp past: in it,
+ * [body] is drawn again shifted [shift] dp right under the dropout's veil, as the disabled look's own band is.
+ */
+internal inline fun DrawScope.drawTearBand(
+    el: Slot,
+    top: Double,
+    height: Double,
+    shift: Float,
+    colors: MutantColors,
+    crossinline body: DrawScope.() -> Unit,
+) {
+    clipRect((el.ox - 20).toFloat(), top.toFloat(), (el.ox + el.w + 20).toFloat(), (top + height).toFloat()) {
+        translate(shift, 0f) {
+            body()
+            drawRect(
+                colors.dropout,
+                Offset(el.ox.toFloat(), top.toFloat()),
+                Size(el.w.toFloat(), height.toFloat()),
+                alpha = .22f,
+            )
+        }
+    }
+}
+
+/**
+ * [drawDisabledBody] from what it reads of the instance: its slot, its seed (the dropouts and the shifted band) and its
+ * edge mosaic's [tiles]. B-177's stand-in draws it with no tiles, the one part that needs the instance generated.
+ * [tearTop] draws a second band there, B-181's tear on the third step of losing the signal.
+ */
+internal fun DrawScope.drawDisabledBody(
+    el: Slot,
+    seed: String,
+    tiles: List<MosaicTile>,
+    fill: Color,
+    highlight: Color,
+    colors: MutantColors,
+    outline: Float,
+    patterns: StagePatterns,
+    patternOrigin: Offset,
+    tearTop: Double? = null,
+) {
+    val ox = el.ox
+    val oy = el.oy
+    val w = el.w
+    val h = el.h
+    val cz = el.cleanZone
+    val r = el.r.toFloat()
+    val rnd = Mulberry32(seed, "vhs")
+    val body = disabledFill(fill, highlight, colors)
+    val hh = disabledBandHeight(h)
     val by =
         oy +
             if (cz[2] > 0) {
@@ -336,7 +389,7 @@ internal fun DrawScope.drawDisabledBody(
             } else {
                 jsRound(rnd.next() * (h - hh))
             }
-    val dx = jsToFixed(4 + 3 * rnd.next(), 1).toFloat()
+    val dx = disabledShift(rnd)
     val inCz = { x: Double, y: Double, l: Double ->
         cz[2] > 0 && x < cz[0] + cz[2] && x + l > cz[0] && y < cz[1] + cz[3] &&
             y + 1 > cz[1]
@@ -435,12 +488,19 @@ internal fun DrawScope.drawDisabledBody(
         }
     }
     drawPath(bodyPath, colors.ink, style = Stroke(width = outline))
-    clipRect((ox - 20).toFloat(), by.toFloat(), (ox + w + 20).toFloat(), (by + hh).toFloat()) {
-        translate(dx, 0f) {
-            drawPath(bodyPath, body)
-            scanlines()
-            drawRect(colors.dropout, Offset(ox.toFloat(), by.toFloat()), Size(w.toFloat(), hh.toFloat()), alpha = .22f)
-            drawPath(bodyPath, colors.ink, style = Stroke(width = outline))
+    for (top in listOfNotNull(by, tearTop)) {
+        clipRect((ox - 20).toFloat(), top.toFloat(), (ox + w + 20).toFloat(), (top + hh).toFloat()) {
+            translate(dx, 0f) {
+                drawPath(bodyPath, body)
+                scanlines()
+                drawRect(
+                    colors.dropout,
+                    Offset(ox.toFloat(), top.toFloat()),
+                    Size(w.toFloat(), hh.toFloat()),
+                    alpha = .22f,
+                )
+                drawPath(bodyPath, colors.ink, style = Stroke(width = outline))
+            }
         }
     }
 }

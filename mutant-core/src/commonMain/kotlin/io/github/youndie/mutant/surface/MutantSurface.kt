@@ -84,7 +84,9 @@ internal fun MutantColors.fillOf(fill: MutantFill): Color =
  *
  * [state] is the handoff's: [BodyState.Loading] runs the seek bands, [BodyState.Success] is the clean frame,
  * [BodyState.Disabled] is «нет сигнала» with no slime, [BodyState.Error] adds the red offset outline and the
- * corruption blocks. [focused] calms the damage to 0.3 and draws the amber brackets. A press on
+ * corruption blocks. A body turned [BodyState.Disabled] loses its signal over 300 ms in three steps, a tear band rolling up
+ * over it while its fill desaturates, «нет сигнала» from the third; turned back, it tunes in as an appearing body does
+ * (B-181, [MutantSignal]). [focused] calms the damage to 0.3 and draws the amber brackets, in one frame. A press on
  * [interactionSource] boils the body: heat rises to 1 in 320 ms and cools in 480 ms on the screen's clock,
  * and while hot the body is redrawn on the hot tick; [heat] fixes it instead (a fixture, the engine's
  * `data-heat-k`).
@@ -196,6 +198,15 @@ internal fun MutantSurface(
             onDispose { tuneBodies.remove(tuned) }
         }
     }
+    // B-181: a body losing its signal steps into «нет сигнала» (the draw reads the loss's step), and tunes in on its own
+    // slot when enabled again, as B-179's bodies appear.
+    val tuneStill = tuneStands(clock)
+    val signal = remember { MutantSignal(state) }
+    signal.follow(state, clock.nowMs, tuneStill)
+    val enableTune = remember { MutantTune(true, clock.nowMs, play = false) }
+    // A loss started while the body still tunes in takes over: the tune-in ends where it is.
+    if (signal.lost) enableTune.follow(true, clock.nowMs, still = true)
+    enableTune.restartFor(signal.enablings, clock.nowMs, tuneStill)
     val steps = io.github.youndie.mutant.theme.LocalMutantSteppedMotion.current
     val pastContour = io.github.youndie.mutant.theme.LocalMutantMosaicPastContour.current
     moves.follow(bodyFill, slide, clock.nowMs, drawnPlain[0]?.slot?.h, steps, instant, colors)
@@ -359,11 +370,13 @@ internal fun MutantSurface(
                 if (tune == null) {
                     Modifier
                 } else {
-                    Modifier.mutantTuneDraw(tune, clock, tuneStands(clock)) { side ->
+                    Modifier.mutantTuneDraw(tune, clock, tuneStill) { side ->
                         drawTuneMosaic(tuned, size.width / density, size.height / density, side, colors)
                     }
                 },
-            )
+            ).mutantTuneDraw(enableTune, clock, tuneStill) { side ->
+                drawTuneMosaic(tuned, size.width / density, size.height / density, side, colors)
+            }
             // B-135: a layer of its own, so a tick records the body and its content and nothing beside it.
             .graphicsLayer()
             .drawWithCache {
@@ -382,8 +395,30 @@ internal fun MutantSurface(
                     return@drawWithCache moshBehind(moshScene, moshBody, snapshot = moshBody.snapshot, block = last)
                 }
                 val d = density
+                // B-181: the loss of signal's step, the body redrawn on every frame while it runs. Under its first two
+                // steps the body still shows what it was, its fill desaturating a third at each, with the tear band over it;
+                // on the third it is «нет сигнала» under the band.
+                val loss = signal.step(clock.nowMs, tuneStill)
+                if (loss != null) clock.frame
+                val losing = loss != null && loss < SIGNAL_LOSS_STEPS - 1
+                val shownState =
+                    if (losing) {
+                        signal.from.takeIf {
+                            it != BodyState.Disabled
+                        } ?: BodyState.Rest
+                    } else {
+                        state
+                    }
+                val baseFill =
+                    if (losing) {
+                        mixColor(look.fill, disabledFill(look.fill, look.highlight, colors), signalLossShare(loss), 0.0)
+                    } else {
+                        look.fill
+                    }
                 val gen = MutantGenerator(cassette)
                 val (slot, signature, tz) = slotOf(d, size.width, size.height) ?: return@drawWithCache onDrawBehind {}
+                val tearHeight = disabledBandHeight(slot.h)
+                val tearTop = loss?.let { signalTearTop(slot, tearHeight, it) }
                 moshBody.zone = tz
                 val still = state == BodyState.Disabled || state == BodyState.Success
                 // B-190: under the pause a press is a still frame at heat 1 (D24): the rest frame's shape, with no bubbles,
@@ -410,11 +445,11 @@ internal fun MutantSurface(
                         BodyLook(
                             if (pausedPress) {
                                 mutantPausedPressFill(
-                                    look.fill,
+                                    baseFill,
                                     colors,
                                 )
                             } else {
-                                boilFill(look.fill, colors, kk, tt)
+                                boilFill(baseFill, colors, kk, tt)
                             },
                             look.highlight,
                             look.ink,
@@ -423,7 +458,7 @@ internal fun MutantSurface(
                             look.shadow,
                             p.outline.toFloat(),
                         )
-                    return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, state, focused, kk, tt, colors))
+                    return BodyPicture(BodyPaths.of(f), frameLook, gen.decorOf(g, shownState, focused, kk, tt, colors))
                 }
 
                 // B-163: whether this body's decorations need its paths (B-131's list): its frames are then built with them,
@@ -432,7 +467,7 @@ internal fun MutantSurface(
                     g: Instance,
                     tt: Double,
                 ): Boolean {
-                    val decor = gen.decorOf(g, state, focused, 0.0, tt, colors)
+                    val decor = gen.decorOf(g, shownState, focused, 0.0, tt, colors)
                     return decor.runningMosaic != null || decor.errorBlocks.isNotEmpty() || decor.bands.isNotEmpty() ||
                         decor.errorOutline != null || decor.brackets != null
                 }
@@ -546,7 +581,7 @@ internal fun MutantSurface(
                         look.slip,
                         look.shadow,
                         colors,
-                        state,
+                        shownState,
                         focused,
                         d,
                         layoutDirection,
@@ -767,8 +802,8 @@ internal fun MutantSurface(
                     drawn.value = g
                 }
                 probe?.invoke(g)
-                if (state == BodyState.Disabled || state == BodyState.Success) {
-                    if (state == BodyState.Disabled && slot.edge && slot.w >= 40 &&
+                if (shownState == BodyState.Disabled || shownState == BodyState.Success) {
+                    if (shownState == BodyState.Disabled && slot.edge && slot.w >= 40 &&
                         g.mosaicTiles.isEmpty()
                     ) {
                         gen.edgeMosaic(g)
@@ -777,7 +812,7 @@ internal fun MutantSurface(
                     return@drawWithCache moshBehind(moshScene, moshBody) {
                         scale(d, Offset.Zero) {
                             translate(-slot.ox.toFloat(), -slot.oy.toFloat()) {
-                                if (state == BodyState.Disabled) {
+                                if (shownState == BodyState.Disabled) {
                                     drawDisabledBody(
                                         g,
                                         look.fill,
@@ -786,9 +821,16 @@ internal fun MutantSurface(
                                         p.outline.toFloat(),
                                         patterns,
                                         Offset.Zero,
+                                        tearTop,
                                     )
                                 } else {
-                                    drawCleanBody(g, look.fill, look.highlight, look.ink, p.outline.toFloat())
+                                    drawCleanBody(g, baseFill, look.highlight, look.ink, p.outline.toFloat())
+                                    // B-181: a clean frame losing its signal tears as a slime body does.
+                                    if (tearTop != null) {
+                                        drawTearBand(slot, tearTop, tearHeight, disabledShiftOf(g.seed), colors) {
+                                            drawCleanBody(g, baseFill, look.highlight, look.ink, p.outline.toFloat())
+                                        }
+                                    }
                                     // A Success body is still a control: its keyboard focus shows (B-57).
                                     if (focused) drawBrackets(g, colors.focus)
                                 }
@@ -883,7 +925,7 @@ internal fun MutantSurface(
                     }
                 // B-110: a pouring or sliding body is drawn by paths, as before; so is a press under the pause, as a hot body is (D23),
                 // and a hovered one, whose outline trembles hot (B-193).
-                if (onGpu && (pour != null || slideP < 1 || pausedPress || kt > 0)) {
+                if (onGpu && (pour != null || slideP < 1 || pausedPress || kt > 0 || losing)) {
                     frame =
                         inFrame.of(g, t, kt, k, pressedShape, true) {
                             gen.frame(g, cache, t, kt, pressed = pressedShape, steadyWebs = steadyWebs, pressHeat = k)
@@ -958,7 +1000,7 @@ internal fun MutantSurface(
                 val image =
                     early?.image?.takeIf {
                         imageInputs != null && early.inputs == imageInputs && pour == null &&
-                            slideP >= 1 && it.covers(shown)
+                            slideP >= 1 && !losing && it.covers(shown)
                     }
                 view.drawn = image
                 frameProbe?.invoke(early != null, image != null, frame.steadyWebs)
@@ -1003,6 +1045,25 @@ internal fun MutantSurface(
                                     stillLayer,
                                     pastContour,
                                 )
+                                // B-181: the tear band over a body losing its signal: the body again, shifted, veiled.
+                                if (tearTop != null) {
+                                    drawTearBand(slot, tearTop, tearHeight, disabledShiftOf(g.seed), colors) {
+                                        drawBody(
+                                            g,
+                                            paths,
+                                            frameLook,
+                                            colors,
+                                            speckle,
+                                            Offset.Zero,
+                                            dead,
+                                            decor,
+                                            pour,
+                                            skipParts,
+                                            stillLayer,
+                                            pastContour,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

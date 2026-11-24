@@ -663,3 +663,89 @@ internal fun DrawScope.drawTuneMosaic(
         }
     }
 }
+
+/*
+ * B-181, the designer's answer 3: a body losing its signal (enabled → disabled) takes 300 ms in three steps. A tear band
+ * runs down over it, a step at a time, while its fill desaturates a third at each step; on the third step the slime is
+ * replaced by «нет сигнала», the band still over it, and from 300 ms «нет сигнала» stands alone. Enabling is B-179's
+ * tune-in over the body's own slot ([MutantTune]). Focus in and out stay instant. As tune-in's, the steps are a picture
+ * sequence, not a movement, and keep to the clock whatever `steppedMotion` says; under reduce motion and on a clock that
+ * stands, the finished frame shows at once.
+ *
+ * The tear band is not drawn by the design (D15): it is the disabled look's own band — 14 % of the slot's height, at
+ * least 4 dp, shifted 4–7 dp right ([disabledBandHeight], [disabledShiftOf]) — and rolls up, as a tracking error does:
+ * the slot's bottom (step 1), its middle (step 2), its top (step 3). Up, the third step's band stands away from the
+ * disabled look's own, which keeps below the label, so the third step's picture is not the finished one.
+ */
+
+/** Losing the signal: 300 ms (the designer's answer 3), in three steps. */
+internal const val SIGNAL_LOSS_MS: Double = 300.0
+internal const val SIGNAL_LOSS_STEPS: Int = 3
+
+/**
+ * Follows a body's state from composition without writing state (as [MutantTune]): a change into
+ * [BodyState.Disabled] starts the loss of signal at that moment on the screen's clock; a change out of it counts an
+ * enabling, which the body's own [MutantTune] tunes in for ([MutantTune.restartFor]). Composed disabled, it stands
+ * disabled.
+ */
+internal class MutantSignal(
+    state: BodyState,
+) {
+    private var seen: BodyState = state
+
+    /** The state the body showed before it lost its signal: drawn, desaturating, under the first two steps. */
+    var from: BodyState = state
+        private set
+
+    /** When the loss began. */
+    private var since: Double = Double.NEGATIVE_INFINITY
+
+    /** How many times the body has been enabled again: a new count tunes it in. */
+    var enablings: Int = 0
+        private set
+
+    /** Whether the last [follow] started a loss. */
+    var lost: Boolean = false
+        private set
+
+    fun follow(
+        state: BodyState,
+        now: Double,
+        still: Boolean,
+    ) {
+        lost = false
+        if (state != seen) {
+            if (state == BodyState.Disabled) {
+                from = seen
+                since = now
+                lost = true
+            } else if (seen == BodyState.Disabled) {
+                enablings++
+                since = Double.NEGATIVE_INFINITY
+            }
+            seen = state
+        }
+        if (still) since = Double.NEGATIVE_INFINITY
+    }
+
+    /** The loss's step at [now], 0 to [SIGNAL_LOSS_STEPS] − 1, or null when no loss is under way. */
+    fun step(
+        now: Double,
+        still: Boolean,
+    ): Int? {
+        if (still || seen != BodyState.Disabled) return null
+        val e = now - since
+        if (e >= SIGNAL_LOSS_MS) return null
+        return floor(max(0.0, e) / (SIGNAL_LOSS_MS / SIGNAL_LOSS_STEPS)).toInt().coerceAtMost(SIGNAL_LOSS_STEPS - 1)
+    }
+}
+
+/** How far the loss's desaturation has gone at [step]: a third at each. */
+internal fun signalLossShare(step: Int): Double = (step + 1).toDouble() / SIGNAL_LOSS_STEPS
+
+/** The top of the tear band at [step] on [el], [height] dp tall: the slot's bottom, its middle, its top. */
+internal fun signalTearTop(
+    el: io.github.youndie.mutant.gen.Slot,
+    height: Double,
+    step: Int,
+): Double = el.oy + jsRound(max(0.0, el.h - height) * (SIGNAL_LOSS_STEPS - 1 - step) / (SIGNAL_LOSS_STEPS - 1))
