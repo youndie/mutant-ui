@@ -65,7 +65,6 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-185](docs/backlog/B-185-the-dialog-opaque-and-tall.md) `[ ]` | The dialog rises opaque and keeps a margin when tall | P1 | M | B-179 |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
-| [B-210](docs/backlog/B-210-the-slowest-tests-in-seconds.md) `[~]` | The slowest tests run well under their one-minute limit | P1 | S | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-180](docs/backlog/B-180-a-screen-tunes-in.md) `[ ]` | A new screen tunes in as the switch starts | P2 | M | B-179 |
 | [B-181](docs/backlog/B-181-a-body-loses-its-signal-in-steps.md) `[ ]` | A body loses its signal in three steps and tunes in when enabled | P2 | M | B-179 |
@@ -279,6 +278,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-207](docs/backlog/B-207-focus-after-the-snackbar-and-in-the-drawer.md) `[x]` - Focus returns after the snackbar and cycles in the drawer
 - [B-208](docs/backlog/B-208-the-paused-press-shader-test-in-seconds.md) `[x]` - The paused press's shader test runs in seconds
 - [B-209](docs/backlog/B-209-the-accessibility-test-in-seconds.md) `[x]` - The sample's accessibility test runs in seconds
+- [B-210](docs/backlog/B-210-the-slowest-tests-in-seconds.md) `[x]` - The slowest tests run well under their one-minute limit
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection
