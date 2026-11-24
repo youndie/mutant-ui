@@ -99,7 +99,9 @@ internal fun MutantTuned(
     val clock = readMutantClock()
     val still = tuneStands(clock)
     val colors = LocalMutantColors.current
-    val bodies = remember { MutantTuneBodies() }
+    // B-180: a host inside another registers its bodies with the outer one too, which draws them while it tunes.
+    val outer = LocalMutantTuneBodies.current
+    val bodies = remember(outer) { MutantTuneBodies(outer) }
     val deaf =
         if (leaving && deafLeaving) {
             Modifier

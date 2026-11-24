@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.layout.findRootCoordinates
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.gen.PourFront
@@ -512,9 +513,27 @@ internal class MutantTune(
     private object Unset
 }
 
-/** The bodies a tuning host draws as mosaics: every [MutantSurface] composed inside it registers its slot here. */
-internal class MutantTuneBodies {
+/**
+ * The bodies a tuning host draws as mosaics: every [MutantSurface] composed inside it registers its slot here, and with
+ * every host around it ([parent]): a host inside another that tunes in with it (a [MutantAppear] inside a
+ * [MutantScreen], composed together) is drawn into the outer one's empty clip, so the outer host draws its bodies' mosaics
+ * too (B-180).
+ */
+internal class MutantTuneBodies(
+    private val parent: MutantTuneBodies? = null,
+) {
     val bodies: MutableList<MutantTunedBody> = mutableListOf()
+
+    /** Registers [body] here and with every host around this one. */
+    fun add(body: MutantTunedBody) {
+        bodies += body
+        parent?.add(body)
+    }
+
+    fun remove(body: MutantTunedBody) {
+        bodies -= body
+        parent?.remove(body)
+    }
 
     /** The host's own coordinates, which the slots are drawn in. */
     var host: androidx.compose.ui.layout.LayoutCoordinates? = null
@@ -576,9 +595,11 @@ internal fun DrawScope.drawTuneMosaics(
     colors: io.github.youndie.mutant.tokens.MutantColors,
 ) {
     val host = bodies.host?.takeIf { it.isAttached } ?: return
+    val root = host.findRootCoordinates()
     val shown =
         bodies.bodies
-            .mapNotNull { b -> b.coords?.takeIf { it.isAttached }?.let { b to it } }
+            // A body in a popup (a tooltip's, a menu's) stands in another window: its own host draws it, not this one.
+            .mapNotNull { b -> b.coords?.takeIf { it.isAttached && it.findRootCoordinates() == root }?.let { b to it } }
             .sortedByDescending { (_, c) -> c.size.width.toLong() * c.size.height }
     for ((b, c) in shown) {
         val at = host.localPositionOf(c, Offset.Zero)
