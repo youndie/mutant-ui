@@ -94,7 +94,12 @@ class SheetParityTest {
                                     // to the page's screen, not to the sheet.
                                     MutantDivider(Modifier.padding(top = 102.dp))
                                 }
-                                CompositionLocalProvider(LocalMutantStage provides "v1-sheet-win") {
+                                // The page's column squeezes its content into the room (B-184's departure, research
+                                // D20): the kit gives each its own height and scrolls.
+                                CompositionLocalProvider(
+                                    LocalMutantStage provides "v1-sheet-win",
+                                    LocalMutantBottomSheetAsDesigned provides true,
+                                ) {
                                     ComponentParity.ProvideSlots(window) {
                                         SheetFrame(
                                             true,

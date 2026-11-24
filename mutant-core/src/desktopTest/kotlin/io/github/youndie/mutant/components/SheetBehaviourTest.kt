@@ -378,7 +378,7 @@ class SheetBehaviourTest {
         }
 
     @Test
-    fun `a content taller than the screen keeps its top on it, and one that scrolls is given its room`() {
+    fun `a content taller than the screen keeps its top on it, and the sheet scrolls it to its last line`() {
         for (scrolls in listOf(false, true)) {
             val scroll = ScrollState(0)
             runComposeUiTest {
@@ -403,13 +403,17 @@ class SheetBehaviourTest {
                 val title = onNodeWithTag("title", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y
                 // The window from the screen's top: the tear line, the body 14 dp down, the grabber and the gap under it.
                 assertEquals(14f + 12f + 5f + 8f, title, 1f, "scrolls=$scrolls: the title under the window's top")
-                if (scrolls) {
-                    assertTrue(scroll.maxValue > 0, "it scrolls: ${scroll.maxValue}")
-                    runOnIdle { scroll.dispatchRawDelta(scroll.maxValue.toFloat()) }
-                    mainClock.advanceTimeByFrame()
-                    val last = onNodeWithTag("last", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.y
-                    assertTrue(last < 300f, "scrolled to its end, the last line shows: $last")
+                // B-184: the sheet scrolls its content itself, a consumer's `verticalScroll` given its whole height.
+                onNodeWithTag("title", useUnmergedTree = true).performMouseInput {
+                    moveTo(center)
+                    scroll(60f)
                 }
+                mainClock.advanceTimeBy(1_000)
+                val last = onNodeWithTag("last", useUnmergedTree = true).fetchSemanticsNode()
+                val foot = last.positionInRoot.y + last.size.height
+                // Whole: before B-184 a plain content's rows past the room were measured 0 tall at the room's foot.
+                assertTrue(last.size.height > 10, "scrolls=$scrolls: the last line ${last.size.height} tall")
+                assertTrue(foot <= 300f, "scrolls=$scrolls: scrolled to its end, the last line's foot at $foot")
             }
         }
     }

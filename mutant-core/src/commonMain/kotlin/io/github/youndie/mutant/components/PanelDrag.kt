@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
@@ -76,6 +77,27 @@ internal class PanelDrag {
 
     fun take() {
         taken = true
+    }
+
+    /** Where a pointer or a content's scroll holds the panel, px towards closed; null when nothing holds it. */
+    val heldAt: Float? get() = held
+
+    /** How far the content's scrolls have pulled the panel since they took it, px towards closed (B-184). */
+    private var pulled = 0f
+
+    /**
+     * From the sheet's nested scroll (B-184): the content at its top handed [delta] px of a finger's scroll towards closed
+     * to the panel (negative: back towards open). The first pull catches the panel where it was drawn, as a press does,
+     * and takes it: it follows 1:1 from there and boils.
+     */
+    fun pull(delta: Float) {
+        if (held == null) {
+            press()
+            pulled = 0f
+            take()
+        }
+        pulled += delta
+        move(pulled)
     }
 
     /** From the gesture: let go, at [velocity] px/s towards closed. Whether the panel asks to close, at [density]. */
@@ -176,19 +198,25 @@ private enum class PanelDragPhase { Idle, Held, Settle, Close }
 /**
  * The gesture that drags [drag]: from any press on the node, a finger or a mouse, along one axis. [towardsClosed] turns
  * the pointer's move into a distance towards closed, px. Past the slop the gesture consumes the moves, so a press under it
- * (a row, the scrim) is cancelled; a move a child consumed first (a scroll inside) is the child's, and the panel goes back.
- * Let go past the drag's limits, it calls [dismiss]. Only while [enabled].
+ * (a row, the scrim) is cancelled. Moves are seen before the node's content: one past the slop towards closed is the
+ * panel's before a scroll inside can take it (B-184); otherwise a move a child consumed first (a scroll inside) is the
+ * child's, and the panel goes back. A press while [atTop] answers false (the panel's content scrolled away from its top)
+ * leaves the whole gesture to the content; while [overPull] answers false (the content scrolls), a move towards open is
+ * not followed until it is the panel's, so a scroll up does not lift the panel through the slop first. Let go past the
+ * drag's limits, it calls [dismiss]. Only while [enabled].
  */
 internal fun Modifier.panelDrag(
     drag: PanelDrag,
     enabled: State<Boolean>,
     dismiss: State<() -> Unit>,
     towardsClosed: State<(Offset) -> Float>,
+    atTop: () -> Boolean = { true },
+    overPull: () -> Boolean = { true },
 ): Modifier =
-    pointerInput(drag) {
+    pointerInput(drag, atTop, overPull) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
-            if (!enabled.value) return@awaitEachGesture
+            if (!enabled.value || !atTop()) return@awaitEachGesture
             val tracker = VelocityTracker()
             tracker.addPointerInputChange(down)
             drag.press()
@@ -196,7 +224,9 @@ internal fun Modifier.panelDrag(
             var closes = false
             try {
                 while (true) {
-                    val e = awaitPointerEvent()
+                    // Seen before the content: past the slop towards closed, the drag is the panel's, and consumed here
+                    // a scroll inside never starts (B-184).
+                    val e = awaitPointerEvent(PointerEventPass.Initial)
                     val c = e.changes.firstOrNull { it.id == down.id } ?: break
                     if (!enabled.value) break
                     if (c.changedToUpIgnoreConsumed()) {
@@ -206,11 +236,19 @@ internal fun Modifier.panelDrag(
                         closes = drag.release(if (along.isNaN()) 0f else along, density)
                         break
                     }
-                    if (!drag.taken && c.isConsumed) break
                     tracker.addPointerInputChange(c)
                     val travel = towardsClosed.value(c.position - down.position)
-                    drag.move(travel)
-                    if (!drag.taken && abs(travel) > slop) drag.take()
+                    drag.move(if (travel < 0f && !drag.taken && !overPull()) 0f else travel)
+                    if (!drag.taken && travel >= slop) drag.take()
+                    if (!drag.taken) {
+                        // Towards open, or inside the slop: the content sees it first, and a move it consumed is its own.
+                        val seen = awaitPointerEvent(PointerEventPass.Main).changes.firstOrNull { it.id == down.id }
+                        if (seen == null || seen.isConsumed) break
+                        if (abs(travel) >= slop) {
+                            drag.take()
+                            drag.move(travel)
+                        }
+                    }
                     if (drag.taken) c.consume()
                 }
             } finally {
