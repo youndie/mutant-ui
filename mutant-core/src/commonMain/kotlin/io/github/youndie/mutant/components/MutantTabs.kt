@@ -41,6 +41,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.clock.readMutantClock
@@ -67,7 +68,8 @@ public class MutantTab(
 
 /**
  * Tabs: no body, the labels in a row 24 dp apart, the selected one in the accent. Under it stands a 4 dp acid bar
- * as wide as its label, ringed in black, with an echo of three fading strokes to its right. A new [selectedIndex]
+ * as wide as its label, ringed in black, with an echo of three fading strokes to its right (to its left right to left,
+ * where the row is mirrored, B-205). A new [selectedIndex]
  * sends the bar across in 330 ms, stepped twelve times a second, its echo trailing behind it; under reduce motion it
  * lands at once. The old label loses the accent in the selection's first frame and the new one takes it 280 ms after
  * the bar sets off; with no run (from no selection) and under reduce motion, at once. An index outside the tabs, -1 for
@@ -369,23 +371,25 @@ private fun DrawScope.drawIndicator(
     // The ring, the page's `box-shadow: 0 0 0 1.5px`, then the bar.
     drawRect(RING, Offset(x - RING_WIDTH, y - RING_WIDTH), Size(w + 2 * RING_WIDTH, BAR_HEIGHT + 2 * RING_WIDTH))
     drawRect(colors.primary, Offset(x, y), Size(w, BAR_HEIGHT))
-    // The echo trails behind the run: to the left on a run to the right, crossing back to its place at rest as the
-    // bar lands; to the right otherwise.
-    val rightward = run && toX > fromX
-    val left = if (rightward) (1 - e) else 0f
-    val right = if (rightward) e else 1f
+    // The echo rests past the bar's end, toward the reading direction: to its right, or to its left right to left
+    // (B-205). It trails behind a run toward that side, crossing back to its place at rest as the bar lands; on a run
+    // the other way its place at rest is already behind it.
+    val ahead = if (layoutDirection == LayoutDirection.Rtl) -1 else 1
+    val onward = run && (toX - fromX) * ahead > 0
+    val behind = if (onward) (1 - e) else 0f
+    val rest = if (onward) e else 1f
     for (i in ECHO_GAP.indices) {
         val ew = ECHO_WIDTH[i]
         val ey = y + 1
-        if (right >
-            0
-        ) {
-            drawRect(colors.primary, Offset(x + w + ECHO_GAP[i], ey), Size(ew, 2f), alpha = ECHO_ALPHA[i] * right)
+        val pastEnd = x + w + ECHO_GAP[i]
+        val pastStart = x - ECHO_GAP[i] - ew
+        if (rest > 0) {
+            val at = if (ahead > 0) pastEnd else pastStart
+            drawRect(colors.primary, Offset(at, ey), Size(ew, 2f), alpha = ECHO_ALPHA[i] * rest)
         }
-        if (left >
-            0
-        ) {
-            drawRect(colors.primary, Offset(x - ECHO_GAP[i] - ew, ey), Size(ew, 2f), alpha = ECHO_ALPHA[i] * left)
+        if (behind > 0) {
+            val at = if (ahead > 0) pastStart else pastEnd
+            drawRect(colors.primary, Offset(at, ey), Size(ew, 2f), alpha = ECHO_ALPHA[i] * behind)
         }
     }
 }

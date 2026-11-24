@@ -17,7 +17,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
@@ -32,7 +34,8 @@ import io.github.youndie.mutant.tokens.MutantBody
  * A switch (bodies `track` 52 × 28 and `thumb` 22) in a 48 dp row with its [label]: the row is the touch target. Off,
  * the track is the second surface's colour with a short drip; on, the acid fill pours in, the thumb slides right with
  * a stretch and a ring melts in where it stood — the design's echo, drawn as its own part (the `ghost` gene is not
- * implemented). Disabled, both bodies lose their signal and the label greys.
+ * implemented). Disabled, both bodies lose their signal and the label greys. Right to left the row is mirrored: the
+ * label first, the thumb on at the left and sliding left (B-205); the bodies are drawn as they are left to right.
  */
 @Composable
 public fun MutantSwitch(
@@ -65,6 +68,8 @@ internal fun SwitchBody(
     val focused by source.collectIsFocusedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val state = if (enabled) BodyState.Rest else BodyState.Disabled
+    // Right to left the thumb stands on at the left and slides that way: its run is mirrored with it (B-205).
+    val side = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
     ControlRow(
         modifier.mutantHand(enabled).toggleable(
             checked,
@@ -100,7 +105,7 @@ internal fun SwitchBody(
                         .size(THUMB)
                         .mutantCleanZone(),
                     state = state,
-                    slide = SlideRequest(checked, if (checked) -TRAVEL else TRAVEL),
+                    slide = SlideRequest(checked, side * (if (checked) -TRAVEL else TRAVEL)),
                 ) {}
                 // The echo: a ring where the thumb stood, melting in when it leaves (the page's on-only `<i>`). It is page
                 // content, drawn over every body, the thumb's included.

@@ -18,10 +18,12 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -70,7 +72,8 @@ public enum class MutantIllustrationKind(
  * One of the six illustrations at the design's size ([MutantIllustrationKind]): bodies from the generator with
  * fixed keys, so the same cassette draws the same picture everywhere, on the screen's clock. Its drips hang
  * below its bounds and take no space. The title and the line under it are the caller's (an empty state). Given less
- * than its size, it keeps its size, centred in what it is given, and overflows both sides alike.
+ * than its size, it keeps its size, centred in what it is given, and overflows both sides alike. Right to left it is
+ * drawn as it is left to right: a picture is not mirrored (B-205).
  *
  * [cassetteLabel] is the word on the [MutantIllustrationKind.Cassette]'s label, the design's «БЕЗ ПОДПИСИ» unless the
  * app translates it; the other kinds ignore it. It is one line, drawn at 20 dp whatever the font scale; a word wider
@@ -120,14 +123,20 @@ internal fun IllustrationArt(
 ) {
     CompositionLocalProvider(LocalMutantStage provides stage) {
         Box(modifier.requiredSize(kind.width.dp, kind.height.dp)) {
-            val art = Art(LocalMutantColors.current, parts)
-            when (kind) {
-                MutantIllustrationKind.Cassette -> art.cassette(cassetteLabel)
-                MutantIllustrationKind.Television -> art.television()
-                MutantIllustrationKind.Antenna -> art.antenna()
-                MutantIllustrationKind.Floppy -> art.floppy()
-                MutantIllustrationKind.Remote -> art.remote()
-                MutantIllustrationKind.TestCard -> art.testCard()
+            // A picture is not mirrored right to left (B-205, the designer's answer 37): its parts stand at the page's
+            // boxes from the left whatever the layout's direction.
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Box(Modifier.matchParentSize()) {
+                    val art = Art(LocalMutantColors.current, parts)
+                    when (kind) {
+                        MutantIllustrationKind.Cassette -> art.cassette(cassetteLabel)
+                        MutantIllustrationKind.Television -> art.television()
+                        MutantIllustrationKind.Antenna -> art.antenna()
+                        MutantIllustrationKind.Floppy -> art.floppy()
+                        MutantIllustrationKind.Remote -> art.remote()
+                        MutantIllustrationKind.TestCard -> art.testCard()
+                    }
+                }
             }
         }
     }

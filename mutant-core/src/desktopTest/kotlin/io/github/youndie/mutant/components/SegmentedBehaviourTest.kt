@@ -298,6 +298,7 @@ class SegmentedBehaviourTest {
     private fun inkColumns(
         direction: LayoutDirection,
         labels: List<String> = options,
+        selected: Int = 0,
     ): Set<Int> {
         var columns = emptySet<Int>()
         runComposeUiTest {
@@ -305,7 +306,7 @@ class SegmentedBehaviourTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f), LocalLayoutDirection provides direction) {
                     MutantTheme(reduceMotion = true) {
-                        Box { MutantSegmentedButton(labels, 0, {}, Modifier.testTag("s")) }
+                        Box { MutantSegmentedButton(labels, selected, {}, Modifier.testTag("s")) }
                     }
                 }
             }
@@ -319,9 +320,13 @@ class SegmentedBehaviourTest {
         return columns
     }
 
+    /**
+     * B-205 (the designer's answer 37) turned B-168's check over: right to left the segments are mirrored, so the words
+     * stand where the reversed options stand left to right, the chosen one's place included.
+     */
     @Test
-    fun `right to left, every word stands where it does left to right`() {
-        val ltr = inkColumns(LayoutDirection.Ltr)
+    fun `right to left, every word stands where the reversed options stand left to right`() {
+        val ltr = inkColumns(LayoutDirection.Ltr, options.reversed(), options.size - 1)
         val rtl = inkColumns(LayoutDirection.Rtl)
         assertTrue(ltr.size > 40, "the pale words' ink: ${ltr.size} columns")
         // Within a pixel: the line's place right to left differs by a fraction, and an edge lands on the next pixel.
@@ -332,7 +337,7 @@ class SegmentedBehaviourTest {
         assertEquals(
             emptyList(),
             off,
-            "columns of the pale words' ink more than a pixel from where they are left to right",
+            "columns of the pale words' ink more than a pixel from where the reversed options' are left to right",
         )
     }
 
