@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -42,6 +45,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.mutant.icons.MutantIcon
@@ -147,8 +151,10 @@ public fun MutantOutlinedButton(
 }
 
 /**
- * The quietest action: no body, the accent label over a tracking divider as wide as the label. Disabled, the
- * label greys (the design draws no disabled text button; research D15).
+ * The quietest action: no body, the accent label over a tracking divider as wide as the label. Pressed, the label drops
+ * 1 dp and a solid 2 dp line in its colour stands in the divider's place; released, it is at rest in the next frame, and
+ * under reduce motion the same (B-192). Disabled, the label greys (the design draws no disabled text button; research
+ * D15).
  */
 @Composable
 public fun MutantTextButton(
@@ -176,8 +182,12 @@ internal fun TextButtonBody(
     val colors = MutantTheme.colors
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
+    // Read where it is drawn and placed, not here: a press changes no composition (B-192).
+    val pressed = source.collectIsPressedAsState()
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     val seed = "${LocalMutantCassette.current}/${LocalMutantStage.current}/div$key"
+    val label = if (enabled) colors.textAccent else colors.textDisabled
+    val ink = inkOnBody(label)
     Column(
         modifier
             .mutantHand(enabled)
@@ -196,16 +206,35 @@ internal fun TextButtonBody(
             .padding(horizontal = TEXT_PADDING),
         verticalArrangement = Arrangement.spacedBy(TEXT_GAP, Alignment.CenterVertically),
     ) {
-        ButtonLabel(text, if (enabled) colors.textAccent else colors.textDisabled, Modifier)
-        // A tracking divider as the top app bar's is: the screen's keyframe loss takes it with the bodies (B-198).
+        ButtonLabel(text, label, Modifier, inner = Modifier.labelPressDrop(pressed))
+        // A tracking divider as the top app bar's is: the screen's keyframe loss takes it with the bodies (B-198). Pressed,
+        // the solid line in the label's ink stands in its place (B-192).
         TrackingDivider(
             seed,
             DIVIDER.value,
             colors,
-            (if (dividerWidth != null) Modifier.width(dividerWidth) else Modifier.fillMaxWidth()).height(DIVIDER),
+            (if (dividerWidth != null) Modifier.width(dividerWidth) else Modifier.fillMaxWidth())
+                .height(DIVIDER)
+                .textButtonPressLine(pressed, ink),
         )
     }
 }
+
+/**
+ * B-192, the designer's answer 15: pressed, the label's ink stands [PRESS_DROP] lower. Moved where it is placed, inside
+ * the label's clean zone, so the zone, and with it the mosaic of a body under the button, stays where it is at rest.
+ */
+internal fun Modifier.labelPressDrop(pressed: State<Boolean>): Modifier =
+    offset { IntOffset(0, if (pressed.value) PRESS_DROP.roundToPx() else 0) }
+
+/** B-192: pressed, a solid line in the label's [ink] instead of the tracking divider drawn under it, as tall as its slot. */
+private fun Modifier.textButtonPressLine(
+    pressed: State<Boolean>,
+    ink: Color,
+): Modifier =
+    drawWithContent {
+        if (pressed.value) drawRect(ink, Offset.Zero, Size(size.width, size.height)) else drawContent()
+    }
 
 /**
  * The filled and outlined buttons; [heat] holds a fixture's boil (the page's `data-heat`), null in the kit. [checkRoom]:
@@ -340,10 +369,12 @@ internal fun ButtonLabel(
     modifier: Modifier,
     size: Int = LABEL_SIZE,
     other: Color = MutantTheme.colors.onPrimary,
+    inner: Modifier = Modifier,
 ) {
     MutantText(
         text,
-        modifier.mutantCleanZone(),
+        // [inner] moves the ink inside its clean zone (the text button's press, B-192).
+        modifier.mutantCleanZone().then(inner),
         style = buttonLabelStyle(size, inkOnBody(color, other)),
         maxLines = 1,
         softWrap = false,
@@ -381,6 +412,9 @@ private val ICON_GAP = 8.dp
 private val TEXT_PADDING = 12.dp
 private val TEXT_GAP = 5.dp
 private val DIVIDER = 2.dp
+
+/** How far a pressed label drops, the text button's and the snackbar action's (the designer's answer 15, B-192). */
+internal val PRESS_DROP = 1.dp
 
 /** The outlined button's drip (`data-over="14"`). */
 private const val OUTLINED_OVERHANG = 14.0
