@@ -293,7 +293,7 @@ class DialogOpaqueAndTallTest {
         }
 
     @Test
-    fun `a dialog taller than the screen stands 24 dp from every edge, its title and actions in view, its text scrolling`() {
+    fun `a dialog taller than the screen stands 24 dp from every edge, title and actions in view, text scrolling`() {
         tall(MutantPalettes.Efir, 1f)
         tall(MutantPalettes.Kopiya, 2f)
     }
