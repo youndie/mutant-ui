@@ -1,7 +1,7 @@
 ---
 id: B-187
 title: "Tab labels hand the accent over late; a narrow top bar drops its status first"
-status: open
+status: wip
 priority: P2
 size: S
 stage: stage-6-later

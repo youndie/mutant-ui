@@ -65,7 +65,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-197](docs/backlog/B-197-the-tape-over-every-layer.md) `[ ]` | The Tape over menus, tooltips and dialogs | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
-| [B-187](docs/backlog/B-187-tab-labels-and-a-narrow-top-bar.md) `[ ]` | Tab labels hand the accent over late; a narrow top bar drops its status first | P2 | S | - |
+| [B-187](docs/backlog/B-187-tab-labels-and-a-narrow-top-bar.md) `[~]` | Tab labels hand the accent over late; a narrow top bar drops its status first | P2 | S | - |
 | [B-189](docs/backlog/B-189-a-press-held-inside-a-scroll.md) `[ ]` | A press inside a scroll heats after 100 ms | P2 | M | - |
 | [B-192](docs/backlog/B-192-text-buttons-pressed.md) `[ ]` | The text button and the snackbar action show a press | P2 | S | - |
 | [B-194](docs/backlog/B-194-the-cassette-label-translated.md) `[ ]` | The cassette label is a translated string that fits | P2 | S | - |
