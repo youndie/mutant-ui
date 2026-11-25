@@ -68,7 +68,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 | [B-132](docs/backlog/B-132-the-shader-rounds-its-contour.md) `[ ]` | The shader rounds its contour as the paths do | P3 | M | - |
 | [B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md) `[ ]` | The sample under the status bar on iOS | P3 | S | - |
 
-## Closed (207)
+## Closed (208)
 
 **Goldens and references regenerate deterministically; the port matches the goldens on every target; the floor and the frame cost have measured numbers**
 
@@ -281,6 +281,7 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 - [B-209](docs/backlog/B-209-the-accessibility-test-in-seconds.md) `[x]` - The sample's accessibility test runs in seconds
 - [B-210](docs/backlog/B-210-the-slowest-tests-in-seconds.md) `[x]` - The slowest tests run well under their one-minute limit
 - [B-212](docs/backlog/B-212-the-place-key-in-common-metadata.md) `[x]` - The place key compiles in common metadata
+- [B-213](docs/backlog/B-213-the-phone-alone-in-the-browser.md) `[x]` - The Demo's phone alone in the browser, for a page to embed
 - [B-44](docs/backlog/B-44-search-bar.md) `[x]` - SearchBar: a focused field with suggestion chips and result rows
 - [B-45](docs/backlog/B-45-date-and-time-pickers.md) `[x]` - DatePicker and TimePicker
 - [B-46](docs/backlog/B-46-data-table.md) `[x]` - DataTable: OSD header, 48 dp rows, tracking dividers, row selection

@@ -26,8 +26,9 @@ component library. The design is a Claude Design project with an executable gene
 
 The repository is public, [youndie/mutant-ui](https://github.com/youndie/mutant-ui), since
 [B-41](docs/backlog/B-41-public-repository-and-publishing.md); every push to `main` publishes a snapshot
-and deploys the site. The loop over the backlog works one item per branch and pull request and merges
-its own:
+and deploys the site. The site's `?scene=app` is the Demo's phone alone, which kotlin.website embeds at 390 × 844
+([B-213](docs/backlog/B-213-the-phone-alone-in-the-browser.md)); `?scene=<name>` are B-73's bench scenes. The loop over
+the backlog works one item per branch and pull request and merges its own:
 
 1. `feat/b-NN-<slug>` (`fix/b-NN-<slug>` for a defect) from `main`, never a commit on `main`.
 2. Implement, with the item's status and documents in the same branch. Both gates green on the Mac.
