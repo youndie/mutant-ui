@@ -55,6 +55,7 @@ import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
@@ -74,6 +75,9 @@ import kotlin.math.roundToInt
  * corrupts the body (the red offset outline and blocks) and tells a screen reader what is wrong, [errorDescription]
  * (the generic `Ошибка` when the caller says nothing); disabled, it loses its signal and both texts grey. A press anywhere on the body focuses it and puts the cursor at the nearest place in the text. The text
  * and the caret are never moved by the body. One line; its direction is the text's.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantTextField(
@@ -85,7 +89,7 @@ public fun MutantTextField(
     enabled: Boolean = true,
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    key: String = prefix ?: placeholder ?: "field",
+    key: String = mutantPlaceKey("field"),
     interactionSource: MutableInteractionSource? = null,
     errorDescription: String = ERROR_WORD,
 ) {

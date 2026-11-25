@@ -76,6 +76,7 @@ import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -115,6 +116,9 @@ public class MutantCarouselItem(
  * does. The kit moves the shelf by one glide, 330 ms on the slide curve, whether a press, a notch of the wheel or
  * keyboard focus on a card beside asks for it (B-188, answer 10). Under reduce motion the shelf and the pointer move at
  * once. The cards are a stage of their own, as the page's view is, so their bodies are seeded apart from the screen's.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantCarousel(
@@ -122,7 +126,7 @@ public fun MutantCarousel(
     modifier: Modifier = Modifier,
     state: PagerState = rememberPagerState { items.size },
     onClick: ((page: Int) -> Unit)? = null,
-    key: String = "car",
+    key: String = mutantPlaceKey("car"),
     indicatorKey: String = "cd",
 ) {
     CarouselBody(items, modifier, state, onClick, key, indicatorKey)

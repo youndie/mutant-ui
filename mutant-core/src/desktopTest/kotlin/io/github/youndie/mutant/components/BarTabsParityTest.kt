@@ -162,6 +162,7 @@ class BarTabsParityTest {
                         navigationIcon = { MutantIcon(MutantIcons.Menu, null) },
                         status = "CH 03 · SP",
                         windowInsets = WindowInsets(0),
+                        key = "0",
                     )
                 }
             // The 56 dp row's icon, title and status, 12 dp or more apart; the divider from row 56.

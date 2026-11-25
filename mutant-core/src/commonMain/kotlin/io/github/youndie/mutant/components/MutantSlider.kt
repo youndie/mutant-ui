@@ -71,6 +71,7 @@ import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.HeatMachine
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -103,6 +104,9 @@ import kotlin.math.roundToInt
  *
  * Its width is the one given; with none (a scrolling row), the page's 300 dp. A range of one value or a reversed one
  * draws the handle at the start and takes no input.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantSlider(
@@ -112,7 +116,7 @@ public fun MutantSlider(
     label: String? = null,
     valueRange: IntRange = -10..10,
     enabled: Boolean = true,
-    key: String = label ?: "slider",
+    key: String = mutantPlaceKey("slider"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     val span = valueRange.last - valueRange.first

@@ -92,7 +92,7 @@ class SheetParityTest {
                                     // (`querySelectorAll` reaches into the nested stage) and draws it again with its own
                                     // seed, under the scrim: half the blue shows in the sheet's line's gaps. It belongs
                                     // to the page's screen, not to the sheet.
-                                    MutantDivider(Modifier.padding(top = 102.dp))
+                                    MutantDivider(Modifier.padding(top = 102.dp), key = "0")
                                 }
                                 // The page's column squeezes its content into the room (B-184's departure, research
                                 // D20): the kit gives each its own height and scrolls.

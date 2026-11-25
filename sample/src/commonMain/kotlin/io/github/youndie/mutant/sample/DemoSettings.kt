@@ -87,8 +87,10 @@ internal fun Settings(
                     Spacer(Modifier.height(16.dp))
                     Osd(s.speed)
                     Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+                        // B-206: an item of a list takes its key from what it is, here its label. The kit's default is
+                        // the body's place, which in a loop is its index: a removal above would hand its body on.
                         listOf("SP", "LP", "EP").forEachIndexed { i, label ->
-                            MutantRadioButton(speed == i, { speed = i }, label = label, key = "radio")
+                            MutantRadioButton(speed == i, { speed = i }, label = label, key = "speed-$label")
                         }
                     }
                     MutantSwitch(
@@ -178,9 +180,10 @@ internal fun Settings(
             { nav.erasing = false },
             text = s.eraseNamed,
             returnFocusTo = nav.menu,
+            key = "dialog",
         ) {
             MutantDialogAction(s.cancel, { nav.erasing = false })
-            MutantDialogAction(s.erase, { nav.erasing = false }, primary = true)
+            MutantDialogAction(s.erase, { nav.erasing = false }, primary = true, key = "dialog-ok")
         }
     }
 }

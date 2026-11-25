@@ -349,7 +349,7 @@ class SheetBehaviourTest {
                                         repeat(4) { MutantListItem("Строка $it", key = "row$it") }
                                     }
                                     // Tall enough that the sheet stands across most of the screen, the band too.
-                                    MutantBottomSheet(visible, {}, windowInsets = WindowInsets(0)) {
+                                    MutantBottomSheet(visible, {}, windowInsets = WindowInsets(0), key = "sheet") {
                                         Box(Modifier.size(300.dp, 500.dp).testTag("room"))
                                     }
                                 }, probe = { running = it })

@@ -34,6 +34,7 @@ import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.mutantMelt
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
@@ -45,6 +46,9 @@ import io.github.youndie.mutant.type.cssLine
  * A checkbox (body `box`, 22 × 22) in a 48 dp row with its [label]: the row is the touch target. Checked, the acid
  * fill pours in and the mark — a tick and two burnt blocks — melts in; unchecked, it melts out. Disabled, the body
  * loses its signal and the label greys.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantCheckbox(
@@ -53,7 +57,7 @@ public fun MutantCheckbox(
     modifier: Modifier = Modifier,
     label: String? = null,
     enabled: Boolean = true,
-    key: String = label ?: "check",
+    key: String = mutantPlaceKey("check"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     CheckboxBody(checked, onCheckedChange, modifier, label, enabled, key, interactionSource)
@@ -62,6 +66,9 @@ public fun MutantCheckbox(
 /**
  * A radio button (body `dot`, 22 × 22) in a 48 dp row with its [label]: selected, a red recording dot melts in with
  * a faint echo up and to the right; the red never flashes. Disabled, the dot greys.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantRadioButton(
@@ -70,7 +77,7 @@ public fun MutantRadioButton(
     modifier: Modifier = Modifier,
     label: String? = null,
     enabled: Boolean = true,
-    key: String = label ?: "radio",
+    key: String = mutantPlaceKey("radio"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     RadioBody(selected, onClick, modifier, label, enabled, key, interactionSource)

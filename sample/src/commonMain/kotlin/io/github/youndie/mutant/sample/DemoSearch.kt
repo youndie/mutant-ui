@@ -185,12 +185,13 @@ internal fun Search(
             { erasing = false },
             text = s.eraseText,
             returnFocusTo = if (selected.isEmpty()) sortButton else eraseButton,
+            key = "dialog",
         ) {
             MutantDialogAction(s.cancel, { erasing = false })
             MutantDialogAction(s.erase, {
                 selected.clear()
                 erasing = false
-            }, primary = true)
+            }, primary = true, key = "dialog-ok")
         }
     }
 }

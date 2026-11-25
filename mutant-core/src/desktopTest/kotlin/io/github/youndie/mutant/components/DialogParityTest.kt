@@ -98,7 +98,7 @@ class DialogParityTest {
                     null,
                     {
                         MutantDialogAction("Отмена", {})
-                        MutantDialogAction("Стереть", {}, primary = true)
+                        MutantDialogAction("Стереть", {}, primary = true, key = "dialog-ok")
                     },
                     playIn = false,
                     windowTop = 52.dp,

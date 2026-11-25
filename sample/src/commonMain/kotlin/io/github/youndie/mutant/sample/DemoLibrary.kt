@@ -142,7 +142,7 @@ internal fun Library(
         bar()
         // The button is the screen's own: it tunes in with it.
         MutantScreen(nav.tab, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 84.dp)) {
-            MutantTooltipBox(s.newRecording, supportingText = s.recLeft) {
+            MutantTooltipBox(s.newRecording, supportingText = s.recLeft, key = s.newRecording) {
                 MutantFab(MutantIcons.Add, s.newRecording, { sheet = true }, key = "fab")
             }
         }

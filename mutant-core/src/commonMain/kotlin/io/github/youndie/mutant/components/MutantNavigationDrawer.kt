@@ -85,6 +85,7 @@ import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.toPath
 import io.github.youndie.mutant.surface.venomSpring
@@ -130,6 +131,9 @@ public class MutantDrawerItem(
  * the chosen row and then from row to row; Tab steps the rows, coming round from the last to the first and with
  * Shift+Tab the other way, and never leaves the drawer while it is open. Once the drawer has gone focus goes to
  * [returnFocusTo].
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantNavigationDrawer(
@@ -141,7 +145,7 @@ public fun MutantNavigationDrawer(
     modifier: Modifier = Modifier,
     title: String? = "КАНАЛЫ",
     returnFocusTo: FocusRequester? = null,
-    key: String = "drawer",
+    key: String = mutantPlaceKey("drawer"),
 ) {
     DrawerFrame(visible, onDismissRequest, items, selectedIndex, onSelect, modifier, title, returnFocusTo, key)
 }

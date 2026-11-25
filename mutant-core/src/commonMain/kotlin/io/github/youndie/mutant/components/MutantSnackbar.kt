@@ -48,6 +48,7 @@ import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.MutantTune
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.tuneStands
 import io.github.youndie.mutant.surface.with
@@ -82,6 +83,9 @@ import kotlin.math.roundToInt
  * As it rides in, its body tunes in: a 16 dp mosaic, an 8 dp mosaic, then the bar with its words, 320 ms in three steps;
  * as it leaves, the 8 dp mosaic, then nothing, by 160 ms (B-179). A new [message] while it stands tunes it in again, the
  * new words on the third step. A snackbar the consumer takes straight out of the composition cannot step out: hide it.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantSnackbar(
@@ -91,7 +95,7 @@ public fun MutantSnackbar(
     actionLabel: String? = null,
     onAction: () -> Unit = {},
     onHidden: () -> Unit = {},
-    key: String = "snack",
+    key: String = mutantPlaceKey("snack"),
     returnFocusTo: FocusRequester? = null,
 ) {
     SnackbarBody(message, modifier, visible, actionLabel, onAction, onHidden, key, returnFocusTo = returnFocusTo)

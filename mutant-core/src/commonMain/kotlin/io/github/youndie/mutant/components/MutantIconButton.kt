@@ -33,6 +33,7 @@ import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
 
@@ -40,6 +41,9 @@ import io.github.youndie.mutant.tokens.MutantBody
  * An icon action on a small slime body (body `icon`, 48 × 48, the touch target). The icon is the text's colour at
  * rest, the dark ink while pressed, when the body boils to amber, and grey when disabled, as the page draws them.
  * In a slot that gives it less, the body keeps its 48 × 48, centred on the slot and overflowing it.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantIconButton(
@@ -48,7 +52,7 @@ public fun MutantIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    key: String = contentDescription ?: icon.name,
+    key: String = mutantPlaceKey("icon"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     ActionBody(ActionKind.Icon, icon, contentDescription, null, onClick, modifier, enabled, key, interactionSource)
@@ -57,6 +61,9 @@ public fun MutantIconButton(
 /**
  * The floating action: the most damaged body of the kit (`fab`, 56 × 56), an acid plate on which every drip lets
  * a drop go. Its icon is drawn with the heavier 2.5 dp line the design gives it, when it is one of [MutantIcons].
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantFab(
@@ -64,7 +71,7 @@ public fun MutantFab(
     contentDescription: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    key: String = contentDescription ?: icon.name,
+    key: String = mutantPlaceKey("fab"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     ActionBody(ActionKind.Fab, icon, contentDescription, null, onClick, modifier, true, key, interactionSource)
@@ -73,6 +80,9 @@ public fun MutantFab(
 /**
  * The FAB with a label after its icon (the page's 136 × 56 «Запись»); 56 dp tall, as wide as its content and never
  * under 56. Given less width the label ends in an ellipsis; the body keeps 56 × 56 at the least.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantExtendedFab(
@@ -80,7 +90,7 @@ public fun MutantExtendedFab(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    key: String = text,
+    key: String = mutantPlaceKey("efab"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     ActionBody(ActionKind.Fab, icon, null, text, onClick, modifier, true, key, interactionSource)

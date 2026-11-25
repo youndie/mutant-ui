@@ -113,8 +113,8 @@ internal val subjects: List<Subject> =
         Subject("Button.Icon") { m, t -> MutantButton(t, {}, m, icon = MutantIcons.Add) },
         Subject("OutlinedButton") { m, t -> MutantOutlinedButton(t, {}, m) },
         Subject("TextButton") { m, t -> MutantTextButton(t, {}, m) },
-        Subject("IconButton") { m, t -> MutantIconButton(MutantIcons.Search, t, {}, m) },
-        Subject("Fab") { m, t -> MutantFab(MutantIcons.Add, t, {}, m) },
+        Subject("IconButton") { m, t -> MutantIconButton(MutantIcons.Search, t, {}, m, key = t) },
+        Subject("Fab") { m, t -> MutantFab(MutantIcons.Add, t, {}, m, key = t) },
         Subject("ExtendedFab") { m, t -> MutantExtendedFab(t, MutantIcons.Add, {}, m) },
         Subject("Chip") { m, t -> MutantChip(t, false, {}, m) },
         Subject("Chip.Selected") { m, t -> MutantChip(t, true, {}, m) },
@@ -137,7 +137,9 @@ internal val subjects: List<Subject> =
         Subject(
             "DatePicker",
         ) { m, t -> MutantDatePicker(2026, 11, 13, {}, { _, _ -> }, m, monthNames = List(12) { t }) },
-        Subject("TimePicker") { m, t -> MutantTimePicker(21, 30, { _, _ -> }, m, hourLabel = t, minuteLabel = t) },
+        Subject(
+            "TimePicker",
+        ) { m, t -> MutantTimePicker(21, 30, { _, _ -> }, m, hourLabel = t, minuteLabel = t, key = "tp") },
         Subject("NavigationDrawer") { m, t ->
             MutantNavigationDrawer(true, {
             }, listOf(MutantDrawerItem("CH 01", t), MutantDrawerItem(t, "Поиск")), 0, {}, m, title = t)

@@ -109,7 +109,7 @@ class SearchBarParityTest {
                                             rowHeight = 60.dp,
                                         )
                                         MutantDivider(key = "0")
-                                        MutantSearchResultLoading()
+                                        MutantSearchResultLoading(key = "")
                                     }
                                 }
                             }

@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.type.LocalMutantTextRaster
@@ -42,6 +43,9 @@ import io.github.youndie.mutant.type.cssLine
  * once the title would keep less than the status's own width (or less than its whole, when shorter), and then the
  * title is cut; the navigation icon and the actions keep their widths. It stands below [windowInsets], the status bar by default, and draws nothing under it; the screen's
  * ground shows there. The row has no side margins: the screen gives them, as the page's column does.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantTopAppBar(
@@ -50,7 +54,7 @@ public fun MutantTopAppBar(
     navigationIcon: (@Composable () -> Unit)? = null,
     status: String? = null,
     windowInsets: WindowInsets = WindowInsets.statusBars,
-    key: String = "0",
+    key: String = mutantPlaceKey("topbar"),
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val colors = MutantTheme.colors
