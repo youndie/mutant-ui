@@ -1,6 +1,7 @@
 package io.github.youndie.mutant.surface
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositeKeyHashCode
 import androidx.compose.runtime.currentCompositeKeyHashCode
 
 /**
@@ -20,4 +21,10 @@ import androidx.compose.runtime.currentCompositeKeyHashCode
  * there takes a key of its own.
  */
 @Composable
-internal fun mutantPlaceKey(type: String): String = type + "@" + currentCompositeKeyHashCode.toString(36)
+internal fun mutantPlaceKey(type: String): String = type + "@" + placeKeyText(currentCompositeKeyHashCode)
+
+/**
+ * The place in base 36, as each platform's number prints it (B-212): in common code [CompositeKeyHashCode] is an `expect`
+ * type with no `toString(radix)`, so the common metadata did not compile and `main` did not publish.
+ */
+internal expect fun placeKeyText(hash: CompositeKeyHashCode): String

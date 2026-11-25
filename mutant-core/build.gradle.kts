@@ -218,3 +218,8 @@ tasks.register<JavaExec>("keyframeLossBench") {
 tasks.withType<AbstractTestTask>().configureEach {
     outputs.cacheIf("a cached test run replays its failures as a pass (B-71)") { false }
 }
+
+// B-212: the common metadata is compiled only by the publish of `main` (`publish-wip.yaml`), never by `check`, so a call
+// that each platform compiles and common code does not (B-206's `currentCompositeKeyHashCode.toString(36)`) passed every
+// pull request and stopped the publish. `check` compiles it too.
+tasks.named("check") { dependsOn("compileCommonMainKotlinMetadata") }
