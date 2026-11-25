@@ -77,7 +77,7 @@ run with `main`'s five source files written back):
 | the band and noise over a menu, in register | «the Tape's band is drawn over an open menu …» and «the Tape's noise …»: one part of the Tape alone, on a frozen clock at a moment the band crosses the menu, read as the pixels it changes (≥ 3 levels) against the same scene with no part drawn, over the menu's rows (an area, not an edge): with the menu open, and with it gone, where the part lands on the ground there. Held if over the menu it changes at least half of what it changes on the ground, at most 5 % of its changes fall where the ground's do not (out of register, or past the Tape's foot: the menu stands across it), and beside the menu, inside the 28 dp its layer takes in, at most 1 % of pixels differ from the ground's Tape (no Tape twice). «Эфир» at density 1, «Копия» at 2. Measured: band 4 800 of 4 800 and 19 094 of 19 200, noise 763 of 763 and 2 984 of 2 988, 0 out of register. Before: 0 over the menu |
 | the band and noise over a tooltip, in register | «… over a tooltip's plate …», the same reading over the plate, which stands across the foot of a 100 dp Tape; «Эфир» at density 2, «Копия» at 1. Measured: band 5 793 of 6 464 and 1 598 of 1 616, noise 1 662 of 1 662 and 423 of 424, 0 out of register. Before: 0 |
 | over a dialog; the Tape runs while a dialog is open | «the Tape runs while a dialog is open, its band over the dialog's window in register with the band beside it»: the band alone over a 360 × 400 dp screen with a dialog open on a running clock, eight shots 240 ms apart: the band moves between shots (7 of 7), its rows in the window's frame (clear of its words) are its rows beside the window within 2 rows in each pair, and it crosses the window (94 rows changed there). Before: it moved in 0 of 7 |
-| the phone | not run: Iteration 1 |
+| the phone | measured 2026-11-25 (The run, below): Android held, Chrome red; the Question |
 
 Every case of the menu and the tooltip also reads the strip beside the popup, inside the 28 dp its layer takes in: at
 most 1 % of its pixels may differ from the ground's Tape there (the Tape drawn once, not twice).
@@ -242,3 +242,108 @@ both builds, and the two wasm scenes opened once in the phone's Chrome; no held 
   published beside it. The popup's own draw, reported, is its `SyncQueued − DrawStart`.
 - The same look showed what the change does there: in about two seconds with the menu open, the popup's root rendered
   117 frames on this branch and 18 on `main` (the menu's own ticks), while the activity rendered 117 and 134.
+
+### The run, 2026-11-25
+
+The Pixel 6a on mains, charging from 27 % through both runs, so it ran warm: 34.7 °C at Run 1's start, 39.0 at its
+end. Before Run 2's control it was given the driver's longest cool-down, 900 s, and still read 39.4 °C, and the control
+ran at that; before the arms it cooled to 37.7 °C in 780 s. Both are logged (it was charging at up to 3 A; at one point the phone's Chrome stood in front after Run 1 with a page drawing (not a bench tab), its renderer
+at 72 % of a core, and the Home key was pressed, no tab touched). Before Run 1 the script closed four leftover bench tabs
+of an earlier session (`127.0.0.1:8768/?scene=DemoLibrary&…`), logged. Neither run was cut short, none is void, and
+nothing was rerun.
+
+**Run 1, Chrome 158 on the phone** ([log](../../logs/b-197/2026-11-25-pixel-ab.log), `frames.csv` beside it), arm `a`
+at `592b80c`, arm `b` `main` at `dc97cf8` with the same scenes, interleaved as `~b`, viewport 411 × 728 at 2.625×; same
+host, same run. Work p50 in ms per counted round:
+
+| round | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|
+| `ComponentsMenu`, `a` | 5.7 | 5.8 | 5.5 | 6.1 | 9.9 |
+| `ComponentsMenu`, `b` | 5.4 | 5.3 | 5.5 | 6.2 | 6.1 |
+| a − b (held: within 2.0) | +0.3 | +0.5 | 0.0 | −0.1 | **+3.8** |
+| `ComponentsRest`, `a` | 7.4 | 5.5 | 5.6 | 6.0 | 5.9 |
+| `ComponentsRest`, `b` | 5.4 | 9.2 | 8.9 | 6.3 | 9.9 |
+| a − b (held: within 1.0) | **+2.0** | **−3.7** | **−3.3** | −0.3 | **−4.0** |
+| `Control` over `ComponentsReduce`, `a` | 8.4 | 8.3 | 8.3 | 8.2 | 8.2 |
+| the same, `b` | 8.6 | 8.4 | 8.4 | 8.4 | 8.4 |
+| `ComponentsDialog`, `a` (reported) | 9.2 | 8.9 | 9.0 | 9.1 | 9.0 |
+| `ComponentsDialog`, `b` (reported) | 8.8 | 8.9 | 8.7 | 8.9 | 8.8 |
+
+- **`ComponentsMenu`: RED.** Within 2.0 ms in rounds 2–5 (−0.1 to +0.5), outside it in round 6 (+3.8).
+- **`ComponentsRest`: RED.** Outside 1.0 ms in four of five counted rounds, three of them with `main` the slower
+  (−3.3 to −4.0) and one with this branch the slower (+2.0).
+- **The control** reads 8.2–8.6 ms in every counted round of both arms, inside 10 ± 3: the run is not void.
+- Reported: `ComponentsDialog` costs the same in both arms (a − b from 0.0 to +0.4 ms, busy 58–61 % in both): on this
+  page the dialog's phone runs beside a header whose bodies move anyway. Every scene of both arms held 61.2–61.9 frames a
+  second; no long animation frame in a held scene's counted round.
+- **What the reds are made of** (`frames.csv`, the median work of each second): every held scene of both arms sits at
+  one of two levels for whole seconds, about 5–6 ms or about 9–10 ms. `a`'s `ComponentsMenu` sat at the upper level for
+  all of round 6 (9.5–10.5 ms each second) and at the lower in rounds 2–5; `b`'s `ComponentsRest` sat at the upper level
+  for all of rounds 3, 4 and 6; `a`'s `ComponentsRest` moved from the lower to the upper six seconds into round 2. In
+  the rounds where both arms of `ComponentsMenu` stayed at the lower level the difference was −0.1 to +0.5 ms. The upper
+  level fell on `main` where nothing changed (`ComponentsRest`) as often as on this branch, so it is not the arm; what
+  puts a scene there was not measured (which core ran Chrome's renderer is the first thing to read; not done). That is a
+  hypothesis, and the reds stand as measured.
+
+**Run 2, Android: the control** ([log](../../logs/b-197/2026-11-25-android-control.log), every launch's files in
+[the directory](../../logs/b-197/2026-11-25-android-control/)), arm `a`, HWUI's hints off for the run (the property was
+`true` before and is `true` again, logged). The big cores were capped as low as 984 MHz by its end (38.5 °C).
+`Spin5`'s work p50 over `TenCards12`'s per counted round: 4.43, 4.90, 4.97, 5.09, 5.12 ms, **inside 5 ± 1**: Run 2 is
+not void.
+
+**Run 2, Android: the arms** ([log](../../logs/b-197/2026-11-25-android-ab.log), every launch's `metrics.csv`,
+`gfxinfo` dumps and logcat in [the directory](../../logs/b-197/2026-11-25-android-ab/); read by
+`scripts/device-bench-ab.py read`), arm `a` at `592b80c`, arm `b` `main` at `dc97cf8`, HWUI's hints as shipped,
+36.8–37.6 °C; same phone, same run, launches interleaved. In ms per counted round:
+
+| round | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|
+| `TenCards8Menu` main-thread work p50, `a` | 1.17 | 1.21 | 1.20 | 1.22 | 1.28 |
+| the same, `b` | 0.72 | 0.75 | 0.77 | 0.80 | 0.83 |
+| a − b (held: within 2.0) | +0.45 | +0.46 | +0.43 | +0.42 | +0.45 |
+| the literal sum's a − b (published beside it) | +1.14 | +1.18 | +1.13 | +1.15 | +1.21 |
+| missed vsyncs, `a` / `b` (held: a ≤ b) | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| the popup's frames a second, `a` / `b` | 52.6 / 7.0 | 60.1 / 8.0 | 60.0 / 7.9 | 59.0 / 8.0 | 52.6 / 7.0 |
+| the popup's draw p50, `a` / `b` | 0.18 / 0.63 | 0.19 / 0.63 | 0.16 / 0.61 | 0.18 / 0.65 | 0.18 / 0.67 |
+| the activity window alone, `a` / `b` | 0.73 / 0.72 | 0.72 / 0.75 | 0.73 / 0.77 | 0.73 / 0.80 | 0.80 / 0.83 |
+| `TenCards8`, `a` / `b` (reported) | 0.77 / 0.74 | 0.81 / 0.77 | 0.79 / 0.78 | 0.81 / 0.83 | 0.93 / 0.88 |
+
+- **`gfxinfo` and the popup's window**: every launch with the menu open listed the popup («Всплывающее окно») as a
+  view root of its own beside the activity's. **The reader's control holds**: of the activity's counted frames, the
+  `gfxinfo` dumps held 531–542 of 531–542 per launch (at least 98.2 %; a frame between two dumps is not seen, and a popup
+  frame there counts as none), and every one matched gave `FrameMetrics`' work within 0.1 ms.
+- **Main-thread work: held.** With the menu open this branch costs the main thread 0.42–0.46 ms a frame more than
+  `main` at p50, in every counted round, against the 2.0 written; by the literal sum, 1.13–1.21 ms, inside it too.
+- **Missed vsyncs: held.** None in either arm in any counted round (the activity drew 59.8–60.2 frames a second).
+- What it costs, reported: on `main` the popup's window drew at the menu's own ticks, 7–8 times a second; on this branch
+  on every frame, 52.6–60.1 a second, each draw cheaper (0.16–0.19 ms against 0.61–0.67: a Tape frame replays the
+  popup's layer). The main thread's p95 with the menu open is alike in both arms (8.96–9.30 against 8.87–9.69 ms); the
+  ticks set it. `TenCards8` with no popup reads alike in both arms (a − b from −0.02 to +0.05 ms).
+
+**Against B-141.** B-141 measured `ComponentsRest` in Chrome 157 on 2026-11-19 at a viewport of 411 × 784; this run
+is Chrome 158 at 411 × 728, so its absolute numbers are not set beside B-141's: each comparison here is this branch
+against `main` in the same run, as B-141's was.
+
+**Verdict.** Android holds every held condition. Chrome does not: `ComponentsMenu` is red in one counted round of five
+and `ComponentsRest`, where this change adds one `onGloballyPositioned` and no draw, is red in four, both by the
+two levels above, which fell on `main` as often as on this branch. By the pre-registration that is red, and it stays
+red: the third AC is not ticked and the status stays `wip`.
+
+## Question
+
+**Measured, 2026-11-25:** on the phone's own windows (`bench-android`), an open menu over the Tape now costs the main
+thread 0.42–0.46 ms a frame more than on `main` at p50, with no vsync missed in either, and the popup's window draws on
+every frame (52–60 a second against 7–8); the reading of that window is checked against `FrameMetrics` and holds. In the
+phone's Chrome both held conditions are red, by a two-level mode (about 5.5 against 9.5 ms of work a frame, for whole
+seconds) that put `main`'s unchanged resting page at the upper level in three rounds and this branch's menu page in
+one. The control held, so the run is not void, and by its own rule it is not rerun.
+
+The choices:
+1. **Close the AC as measured, with the reds recorded**: Android held, and Chrome's reds are a mode that falls on
+   either arm (the resting page, unchanged here, was slower on `main` in three rounds). The two-level mode becomes an
+   item of its own, as B-142 did for the nine-second stall.
+2. **A new run for Chrome, pre-registered anew by the owner's amendment** before its first number, with a design that
+   can resolve 1–2 ms through the two levels: more rounds and a held reading per level, or the renderer's core pinned
+   or read per scene.
+3. **Find the two levels first** (which core runs Chrome's renderer per scene, whether ADPF or the phone's heat moves
+   it, B-140's "levels and steps"), then run Run 1 again as pre-registered.

@@ -1,0 +1,105 @@
+# a: this branch (592b80c5); ~b: main dc97cf86 with the same scenes (local scratch commit b957a49d)
+# phone before:  AC powered: true; level: 27; temperature: 347; Capacity level: 2; big 1426000 2048000 
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+# closed a leftover bench tab: http://127.0.0.1:8768/?scene=DemoLibrary&diag=none
+# closed a leftover bench tab: http://127.0.0.1:8768/?scene=DemoLibrary&diag=rgba
+# closed a leftover bench tab: http://127.0.0.1:8768/?scene=DemoLibrary&diag=r1
+# closed a leftover bench tab: http://127.0.0.1:8768/?scene=DemoLibrary&fix=167
+# B-73 browser frame bench, 2026-11-25T09:07:27.919Z
+# device: Pixel 6a (bluejay), Android 17, build CP3A.261005.002.A1
+# device power: AC powered: true; level: 27; temperature: 349; Capacity level: 2;
+# browser: Chrome/158.0.8127.42, on the device (its viewport in the sample printed below), nothing emulated or throttled
+# driver host: MacBookAir10,1, 8 cores, 16 GB, macOS 27.0.1
+# commit: 592b80c5
+# build: 1aaff9853c4239fbdbfc.wasm 08c30347eee60fd4, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8; ~b: 95c4504095c08a09f2e5.wasm d3a11b02e802e632, bfa5198fb2fe683c613a.wasm 089052ba37e2a6e8
+# rounds 6 (round 1 not counted), 10000 ms a scene, first 1000 ms not counted; scenes ComponentsMenu,ComponentsDialog,ComponentsRest,ComponentsReduce,Control,ComponentsMenu~b,ComponentsDialog~b,ComponentsRest~b,ComponentsReduce~b,Control~b
+# viewport in the sample: 411x728 at 2.625x
+round 1 ComponentsMenu     61.4 f/s  interval p95   16.7  >16.7  20.55 %  >33   0.00 %  work p50   8.00 p95  15.90  LoAF 0 (0 ms)  busy  83.3 %  34.9 °C  big 1426/1426 MHz
+round 1 ComponentsDialog   61.4 f/s  interval p95   16.7  >16.7  22.19 %  >33   0.00 %  work p50   9.70 p95  12.60  LoAF 0 (0 ms)  busy  65.0 %  34.9 °C  big 1277/1277 MHz
+round 1 ComponentsRest     61.3 f/s  interval p95   16.7  >16.7  20.75 %  >33   0.16 %  work p50   7.00 p95  17.00  LoAF 0 (0 ms)  busy  82.7 %  35.4 °C  big 1426/1426 MHz
+round 1 ComponentsReduce   61.7 f/s  interval p95   16.7  >16.7  19.81 %  >33   0.16 %  work p50   3.70 p95   5.10  LoAF 0 (0 ms)  busy   6.9 %  35.4 °C  big 1582/1582 MHz
+round 1 Control            61.6 f/s  interval p95   16.7  >16.7  23.09 %  >33   0.00 %  work p50  12.20 p95  12.90  LoAF 0 (0 ms)  busy  62.7 %  35.8 °C  big 2048/2188 MHz
+round 1 ComponentsMenu~b   61.3 f/s  interval p95   16.7  >16.7  18.46 %  >33   0.00 %  work p50   9.70 p95  18.90  LoAF 0 (0 ms)  busy  67.2 %  36.5 °C  big 2252/2252 MHz
+round 1 ComponentsDialog~b  61.6 f/s  interval p95   16.7  >16.7  18.37 %  >33   0.00 %  work p50  13.00 p95  18.00  LoAF 0 (0 ms)  busy  59.0 %  36.5 °C  big 1426/2401 MHz
+round 1 ComponentsRest~b   61.6 f/s  interval p95   16.7  >16.7  21.14 %  >33   0.00 %  work p50   5.30 p95  14.10  LoAF 0 (0 ms)  busy  63.6 %  36.2 °C  big 1826/2252 MHz
+round 1 ComponentsReduce~b  61.7 f/s  interval p95   16.7  >16.7  17.21 %  >33   0.00 %  work p50   2.30 p95   4.60  LoAF 0 (0 ms)  busy   6.1 %  36.4 °C  big 2048/2630 MHz
+round 1 Control~b          61.8 f/s  interval p95   16.7  >16.7  18.64 %  >33   0.00 %  work p50  12.10 p95  12.70  LoAF 0 (0 ms)  busy  62.5 %  36.1 °C  big 1277/2704 MHz
+round 2 ComponentsDialog   61.5 f/s  interval p95   16.7  >16.7  17.10 %  >33   0.00 %  work p50   9.20 p95  12.80  LoAF 0 (0 ms)  busy  59.7 %  36.9 °C  big 1745/2802 MHz
+round 2 ComponentsRest     61.6 f/s  interval p95   16.7  >16.7  20.33 %  >33   0.00 %  work p50   7.40 p95  16.60  LoAF 0 (0 ms)  busy  63.4 %  36.9 °C  big 2188/2704 MHz
+round 2 ComponentsReduce   61.5 f/s  interval p95   16.7  >16.7  49.02 %  >33   0.16 %  work p50   3.80 p95   5.10  LoAF 1 (76 ms)  busy   7.8 %  36.9 °C  big 851/2802 MHz
+round 2 Control            61.8 f/s  interval p95   16.7  >16.7  20.26 %  >33   0.00 %  work p50  12.20 p95  12.90  LoAF 0 (0 ms)  busy  62.7 %  36.7 °C  big 984/2802 MHz
+round 2 ComponentsMenu~b   61.9 f/s  interval p95   16.7  >16.7  17.15 %  >33   0.00 %  work p50   5.40 p95  13.40  LoAF 0 (0 ms)  busy  64.4 %  36.7 °C  big 2048/2630 MHz
+round 2 ComponentsDialog~b  61.5 f/s  interval p95   16.7  >16.7  19.87 %  >33   0.00 %  work p50   8.80 p95  12.60  LoAF 0 (0 ms)  busy  58.8 %  37.0 °C  big 1277/2507 MHz
+round 2 ComponentsRest~b   61.5 f/s  interval p95   16.7  >16.7  20.68 %  >33   0.00 %  work p50   5.40 p95  14.00  LoAF 0 (0 ms)  busy  63.5 %  37.0 °C  big 2401/2401 MHz
+round 2 ComponentsReduce~b  61.6 f/s  interval p95   16.7  >16.7  24.23 %  >33   0.00 %  work p50   3.60 p95   4.90  LoAF 0 (0 ms)  busy   7.3 %  37.0 °C  big 2188/2630 MHz
+round 2 Control~b          61.7 f/s  interval p95   16.7  >16.7  18.18 %  >33   0.00 %  work p50  12.20 p95  13.00  LoAF 0 (0 ms)  busy  62.7 %  37.3 °C  big 984/2704 MHz
+round 2 ComponentsMenu     61.5 f/s  interval p95   16.7  >16.7  20.20 %  >33   0.00 %  work p50   5.70 p95  13.40  LoAF 0 (0 ms)  busy  65.0 %  37.4 °C  big 2252/2507 MHz
+round 3 ComponentsRest     61.6 f/s  interval p95   16.7  >16.7  20.81 %  >33   0.00 %  work p50   5.50 p95  14.50  LoAF 0 (0 ms)  busy  63.5 %  37.3 °C  big 1745/2188 MHz
+round 3 ComponentsReduce   61.5 f/s  interval p95   16.7  >16.7  23.29 %  >33   0.16 %  work p50   3.80 p95   4.90  LoAF 1 (58 ms)  busy   7.6 %  37.3 °C  big 500/2507 MHz
+round 3 Control            61.7 f/s  interval p95   16.7  >16.7  20.45 %  >33   0.00 %  work p50  12.10 p95  12.50  LoAF 0 (0 ms)  busy  62.3 %  37.3 °C  big 1826/2630 MHz
+round 3 ComponentsMenu~b   61.6 f/s  interval p95   16.7  >16.7  20.49 %  >33   0.00 %  work p50   5.30 p95  13.60  LoAF 0 (0 ms)  busy  64.5 %  37.6 °C  big 2507/2507 MHz
+round 3 ComponentsDialog~b  61.7 f/s  interval p95   16.7  >16.7  19.97 %  >33   0.00 %  work p50   8.90 p95  12.50  LoAF 0 (0 ms)  busy  58.8 %  37.6 °C  big 1106/2401 MHz
+round 3 ComponentsRest~b   61.5 f/s  interval p95   16.7  >16.7  18.40 %  >33   0.00 %  work p50   9.20 p95  19.30  LoAF 0 (0 ms)  busy  64.6 %  37.5 °C  big 2188/2188 MHz
+round 3 ComponentsReduce~b  61.3 f/s  interval p95   16.7  >16.7  14.05 %  >33   0.33 %  work p50   3.80 p95   5.00  LoAF 0 (0 ms)  busy   7.9 %  37.6 °C  big 2048/2507 MHz
+round 3 Control~b          61.6 f/s  interval p95   16.7  >16.7  33.17 %  >33   0.00 %  work p50  12.20 p95  12.90  LoAF 0 (0 ms)  busy  62.6 %  37.6 °C  big 851/2630 MHz
+round 3 ComponentsMenu     61.5 f/s  interval p95   16.7  >16.7  18.89 %  >33   0.00 %  work p50   5.80 p95  13.30  LoAF 0 (0 ms)  busy  65.1 %  38.1 °C  big 2401/2401 MHz
+round 3 ComponentsDialog   61.6 f/s  interval p95   16.7  >16.7  20.33 %  >33   0.00 %  work p50   8.90 p95  12.60  LoAF 0 (0 ms)  busy  59.0 %  38.0 °C  big 2252/2252 MHz
+round 4 ComponentsReduce   61.6 f/s  interval p95   16.7  >16.7  19.35 %  >33   0.16 %  work p50   3.80 p95   5.10  LoAF 1 (53 ms)  busy   8.0 %  37.9 °C  big 500/2507 MHz
+round 4 Control            61.8 f/s  interval p95   16.7  >16.7   6.16 %  >33   0.00 %  work p50  12.10 p95  12.60  LoAF 0 (0 ms)  busy  62.5 %  38.3 °C  big 851/2630 MHz
+round 4 ComponentsMenu~b   61.8 f/s  interval p95   16.7  >16.7  19.94 %  >33   0.00 %  work p50   5.50 p95  13.40  LoAF 0 (0 ms)  busy  65.4 %  38.4 °C  big 851/2401 MHz
+round 4 ComponentsDialog~b  61.4 f/s  interval p95   16.7  >16.7  19.90 %  >33   0.00 %  work p50   8.70 p95  12.80  LoAF 0 (0 ms)  busy  58.4 %  38.4 °C  big 1277/2252 MHz
+round 4 ComponentsRest~b   61.3 f/s  interval p95   16.7  >16.7  18.63 %  >33   0.16 %  work p50   8.90 p95  19.10  LoAF 0 (0 ms)  busy  63.8 %  38.2 °C  big 2188/2188 MHz
+round 4 ComponentsReduce~b  61.6 f/s  interval p95   16.7  >16.7  21.79 %  >33   0.00 %  work p50   3.80 p95   5.10  LoAF 0 (0 ms)  busy   7.7 %  38.1 °C  big 2048/2401 MHz
+round 4 Control~b          61.5 f/s  interval p95   16.7  >16.7  12.54 %  >33   0.00 %  work p50  12.20 p95  12.90  LoAF 0 (0 ms)  busy  62.7 %  38.3 °C  big 984/2630 MHz
+round 4 ComponentsMenu     61.6 f/s  interval p95   16.7  >16.7  17.89 %  >33   0.00 %  work p50   5.50 p95  13.60  LoAF 0 (0 ms)  busy  65.6 %  38.8 °C  big 2252/2252 MHz
+round 4 ComponentsDialog   61.5 f/s  interval p95   16.7  >16.7  17.26 %  >33   0.00 %  work p50   9.00 p95  12.50  LoAF 0 (0 ms)  busy  59.8 %  38.8 °C  big 1745/2252 MHz
+round 4 ComponentsRest     61.5 f/s  interval p95   16.7  >16.7  20.20 %  >33   0.00 %  work p50   5.60 p95  14.90  LoAF 0 (0 ms)  busy  67.4 %  38.4 °C  big 1826/1826 MHz
+round 5 Control            61.5 f/s  interval p95   16.7  >16.7  25.57 %  >33   0.00 %  work p50  12.10 p95  12.70  LoAF 0 (0 ms)  busy  62.3 %  38.4 °C  big 1106/2188 MHz
+round 5 ComponentsMenu~b   61.5 f/s  interval p95   16.7  >16.7  19.87 %  >33   0.00 %  work p50   6.20 p95  14.70  LoAF 0 (0 ms)  busy  73.7 %  38.5 °C  big 1826/1826 MHz
+round 5 ComponentsDialog~b  61.4 f/s  interval p95   16.7  >16.7  18.27 %  >33   0.00 %  work p50   8.90 p95  12.70  LoAF 0 (0 ms)  busy  59.2 %  38.5 °C  big 1582/1745 MHz
+round 5 ComponentsRest~b   61.5 f/s  interval p95   16.7  >16.7  23.29 %  >33   0.00 %  work p50   6.30 p95  15.50  LoAF 0 (0 ms)  busy  74.6 %  38.5 °C  big 1582/1745 MHz
+round 5 ComponentsReduce~b  61.4 f/s  interval p95   16.7  >16.7  31.16 %  >33   0.16 %  work p50   3.80 p95   5.00  LoAF 0 (0 ms)  busy   6.5 %  38.6 °C  big 2188/2188 MHz
+round 5 Control~b          61.5 f/s  interval p95   16.8  >16.7  54.07 %  >33   0.00 %  work p50  12.20 p95  13.10  LoAF 0 (0 ms)  busy  62.6 %  38.6 °C  big 1106/2252 MHz
+round 5 ComponentsMenu     61.5 f/s  interval p95   16.7  >16.7  20.20 %  >33   0.00 %  work p50   6.10 p95  14.00  LoAF 0 (0 ms)  busy  68.3 %  38.7 °C  big 1582/2048 MHz
+round 5 ComponentsDialog   61.7 f/s  interval p95   16.7  >16.7  19.48 %  >33   0.00 %  work p50   9.10 p95  12.60  LoAF 0 (0 ms)  busy  59.4 %  38.9 °C  big 1426/1826 MHz
+round 5 ComponentsRest     61.5 f/s  interval p95   16.7  >16.7  20.36 %  >33   0.00 %  work p50   6.00 p95  15.20  LoAF 0 (0 ms)  busy  70.2 %  38.9 °C  big 1745/1745 MHz
+round 5 ComponentsReduce   61.4 f/s  interval p95   16.7  >16.7  30.51 %  >33   0.16 %  work p50   3.90 p95   5.10  LoAF 1 (63 ms)  busy   7.7 %  38.8 °C  big 1826/2048 MHz
+round 6 ComponentsMenu~b   61.5 f/s  interval p95   16.7  >16.7  18.89 %  >33   0.00 %  work p50   6.10 p95  13.70  LoAF 0 (0 ms)  busy  70.8 %  38.9 °C  big 1826/1826 MHz
+round 6 ComponentsDialog~b  61.5 f/s  interval p95   16.7  >16.7  20.85 %  >33   0.00 %  work p50   8.80 p95  12.80  LoAF 0 (0 ms)  busy  59.4 %  38.9 °C  big 1426/1745 MHz
+round 6 ComponentsRest~b   61.5 f/s  interval p95   16.7  >16.7  19.54 %  >33   0.16 %  work p50   9.90 p95  20.40  LoAF 0 (0 ms)  busy  73.6 %  39.0 °C  big 1582/1745 MHz
+round 6 ComponentsReduce~b  61.5 f/s  interval p95   16.7  >16.7  20.85 %  >33   0.16 %  work p50   3.80 p95   5.00  LoAF 0 (0 ms)  busy   6.9 %  39.0 °C  big 1582/2048 MHz
+round 6 Control~b          61.3 f/s  interval p95   16.8  >16.7  43.95 %  >33   0.00 %  work p50  12.20 p95  13.00  LoAF 0 (0 ms)  busy  62.5 %  39.0 °C  big 984/2252 MHz
+round 6 ComponentsMenu     61.4 f/s  interval p95   16.7  >16.7  22.02 %  >33   0.00 %  work p50   9.90 p95  19.40  LoAF 0 (0 ms)  busy  69.0 %  39.0 °C  big 2048/2048 MHz
+round 6 ComponentsDialog   61.4 f/s  interval p95   16.7  >16.7  17.94 %  >33   0.00 %  work p50   9.00 p95  12.60  LoAF 0 (0 ms)  busy  60.5 %  39.0 °C  big 984/2048 MHz
+round 6 ComponentsRest     61.5 f/s  interval p95   16.7  >16.7  21.82 %  >33   0.00 %  work p50   5.90 p95  15.30  LoAF 0 (0 ms)  busy  68.2 %  39.0 °C  big 1826/1826 MHz
+round 6 ComponentsReduce   61.2 f/s  interval p95   16.7  >16.7  22.09 %  >33   0.33 %  work p50   3.80 p95   4.90  LoAF 2 (111 ms)  busy   7.9 %  39.0 °C  big 1826/2188 MHz
+round 6 Control            61.5 f/s  interval p95   16.7  >16.7  17.10 %  >33   0.00 %  work p50  12.00 p95  12.50  LoAF 0 (0 ms)  busy  62.3 %  38.9 °C  big 2048/2401 MHz
+
+# counted rounds 2..6, pooled
+ComponentsMenu     61.5 f/s  interval p95   16.7  >16.7  19.84 %  >33   0.00 %  work p50   6.50 p95  15.80  GREY
+ComponentsDialog   61.5 f/s  interval p95   16.7  >16.7  18.42 %  >33   0.00 %  work p50   9.00 p95  12.60  GREY
+ComponentsRest     61.5 f/s  interval p95   16.7  >16.7  20.70 %  >33   0.00 %  work p50   5.90 p95  15.40  GREY
+ComponentsReduce   61.4 f/s  interval p95   16.7  >16.7  28.86 %  >33   0.20 %  work p50   3.80 p95   5.00  GREY
+Control            61.7 f/s  interval p95   16.7  >16.7  17.90 %  >33   0.00 %  work p50  12.10 p95  12.70  GREY
+ComponentsMenu~b   61.7 f/s  interval p95   16.7  >16.7  19.27 %  >33   0.00 %  work p50   5.70 p95  13.70  GREY
+ComponentsDialog~b  61.5 f/s  interval p95   16.7  >16.7  19.77 %  >33   0.00 %  work p50   8.80 p95  12.70  GREY
+ComponentsRest~b   61.5 f/s  interval p95   16.7  >16.7  20.11 %  >33   0.07 %  work p50   8.60 p95  18.60  GREY
+ComponentsReduce~b  61.5 f/s  interval p95   16.7  >16.7  22.42 %  >33   0.13 %  work p50   3.80 p95   5.00  GREY
+Control~b          61.5 f/s  interval p95   16.7  >16.7  32.37 %  >33   0.00 %  work p50  12.20 p95  13.00  GREY
+# Control: work p50 over ComponentsReduce's, per counted round: 8.40, 8.30, 8.30, 8.20, 8.20 ms against 10 ms
+# ~b minus a, ComponentsMenu, work p50: per counted round -0.30, -0.50, -0.00, 0.10, -3.80ms; mean -0.90ms
+# ~b minus a, ComponentsMenu, f/s: per counted round 0.40, 0.10, 0.20, 0.00, 0.10; mean 0.16
+# ~b minus a, ComponentsMenu, busy: per counted round -0.63, -0.59, -0.21, 5.39, 1.75 pt; mean 1.14 pt
+# ~b minus a, ComponentsDialog, work p50: per counted round -0.40, 0.00, -0.30, -0.20, -0.20ms; mean -0.22ms
+# ~b minus a, ComponentsDialog, f/s: per counted round 0.00, 0.10, -0.10, -0.30, 0.10; mean -0.04
+# ~b minus a, ComponentsDialog, busy: per counted round -0.89, -0.14, -1.36, -0.14, -1.09 pt; mean -0.73 pt
+# ~b minus a, ComponentsRest, work p50: per counted round -2.00, 3.70, 3.30, 0.30, 4.00ms; mean 1.86ms
+# ~b minus a, ComponentsRest, f/s: per counted round -0.10, -0.10, -0.20, 0.00, 0.00; mean -0.08
+# ~b minus a, ComponentsRest, busy: per counted round 0.13, 1.14, -3.62, 4.37, 5.33 pt; mean 1.47 pt
+# ~b minus a, ComponentsReduce, work p50: per counted round -0.20, -0.00, 0.00, -0.10, 0.00ms; mean -0.06ms
+# ~b minus a, ComponentsReduce, f/s: per counted round 0.10, -0.20, 0.00, 0.00, 0.30; mean 0.04
+# ~b minus a, ComponentsReduce, busy: per counted round -0.44, 0.31, -0.30, -1.27, -0.95 pt; mean -0.53 pt
+# ~b minus a, Control, work p50: per counted round 0.00, 0.10, 0.10, 0.10, 0.20ms; mean 0.10ms
+# ~b minus a, Control, f/s: per counted round -0.10, -0.10, -0.30, 0.00, -0.20; mean -0.14
+# ~b minus a, Control, busy: per counted round 0.07, 0.27, 0.19, 0.26, 0.21 pt; mean 0.20 pt
+# phone after:  AC powered: true; level: 38; temperature: 389; Capacity level: 2; big 2401000 2401000 

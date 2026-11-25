@@ -1,0 +1,4 @@
+--------- beginning of main
+11-25 10:46:34.557 23893 23893 I MutantBench: SCENE Spin5 round 3 since 75512313546188
+11-25 10:46:44.572 23893 23893 I MutantBench: SCENE Spin5 round 3 end 75522328328745
+11-25 10:46:44.595 23893 24048 I MutantBench: DONE
