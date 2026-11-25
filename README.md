@@ -2,8 +2,9 @@
 
 A Compose Multiplatform UI kit in the look of a damaged copy: grime, glitch and VHS. Every component stands on a
 generated slime body, with drips, compression mosaic and flow lines under clean text, icons and touch targets, and tape
-noise runs over the screen. The same instance is damaged the same way on every launch and every platform. There is no
-Material dependency.
+noise runs over the screen. A body given its own key is damaged the same way on every launch and every platform; an
+unkeyed one takes its place in the composition for a key ([B-206](docs/backlog/B-206-default-keys-by-place.md)), which
+holds from launch to launch but not from one platform's host to another's. There is no Material dependency.
 
 <p>
   <img src="mutant-core/src/desktopTest/snapshots/design/Demo_Library_Efir.png" width="300" alt="The demo's library screen in the dark Efir palette">
@@ -79,7 +80,7 @@ Targets: desktop (JVM), Android, iOS (arm64 and the arm64 simulator) and wasm in
 | Where | Run it | How it runs |
 |---|---|---|
 | Desktop | `./gradlew :sample:run` | 60 frames a second on the resting Components page, 2.8 ms of work a frame ([B-138](docs/backlog/B-138-a-round-on-every-platform.md)) |
-| Browser | [the site](https://youndie.github.io/mutant-ui/), or `./gradlew :sample:wasmJsBrowserDistribution` and serve its output | 59 f/s in Chrome on a Mac. On a Pixel 6a about 50 f/s at 7–8 ms ([B-141](docs/backlog/B-141-the-tape-draws-in-a-layer-of-its-own.md)), but one second in nine drops to 8–20 f/s while a keyframe loss runs ([B-145](docs/backlog/B-145-the-keyframe-losss-steps-off-the-slow-path.md), open) |
+| Browser | [the site](https://youndie.github.io/mutant-ui/), or `./gradlew :sample:wasmJsBrowserDistribution` and serve its output | 59 f/s in Chrome on a Mac. On a Pixel 6a about 50 f/s at 7–8 ms ([B-141](docs/backlog/B-141-the-tape-draws-in-a-layer-of-its-own.md)), but one second in nine drops to 8–20 f/s while a keyframe loss runs ([B-145](docs/backlog/B-145-the-keyframe-losss-steps-off-the-slow-path.md): a faster loss was measured and did not hold, so the stall stays) |
 | Android | `bench-android` (a measuring host, not a sample) | 60 f/s natively on a Pixel 6a for ten cards ([B-138](docs/backlog/B-138-a-round-on-every-platform.md)) |
 | iOS | `scripts/sim-bench.sh bundle`, then `scripts/sim-bench.sh show` (the simulator; no Xcode project) | 57 f/s on the Components page in the simulator, a Mac's numbers, not a phone's ([B-138](docs/backlog/B-138-a-round-on-every-platform.md)); the sample sits under the status bar ([B-139](docs/backlog/B-139-the-sample-under-the-status-bar-on-ios.md), open) |
 
