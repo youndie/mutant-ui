@@ -84,6 +84,7 @@ import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.mutantPlaceKey
+import io.github.youndie.mutant.surface.mutantTapeOver
 import io.github.youndie.mutant.surface.toPath
 import io.github.youndie.mutant.surface.venomSpring
 import io.github.youndie.mutant.surface.with
@@ -188,7 +189,8 @@ public fun MutantMenu(
             items,
             selectedIndex,
             onSelect,
-            modifier.menuWithinWindow().onPreviewKeyEvent {
+            // B-197: the window's Tape over the menu, in register with it (the designer's answer 22).
+            Modifier.mutantTapeOver(MENU_TAPE_REACH.dp).then(modifier).menuWithinWindow().onPreviewKeyEvent {
                 if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 if (it.key != Key.Escape) return@onPreviewKeyEvent false
                 dismiss()
@@ -715,6 +717,9 @@ private const val WORD_TRACKING = 1f
 /** The body: `data-r="8" data-over="18" data-cf=".5" data-marks="0"`. */
 private const val RADIUS = 8.0
 private const val OVERHANG = 18.0
+
+/** How far the menu draws past its box, dp, for the Tape over it (B-197): drips of 18, the 4 dp shadow and the outline. */
+private const val MENU_TAPE_REACH = 28
 private const val DRIP_SHARE = .5
 
 /** The window: `data-r="6" data-calm=".2"`; its play mark 14 dp, 8 dp in (`padding-left: 8px`). */

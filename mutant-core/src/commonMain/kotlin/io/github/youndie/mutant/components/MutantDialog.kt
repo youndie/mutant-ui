@@ -99,9 +99,10 @@ import io.github.youndie.mutant.type.cssLine
 import kotlin.math.roundToInt
 
 /**
- * A dialog: a clean window over a paused screen. Place it last in a screen-filling box. While it shows, the screen's
- * clock is held — everything behind it stands still (the brief's `pause`) — under a 62 % black scrim and a pause band
- * across the screen 56 dp above its foot; the window, the `bar` body as a clean frame with 12 dp corners, 280 dp wide
+ * A dialog: a clean window over a paused screen. Place it last in a screen-filling box, inside the screen's
+ * [io.github.youndie.mutant.surface.mutantTape], which is drawn over it. While it shows, the screen's clock is held —
+ * everything behind it stands still (the brief's `pause`), but the Tape, which runs on over all of it (B-197) — under a
+ * 62 % black scrim and a pause band across the screen 56 dp above its foot; the window, the `bar` body as a clean frame with 12 dp corners, 280 dp wide
  * at most and 24 from the screen's sides, centred, holds the [title] (Handjet 22), the [text] (Rubik 14) and the
  * [actions] at its end, usually [MutantDialogAction]s. A window taller than the screen stands 24 dp from its top and foot
  * as well, its title and actions in view and its text scrolling between them.

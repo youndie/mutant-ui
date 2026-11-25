@@ -8,6 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.ProvideMutantClock
+import io.github.youndie.mutant.surface.LocalMutantTapes
+import io.github.youndie.mutant.surface.MutantTapes
 import io.github.youndie.mutant.tokens.MutantColors
 import io.github.youndie.mutant.tokens.MutantPalettes
 import io.github.youndie.mutant.type.MutantFonts
@@ -79,7 +81,10 @@ public fun MutantTheme(
     val paused = reduceMotion ?: platformReduceMotion()
     val clock = remember { MutantClock().apply { this.paused = paused } }
     SideEffect { clock.paused = paused }
+    // B-197: the window's Tapes, for its popups to draw over themselves; an inner theme keeps its outer one's.
+    val tapes = LocalMutantTapes.current ?: remember { MutantTapes() }
     CompositionLocalProvider(
+        LocalMutantTapes provides tapes,
         LocalMutantColors provides colors,
         LocalMutantCassette provides cassette,
         LocalMutantReduceMotion provides paused,
@@ -95,8 +100,9 @@ public fun MutantTheme(
 /**
  * Gives [content] a clock of its own: one screen, where an app shows several side by side or one over another. The
  * bodies, the Tape and the keyframe loss inside step on it, and a dialog, a bottom sheet or a navigation drawer opened
- * inside holds this clock alone, so the screens beside it keep moving (B-90). Without it every screen shares the
- * theme's clock, and a dialog anywhere stops them all. It follows the theme's reduce motion.
+ * inside holds this clock alone, so the screens beside it keep moving (B-90); the Tape runs on through the hold (B-197).
+ * Without it every screen shares the theme's clock, and a dialog anywhere stops them all. It follows the theme's reduce
+ * motion.
  */
 @Composable
 public fun MutantScreenClock(content: @Composable () -> Unit) {

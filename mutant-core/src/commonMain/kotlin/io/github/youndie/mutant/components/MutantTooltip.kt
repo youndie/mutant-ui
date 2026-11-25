@@ -50,6 +50,7 @@ import io.github.youndie.mutant.surface.MutantTuned
 import io.github.youndie.mutant.surface.composed
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.mutantPlaceKey
+import io.github.youndie.mutant.surface.mutantTapeOver
 import io.github.youndie.mutant.surface.tuneStands
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.MutantTheme
@@ -202,7 +203,10 @@ private fun TooltipPopup(
         properties = PopupProperties(focusable = false, clippingEnabled = false),
     ) {
         Layout(content = {
-            MutantTuned(tune, leaving = leaving) { TooltipPlate(text, supportingText, key, Modifier) }
+            // B-197: the window's Tape over the plate, in register with it (the designer's answer 22).
+            Box(Modifier.mutantTapeOver(TOOLTIP_TAPE_REACH.dp)) {
+                MutantTuned(tune, leaving = leaving) { TooltipPlate(text, supportingText, key, Modifier) }
+            }
         }) { measurables, _ ->
             val margin = EDGE_MARGIN.dp.roundToPx()
             // Never wider than the window keeps room for: the plate's own 240 dp limit is the plate's.
@@ -380,6 +384,9 @@ private const val LINE_STEP = 14
 
 /** Below the anchor (designed here): the plate's top 8 dp under it, the room its drips' tips keep above it. */
 private const val GAP_BELOW = 8
+
+/** How far the plate draws past its box, dp, for the Tape over it (B-197): drips of 20 and the outline. */
+private const val TOOLTIP_TAPE_REACH = 28
 
 /** How long a long-pressed tooltip stays after the finger lifts (designed here). */
 private const val TOUCH_LINGER_MS = 1500L
