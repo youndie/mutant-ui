@@ -60,6 +60,17 @@ internal class MutantClock(
     /** Readers of the clock that need frames; with none, the clock asks for none. */
     internal var readers: Int by mutableIntStateOf(0)
 
+    /**
+     * Readers that run through a hold: the Tape, which is the window's topmost layer and runs while a dialog holds the
+     * screen (B-197, the designer's answer 23). With one, the clock keeps asking for frames while held, and only
+     * [tapeMs] moves.
+     */
+    internal var tapeReaders: Int by mutableIntStateOf(0)
+
+    private var tapeTime: Double = startMs
+    private val tapeFrames = mutableLongStateOf(0L)
+    private val tapeScene = mutableLongStateOf(tickOf(startMs, SCENE_TICK_MS))
+
     /** The time now, ms. Not observable: read the ticks to be told when the picture changes. */
     val nowMs: Double get() = time
 
@@ -81,6 +92,18 @@ internal class MutantClock(
      */
     val frame: Long get() = frames.longValue
 
+    /**
+     * The Tape's time, ms (B-197): the clock's own, but moving through a hold as well, so it stands only under the pause
+     * or frozen. It equals [nowMs] until a hold first stands, and runs ahead of it by every held moment after.
+     */
+    val tapeMs: Double get() = tapeTime
+
+    /** The frame's number for the Tape, observable: it counts held frames too. */
+    val tapeFrame: Long get() = tapeFrames.longValue
+
+    /** The scene's tick of [tapeMs], `floor(tapeMs / 125)`, observable. */
+    val tapeSceneTick: Long get() = tapeScene.longValue
+
     /** The engine's `ts`: the time a resting body is drawn at. Observable through [restTick]. */
     fun restTimeMs(): Double = restTick * stepMs
 
@@ -97,6 +120,7 @@ internal class MutantClock(
     /** Moves the clock to [ms] at once (a fixture, a test). */
     fun setTime(ms: Double) {
         time = ms
+        tapeTime = ms
         publish()
     }
 
@@ -105,8 +129,13 @@ internal class MutantClock(
         if (frozen) return
         val dt = if (lastNanos == NO_FRAME) FIRST_STEP_MS else min(MAX_STEP_MS, (frameNanos - lastNanos) / 1e6)
         lastNanos = frameNanos
-        if (!paused && holds == 0) time += dt * speed
-        frames.longValue++
+        if (!paused) tapeTime += dt * speed
+        tapeFrames.longValue++
+        // Held, the clock runs only for the Tape: its own time and frame stand, as when it asked for no frames at all.
+        if (holds == 0) {
+            if (!paused) time += dt * speed
+            frames.longValue++
+        }
         publish()
     }
 
@@ -122,6 +151,8 @@ internal class MutantClock(
         if (h != hot.longValue) hot.longValue = h
         val f = tickOf(time, SCENE_TICK_MS)
         if (f != scene.longValue) scene.longValue = f
+        val tf = tickOf(tapeTime, SCENE_TICK_MS)
+        if (tf != tapeScene.longValue) tapeScene.longValue = tf
     }
 
     internal companion object {
@@ -155,7 +186,8 @@ internal fun ProvideMutantClock(
     clock: MutantClock = remember { MutantClock() },
     content: @Composable () -> Unit,
 ) {
-    val running = !clock.frozen && !clock.paused && clock.holds == 0 && clock.readers > 0
+    // Held, it runs on for a Tape that reads it (B-197).
+    val running = !clock.frozen && !clock.paused && (clock.holds == 0 || clock.tapeReaders > 0) && clock.readers > 0
     LaunchedEffect(clock, running) {
         if (!running) return@LaunchedEffect
         clock.forgetFrame()

@@ -1,0 +1,34 @@
+# B-197 one-scene-a-launch bench, 2026-11-25T10:30:33+0100
+# device: Pixel 6a, build CP3A.261005.002.A1; rounds 6 (round 1 not counted), 10 s a launch, first second not counted; launches a:TenCards12, a:Spin5
+# arm a: io.github.youndie.mutant.bench, lastUpdateTime=2026-11-25 10:07:13; label 592b80c5
+# debug.hwui.use_hint_manager: was 'true', set to 'false' for the run
+# phone before: 39.2 °C, big 1826/2252 MHz
+# cooling: 60 s, 39.1 °C, big 1745/2401 MHz
+# cooling: 120 s, 39.1 °C, big 1277/2252 MHz
+# cooling: 180 s, 39.3 °C, big 1582/2188 MHz
+# cooling: 240 s, 39.4 °C, big 2048/2048 MHz
+# cooling: 300 s, 39.7 °C, big 1826/1826 MHz
+# cooling: 360 s, 39.8 °C, big 1826/1826 MHz
+# cooling: 420 s, 40.0 °C, big 851/2630 MHz
+# cooling: 480 s, 39.9 °C, big 500/2802 MHz
+# cooling: 540 s, 40.1 °C, big 500/2802 MHz
+# cooling: 600 s, 40.2 °C, big 500/2802 MHz
+# cooling: 660 s, 40.1 °C, big 500/2802 MHz
+# cooling: 720 s, 40.0 °C, big 851/2802 MHz
+# cooling: 780 s, 39.7 °C, big 500/2802 MHz
+# cooling: 840 s, 39.6 °C, big 500/2802 MHz
+# cooling: 900 s, 39.4 °C, big 2188/2802 MHz
+round 1 a:TenCards12     done  8 gfxinfo dumps  39.4 °C  big 500/2802 MHz
+round 1 a:Spin5          done  9 gfxinfo dumps  39.4 °C  big 851/2630 MHz
+round 2 a:Spin5          done  9 gfxinfo dumps  39.4 °C  big 2048/2401 MHz
+round 2 a:TenCards12     done  9 gfxinfo dumps  39.4 °C  big 1277/2252 MHz
+round 3 a:TenCards12     done  9 gfxinfo dumps  38.7 °C  big 1426/2048 MHz
+round 3 a:Spin5          done  9 gfxinfo dumps  38.7 °C  big 851/1826 MHz
+round 4 a:Spin5          done  9 gfxinfo dumps  38.7 °C  big 1745/1745 MHz
+round 4 a:TenCards12     done  9 gfxinfo dumps  38.5 °C  big 851/1426 MHz
+round 5 a:TenCards12     done  9 gfxinfo dumps  38.5 °C  big 984/1277 MHz
+round 5 a:Spin5          done  9 gfxinfo dumps  38.5 °C  big 851/1106 MHz
+round 6 a:Spin5          done  9 gfxinfo dumps  38.5 °C  big 1106/1106 MHz
+round 6 a:TenCards12     done  9 gfxinfo dumps  38.5 °C  big 500/984 MHz
+# debug.hwui.use_hint_manager restored to 'true'
+# phone after: 38.5 °C, big 984/984 MHz

@@ -77,10 +77,11 @@ or any Material artefact; and its generator package does not depend on Compose.
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/pattern/MutantPattern.kt` | the four patterns and `Modifier.mutantPattern` |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/illustration/MutantIllustration.kt` | the six illustrations, composed of bodies |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/DesignParity.kt` | a composable against a Chrome reference, the diff written to `build/parity/` |
-| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantTape.kt` | the Tape: `Modifier.mutantTape()` over a screen, the band's place, the grain tile ([B-13](../backlog/B-13-tape.md)) |
+| `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantTape.kt` | the Tape: `Modifier.mutantTape()` over a screen, the band's place, the grain tile ([B-13](../backlog/B-13-tape.md)); the Tape over the kit's popups, `mutantTapeOver` ([B-197](../backlog/B-197-the-tape-over-every-layer.md)) |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/TestSeams.kt` | the body's and the Tape's parity overrides, switches and probes, for tests, benches and parity fixtures only, never for a consumer ([B-147](../backlog/B-147-the-code-put-in-order.md)) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/BodyParityTest.kt` | the body against the Components page's resting and state cells and the spec page's transition and Tape frames, every body of a stage drawn |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/MutantTapeTest.kt` | the Tape's band cycle, scanlines, clean signal, pause, scene tick and density |
+| `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/TapeOverEveryLayerTest.kt` | the Tape's band and noise over an open menu and a tooltip's plate, in register with the window's, and running over an open dialog ([B-197](../backlog/B-197-the-tape-over-every-layer.md)) |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/TapeContrastTest.kt` | contrast under the Tape against the tokens' `contrast-after-tape` |
 | `mutant-core/src/desktopTest/kotlin/io/github/youndie/mutant/surface/VenomParityTest.kt` | the venom's goo against the engine's filter in Chrome |
 | `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/theme/MutantTheme.kt` | the public theme: palette, cassette, reduce motion, clean signal, text styles; the locals every body reads ([B-09](../backlog/B-09-theme.md)); `MutantScreenClock`, a screen's own clock, which a dialog, sheet or drawer inside holds alone ([B-90](../backlog/B-90-a-dialog-stops-the-whole-demo.md)) |
@@ -151,6 +152,11 @@ or any Material artefact; and its generator package does not depend on Compose.
   frame while the clock runs, over its content in a layer of its own. Under the theme's `steppedMotion` all of it steps
   with the grain, drawn at the tick's start, where the engine draws it at the first frame past it, within a frame of
   that.
+- The Tape reads the clock's Tape time (`MutantClock.tapeMs`), which moves through a hold, so it runs while a dialog, a
+  sheet or a drawer holds the screen; the bodies' time stands ([B-197](../backlog/B-197-the-tape-over-every-layer.md)).
+  The kit's two popups, the menu and the tooltip, draw every Tape of the window they stand over over themselves
+  (`mutantTapeOver`), in register: each `mutantTape()` registers its look and its place on the screen with the theme's
+  `LocalMutantTapes`. A consumer's own `Popup` is not covered.
 - `MutantSurface` builds its instance and the field's static layers in its draw cache on the main
   thread, so a body's first frame costs about ten times a warm one; ten bodies appearing together cost
   tens of ms ([B-50](../backlog/B-50-first-frame-off-the-frame.md)).

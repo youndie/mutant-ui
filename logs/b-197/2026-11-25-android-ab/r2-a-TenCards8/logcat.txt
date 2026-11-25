@@ -1,0 +1,4 @@
+--------- beginning of main
+11-25 11:02:16.690 28326 28326 I MutantBench: SCENE TenCards8 round 2 since 76454446399268
+11-25 11:02:26.694 28326 28326 I MutantBench: SCENE TenCards8 round 2 end 76464449838645
+11-25 11:02:26.714 28326 28466 I MutantBench: DONE

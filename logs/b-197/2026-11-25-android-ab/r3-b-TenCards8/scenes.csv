@@ -1,0 +1,8 @@
+# device: Google Pixel 6a, Android 17, API 37
+# build: google/bluejay/bluejay:17/CP3A.261005.002.A1/16269273:user/release-keys
+# display: 1080x2400 at 60.0 Hz, density 2.625
+# cores: 8, debuggable: false
+# commit: dc97cf86
+# rounds: 1, seconds a scene: 10
+scene,round,frames,scrolled_px,thermal_start,thermal_end,ticks_ahead,ticks_in_frame,as_image,as_vectors,rasters,raster_p50_us,raster_p95_us
+TenCards8,3,593,0,1,1,758,32,758,32,768,15500,24325

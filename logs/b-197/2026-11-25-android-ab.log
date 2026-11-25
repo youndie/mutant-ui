@@ -1,0 +1,43 @@
+# B-197 one-scene-a-launch bench, 2026-11-25T10:47:53+0100
+# device: Pixel 6a, build CP3A.261005.002.A1; rounds 6 (round 1 not counted), 10 s a launch, first second not counted; launches a:TenCards8, a:TenCards8Menu, b:TenCards8Menu, b:TenCards8
+# arm a: io.github.youndie.mutant.bench, lastUpdateTime=2026-11-25 10:07:13; label 592b80c5
+# arm b: io.github.youndie.mutant.bench.main, lastUpdateTime=2026-11-25 09:59:57; label dc97cf86
+# phone before: 38.5 °C, big 500/984 MHz
+# cooling: 60 s, 39.0 °C, big 500/2188 MHz
+# cooling: 120 s, 39.5 °C, big 2048/2802 MHz
+# cooling: 180 s, 39.5 °C, big 2048/2802 MHz
+# cooling: 240 s, 39.8 °C, big 1277/2802 MHz
+# cooling: 300 s, 39.8 °C, big 2188/2802 MHz
+# cooling: 360 s, 39.6 °C, big 500/2802 MHz
+# cooling: 420 s, 39.4 °C, big 2048/2802 MHz
+# cooling: 480 s, 39.3 °C, big 500/2802 MHz
+# cooling: 540 s, 39.1 °C, big 2048/2802 MHz
+# cooling: 600 s, 39.0 °C, big 2048/2802 MHz
+# cooling: 660 s, 39.0 °C, big 1826/2802 MHz
+# cooling: 720 s, 38.5 °C, big 500/2802 MHz
+# cooling: 780 s, 37.7 °C, big 2188/2802 MHz
+round 1 a:TenCards8      done  9 gfxinfo dumps  37.6 °C  big 2048/2802 MHz
+round 1 a:TenCards8Menu  done  10 gfxinfo dumps  37.5 °C  big 1826/2802 MHz
+round 1 b:TenCards8Menu  done  9 gfxinfo dumps  37.1 °C  big 1426/2802 MHz
+round 1 b:TenCards8      done  9 gfxinfo dumps  37.1 °C  big 851/2802 MHz
+round 2 a:TenCards8Menu  done  9 gfxinfo dumps  37.0 °C  big 851/2802 MHz
+round 2 b:TenCards8Menu  done  9 gfxinfo dumps  37.0 °C  big 1106/2802 MHz
+round 2 b:TenCards8      done  9 gfxinfo dumps  37.0 °C  big 851/2704 MHz
+round 2 a:TenCards8      done  9 gfxinfo dumps  37.0 °C  big 2188/2802 MHz
+round 3 b:TenCards8Menu  done  9 gfxinfo dumps  36.8 °C  big 2048/2704 MHz
+round 3 b:TenCards8      done  9 gfxinfo dumps  36.8 °C  big 851/2704 MHz
+round 3 a:TenCards8      done  9 gfxinfo dumps  36.8 °C  big 1426/2704 MHz
+round 3 a:TenCards8Menu  done  9 gfxinfo dumps  36.8 °C  big 851/2630 MHz
+round 4 b:TenCards8      done  9 gfxinfo dumps  36.9 °C  big 2048/2507 MHz
+round 4 a:TenCards8      done  9 gfxinfo dumps  37.3 °C  big 1826/2507 MHz
+round 4 a:TenCards8Menu  done  9 gfxinfo dumps  37.3 °C  big 2048/2401 MHz
+round 4 b:TenCards8Menu  done  10 gfxinfo dumps  37.3 °C  big 851/2252 MHz
+round 5 a:TenCards8      done  9 gfxinfo dumps  37.3 °C  big 2048/2188 MHz
+round 5 a:TenCards8Menu  done  10 gfxinfo dumps  37.3 °C  big 1826/1826 MHz
+round 5 b:TenCards8Menu  done  10 gfxinfo dumps  37.0 °C  big 851/1826 MHz
+round 5 b:TenCards8      done  9 gfxinfo dumps  37.0 °C  big 1826/1826 MHz
+round 6 a:TenCards8Menu  done  9 gfxinfo dumps  37.1 °C  big 1106/1582 MHz
+round 6 b:TenCards8Menu  done  9 gfxinfo dumps  37.1 °C  big 1277/1426 MHz
+round 6 b:TenCards8      done  10 gfxinfo dumps  37.1 °C  big 1426/1426 MHz
+round 6 a:TenCards8      done  10 gfxinfo dumps  37.1 °C  big 1426/1426 MHz
+# phone after: 37.1 °C, big 1426/1426 MHz

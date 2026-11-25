@@ -1,17 +1,34 @@
 package io.github.youndie.mutant.surface
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionOnScreen
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.toSize
 import io.github.youndie.mutant.clock.MutantClock
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Mulberry32
@@ -307,7 +324,8 @@ internal class TapeMoment(
 )
 
 /**
- * The moment the Tape is drawn at on [clock], read in the draw so the Tape is drawn again when it changes:
+ * The moment the Tape is drawn at on [clock], read in the draw so the Tape is drawn again when it changes. It reads the
+ * clock's Tape time, which runs on while a dialog holds the screen (B-197):
  * - frozen, the clock's own time and its scene tick (the engine's `data-mu-t`);
  * - with the theme's [steps] (`steppedMotion`), the scene's tick for all of it, as the engine's `stageStep` draws it;
  * - else every frame: the band at the time now, and the head's noise drawn anew from the whole millisecond, so it
@@ -320,14 +338,14 @@ internal fun tapeMoment(
 ): TapeMoment {
     if (clock.frozen) {
         return TapeMoment(
-            clock.nowMs,
-            MutantClock.tickOf(clock.nowMs, MutantClock.SCENE_TICK_MS).toString(),
+            clock.tapeMs,
+            MutantClock.tickOf(clock.tapeMs, MutantClock.SCENE_TICK_MS).toString(),
         )
     }
-    val tick = clock.sceneTick
+    val tick = clock.tapeSceneTick
     if (steps) return TapeMoment(tick * MutantClock.SCENE_TICK_MS, tick.toString())
-    clock.frame
-    val now = clock.nowMs
+    clock.tapeFrame
+    val now = clock.tapeMs
     // `@` keeps the frame's keys apart from the ticks'; a Long prints alike on every target, a Double does not.
     return TapeMoment(now, "@" + floor(now).toLong())
 }
@@ -337,6 +355,11 @@ internal fun tapeMoment(
  * passing for 2.1 s every 7 s and the head's noise at the bottom edge, as the design draws them over a screen
  * (research D10). Put it once on the screen's root, not on each component; it is drawn over the content and
  * takes no input.
+ *
+ * It is the window's topmost layer (B-197, the designer's answers 22 and 23): the kit's menus and tooltips, which stand
+ * in popups of their own, draw it over themselves in register with it, and it keeps running while a dialog, a bottom
+ * sheet or a drawer holds the screen behind it. A dialog is drawn under it where it stands inside the Tape's element,
+ * as [io.github.youndie.mutant.components.MutantDialog] asks.
  *
  * It runs on the theme's clock, so it stands still under reduce motion, and it is not drawn under
  * «Чистый сигнал» ([MutantTheme]'s `cleanSignal`). Its grain and noise are seeded by the screen. The band moves and
@@ -359,16 +382,130 @@ public fun Modifier.mutantTape(): Modifier =
         val lines = remember(colors.print, density) { scanlineFill(colors, density) }
         val steps = LocalMutantSteppedMotion.current
         val probe = LocalMutantTapeProbe.current
-        graphicsLayer()
+        // B-197: the Tape runs through a hold, and the window's popups draw it over themselves from what it shows here.
+        DisposableEffect(clock) {
+            clock.tapeReaders++
+            onDispose { clock.tapeReaders-- }
+        }
+        val tapes = LocalMutantTapes.current
+        val view = remember { TapeView() }
+        val look = TapeLook(clock, colors, stage, grain, skip, tile, lines, steps)
+        SideEffect { view.look = look }
+        if (tapes != null) {
+            DisposableEffect(tapes, view) {
+                tapes.views += view
+                onDispose { tapes.views -= view }
+            }
+        }
+        onGloballyPositioned {
+            view.origin = it.positionOnScreen()
+            view.size = it.size
+        }.graphicsLayer()
             .drawWithContent {
                 drawContent()
                 probe?.invoke()
-                val d = density
-                val w = size.width / d
-                val h = size.height / d
-                val m = tapeMoment(clock, steps)
-                scale(d, Offset.Zero) {
-                    clipRect(0f, 0f, w, h) { drawTape(stage, m.t, colors, w, h, grain, skip, tile, lines, m.noiseKey) }
+                drawTapeLook(look, Offset.Zero, size)
+            }.graphicsLayer()
+    }
+
+/** What a Tape draws with (B-197): its clock, palette, seeds, skipped parts, rasterised fills and steps. */
+internal class TapeLook(
+    val clock: MutantClock,
+    val colors: MutantColors,
+    val stage: String,
+    val grain: TapeGrain,
+    val skip: Set<TapePart>,
+    val tile: androidx.compose.ui.graphics.ShaderBrush?,
+    val lines: androidx.compose.ui.graphics.ShaderBrush?,
+    val steps: Boolean,
+)
+
+/** Draws the Tape of [look], [size] pixels, its top left at [at] in this scope's pixels, clipped to it. */
+private fun DrawScope.drawTapeLook(
+    look: TapeLook,
+    at: Offset,
+    size: Size,
+) {
+    val d = density
+    val w = size.width / d
+    val h = size.height / d
+    val m = tapeMoment(look.clock, look.steps)
+    translate(at.x, at.y) {
+        scale(d, Offset.Zero) {
+            clipRect(0f, 0f, w, h) {
+                drawTape(look.stage, m.t, look.colors, w, h, look.grain, look.skip, look.tile, look.lines, m.noiseKey)
+            }
+        }
+    }
+}
+
+/** A Tape as the window's popups see it (B-197): what it draws with, and where it stands on the screen, in pixels. */
+@Stable
+internal class TapeView {
+    var look: TapeLook? by mutableStateOf(null)
+    var origin: Offset? by mutableStateOf(null)
+    var size: IntSize by mutableStateOf(IntSize.Zero)
+}
+
+/**
+ * The Tapes of a window (B-197), for its popups: a popup is a root of its own (on Android a window of its own), so the
+ * Tape drawn in the window's root cannot reach it, and each kit popup draws every Tape it stands over itself.
+ */
+@Stable
+internal class MutantTapes {
+    val views = mutableStateListOf<TapeView>()
+}
+
+/** The window's Tapes; [MutantTheme] provides them, an inner theme keeps its outer one's. */
+internal val LocalMutantTapes = staticCompositionLocalOf<MutantTapes?> { null }
+
+/**
+ * The Tape over a popup (B-197, the designer's answer 22): every Tape of the window that this popup stands over, drawn
+ * over the popup's pixels only and in register with the Tape under it — at the Tape's own size and origin, moved by
+ * where the popup stands, clipped to the Tape. The popup and what it draws up to [reach] past its bounds (drips, the
+ * shadow) are drawn in a layer, and the Tape over it composited `SrcAtop`, so what the popup leaves clear shows the
+ * window's own Tape once, not twice. Like the window's Tape, its draw is in a layer of its own around the popup's, so a
+ * frame of the Tape replays the popup rather than drawing it again (B-141).
+ */
+internal fun Modifier.mutantTapeOver(reach: Dp): Modifier =
+    composed {
+        val tapes = LocalMutantTapes.current
+        if (tapes == null || LocalMutantCleanSignal.current) return@composed this
+        val at = remember { TapeOverOrigin() }
+        val over = remember { Paint().apply { blendMode = BlendMode.SrcAtop } }
+        val plain = remember { Paint() }
+        onGloballyPositioned { at.origin = it.positionOnScreen() }
+            .graphicsLayer()
+            .drawWithContent {
+                val origin = at.origin
+                val r = reach.toPx()
+                val bounds = Rect(-r, -r, size.width + r, size.height + r)
+                val shown =
+                    if (origin == null) {
+                        emptyList()
+                    } else {
+                        tapes.views.filter { v ->
+                            val o = v.origin
+                            v.look != null && o != null &&
+                                Rect(o - origin, v.size.toSize()).overlaps(bounds)
+                        }
+                    }
+                if (shown.isEmpty()) {
+                    drawContent()
+                    return@drawWithContent
+                }
+                drawIntoCanvas { canvas ->
+                    canvas.saveLayer(bounds, plain)
+                    drawContent()
+                    canvas.saveLayer(bounds, over)
+                    for (v in shown) drawTapeLook(v.look!!, v.origin!! - origin!!, v.size.toSize())
+                    canvas.restore()
+                    canvas.restore()
                 }
             }.graphicsLayer()
     }
+
+/** Where a popup stands on the screen, pixels, read in its draw. */
+private class TapeOverOrigin {
+    var origin: Offset? by mutableStateOf(null)
+}

@@ -487,6 +487,17 @@ Scanlines, grain, the tracking band every 7 s and the head noise are drawn once,
 root ([B-13](../backlog/B-13-tape.md)). Keyframe loss, which the handoff calls optional, waits
 ([B-48](../backlog/B-48-keyframe-loss.md)).
 
+The Tape is the window's topmost layer, over menus, tooltips and dialogs, and it runs while a dialog holds the screen
+(the designer's answers 22 and 23, [B-197](../backlog/B-197-the-tape-over-every-layer.md)). A popup is a root of its own,
+and on Android a window of its own, so the kit's popups (the menu and the tooltip) each draw the window's Tape over
+their own pixels, in register with it: `mutantTape()` registers its look and its place on the screen, and a popup draws
+every Tape it stands over, composited `SrcAtop` over its own layer. **Rejected:** one overlay above all the popups.
+Compose cannot keep a popup above popups opened after it (on desktop and in the browser the newest layer is on top, on
+Android the newest panel window), and a window-sized popup takes every press in its bounds; on Android it would also be
+a second full-screen window, translucent, drawn on every frame and blended by the compositor over the app's. The Tape in
+each popup costs that popup's own small window a redraw on every frame of the Tape while it shows. The Tape's time
+(`MutantClock.tapeMs`) moves through a hold, which stops only the bodies.
+
 ### D11. Documentation, code and commits in English; the brief stays in Russian
 
 Like the other three kits. The design's demo strings are copied verbatim into fixtures. The brief

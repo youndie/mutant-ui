@@ -44,6 +44,7 @@ import io.github.youndie.mutant.components.MutantCardSubtitle
 import io.github.youndie.mutant.components.MutantCardTitle
 import io.github.youndie.mutant.components.MutantDivider
 import io.github.youndie.mutant.components.MutantListItem
+import io.github.youndie.mutant.components.MutantMenu
 import io.github.youndie.mutant.gen.FieldCache
 import io.github.youndie.mutant.gen.Instance
 import io.github.youndie.mutant.gen.MutantGenerator
@@ -63,13 +64,22 @@ import kotlin.math.abs
 
 private const val TAG = "MutantBench"
 
-/** The screen scenes of B-49's pre-registration, in their round-1 order; each round rotates it by one. */
-private enum class Scene { Blank, TenCards12, TenCards8, List100, Spin5 }
+/**
+ * The screen scenes: B-49's pre-registration's five, in their round-1 order (each round rotates it by one), then
+ * B-197's `TenCards8Menu`, run only when named in the `scenes` extra.
+ */
+private enum class Scene { Blank, TenCards12, TenCards8, List100, Spin5, TenCards8Menu }
+
+/** B-49's scenes, the default rotation. */
+private val B49_SCENES = Scene.entries.take(5)
 
 private const val METRICS_HEADER =
     "scene,round,since_ns,vsync_ns,input_ns,animation_ns,layout_ns,draw_ns," +
         "sync_ns,command_ns,swap_ns,total_ns,gpu_ns," +
         "deadline_ns,first"
+
+/** B-197's menu: the sample's words. */
+private val MENU_ITEMS = listOf("TRACKING", "CHROMA", "SHARPNESS", "RESET")
 
 /** The control's known cost, inside a layer nested in another. */
 private const val SPIN_NS = 5_000_000L
@@ -137,6 +147,9 @@ class BenchActivity : ComponentActivity() {
     ) {
         val rounds = intent.getIntExtra("rounds", 6)
         val seconds = intent.getIntExtra("seconds", 10)
+        // B-197: a driver that alternates two builds launches one scene a launch, naming it and the round it is in.
+        val named = intent.getStringExtra("scenes")?.split(',')?.map { Scene.valueOf(it.trim()) }
+        val firstRound = intent.getIntExtra("round", 1)
         // B-89 re-runs the screens alone.
         val withInstance = intent.getBooleanExtra("instance", true)
         val scenes = File(dir, "scenes.csv").bufferedWriter()
@@ -158,8 +171,8 @@ class BenchActivity : ComponentActivity() {
             }
         window.addOnFrameMetricsAvailableListener(listener, Handler(thread.looper))
         val plan =
-            (1..rounds).flatMap { r ->
-                val order = Scene.entries
+            (firstRound until firstRound + rounds).flatMap { r ->
+                val order = named ?: B49_SCENES
                 List(order.size) { i -> r to order[(i + r - 1) % order.size] }
             }
         setContent {
@@ -189,8 +202,11 @@ class BenchActivity : ComponentActivity() {
                         round = r
                         Ticks.reset()
                         since = System.nanoTime()
+                        // B-197: on the monotonic clock `gfxinfo`'s framestats use, to place another view root's frames.
+                        Log.i(TAG, "SCENE ${s.name} round $r since $since")
                         val end = since + seconds * 1_000_000_000L
                         while (System.nanoTime() < end) withFrameNanos { frames++ }
+                        Log.i(TAG, "SCENE ${s.name} round $r end ${System.nanoTime()}")
                         scenes.appendLine("${s.name},$r,$frames,$scrolled,$t0,${thermal()},${Ticks.line()}")
                         scenes.flush()
                         at++
@@ -291,7 +307,8 @@ private fun Screen(
     scrolled: (Long) -> Unit,
 ) {
     run {
-        val clock = remember { MutantClock(fps = if (scene == Scene.TenCards8) 8.0 else 12.0) }
+        val eight = scene == Scene.TenCards8 || scene == Scene.TenCards8Menu
+        val clock = remember { MutantClock(fps = if (eight) 8.0 else 12.0) }
         ProvideMutantClock(clock) {
             val ground = Modifier.fillMaxSize().background(MutantTheme.colors.background)
             Box(if (scene == Scene.Blank) ground else ground.mutantTape()) {
@@ -300,6 +317,14 @@ private fun Screen(
 
                     Scene.TenCards12, Scene.TenCards8, Scene.Spin5 -> {
                         TenCards()
+                    }
+
+                    // B-197: the same with a menu open over the Tape from the start, on the screen's clock.
+                    Scene.TenCards8Menu -> {
+                        TenCards()
+                        Box(Modifier.padding(start = 40.dp, top = 200.dp)) {
+                            MutantMenu(true, {}, MENU_ITEMS, 0, {}, key = "bench-menu")
+                        }
                     }
 
                     Scene.List100 -> {

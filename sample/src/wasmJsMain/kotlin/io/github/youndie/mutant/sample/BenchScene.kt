@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.components.MutantCard
 import io.github.youndie.mutant.components.MutantCardSubtitle
 import io.github.youndie.mutant.components.MutantCardTitle
+import io.github.youndie.mutant.components.MutantMenu
 import io.github.youndie.mutant.surface.mutantTape
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlin.math.abs
@@ -64,6 +65,18 @@ internal fun benchScene(name: String?): (@Composable () -> Unit)? =
 
         "ComponentsReduce" -> {
             { Recorded(SampleSettings(reduceMotion = true)) }
+        }
+
+        // B-197: the resting page with a menu open over its Tape from the load on.
+        "ComponentsMenu" -> {
+            { WithMenu { Recorded(SampleSettings()) } }
+        }
+
+        // B-197: a page with a dialog open over a Tape on the clock the dialog holds: the Demo page's Settings phone, its
+        // erase dialog open as the screen opens, the page scrolled 420 dp so the dialog stands in a phone's viewport. The
+        // Components page's dialogs stand on stages whose clock its Tape does not read.
+        "ComponentsDialog" -> {
+            { Recorded(SampleSettings(page = SamplePage.Demo, demoScreen = DemoScreen.Settings), scrolledDp = 420) }
         }
 
         "DemoPage" -> {
@@ -113,8 +126,12 @@ internal fun benchScene(name: String?): (@Composable () -> Unit)? =
     }
 
 @Composable
-private fun Recorded(settings: SampleSettings) {
-    val scroll = rememberScrollState()
+private fun Recorded(
+    settings: SampleSettings,
+    scrolledDp: Int = 0,
+) {
+    val density = LocalDensity.current
+    val scroll = rememberScrollState(with(density) { scrolledDp.dp.roundToPx() })
     LaunchedEffect(scroll) {
         var last = scroll.value
         var travelled = 0
@@ -125,6 +142,24 @@ private fun Recorded(settings: SampleSettings) {
         }
     }
     MutantUiSample(remember { settings }, scroll)
+}
+
+/**
+ * B-197: [page] with the sample's menu open over it, 24 dp from its start and 200 dp from its top, and left open. The menu
+ * stands in an outer theme around the page, so it finds the page's Tape (an inner theme keeps the outer one's Tapes); the
+ * outer theme's clock drives the menu alone.
+ */
+@Composable
+private fun WithMenu(page: @Composable () -> Unit) {
+    val strings = remember { SampleStrings(SampleLanguage.English) }
+    MutantTheme(reduceMotion = false) {
+        Box(Modifier.fillMaxSize()) {
+            page()
+            Box(Modifier.padding(start = 24.dp, top = 200.dp)) {
+                MutantMenu(true, {}, strings.menuItems, 0, {}, key = "bench-menu")
+            }
+        }
+    }
 }
 
 /** One Demo screen alone, as B-72's recorder composes it: no header, no page Tape. */
