@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -115,23 +116,57 @@ internal fun DemoScreenFrame(
     roundedClip: Boolean = true,
     keyframeLoss: Boolean = true,
 ) {
-    // Each phone runs the whole app (B-96), opened where the design's screen stands.
-    val nav =
-        remember(screen, dialogOpen) {
-            when (screen) {
-                DemoScreen.Library -> DemoNav()
-                DemoScreen.Recording -> DemoNav(open = 0)
-                DemoScreen.Settings -> DemoNav(DemoTab.Settings, erasing = dialogOpen)
-            }
-        }
-    val (title, tag) =
+    val nav = rememberDemoNav(screen, dialogOpen)
+    val title =
         when (screen) {
-            DemoScreen.Library -> strings.demoLibrary to "demo-library"
-            DemoScreen.Recording -> strings.demoRecording to "demo-recording"
-            DemoScreen.Settings -> strings.demoSettings to "demo-settings"
+            DemoScreen.Library -> strings.demoLibrary
+            DemoScreen.Recording -> strings.demoRecording
+            DemoScreen.Settings -> strings.demoSettings
         }
-    Screen(title, tag, roundedClip, keyframeLoss && screen == DemoScreen.Library, nav.screen) { DemoApp(nav, strings) }
+    Screen(title, demoScreenTag(screen), roundedClip, keyframeLoss && screen == DemoScreen.Library, nav.screen) {
+        DemoApp(nav, strings)
+    }
 }
+
+/**
+ * B-213: one of the screens filling [modifier]'s room, with no title, no ring and no rounded corners — the page that
+ * embeds it draws the phone around it. The app, its clock, its Tape and the Library's keyframe loss are the page's.
+ */
+@Composable
+internal fun DemoScreenFill(
+    screen: DemoScreen,
+    strings: SampleStrings,
+    modifier: Modifier = Modifier,
+) {
+    val nav = rememberDemoNav(screen, dialogOpen = true)
+    MutantScreenClock {
+        ScreenBox(demoScreenTag(screen), modifier.clipToBounds(), screen == DemoScreen.Library, nav.screen) {
+            DemoApp(nav, strings)
+        }
+    }
+}
+
+/** Each phone runs the whole app (B-96), opened where the design's screen stands. */
+@Composable
+private fun rememberDemoNav(
+    screen: DemoScreen,
+    dialogOpen: Boolean,
+): DemoNav =
+    remember(screen, dialogOpen) {
+        when (screen) {
+            DemoScreen.Library -> DemoNav()
+            DemoScreen.Recording -> DemoNav(open = 0)
+            DemoScreen.Settings -> DemoNav(DemoTab.Settings, erasing = dialogOpen)
+        }
+    }
+
+/** The screen's test tag, the phone's on the page and the embedded screen's alike. */
+internal fun demoScreenTag(screen: DemoScreen): String =
+    when (screen) {
+        DemoScreen.Library -> "demo-library"
+        DemoScreen.Recording -> "demo-recording"
+        DemoScreen.Settings -> "demo-settings"
+    }
 
 /**
  * A phone's screen as the page draws it: 360 × 720, its corners 28, ringed in black, the Tape over it. Without
@@ -149,24 +184,27 @@ private fun Screen(
     // Each phone its own clock (B-90): the Settings screen's dialog stands that screen alone, not its neighbours.
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BasicText(title, style = MutantTheme.textStyles.display(28.sp))
-        MutantScreenClock { ScreenBox(tag, roundedClip, keyframeLoss, shows, content) }
+        val frame =
+            Modifier
+                .size(360.dp, 720.dp)
+                .border(2.dp, Color(0xFF05060C), RoundedCornerShape(28.dp))
+                .then(if (roundedClip) Modifier.clip(RoundedCornerShape(28.dp)) else Modifier)
+        MutantScreenClock { ScreenBox(tag, frame, keyframeLoss, shows, content) }
     }
 }
 
+/** The screen inside its [frame]: the page's phone, or B-213's embedded screen. */
 @Composable
 private fun ScreenBox(
     tag: String,
-    roundedClip: Boolean,
+    frame: Modifier,
     keyframeLoss: Boolean,
     shows: Any?,
     content: @Composable () -> Unit,
 ) {
     val colors = MutantTheme.colors
     Box(
-        Modifier
-            .size(360.dp, 720.dp)
-            .border(2.dp, Color(0xFF05060C), RoundedCornerShape(28.dp))
-            .then(if (roundedClip) Modifier.clip(RoundedCornerShape(28.dp)) else Modifier)
+        frame
             .background(colors.background)
             .mutantTape()
             .nestedScroll(PhoneKeepsItsFling)
