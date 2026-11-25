@@ -18,7 +18,7 @@ class CardParityTest {
             if (disabled) ComponentParity.WEAK_INK else TEXT_INK,
         ) { m, hidden ->
             CompositionLocalProvider(LocalCardHidden provides hidden) {
-                MutantCard(m, enabled = !disabled) {
+                MutantCard(m, enabled = !disabled, key = "card") {
                     MutantCardTitle("Без подписи №3")
                     MutantCardSubtitle("Сторона A · 46 мин")
                 }

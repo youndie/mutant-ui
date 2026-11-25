@@ -30,6 +30,7 @@ import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
@@ -45,13 +46,16 @@ import io.github.youndie.mutant.type.cssLine
  *
  * In a [io.github.youndie.mutant.surface.MutantAppear] it tunes in as it appears and steps out as it leaves (B-179);
  * composed alone it shows whole in its first frame, and taken out of the composition it is gone in one.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantCard(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
-    key: String = "card",
+    key: String = mutantPlaceKey("card"),
     interactionSource: MutableInteractionSource? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {

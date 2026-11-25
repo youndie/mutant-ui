@@ -189,7 +189,7 @@ class RightToLeftSweepTest {
                 Box(m.size(240.dp, 120.dp).mutantPattern(MutantPattern.Mosaic).mutantTape())
             }
         // A card with nothing in it: its fill's marks, drips, highlight and shadow with no words to tell the ways apart.
-        val card = Subject("Card.Empty") { m, _ -> MutantCard(m.size(220.dp, 120.dp)) {} }
+        val card = Subject("Card.Empty") { m, _ -> MutantCard(m.size(220.dp, 120.dp), key = "card") {} }
         val wrong = mutableListOf<String>()
         for ((name, pair) in shots(subjects.filter { it.name in names } + tape + card)) {
             val (ltr, rtl) = pair

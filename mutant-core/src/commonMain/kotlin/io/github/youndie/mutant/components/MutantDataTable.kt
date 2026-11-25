@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantGrid
@@ -92,6 +93,9 @@ public class MutantTableColumn<T>(
  * inserted above) takes its box, its pour and its press with it, and the box keeps its slime; without one, a moved
  * selection pours out of the place it left and into the place it reached, the wrong record standing chosen meanwhile.
  * Keys must be unique among the rows, as a lazy list's are.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun <T> MutantDataTable(
@@ -101,7 +105,7 @@ public fun <T> MutantDataTable(
     selected: Set<Int> = emptySet(),
     onSelectedChange: ((index: Int, selected: Boolean) -> Unit)? = null,
     enabled: Boolean = true,
-    key: String = "trow",
+    key: String = mutantPlaceKey("trow"),
     rowKey: ((row: T) -> Any)? = null,
 ) {
     DataTableBody(rows, columns, modifier, selected, onSelectedChange, enabled, key, rowKey = rowKey)

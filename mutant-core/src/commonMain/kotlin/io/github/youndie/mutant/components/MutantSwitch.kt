@@ -26,6 +26,7 @@ import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.mutantCleanZone
 import io.github.youndie.mutant.surface.mutantMelt
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
@@ -36,6 +37,9 @@ import io.github.youndie.mutant.tokens.MutantBody
  * a stretch and a ring melts in where it stood — the design's echo, drawn as its own part (the `ghost` gene is not
  * implemented). Disabled, both bodies lose their signal and the label greys. Right to left the row is mirrored: the
  * label first, the thumb on at the left and sliding left (B-205); the bodies are drawn as they are left to right.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantSwitch(
@@ -44,7 +48,7 @@ public fun MutantSwitch(
     modifier: Modifier = Modifier,
     label: String? = null,
     enabled: Boolean = true,
-    key: String = label ?: "switch",
+    key: String = mutantPlaceKey("switch"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     SwitchBody(checked, onCheckedChange, modifier, label, enabled, key, "$key/thumb", interactionSource)

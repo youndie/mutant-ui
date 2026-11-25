@@ -84,6 +84,7 @@ import io.github.youndie.mutant.surface.MutantTuned
 import io.github.youndie.mutant.surface.composed
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.tuneStands
 import io.github.youndie.mutant.surface.with
@@ -116,6 +117,10 @@ import kotlin.math.roundToInt
  * dialog as it opens and stays there, a Tab on its actions only, coming round from the last to the first and with
  * Shift+Tab the other way. Once the dialog has gone it goes to [returnFocusTo], a requester on whatever opened it, or
  * with none is left to the window; through the close the keys, like the pointer, reach nothing behind it.
+ *
+ * [key] seeds the window's body: by default its place in the composition (B-206), so two dialogs of one screen are two
+ * windows, and a dialog keeps its window whatever its title says. A dialog opened for an item of a list takes the item's
+ * id.
  */
 @Composable
 public fun MutantDialog(
@@ -125,9 +130,10 @@ public fun MutantDialog(
     modifier: Modifier = Modifier,
     text: String? = null,
     returnFocusTo: FocusRequester? = null,
+    key: String = mutantPlaceKey("dialog"),
     actions: @Composable RowScope.() -> Unit,
 ) {
-    DialogFrame(visible, title, onDismissRequest, modifier, text, returnFocusTo, actions)
+    DialogFrame(visible, title, onDismissRequest, modifier, text, returnFocusTo, actions, key = key)
 }
 
 /**
@@ -148,6 +154,7 @@ internal fun DialogFrame(
     windowTop: Dp? = null,
     hidden: Boolean = false,
     probe: ((Instance) -> Unit)? = null,
+    key: String = WINDOW_KEY,
 ) {
     val reduce = LocalMutantReduceMotion.current
     val screen = readMutantClock()
@@ -194,6 +201,7 @@ internal fun DialogFrame(
                 windowTop,
                 hidden,
                 probe,
+                key,
             )
         }
     }
@@ -212,6 +220,7 @@ private fun DialogScene(
     windowTop: Dp?,
     hidden: Boolean,
     probe: ((Instance) -> Unit)?,
+    windowKey: String,
 ) {
     val colors = MutantTheme.colors
     val fonts = LocalMutantFonts.current
@@ -296,7 +305,7 @@ private fun DialogScene(
             ) {
                 MutantSurface(
                     MutantBody.Bar,
-                    WINDOW_KEY,
+                    windowKey,
                     Modifier
                         .fillMaxWidth()
                         // Its own clicks: none reaches the scrim under it. A pointer target only, not a `clickable`: a
@@ -420,6 +429,9 @@ private fun PauseBand(modifier: Modifier) {
  * An action of [MutantDialog]: [primary], the engine's `btn` body in the acid, at least 104 × 40 dp in a 48 dp target,
  * its label in black (the page's `Стереть`); otherwise the label alone in the accent, 8 dp in, a target 48 tall and at
  * least 48 wide (`Отмена`). Both fire on release; a press boils the body; keyboard focus draws the corner brackets.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantDialogAction(
@@ -427,7 +439,7 @@ public fun MutantDialogAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     primary: Boolean = false,
-    key: String = "dialog-ok",
+    key: String = mutantPlaceKey("dialog-ok"),
 ) {
     val colors = MutantTheme.colors
     val hidden = LocalDialogHidden.current

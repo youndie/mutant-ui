@@ -92,6 +92,7 @@ import io.github.youndie.mutant.surface.HeatMachine
 import io.github.youndie.mutant.surface.LocalMutantMoshScene
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.stepped
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -129,6 +130,9 @@ import kotlin.math.roundToInt
  * drag, let go as one. A wheel's scroll never pulls it, and a mouse, which scrolls nothing by a drag, drags it only with
  * the content at its top. Whether a lazy list is at its top is read from its scrolls, so one moved by its own state in
  * code is not seen until it scrolls.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantBottomSheet(
@@ -137,7 +141,7 @@ public fun MutantBottomSheet(
     modifier: Modifier = Modifier,
     returnFocusTo: FocusRequester? = null,
     windowInsets: WindowInsets = WindowInsets.navigationBars,
-    key: String = "sheet",
+    key: String = mutantPlaceKey("sheet"),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     SheetFrame(visible, onDismissRequest, modifier, returnFocusTo, windowInsets, key, content)
@@ -370,8 +374,8 @@ private fun SheetWindow(
                 }
             }
             // The tear line over the body, as the engine draws a stage's dividers after its bodies: the sheet's
-            // mosaic rises past its top edge and under the line.
-            MutantDivider()
+            // mosaic rises past its top edge and under the line. Keyed as the page keys a stage's first divider.
+            MutantDivider(key = "0")
         },
         modifier = modifier,
     ) { measurables, c ->

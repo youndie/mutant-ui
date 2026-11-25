@@ -87,7 +87,15 @@ class CalendarNumbersOnDropTest {
                     CompositionLocalProvider(LocalDensity provides Density(1f)) {
                         MutantTheme(MutantPalettes.Efir, steppedMotion = steps) {
                             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                                MutantDatePicker(2026, 11, day, { day = it }, { _, _ -> }, Modifier.testTag("whole"))
+                                MutantDatePicker(
+                                    2026,
+                                    11,
+                                    day,
+                                    { day = it },
+                                    { _, _ -> },
+                                    Modifier.testTag("whole"),
+                                    key = "cal",
+                                )
                                 DatePickerBody(
                                     2026,
                                     11,

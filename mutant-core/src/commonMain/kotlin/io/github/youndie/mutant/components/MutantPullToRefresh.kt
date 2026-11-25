@@ -48,6 +48,7 @@ import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
@@ -69,6 +70,9 @@ import kotlin.math.roundToInt
  * phase's gap — back up when let go short, to 74 dp when refreshing, to the pill's 52, back up after it — in 300 ms,
  * eased out. Under reduce motion every move is at once and the boil stands. A reader's custom action refreshes. Over its content stands the header's tear line (the tracking divider, [divider]), drawn over the
  * tongue as the page draws it: the tongue hangs 2 dp up into it.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantPullToRefresh(
@@ -77,7 +81,7 @@ public fun MutantPullToRefresh(
     modifier: Modifier = Modifier,
     refreshingLabel: String = "ОБНОВЛЯЕМ",
     doneLabel: String = "ОБНОВЛЕНО",
-    key: String = "ptr",
+    key: String = mutantPlaceKey("ptr"),
     divider: Boolean = true,
     content: @Composable () -> Unit,
 ) {

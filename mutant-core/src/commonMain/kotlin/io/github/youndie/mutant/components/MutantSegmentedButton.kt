@@ -71,6 +71,7 @@ import io.github.youndie.mutant.surface.drawVenomFill
 import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.toPath
 import io.github.youndie.mutant.surface.venomSpring
 import io.github.youndie.mutant.surface.with
@@ -102,6 +103,9 @@ import kotlin.math.roundToInt
  * window shows and the labels grey. Right to left the segments are mirrored, the first at the right, with the window,
  * the venom's run and the press; Left and Right choose the segment on that side, and Down and Up the next and the one
  * before (B-205). The body itself is drawn as it is left to right.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantSegmentedButton(
@@ -110,7 +114,7 @@ public fun MutantSegmentedButton(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    key: String = "segmented",
+    key: String = mutantPlaceKey("segmented"),
 ) {
     SegmentedBody(options, selectedIndex, onSelect, modifier, enabled, key, "$key/pill")
 }

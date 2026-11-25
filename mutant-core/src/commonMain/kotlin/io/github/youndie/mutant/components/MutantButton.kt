@@ -56,6 +56,7 @@ import io.github.youndie.mutant.surface.TrackingDivider
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantFonts
@@ -92,6 +93,9 @@ public enum class MutantButtonState {
  * Given no width, it is as wide as the widest of its states, Success's check before the label included, in every
  * state: no change of [state], of [enabled] or a press moves its width or regenerates its body (B-203). A new [text] or
  * [icon] is a new measurement; a width from the caller wins.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantButton(
@@ -101,7 +105,7 @@ public fun MutantButton(
     enabled: Boolean = true,
     state: MutantButtonState = MutantButtonState.Idle,
     icon: ImageVector? = null,
-    key: String = text,
+    key: String = mutantPlaceKey("btn"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     val colors = MutantTheme.colors
@@ -124,6 +128,9 @@ public fun MutantButton(
 /**
  * A secondary action: the background's colour inside an accent outline, with the misregistered shadow and a
  * shorter drip (`over` 14). Pressed, it boils; disabled, it loses its signal and its label greys.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantOutlinedButton(
@@ -132,7 +139,7 @@ public fun MutantOutlinedButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     icon: ImageVector? = null,
-    key: String = text,
+    key: String = mutantPlaceKey("obtn"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     val colors = MutantTheme.colors
@@ -155,6 +162,9 @@ public fun MutantOutlinedButton(
  * 1 dp and a solid 2 dp line in its colour stands in the divider's place; released, it is at rest in the next frame, and
  * under reduce motion the same (B-192). Disabled, the label greys (the design draws no disabled text button; research
  * D15).
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantTextButton(
@@ -162,7 +172,7 @@ public fun MutantTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    key: String = text,
+    key: String = mutantPlaceKey("tbtn"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     TextButtonBody(text, onClick, modifier, enabled, key, interactionSource)

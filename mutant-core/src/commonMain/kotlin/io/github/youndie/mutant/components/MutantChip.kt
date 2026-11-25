@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.youndie.mutant.surface.BodyState
 import io.github.youndie.mutant.surface.MutantSurface
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
 import io.github.youndie.mutant.theme.MutantTheme
 import io.github.youndie.mutant.tokens.MutantBody
@@ -32,6 +33,9 @@ import io.github.youndie.mutant.tokens.MutantBody
  * outline; selected, the acid fill pours in from the top, and the label turns to the ink as the pour's front passes
  * under its middle (B-94), not on a timer; unselected again, it turns back the same way. Under reduce motion the fill
  * and the label turn at once. Disabled, it loses its signal and its label greys.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantChip(
@@ -40,7 +44,7 @@ public fun MutantChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    key: String = text,
+    key: String = mutantPlaceKey("chip"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     ChipBody(text, selected, onClick, modifier, enabled, key, interactionSource)

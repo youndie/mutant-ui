@@ -61,6 +61,7 @@ import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -92,6 +93,9 @@ public class MutantNavigationItem(
  * is the page's amber count at the icon's top-right corner, growing right (B-204). A new [selectedIndex] slides the pill over from the cell it left
  * with the body's stretch (330 ms), at once under reduce motion; -1 shows no pill. The bar stands above [windowInsets],
  * the navigation bar by default, and draws nothing under it.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantNavigationBar(
@@ -100,7 +104,7 @@ public fun MutantNavigationBar(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = WindowInsets.navigationBars,
-    key: String = "navbar",
+    key: String = mutantPlaceKey("navbar"),
     pillKey: String = "navpill",
 ) {
     NavigationBarBody(items, selectedIndex, onSelect, modifier.windowInsetsPadding(windowInsets), key, pillKey)

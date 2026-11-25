@@ -18,6 +18,7 @@ import androidx.compose.ui.semantics.semantics
 import io.github.youndie.mutant.clock.readMutantClock
 import io.github.youndie.mutant.gen.Mulberry32
 import io.github.youndie.mutant.gen.jsRound
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.LocalMutantCassette
 import io.github.youndie.mutant.theme.LocalMutantCleanSignal
 import io.github.youndie.mutant.theme.LocalMutantStage
@@ -32,8 +33,9 @@ import kotlin.math.min
  * The skeleton, «Кокон»: no body, a mosaic of 16 dp blocks edged by 8 dp ones in the shape it is given — the
  * component that is coming — with its corners rounded to 10 dp (or half its height). About 6 % of its blocks
  * change paint on each tick of the scene, eight times a second; under reduce motion and under «Чистый сигнал» it
- * stands. It takes the size its [modifier] gives and none of its own. Several on one screen each take their own
- * [key], or they flicker alike. Read as indeterminate progress.
+ * stands. It takes the size its [modifier] gives and none of its own. Its mosaic is seeded by [key], by default its
+ * place in the composition (B-206), so two unkeyed cocoons flicker apart; in a list, give it from the item's id. Read
+ * as indeterminate progress.
  *
  * It hands over to what it stood for through [io.github.youndie.mutant.surface.MutantAppear]: `if (loading)
  * MutantCocoon(…) else MutantAppear { MutantCard(…) }` — the cocoon goes in one frame and the card tunes in (B-179).
@@ -41,7 +43,7 @@ import kotlin.math.min
 @Composable
 public fun MutantCocoon(
     modifier: Modifier = Modifier,
-    key: String = "0",
+    key: String = mutantPlaceKey("cocoon"),
 ) {
     val clock = readMutantClock()
     val colors = MutantTheme.colors

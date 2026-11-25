@@ -37,6 +37,7 @@ import io.github.youndie.mutant.surface.MutantSurface
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.MutantTheme
@@ -51,6 +52,9 @@ import io.github.youndie.mutant.type.cssLine
  * secondary), and at the end either [trailing] (a [MutantBadge], say) or [trailingText] in the on-screen-display amber
  * (Handjet 20, the page's `12:04`). Given [onClick] the whole row is the button, fired on release, its press boiling
  * the tile; disabled, the tile loses its signal and the words grey. Put a [MutantDivider] between rows.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantListItem(
@@ -62,7 +66,7 @@ public fun MutantListItem(
     trailing: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
-    key: String = "tile",
+    key: String = mutantPlaceKey("tile"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     ListItemBody(

@@ -79,6 +79,7 @@ import io.github.youndie.mutant.surface.SlideRequest
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.inkOnBody
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.LocalMutantFonts
 import io.github.youndie.mutant.theme.LocalMutantReduceMotion
@@ -110,6 +111,9 @@ import kotlin.math.roundToInt
  * number, the focused field's brackets. A day [selectableDates] refuses is drawn in the disabled grey, never wears
  * the drop, and is not a target: a press or a key does nothing there, the arrow keys step over it, and it reads as
  * disabled. The component reads no clock (research D6): today is the caller's.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantDatePicker(
@@ -125,7 +129,7 @@ public fun MutantDatePicker(
     weekdayNames: List<String> = WEEKDAYS,
     previousLabel: String = "Предыдущий месяц",
     nextLabel: String = "Следующий месяц",
-    key: String = "cal",
+    key: String = mutantPlaceKey("cal"),
 ) {
     DatePickerBody(
         year,
@@ -644,6 +648,9 @@ private fun Arrow(
  * as a press would (B-196). Each reads to a screen reader as a value in its range that can be set; [hourLabel] and
  * [minuteLabel] name them. Designed here (D15): the design is a still. Right to left it is not mirrored: on-screen time
  * reads as a clock does, the hours at the left (B-205).
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantTimePicker(
@@ -653,7 +660,7 @@ public fun MutantTimePicker(
     modifier: Modifier = Modifier,
     hourLabel: String = "Часы",
     minuteLabel: String = "Минуты",
-    key: String = "tp",
+    key: String = mutantPlaceKey("tp"),
 ) {
     TimePickerBody(hour, minute, onTimeChange, modifier, hourLabel, minuteLabel, key)
 }

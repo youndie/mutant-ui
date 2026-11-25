@@ -83,6 +83,7 @@ import io.github.youndie.mutant.surface.drawVenomFill
 import io.github.youndie.mutant.surface.drawVenomInk
 import io.github.youndie.mutant.surface.gooLayer
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.toPath
 import io.github.youndie.mutant.surface.venomSpring
 import io.github.youndie.mutant.surface.with
@@ -104,6 +105,9 @@ import kotlin.math.roundToInt
  * the [MutantMenu] of [items] while it is open. A press on the anchor opens and closes it; a press on an item hands it
  * to [onSelect] and the window flows to it by venom, the menu staying open (the owner's choice, B-92: it closed once
  * the venom arrived). A press outside or Escape closes it. Opening and closing are at once (designed here, D15).
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantDropdown(
@@ -112,7 +116,7 @@ public fun MutantDropdown(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    key: String = "menu",
+    key: String = mutantPlaceKey("menu"),
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box(modifier) {
@@ -147,6 +151,9 @@ public fun MutantDropdown(
  * taller than the window stands 16 dp from its top and 34 dp from its foot (16 and the drips' 18), and its rows scroll
  * (the designer's answer 28, B-201). Where it fits neither under nor above, it keeps to those margins on the side with
  * more room. Across, it stands [offset] from its parent's start, moved in to fit the window.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantMenu(
@@ -157,7 +164,7 @@ public fun MutantMenu(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     offset: DpOffset = DpOffset(0.dp, MENU_TOP.dp),
-    key: String = "menu",
+    key: String = mutantPlaceKey("menu"),
 ) {
     if (!expanded) return
     val dismiss by rememberUpdatedState(onDismissRequest)

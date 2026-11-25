@@ -49,6 +49,7 @@ import io.github.youndie.mutant.surface.MutantTune
 import io.github.youndie.mutant.surface.MutantTuned
 import io.github.youndie.mutant.surface.composed
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.surface.tuneStands
 import io.github.youndie.mutant.surface.with
 import io.github.youndie.mutant.theme.MutantTheme
@@ -80,13 +81,16 @@ import kotlin.math.roundToInt
  * hides (the 8 dp mosaic, then nothing, 160 ms), as [io.github.youndie.mutant.surface.MutantAppear] does; under reduce
  * motion it shows and goes at once; a finger that moves past the touch slop first (a scroll starting on the anchor) is no long press. Focus taken by
  * a press shows nothing. The plate takes no input: a press through it reaches what lies under it.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantTooltipBox(
     text: String,
     modifier: Modifier = Modifier,
     supportingText: String? = null,
-    key: String = text,
+    key: String = mutantPlaceKey("tip"),
     anchor: @Composable () -> Unit,
 ) {
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard

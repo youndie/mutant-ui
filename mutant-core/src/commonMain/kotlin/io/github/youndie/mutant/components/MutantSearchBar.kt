@@ -44,6 +44,7 @@ import io.github.youndie.mutant.icons.MutantIcon
 import io.github.youndie.mutant.icons.MutantIcons
 import io.github.youndie.mutant.surface.drawCornerBrackets
 import io.github.youndie.mutant.surface.mutantCleanZone
+import io.github.youndie.mutant.surface.mutantPlaceKey
 import io.github.youndie.mutant.theme.MutantTheme
 import kotlin.math.roundToInt
 
@@ -56,6 +57,9 @@ import kotlin.math.roundToInt
  * The clear icon (the kit's Close, 24 dp, in the text colour) shows while [query] is not empty and empties it, keeping
  * the field's focus; [clearLabel] names it to a screen reader. The keyboard's action is search, and [onSearch] hears
  * it with the query. The bar is as wide as its [modifier] allows; the page's is 328 dp.
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantSearchBar(
@@ -67,7 +71,7 @@ public fun MutantSearchBar(
     onSearch: ((String) -> Unit)? = null,
     clearLabel: String = "Очистить",
     enabled: Boolean = true,
-    key: String = "search",
+    key: String = mutantPlaceKey("search"),
     interactionSource: MutableInteractionSource? = null,
     content: @Composable ColumnScope.() -> Unit = {},
 ) {
@@ -285,6 +289,9 @@ internal fun SuggestionsBody(
  * accent colour, over the [supporting] line (Rubik 13, secondary). Given [onClick] the whole row is the button. Put a
  * [MutantDivider] between rows. In a [io.github.youndie.mutant.surface.MutantAppear] it tunes in as it arrives, its
  * tile as mosaics and its words on the third step (B-179), as results taking the place of [MutantSearchResultLoading].
+ *
+ * [key] seeds its body: by default its place in the composition and its body type (B-206), so two unkeyed ones are
+ * two bodies and one keeps its body whatever its words or state; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantSearchResult(
@@ -295,7 +302,7 @@ public fun MutantSearchResult(
     leadingIcon: ImageVector? = null,
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
-    key: String = "sr1",
+    key: String = mutantPlaceKey("sr"),
     interactionSource: MutableInteractionSource? = null,
 ) {
     ListItemBody(
@@ -332,13 +339,13 @@ internal fun searchMatch(
 /**
  * The row a [MutantSearchBar] shows while results come, 60 dp tall: a 40 dp [MutantCocoon] where the tile stands and
  * two 14 dp bars, 8 dp apart, of 70 % and 45 % of the row's text width. Its cocoons are keyed `[key]0`…`[key]2`; the
- * page's stand first on their stage, keys `0`, `1`, `2`. Several rows on one screen each take their own [key], or their
- * mosaics flicker alike, in step.
+ * page's stand first on their stage, keys `0`, `1`, `2` (an empty [key]). By default [key] is its place in the
+ * composition (B-206), so two unkeyed rows flicker apart; in a list, give it from the item's id.
  */
 @Composable
 public fun MutantSearchResultLoading(
     modifier: Modifier = Modifier,
-    key: String = "",
+    key: String = mutantPlaceKey("srl"),
 ) {
     Row(
         modifier.fillMaxWidth().heightIn(min = RESULT_ROW),
