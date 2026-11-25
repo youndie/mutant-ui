@@ -58,10 +58,11 @@ own branches and commits without asking (`CLAUDE.md`, «Workflow»).
 
 <!-- BEGIN INDEX -->
 
-## Open (5)
+## Open (6)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-212](docs/backlog/B-212-the-place-key-in-common-metadata.md) `[~]` | The place key compiles in common metadata | P0 | S | - |
 | [B-151](docs/backlog/B-151-a-real-screen-under-a-finger.md) `[~]` | A real screen under a finger: tabs and scroll on the phone | P1 | L | - |
 | [B-109](docs/backlog/B-109-bodies-as-vectors-in-the-browser.md) `[ ]` | Resting bodies as vectors in the browser | P2 | S | - |
 | [B-211](docs/backlog/B-211-two-levels-of-frame-work-in-the-phones-chrome.md) `[ ]` | Two levels of frame work in the phone's Chrome | P2 | S | - |
