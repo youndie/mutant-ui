@@ -1,7 +1,7 @@
 ---
 id: B-197
 title: "The Tape over menus, tooltips and dialogs"
-status: wip
+status: done
 priority: P1
 size: L
 stage: stage-6-later
@@ -24,8 +24,10 @@ The Tape does not cover popups: an open menu or a tooltip floats above it (F-men
 
 ## Result, 2026-11-25
 
-Done but the phone: the first, second and fourth AC hold on desktop; the third, the phone's frame cost, waits for the
-owner's word (Iteration 1 below). The status stays `wip`.
+Done. The first, second and fourth AC hold on desktop; the third, the phone's frame cost, was measured on 2026-11-25
+(The run, below): held on Android, red in the phone's Chrome by a two-level mode that falls on either build. The owner
+closed it as measured, the reds recorded (Decision, at the end), and the mode became
+[B-211](B-211-two-levels-of-frame-work-in-the-phones-chrome.md).
 
 - **Which of the two designs: the Tape in every popup's root, in register with the window's.** `mutantTape()` now
   registers what it draws with (its clock, palette, stage, seeds, rasterised fills, steps) and where it stands on the
@@ -77,7 +79,7 @@ run with `main`'s five source files written back):
 | the band and noise over a menu, in register | «the Tape's band is drawn over an open menu …» and «the Tape's noise …»: one part of the Tape alone, on a frozen clock at a moment the band crosses the menu, read as the pixels it changes (≥ 3 levels) against the same scene with no part drawn, over the menu's rows (an area, not an edge): with the menu open, and with it gone, where the part lands on the ground there. Held if over the menu it changes at least half of what it changes on the ground, at most 5 % of its changes fall where the ground's do not (out of register, or past the Tape's foot: the menu stands across it), and beside the menu, inside the 28 dp its layer takes in, at most 1 % of pixels differ from the ground's Tape (no Tape twice). «Эфир» at density 1, «Копия» at 2. Measured: band 4 800 of 4 800 and 19 094 of 19 200, noise 763 of 763 and 2 984 of 2 988, 0 out of register. Before: 0 over the menu |
 | the band and noise over a tooltip, in register | «… over a tooltip's plate …», the same reading over the plate, which stands across the foot of a 100 dp Tape; «Эфир» at density 2, «Копия» at 1. Measured: band 5 793 of 6 464 and 1 598 of 1 616, noise 1 662 of 1 662 and 423 of 424, 0 out of register. Before: 0 |
 | over a dialog; the Tape runs while a dialog is open | «the Tape runs while a dialog is open, its band over the dialog's window in register with the band beside it»: the band alone over a 360 × 400 dp screen with a dialog open on a running clock, eight shots 240 ms apart: the band moves between shots (7 of 7), its rows in the window's frame (clear of its words) are its rows beside the window within 2 rows in each pair, and it crosses the window (94 rows changed there). Before: it moved in 0 of 7 |
-| the phone | measured 2026-11-25 (The run, below): Android held, Chrome red; the Question |
+| the phone | measured 2026-11-25 (The run, below): Android held, Chrome red; closed as measured by the owner (Decision) |
 
 Every case of the menu and the tooltip also reads the strip beside the popup, inside the 28 dp its layer takes in: at
 most 1 % of its pixels may differ from the ground's Tape there (the Tape drawn once, not twice).
@@ -347,3 +349,13 @@ The choices:
    or read per scene.
 3. **Find the two levels first** (which core runs Chrome's renderer per scene, whether ADPF or the phone's heat moves
    it, B-140's "levels and steps"), then run Run 1 again as pre-registered.
+
+## Decision, 2026-11-25
+
+The owner chose the first option in chat: **the AC is closed as measured, the reds recorded.** On Android, where an
+open popup is a window of its own and where the new cost lands, both held conditions held; in the phone's Chrome both
+are red, and stay red in this item: no threshold moved and nothing was rerun. The two-level mode (about 5.5 against
+9.5 ms of work a frame, for whole seconds, on either arm, `main`'s unchanged resting page included) is
+[B-211](B-211-two-levels-of-frame-work-in-the-phones-chrome.md), as B-142 was for the nine-second stall. Until it is
+understood, a Chrome A/B on the phone resolves no difference under about 4 ms at five counted rounds, so Run 1 says
+that the menu does not cost 4 ms or more there, and nothing finer.
