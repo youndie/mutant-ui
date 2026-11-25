@@ -146,3 +146,81 @@ stays open. What the run would have to measure, so it is ready when the word com
 - **Not to forget** (from the skill and B-140): close any leftover bench tab before choosing the tab; a test needing the
   device is never chained with the mutants after it; the body shader is not touched here, so B-167's precision check is
   not needed.
+
+### Pre-registered before the run, 2026-11-25
+
+The owner gave the word to use the phone for this item's measurement in chat on 2026-11-25. What follows is fixed
+before the first number; after it, nothing here moves, and a number on the wrong side of a line is a result.
+
+**Stand.** The owner's Pixel 6a (`bluejay`, serial `29131JEGR05148`), on USB and mains, screen on; the driver is this
+Mac. Arm `a` is this branch's head, arm `b` is `main` (`dc97cf8`), built in a worktree of `origin/main` with the same
+bench scenes added there on a local scratch branch, never pushed. Every log records the phone's battery temperature
+and the big cores' (cpu6) current and maximum frequency before and after the run, and after every scene. A phone above
+38 °C at the start of a run gets a cool-down first, logged. Any leftover bench tab in the phone's Chrome is closed
+before a run (the script logs it).
+
+**Run 1, Chrome on the phone, B-73's bench** (`scripts/frame-bench-browser.mjs`, `DEVICE=1`, `DIST_B=` `main`'s
+`wasmJsBrowserDistribution`): the scenes `ComponentsMenu`, `ComponentsDialog`, `ComponentsRest`, `ComponentsReduce`
+and `Control` (10 ms busy-waited in every frame over `ComponentsReduce`), each in both arms, interleaved as `~b`, 6 rounds
+× 10 s, round 1 not counted, each scene's first second not counted. Log: `logs/b-197/2026-11-25-pixel-ab.log`.
+
+- `ComponentsMenu`: the resting Components page (`ComponentsRest`'s settings) with a `MutantMenu` of the sample's
+  menu items opened at load, standing over the page's Tape 24 dp from the page's start and 200 dp from its top, and
+  left open. The menu sits in an outer `MutantTheme` around the sample, so it finds the page's Tape (an inner theme keeps
+  the outer one's Tapes); the outer theme's clock drives only the menu, in both arms.
+- `ComponentsDialog`: the Demo page with the Settings phone shown, its erase dialog open at load (the sample's own,
+  B-174). The Components page's dialogs stand on stages whose clock the page's Tape does not read, so only a phone of
+  the Demo page has a Tape on the clock a dialog holds.
+- **Held**, per counted round (2–6), work p50 of arm `a` minus arm `b`'s (the script's `~b minus a` lines, sign
+  reversed):
+  - `ComponentsMenu`: within 2.0 ms either way (|a − b| ≤ 2.0);
+  - `ComponentsRest`: within 1.0 ms either way (|a − b| ≤ 1.0): nothing changed with no popup but one
+    `onGloballyPositioned`.
+- **Void** (and then rerun, the item saying so): the control's work p50 over `ComponentsReduce`'s outside 10 ± 3 ms in
+  any counted round of either arm; or the run cut short, so that a counted round lacks one of the held scenes in either
+  arm.
+- **Reported, not held**: `ComponentsDialog` in both arms (on `main` the phone under the dialog drew nothing on its own,
+  so `a` is expected to cost a Tape's frame there); frames a second and the busy share of every scene.
+
+**Run 2, Android, B-49's host** (`bench-android`, release with R8, compiled `speed-profile`). Arm `b`'s APK is the same
+harness built at `main` with the application id suffixed `.main`, so both stand installed at once; the driver
+launches one scene per launch (force-stop, start, one scene for 10 s, the first second not counted, its
+`metrics.csv` pulled), so arms of two builds can alternate within a round. Rounds 6, round 1 not counted; within each
+round the launches rotate by one through `a:TenCards8`, `a:TenCards8Menu`, `b:TenCards8Menu`, `b:TenCards8`.
+
+- `TenCards8Menu`: B-49's `TenCards8` (ten cards under the Tape at 8 ticks a second) with a `MutantMenu` open over the
+  Tape at load, 40 dp from the screen's start and 200 dp from its top, on the screen's clock, left open.
+- **The popup's window.** `FrameMetrics` reads the activity's window only; the menu's popup is a view root of its own.
+  During every launch of every arm, the driver reads `adb shell dumpsys gfxinfo <package> framestats` once a second
+  (the same perturbation for every arm) and keeps each view root's frames, deduplicated by their intended vsync. A view
+  root's main-thread work for a frame is `SyncQueued − AnimationStart`, which is what `FrameMetrics`'
+  animation + layout/measure + draw spans.
+- **The reader's control**: the activity window's frames read from `gfxinfo` must give the same main-thread work as
+  `FrameMetrics` gives for the same intended vsync, within 0.1 ms, for at least 99 % of the frames matched in every
+  launch; otherwise the popup's numbers from `gfxinfo` are not reported as a number.
+- **The main thread's work for a frame** is the activity window's work (`FrameMetrics`) plus the popup window's work at
+  the same intended vsync (0 where the popup drew nothing at that vsync): both traversals run on the one UI thread in
+  one Choreographer frame.
+- **Missed vsyncs** are read on the activity's window, which draws every vsync in every scene (a layer reads the frame
+  time in its draw): gaps between consecutive `VSYNC_TIMESTAMP`s over 25 ms, counted per launch after its first second.
+- **Held**, per counted round: `TenCards8Menu`'s main-thread work p50 on arm `a` within 2.0 ms of arm `b`'s
+  (|a − b| ≤ 2.0), and arm `a`'s missed vsyncs in `TenCards8Menu` no more than arm `b`'s in the same round
+  (a ≤ b, a count).
+- **If `gfxinfo` lists no separate view root for the popup**, or the reader's control fails, the held work condition is
+  read on the activity window's `FrameMetrics` alone, and the item says that the popup's own frames were not measured.
+- **The control, before the arms**: B-49's `Spin5` (5 ms busy-waited in a layer nested in another, over `TenCards12`)
+  against `TenCards12`, arm `a` only, the same driver, 6 × 10 s, round 1 not counted, with HWUI's performance hints off
+  (`setprop debug.hwui.use_hint_manager false`; ADPF moves a UI thread with long frames to the big cores and the control
+  reads low, field-ui B-57), the property's value before and after logged and restored. The control reads `Spin5`'s
+  activity-window work p50 over `TenCards12`'s within 5 ± 1 ms in every counted round; outside it, Run 2 is void. The
+  arms run with the hints as the phone ships them, as a user gets them.
+- **Void** (rerun, the item saying so): the control outside its band; or a run cut short, so that a counted round lacks
+  `TenCards8Menu` in either arm.
+- **Reported, not held**: `TenCards8Menu` against `TenCards8` on the same build, in both arms (what an open menu costs);
+  the popup window's frames a second and its work p50 per arm; arm `b`'s `TenCards8` against arm `a`'s; `TOTAL` is not
+  read for any verdict (an empty screen reads 28 ms of it, B-49).
+- Logs: `logs/b-197/2026-11-25-android-control/`, `logs/b-197/2026-11-25-android-ab/` (every launch's `metrics.csv`
+  and `gfxinfo` dumps), and a `.log` of each run's driver output beside them.
+
+**Not held anywhere**: TOTAL, the frames a second, and anything of the tooltip (it opens on hover or a long press, and
+the menu stands for the popup's cost).
