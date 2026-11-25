@@ -60,3 +60,7 @@ AC:
 
 **Tests**, each killed by a mutant after the commit: the screen at 360 × 720 instead of the room (right edge 360, not
 390), the theme's `reduceMotion = true` (0 pixels changed), the «Copy» chip picking «Эфир» (mean level 52 in both).
+
+**Gates** on this Mac, on `origin/main` with B-212: `make check` green; `make docs-against BASE=origin/main` clean;
+`./gradlew check :mutant-core:compileCommonMainKotlinMetadata` green (787 tests, 0 failures, read from the JUnit XML,
+the iOS simulator and wasm browser suites included).
