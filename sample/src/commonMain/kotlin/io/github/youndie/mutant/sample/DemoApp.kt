@@ -146,6 +146,7 @@ internal fun DemoApp(
                         .focusRequester(barFocus)
                         .onFocusChanged { keys.held = it.hasFocus },
                     windowInsets = WindowInsets(0),
+                    key = "navbar",
                 )
             }
         }
@@ -184,7 +185,7 @@ internal fun BarAction(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    MutantTooltipBox(label) { MutantIconButton(icon, label, onClick, modifier, key = "bar-$label") }
+    MutantTooltipBox(label, key = label) { MutantIconButton(icon, label, onClick, modifier, key = "bar-$label") }
 }
 
 /** A tab's top bar: the menu opens the drawer. */
@@ -208,6 +209,7 @@ internal fun TabBar(
         status = status,
         windowInsets = WindowInsets(0),
         actions = actions,
+        key = "0",
     )
 }
 

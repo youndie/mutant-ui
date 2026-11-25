@@ -86,6 +86,7 @@ internal fun Recording(
                             rename = true
                         }
                     },
+                    key = "0",
                 )
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                     MutantIllustration(
@@ -129,7 +130,7 @@ internal fun Recording(
                             key = "buttonB",
                         )
                         MutantOutlinedButton(s.toQueue, { queued = true }, key = "button-o")
-                        MutantTooltipBox(s.shareWord) {
+                        MutantTooltipBox(s.shareWord, key = s.shareWord) {
                             MutantIconButton(MutantIcons.Share, s.shareWord, {
                                 queued = false
                                 share = true
@@ -199,17 +200,27 @@ internal fun Recording(
                         }
                     }
                     Spacer(Modifier.height(24.dp))
-                    MutantSlider(volume, { volume = it }, Modifier.fillMaxWidth(), label = s.volume, valueRange = 0..10)
+                    MutantSlider(
+                        volume,
+                        { volume = it },
+                        Modifier.fillMaxWidth(),
+                        label = s.volume,
+                        valueRange = 0..10,
+                        key = s.volume,
+                    )
                     Spacer(Modifier.height(96.dp))
                 }
             }
         }
+        // B-206: the demo keys its bodies, so a phone draws the same on the Demo page as alone: a body's default key is
+        // its place in the composition, and the page and the phone alone are two places.
         MutantSnackbar(
             s.queued,
             Modifier.align(Alignment.BottomCenter).padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
             visible = queued,
             actionLabel = s.undo,
             onAction = { queued = false },
+            key = "snack",
         )
         MutantBottomSheet(share, { share = false }, windowInsets = WindowInsets(0), key = "demo-share") {
             Osd(s.shareWord, size = 18)

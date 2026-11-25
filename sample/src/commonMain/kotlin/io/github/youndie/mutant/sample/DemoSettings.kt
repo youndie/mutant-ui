@@ -180,9 +180,10 @@ internal fun Settings(
             { nav.erasing = false },
             text = s.eraseNamed,
             returnFocusTo = nav.menu,
+            key = "dialog",
         ) {
             MutantDialogAction(s.cancel, { nav.erasing = false })
-            MutantDialogAction(s.erase, { nav.erasing = false }, primary = true)
+            MutantDialogAction(s.erase, { nav.erasing = false }, primary = true, key = "dialog-ok")
         }
     }
 }
