@@ -224,3 +224,21 @@ round the launches rotate by one through `a:TenCards8`, `a:TenCards8Menu`, `b:Te
 
 **Not held anywhere**: TOTAL, the frames a second, and anything of the tooltip (it opens on hover or a long press, and
 the menu stands for the popup's cost).
+
+**Amended 2026-11-25, before either run, from looking at the new scenes** (`device-bench.sh show TenCards8Menu` on
+both builds, and the two wasm scenes opened once in the phone's Chrome; no held scene was timed):
+- `ComponentsDialog`'s page is scrolled 420 dp at load: at the top, the Settings phone's dialog stood below the phone's
+  viewport (411 × 784), and only the phone's head showed. Scrolled, the dialog stands in view with the Tape's band over
+  it.
+- **`gfxinfo` lists the popup as a view root of its own** («Всплывающее окно», the phone's word for a popup window,
+  beside the activity's `ViewRootImpl`), with its own 120 rows of framestats. But the two roots of one Choreographer
+  frame **share** `AnimationStart` and `PerformTraversalsStart`, and the popup's `SyncQueued` comes after the
+  activity's (eight frames read: the activity's sync queued 0.8–8.2 ms after its vsync, the popup's 0.2–2.8 ms later).
+  So the popup's `SyncQueued − AnimationStart` already holds the activity's work, and the sum written above counts the
+  activity twice. **The main thread's work for a frame is therefore read as the latest `SyncQueued` among the roots
+  that drew at that vsync minus their shared `AnimationStart`**; on a frame the popup did not draw it is the activity's
+  `FrameMetrics` work, exactly. The thresholds, the rounds and the arms do not change. As this correction could move a
+  verdict towards green, the literal sum (the activity's work plus the popup's `SyncQueued − AnimationStart`) is
+  published beside it. The popup's own draw, reported, is its `SyncQueued − DrawStart`.
+- The same look showed what the change does there: in about two seconds with the menu open, the popup's root rendered
+  117 frames on this branch and 18 on `main` (the menu's own ticks), while the activity rendered 117 and 134.
