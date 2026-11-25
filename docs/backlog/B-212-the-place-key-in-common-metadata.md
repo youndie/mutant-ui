@@ -1,7 +1,7 @@
 ---
 id: B-212
 title: "The place key compiles in common metadata"
-status: wip
+status: done
 priority: P0
 size: S
 stage: stage-6-later
@@ -26,3 +26,17 @@ compilation sees it as a number and has one, so the desktop, Android, iOS and wa
   - the unkeyed bodies' keys are the same text as before on desktop: goldens and parity cells unchanged
   - `main`'s publish is green after the merge
 - Anchors: `mutant-core/src/commonMain/kotlin/io/github/youndie/mutant/surface/MutantPlaceKey.kt`, `mutant-core/build.gradle.kts`
+
+## Result, 2026-11-25
+
+- `placeKeyText` is an `expect` function in `MutantPlaceKey.kt`, with one `actual` per platform (`androidMain`,
+  `desktopMain`, `iosMain`, `wasmJsMain`), each the `hash.toString(36)` that platform compiled before: the keys' text is
+  what it was, so no body moved. `mutant-core`'s `check` depends on `compileCommonMainKotlinMetadata`.
+- **Before**: `./gradlew :mutant-core:compileCommonMainKotlinMetadata` on `main` (`fab501e`) failed at
+  `MutantPlaceKey.kt:23:94`, "None of the following candidates is applicable" for `toString(36)`, as both publish runs
+  did. **After**: it compiles, as do `compileKotlinIosArm64` and `compileKotlinWasmJs`.
+- **Mutant**: with the `dependsOn` line removed, `./gradlew :mutant-core:check --dry-run` lists no
+  `compileCommonMainKotlinMetadata`; restored, it lists it.
+- Goldens and parity cells: none moved; `./gradlew check` (desktop, wasm, iOS simulator suites, goldens and parity) is
+  green on this Mac, and runs the common metadata compilation now.
+- The last AC, `main`'s publish green, is read on the merge commit's publish run, named in the pull request.
